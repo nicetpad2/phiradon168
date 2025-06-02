@@ -53,3 +53,8 @@
 ### 2025-06-03
 - [Patch v4.8.9] Fix ModuleNotFoundError for src submodules
 - QA: pytest -q passed (7 tests)
+
+### 2025-06-03
+- [Patch v4.8.11] Fix dependency handling and absolute imports
+- New/Updated unit tests added for src.main and src.config
+- QA: pytest -q passed (7 tests)
