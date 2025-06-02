@@ -197,3 +197,4 @@
    - Equity summary CSV (`logs/wfv_summary/ProdA_equity_summary.csv`) exists and shows plausible P&L per fold  
 
 ---
+- New modular code in ./src (config, data_loader, features, strategy, main).
