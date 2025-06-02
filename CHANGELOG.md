@@ -73,13 +73,20 @@
 - QA: pytest -q passed (7 tests)
 
 
-### 2025-06-03
+- [Patch v4.8.12] Add Numba-accelerated backtest loop and model cache
+- New/Updated unit tests added for strategy module
+- QA: pytest -q passed (8 tests)
+
+
+
+
 - [Patch v4.8.12] Ensure single TA install and warn on drive mount failure
 - New/Updated unit tests added for src.config
 - QA: pytest -q passed (8 tests)
-=======
+
 ### 2025-06-03
 - [Patch v4.8.12] Cache TA indicators and vectorize pattern tagging
 - New/Updated unit tests added for src.features
 - QA: pytest -q passed (7 tests)
+
 
