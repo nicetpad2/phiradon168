@@ -54,6 +54,10 @@
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (7 tests)
 
+### 2025-06-03
+- [Patch v4.8.12] Optimize BE year handling and datetime parsing
+- QA: pytest -q passed (7 tests)
+
 
 ### 2025-06-03
 - [Patch v4.8.9] Fix ModuleNotFoundError for src submodules

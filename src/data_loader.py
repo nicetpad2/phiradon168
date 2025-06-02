@@ -728,67 +728,19 @@ def prepare_datetime(df_pd, timeframe_str=""):
         )
 
         logging.info("      [Converter] กำลังตรวจสอบและแปลงปี พ.ศ. เป็น ค.ศ. (ถ้าจำเป็น)...")
-        converted_date_str_series = date_str_series.copy()
-        if not date_str_series.empty:
-            potential_be = False
-            sample_size = min(len(date_str_series), 100)
-            try:
-                if date_str_series.index.is_unique:
-                    sampled_dates = date_str_series.sample(sample_size, random_state=42)
-                else:
-                    sampled_dates = date_str_series.drop_duplicates().sample(min(sample_size, date_str_series.nunique()), random_state=42)
-            except Exception as e_sample:
-                logging.warning(f"      [Converter] Warning: Sampling failed ({e_sample}). Proceeding without sampling check.")
-                sampled_dates = date_str_series
-
-            for date_str_sample in sampled_dates:
-                if isinstance(date_str_sample, str):
-                    year_part_str = None
-                    if len(date_str_sample) >= 4:
-                        if date_str_sample[:4].isdigit(): year_part_str = date_str_sample[:4]
-                    if year_part_str:
-                        try:
-                            year_part = int(year_part_str)
-                            # Use datetime.datetime.now() with the globally imported datetime module
-                            current_ce_year = datetime.datetime.now().year # <<< CORRECTED
-                            if year_part > current_ce_year + 100:
-                                potential_be = True
-                                logging.debug(f"      [Converter] Potential BE year detected: {year_part} in '{date_str_sample}'")
-                                break
-                        except ValueError: continue
-            del sampled_dates
-
-            if potential_be:
-                logging.info("      [Converter] ตรวจพบปีที่อาจเป็น พ.ศ. (> 2400). พยายามแปลงเป็น ค.ศ. (-543)...")
-                def convert_be_year(date_str):
-                    if isinstance(date_str, str) and len(date_str) >= 4:
-                        year_part_str = date_str[:4]
-                        if year_part_str.isdigit():
-                            try:
-                                year_be = int(year_part_str)
-                                current_ce_year = datetime.datetime.now().year # <<< CORRECTED
-                                if year_be > current_ce_year + 100:
-                                    year_ce = year_be - 543
-                                    return str(year_ce) + date_str[4:]
-                            except ValueError:
-                                return date_str
-                    return date_str
-                converted_date_str_series = date_str_series.apply(convert_be_year)
-                if not converted_date_str_series.equals(date_str_series):
-                    logging.info("      [Converter] (Success) แปลงปี พ.ศ. เป็น ค.ศ. สำเร็จ.")
-                    diff_mask = date_str_series != converted_date_str_series
-                    logging.info(f"         ตัวอย่างก่อนแปลง:\n{date_str_series[diff_mask].head(3).to_string(index=False)}")
-                    logging.info(f"         ตัวอย่างหลังแปลง:\n{converted_date_str_series[diff_mask].head(3).to_string(index=False)}")
-                    del diff_mask
-                else:
-                    logging.info("      [Converter] ไม่พบปีที่น่าจะเป็น พ.ศ. (หรือข้อมูลน้อยเกินไป).")
-            else:
-                logging.info("      [Converter] ไม่พบปีที่น่าจะเป็น พ.ศ. (หรือข้อมูลน้อยเกินไป).")
+        date_ints = pd.to_numeric(date_str_series, errors="coerce")
+        mask_be = date_ints > 24000000
+        if mask_be.any():
+            logging.info(f"      [Converter] พบปี พ.ศ. ใน {mask_be.sum()} แถว, กำลังแปลงเป็น ค.ศ....")
+            date_str_series.loc[mask_be] = (date_ints[mask_be] - 5430000).astype(int).astype(str)
+        logging.info("      [Converter] (Success) แปลงปี พ.ศ. → ค.ศ. เสร็จสิ้น.")
 
         logging.debug("      Combining Date and Timestamp strings...")
-        datetime_combined_str = converted_date_str_series + " " + ts_str_series
-        df_pd["datetime_original"] = parse_datetime_safely(datetime_combined_str)
-        del date_str_series, ts_str_series, converted_date_str_series
+        datetime_strings = date_str_series.str.cat(ts_str_series, sep=" ")
+        df_pd["datetime_original"] = pd.to_datetime(
+            datetime_strings, format="%Y%m%d %H:%M:%S", errors="coerce"
+        )
+        del date_str_series, ts_str_series
         gc.collect()
 
         nat_count = df_pd["datetime_original"].isna().sum()
@@ -797,7 +749,7 @@ def prepare_datetime(df_pd, timeframe_str=""):
             logging.warning(f"   (Warning) พบค่า NaT {nat_count} ({nat_ratio:.1%}) ใน {timeframe_str} หลังการ parse.")
 
             if nat_ratio == 1.0:
-                failed_strings = datetime_combined_str[df_pd["datetime_original"].isna()]
+                failed_strings = datetime_strings[df_pd["datetime_original"].isna()]
                 logging.critical(f"   (Error) พบค่า NaT 100% ใน {timeframe_str}. ไม่สามารถดำเนินการต่อได้. ตัวอย่าง: {failed_strings.iloc[0] if not failed_strings.empty else 'N/A'}")
                 sys.exit(f"   ออก ({timeframe_str}): ข้อมูล date/time ทั้งหมดไม่สามารถ parse ได้.")
             elif nat_ratio >= MAX_NAT_RATIO_THRESHOLD:
@@ -816,7 +768,7 @@ def prepare_datetime(df_pd, timeframe_str=""):
                     sys.exit(f"   ออก ({timeframe_str}): ข้อมูลว่างเปล่าหลังลบ NaT.")
         else:
             logging.debug(f"   ไม่พบค่า NaT ใน {timeframe_str} หลังการ parse.")
-        del datetime_combined_str
+        del datetime_strings
         gc.collect()
 
         if "datetime_original" in df_pd.columns:
