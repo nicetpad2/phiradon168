@@ -37,6 +37,11 @@
 - QA: pytest -q passed (6 tests)
 
 ### 2025-06-03
+
+- [Patch v4.8.9] Normalize imports to absolute paths in features.py
+- QA: pytest -q passed (6 tests)
+=======
 - [Patch v4.8.10] Stub utilities and clean imports
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (7 tests)
+
