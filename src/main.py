@@ -52,7 +52,7 @@ from features import (
     calculate_m1_entry_signals,
     load_features_for_model,
 )
-from strategy import run_all_folds_with_threshold
+from src.strategy import run_all_folds_with_threshold
 import pandas as pd
 import numpy as np
 import shutil # For file moving in pipeline mode

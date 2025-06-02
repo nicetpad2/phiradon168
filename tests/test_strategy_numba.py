@@ -3,13 +3,13 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
 import numpy as np
 import pandas as pd
-from strategy import (
+from src.strategy import (
     _run_oms_backtest_numba,
     generate_open_signals,
     generate_close_signals,
     precompute_sl_array,
     precompute_tp_array,
-    run_all_folds_with_threshold,
+    run_simple_numba_backtest,
 )
 
 
@@ -32,5 +32,5 @@ def test_run_all_folds_with_threshold():
         "Low": [0.9, 1.0, 1.0, 1.15],
     })
     folds = [(np.arange(0,2), np.arange(2,4))]
-    res = run_all_folds_with_threshold(df, folds)
+    res = run_simple_numba_backtest(df, folds)
     assert res[0] >= 0

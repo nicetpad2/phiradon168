@@ -89,4 +89,9 @@
 - New/Updated unit tests added for src.features
 - QA: pytest -q passed (7 tests)
 
+### 2025-06-04
+- [Patch v4.8.13] Merge simple strategy module into src package
+- New/Updated unit tests added for src.strategy
+- QA: pytest -q passed (13 tests)
+
 
