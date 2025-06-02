@@ -594,15 +594,17 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
 
 
 # --- Main Execution Function ---
-def main(run_mode='FULL_PIPELINE', suffix_from_prev_step=None):
+def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=None):
     """
     Main execution function for the Gold Trading AI script.
     Handles different run modes: PREPARE_TRAIN_DATA, TRAIN_MODEL_ONLY, FULL_RUN, FULL_PIPELINE.
 
     Args:
         run_mode (str): The execution mode. Defaults to 'FULL_PIPELINE'.
+        skip_prepare (bool): Internal flag used to skip PREPARE_TRAIN_DATA when rerunning
+            as part of FULL_PIPELINE. Defaults to False.
         suffix_from_prev_step (str, optional): Suffix passed from a previous step
-                                               in FULL_PIPELINE mode. Defaults to None.
+            in FULL_PIPELINE mode. Defaults to None.
 
     Returns:
         str or None: The filename suffix used for the final results of the run,
@@ -681,7 +683,7 @@ def main(run_mode='FULL_PIPELINE', suffix_from_prev_step=None):
     initial_intent_use_l1 = USE_META_CLASSIFIER
     local_train_model = False; local_run_final_backtest = False
     logging.info(f"   Run Mode Selected: {run_mode}")
-    if run_mode == 'PREPARE_TRAIN_DATA':
+    if run_mode == 'PREPARE_TRAIN_DATA' and not skip_prepare:
         local_run_final_backtest = True
     elif run_mode == 'TRAIN_MODEL_ONLY':
         local_train_model = True
@@ -709,7 +711,8 @@ def main(run_mode='FULL_PIPELINE', suffix_from_prev_step=None):
         original_multi_fund_mode = MULTI_FUND_MODE
         MULTI_FUND_MODE = False
         logging.info("   (Pipeline Info) ปิด Multi-Fund Mode ชั่วคราว...")
-        prepare_suffix = main(run_mode='PREPARE_TRAIN_DATA')
+        # [Patch v4.8.12] Avoid redundant PREPARE_TRAIN_DATA call on FULL_PIPELINE restart
+        prepare_suffix = main(run_mode='PREPARE_TRAIN_DATA', skip_prepare=True)
         MULTI_FUND_MODE = original_multi_fund_mode
         logging.info(f"   (Pipeline Info) คืนค่า Multi-Fund Mode: {MULTI_FUND_MODE}")
         if prepare_suffix is None:
