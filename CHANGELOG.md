@@ -95,3 +95,8 @@
 - QA: pytest -q passed (13 tests)
 
 
+### 2025-06-05
+- [Patch v4.9.0] ปรับปรุงการสร้างคอลัมน์ session ให้เป็นแบบ Vectorized และลดการวนลูปแถว
+- New/Updated unit tests added for src.features
+- QA: pytest -q passed (16 tests)
+

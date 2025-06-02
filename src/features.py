@@ -9,7 +9,7 @@
 # <<< MODIFIED v4.8.1: Added handling for empty series, NaN/Inf inputs, dtype checks in indicators; refined NaN filling in engineer_m1_features; improved dtype conversion in clean_m1_data >>>
 # <<< MODIFIED v4.8.2: Ensured robust index conversion and handling in engineer_m1_features before get_session_tag >>>
 # <<< MODIFIED v4.8.3: Refined session tagging in engineer_m1_features for non-DatetimeIndex and addressed FutureWarning. Re-indented and reviewed. Added Part Markers. >>>
-# <<< MODIFIED v4.8.4: Corrected session tagging for non-DatetimeIndex in engineer_m1_features to align with test expectations. Updated versioning. >>>
+# <<< MODIFIED v4.9.0: Corrected session tagging for non-DatetimeIndex in engineer_m1_features to align with test expectations. Updated versioning. >>>
 import logging
 import pandas as pd
 import numpy as np
@@ -294,7 +294,7 @@ def get_session_tag(timestamp, session_times_utc=None):
     except Exception as e: logging.error(f"   (Error) Error in get_session_tag for {timestamp}: {e}", exc_info=True); return "Error_Tagging"
 
 def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_features_config=None):
-    logging.info("(Processing) กำลังสร้าง Features M1 (v4.8.4)...") # <<< MODIFIED v4.8.4
+    logging.info("(Processing) กำลังสร้าง Features M1 (v4.9.0)...") # <<< MODIFIED v4.9.0
     if not isinstance(df_m1, pd.DataFrame): logging.error("Engineer M1 Features Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m1.empty: logging.warning("   (Warning) ข้ามการสร้าง Features M1: DataFrame ว่างเปล่า."); return df_m1
     df = df_m1.copy(); price_cols = ["Open", "High", "Low", "Close"]
@@ -353,45 +353,43 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
             score=(wick_ratio*0.5+gain_z_abs*0.3+atr_val*0.2); score=np.where((atr_val>1.5)&(wick_ratio>0.6),score*1.2,score); df['spike_score']=score.clip(0,1).astype('float32')
         except Exception as e_spike: df['spike_score']=0.0; logging.error(f"         (Error) Spike score calculation failed: {e_spike}.",exc_info=True)
     if 'session' not in df.columns:
-        logging.info("      Creating 'session' column...")
+        logging.info("      Creating 'session' column (vectorized)...")
         try:
-            # <<< START OF MODIFIED v4.8.4 LOGIC for session tagging >>>
-            original_index_is_datetime = isinstance(df.index, pd.DatetimeIndex) and not df.index.hasnans
-
-            if original_index_is_datetime:
-                if not df.empty:
-                    df['session'] = df.index.to_series().apply(get_session_tag)
-                else:
-                    df['session'] = "N/A_EmptyDF" # Should not happen if df_m1 is not empty
-            else: # Original index is not a valid DatetimeIndex (e.g., RangeIndex)
-                logging.warning("         (Warning) Original index is not a valid DatetimeIndex. Session tagging will result in 'Error_Tagging_Reindex_Fill'.")
-                # For non-DatetimeIndex, the goal is to have 'Error_Tagging_Reindex_Fill'
-                # This happens because reindexing a Series with DatetimeIndex (from get_session_tag)
-                # back to a RangeIndex (or other non-DatetimeIndex) will likely result in NaNs
-                # which are then filled.
-                # We still attempt conversion to see if any part of it *could* be datetime.
-                temp_index_for_apply = pd.to_datetime(df.index, errors='coerce')
-                if not temp_index_for_apply.isna().all(): # If at least some conversion was possible
-                    # Apply get_session_tag on the converted (potentially partial) DatetimeIndex
-                    session_values_on_temp_index = temp_index_for_apply.to_series().apply(get_session_tag)
-                    # Reindex these session values back to the original df's index.
-                    # If original df.index was RangeIndex, this reindex will likely produce NaNs
-                    # where the RangeIndex doesn't match the DatetimeIndex values from temp_index.
-                    df['session'] = session_values_on_temp_index.reindex(df.index)
-                    df['session'] = df['session'].fillna("Error_Tagging_Reindex_Fill")
-                else: # All conversions to datetime failed
-                    df['session'] = "Error_Index_Conv"
-            # <<< END OF MODIFIED v4.8.4 LOGIC for session tagging >>>
-
+            # ใช้วิธี Vectorized: ดึงชั่วโมงจาก DatetimeIndex แล้วแมปเป็น session
+            if not isinstance(df.index, pd.DatetimeIndex):
+                # พยายามแปลง index เป็น DatetimeIndex ครั้งเดียว
+                df.index = pd.to_datetime(df.index, errors='coerce')
+            # ถ้าแปลงแล้วเป็น DatetimeIndex และไม่ว่าง
+            if isinstance(df.index, pd.DatetimeIndex) and not df.index.hasnans:
+                hrs = df.index.hour
+                # สร้างคอลัมน์ session เริ่มต้นเป็น 'Other'
+                df['session'] = 'Other'
+                # Asia: ช่วง 0-7 (UTC)
+                mask_asia = (hrs >= SESSION_TIMES_UTC['Asia'][0]) & (hrs < SESSION_TIMES_UTC['Asia'][1])
+                df.loc[mask_asia, 'session'] = 'Asia'
+                # London: ช่วง 7-15 (UTC)
+                mask_london = (hrs >= SESSION_TIMES_UTC['London'][0]) & (hrs < SESSION_TIMES_UTC['London'][1])
+                df.loc[mask_london, 'session'] = df.loc[mask_london, 'session'].apply(lambda x: 'Asia/London' if x=='Asia' else 'London')
+                # NY: ช่วง 13-20 (UTC)
+                mask_ny = (hrs >= SESSION_TIMES_UTC['NY'][0]) & (hrs < SESSION_TIMES_UTC['NY'][1])
+                df.loc[mask_ny, 'session'] = df.loc[mask_ny, 'session'].apply(lambda x: '/'.join(sorted([x, 'NY'])) if x in ['Asia','London','Asia/London'] else 'NY')
+                # กำหนด dtype category
+                df['session'] = df['session'].astype('category')
+                logging.info(f"         Session distribution:\n{df['session'].value_counts(normalize=True).round(3).to_string()}")
+            else:
+                # กรณีแปลงไม่ได้หรือมี NaT
+                df['session'] = 'Error_Index_Conv'
+                df['session'] = df['session'].astype('category')
+        except Exception as e_session:
+            logging.error(f"         (Error) Session calculation failed: {e_session}. Assigning 'Other'.", exc_info=True)
+            df['session'] = "Other"
             df['session'] = df['session'].astype('category')
-            if not df.empty: logging.info(f"         Session distribution:\n{df['session'].value_counts(normalize=True).round(3).to_string()}")
-        except Exception as e_session: logging.error(f"         (Error) Session calculation failed: {e_session}. Assigning 'Other'.", exc_info=True); df['session'] = "Other"; df['session'] = df['session'].astype('category')
     if 'model_tag' not in df.columns: df['model_tag'] = 'N/A'
-    logging.info("(Success) สร้าง Features M1 (v4.8.4) เสร็จสิ้น.") # <<< MODIFIED v4.8.4
+    logging.info("(Success) สร้าง Features M1 (v4.9.0) เสร็จสิ้น.") # <<< MODIFIED v4.9.0
     return df.reindex(df_m1.index)
 
 def clean_m1_data(df_m1):
-    logging.info("(Processing) กำลังกำหนด Features M1 สำหรับ Drift และแปลงประเภท (v4.8.4)...") # <<< MODIFIED v4.8.4
+    logging.info("(Processing) กำลังกำหนด Features M1 สำหรับ Drift และแปลงประเภท (v4.9.0)...") # <<< MODIFIED v4.9.0
     if not isinstance(df_m1, pd.DataFrame): logging.error("Clean M1 Data Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m1.empty: logging.warning("   (Warning) ข้ามการทำความสะอาดข้อมูล M1: DataFrame ว่างเปล่า."); return pd.DataFrame(), []
     df_cleaned = df_m1.copy()
@@ -427,7 +425,7 @@ def clean_m1_data(df_m1):
             if not isinstance(df_cleaned[col].dtype, pd.CategoricalDtype):
                 try: df_cleaned[col] = df_cleaned[col].astype('category')
                 except Exception as e_cat: logging.warning(f"   (Warning) เกิดข้อผิดพลาดในการแปลง '{col}' เป็น category: {e_cat}.")
-    logging.info("(Success) กำหนด Features M1 และแปลงประเภท (v4.8.4) เสร็จสิ้น.") # <<< MODIFIED v4.8.4
+    logging.info("(Success) กำหนด Features M1 และแปลงประเภท (v4.9.0) เสร็จสิ้น.") # <<< MODIFIED v4.9.0
     return df_cleaned, m1_features_for_drift
 
 def calculate_m1_entry_signals(df_m1: pd.DataFrame, config: dict) -> pd.DataFrame:
