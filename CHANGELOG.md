@@ -35,3 +35,7 @@
 - [Patch v4.8.9] Switch to absolute imports for script execution
 - New/Updated unit tests added for src.main and src.strategy
 - QA: pytest -q passed (6 tests)
+
+### 2025-06-03
+- [Patch v4.8.10] Enforce absolute imports for strategy DataLoader utils
+- QA: pytest -q passed (6 tests)
