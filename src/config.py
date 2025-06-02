@@ -375,10 +375,10 @@ logging.debug("Global warnings filtered and pandas options set.")
 # === CONFIGURATION (v4.8.2) ===
 # ==============================================================================
 logging.info("Loading Global Configuration Settings...")
-OUTPUT_BASE_DIR = "/content/drive/MyDrive/new"
+OUTPUT_BASE_DIR = "/content/drive/MyDrive/Phiradon168/logs"
 OUTPUT_DIR_NAME = "outputgpt_v4.8.2"
-DATA_FILE_PATH_M15 = "/content/drive/MyDrive/new/XAUUSD_M15.csv"
-DATA_FILE_PATH_M1 = "/content/drive/MyDrive/new/XAUUSD_M1.csv"
+DATA_FILE_PATH_M15 = "/content/drive/MyDrive/Phiradon168/XAUUSD_M15.csv"
+DATA_FILE_PATH_M1 = "/content/drive/MyDrive/Phiradon168/XAUUSD_M1.csv"
 TRAIN_META_MODEL_BEFORE_RUN = True
 DEFAULT_MODEL_TO_LINK = "catboost"
 META_CLASSIFIER_PATH = "meta_classifier.pkl"
