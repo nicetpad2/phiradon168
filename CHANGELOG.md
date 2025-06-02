@@ -95,3 +95,7 @@
 - QA: pytest -q passed (13 tests)
 
 
+### 2025-06-05
+- [Patch v4.9.0] Speed up backtest loop via itertuples
+- New/Updated unit tests added for src.strategy
+- QA: pytest -q passed (13 tests)
