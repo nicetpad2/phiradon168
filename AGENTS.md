@@ -198,3 +198,4 @@
 
 ---
 - New modular code in ./src (config, data_loader, features, strategy, main).
+- `gold ai 3_5.py` now imports `src.main.main` after refactor to modular code.
