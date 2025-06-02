@@ -57,6 +57,7 @@ import pandas as pd
 import numpy as np
 import shutil # For file moving in pipeline mode
 import traceback
+import glob
 from joblib import load # For loading models
 import gc # For memory management
 
@@ -593,6 +594,19 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
     logging.info("--- (Auto-Train Check) Finished ---")
 
 
+# [Patch v5.0.1] Helper wrappers for pipeline steps
+def prepare_train_data():
+    """[Patch] Run PREPARE_TRAIN_DATA step programmatically."""
+    logging.info("[Patch] Run Mode Selected: PREPARE_TRAIN_DATA (helper)")
+    return main(run_mode='PREPARE_TRAIN_DATA')
+
+
+def train_models():
+    """[Patch] Run TRAIN_MODEL_ONLY step programmatically."""
+    logging.info("[Patch] Run Mode Selected: TRAIN_MODEL (helper)")
+    return main(run_mode='TRAIN_MODEL_ONLY')
+
+
 # --- Main Execution Function ---
 def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=None):
     """
@@ -707,63 +721,43 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
     if run_mode == 'FULL_PIPELINE':
         logging.info("\n(Starting) กำลังเริ่ม FULL PIPELINE...")
 
-        logging.info("\n--- Step 1: กำลังสร้างไฟล์ Input สำหรับ Training ---")
-        original_multi_fund_mode = MULTI_FUND_MODE
-        MULTI_FUND_MODE = False
-        logging.info("   (Pipeline Info) ปิด Multi-Fund Mode ชั่วคราว...")
-        # [Patch v4.8.12] Avoid redundant PREPARE_TRAIN_DATA call on FULL_PIPELINE restart
-        prepare_suffix = main(run_mode='PREPARE_TRAIN_DATA', skip_prepare=True)
-        MULTI_FUND_MODE = original_multi_fund_mode
-        logging.info(f"   (Pipeline Info) คืนค่า Multi-Fund Mode: {MULTI_FUND_MODE}")
-        if prepare_suffix is None:
-            logging.critical("   (Error) ขั้นตอน PREPARE_TRAIN_DATA ล้มเหลว. Stopping Pipeline.")
-            return None
-
-        logging.info("\n--- Step 2: กำลังเปลี่ยนชื่อไฟล์ Input ---")
-        log_file_generated_base = f"trade_log_v32_walkforward{prepare_suffix}.csv"
-        data_file_generated_base = f"final_data_m1_v32_walkforward{prepare_suffix}.csv"
-        log_file_generated_gz = os.path.join(OUTPUT_DIR, log_file_generated_base + ".gz")
-        data_file_generated_gz = os.path.join(OUTPUT_DIR, data_file_generated_base + ".gz")
-        log_file_target_base = "trade_log_v32_walkforward.csv"
-        data_file_target_base = "final_data_m1_v32_walkforward.csv"
-        log_file_target_gz = os.path.join(OUTPUT_DIR, log_file_target_base + ".gz")
-        data_file_target_gz = os.path.join(OUTPUT_DIR, data_file_target_base + ".gz")
-        rename_failed = False
-        try:
-            if os.path.exists(log_file_generated_gz) and os.path.exists(data_file_generated_gz):
-                logging.info(f"   Moving {os.path.basename(log_file_generated_gz)} -> {os.path.basename(log_file_target_gz)}")
-                if os.path.exists(log_file_target_gz): os.remove(log_file_target_gz)
-                shutil.move(log_file_generated_gz, log_file_target_gz)
-
-                logging.info(f"   Moving {os.path.basename(data_file_generated_gz)} -> {os.path.basename(data_file_target_gz)}")
-                if os.path.exists(data_file_target_gz): os.remove(data_file_target_gz)
-                shutil.move(data_file_generated_gz, data_file_target_gz)
-                logging.info("   (Success) เปลี่ยนชื่อ/ย้ายไฟล์ (GZ) สำเร็จ.")
-            else:
-                logging.error(f"   (Error) ไม่พบไฟล์ GZ ที่สร้างจาก Step 1: {os.path.basename(log_file_generated_gz)} หรือ {os.path.basename(data_file_generated_gz)}. ไม่สามารถเปลี่ยนชื่อ.")
-                rename_failed = True
-        except Exception as e_rename:
-            logging.error(f"   (Error) เกิดข้อผิดพลาดระหว่างเปลี่ยนชื่อ/ย้ายไฟล์: {e_rename}", exc_info=True)
-            rename_failed = True
-        if rename_failed:
-            logging.critical("   (Error) หยุด FULL_PIPELINE เนื่องจากไม่สามารถ Rename ไฟล์ได้.")
-            return None
-
-        logging.info("\n--- Step 3: ตรวจสอบและ Train Models ที่ขาดหาย (Auto-Train) ---")
-        try:
-            if 'ensure_model_files_exist' in globals() and callable(ensure_model_files_exist):
-                base_log_path_for_train = os.path.join(OUTPUT_DIR, "trade_log_v32_walkforward")
-                base_m1_path_for_train = os.path.join(OUTPUT_DIR, "final_data_m1_v32_walkforward")
-                ensure_model_files_exist(OUTPUT_DIR, base_log_path_for_train, base_m1_path_for_train)
-            else:
-                logging.critical("   (Error) Function 'ensure_model_files_exist' not found. Stopping Pipeline.")
+        trade_log_target_gz = os.path.join(OUTPUT_DIR, "trade_log_v32_walkforward.csv.gz")
+        prep_pattern = os.path.join(OUTPUT_DIR, "trade_log_v32_walkforward_prep_data_*.csv")
+        if not os.path.exists(trade_log_target_gz) and not glob.glob(prep_pattern):
+            logging.info("(Info) ไม่พบ trade log สั่ง PREPARE_TRAIN_DATA")
+            prepare_suffix = prepare_train_data()
+            if prepare_suffix is None:
+                logging.critical("   (Error) ขั้นตอน PREPARE_TRAIN_DATA ล้มเหลว. Stopping Pipeline.")
                 return None
-        except Exception as e_ensure:
-            logging.error(f"   (Error) เกิดข้อผิดพลาดระหว่าง ensure_model_files_exist: {e_ensure}", exc_info=True)
-            logging.critical("   (Error) หยุด FULL_PIPELINE เนื่องจากไม่สามารถตรวจสอบ/Train Model.")
-            return None
 
-        logging.info("\n--- Step 4: กำลังรัน Backtest เต็มรูปแบบด้วย Models ที่มี ---")
+            log_file_generated_base = f"trade_log_v32_walkforward{prepare_suffix}.csv"
+            data_file_generated_base = f"final_data_m1_v32_walkforward{prepare_suffix}.csv"
+            log_file_generated_gz = os.path.join(OUTPUT_DIR, log_file_generated_base + ".gz")
+            data_file_generated_gz = os.path.join(OUTPUT_DIR, data_file_generated_base + ".gz")
+            data_file_target_gz = os.path.join(OUTPUT_DIR, "final_data_m1_v32_walkforward.csv.gz")
+            if os.path.exists(log_file_generated_gz) and os.path.exists(data_file_generated_gz):
+                if os.path.exists(trade_log_target_gz):
+                    os.remove(trade_log_target_gz)
+                if os.path.exists(data_file_target_gz):
+                    os.remove(data_file_target_gz)
+                shutil.move(log_file_generated_gz, trade_log_target_gz)
+                shutil.move(data_file_generated_gz, data_file_target_gz)
+            else:
+                logging.critical("   (Error) ไม่พบไฟล์ที่สร้างจาก PREPARE_TRAIN_DATA")
+                return None
+        else:
+            logging.info("(Info) พบ trade log แล้ว ข้าม PREPARE_TRAIN_DATA")
+
+        model_pattern = os.path.join(OUTPUT_DIR, "meta_classifier*.pkl")
+        if not glob.glob(model_pattern):
+            logging.info("(Info) ไม่พบโมเดล สั่ง TRAIN_MODEL")
+            train_models()
+            if not glob.glob(model_pattern):
+                logging.critical("   (Error) TRAIN_MODEL ล้มเหลว ไม่พบโมเดลหลังจากฝึก")
+                return None
+        else:
+            logging.info("(Info) พบโมเดลแล้ว")
+
         full_run_suffix = main(run_mode='FULL_RUN')
 
         logging.info("\n(Finished) FULL PIPELINE เสร็จสมบูรณ์.")

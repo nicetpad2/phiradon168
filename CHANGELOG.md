@@ -1,3 +1,7 @@
+### 2025-06-05
+- [Patch v5.0.1] Simplify FULL_PIPELINE fallback logic
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (13 tests)
 ### 2025-06-02
 - [Patch v4.8.12] Remove duplicate PREPARE_TRAIN_DATA and update font call
 - New/Updated unit tests added for src.main
