@@ -1,7 +1,7 @@
 # === START OF PART 5/12 ===
 
 # ==============================================================================
-# === PART 5: Feature Engineering & Indicator Calculation (v4.8.4) ===
+# === PART 5: Feature Engineering & Indicator Calculation (v4.8.12) ===
 # ==============================================================================
 # <<< MODIFIED v4.7.9: Implemented logging, added docstrings/comments, enhanced NaN/error handling, fixed SyntaxError, added integer downcast >>>
 # <<< Includes fixes from v4.7.8: Context column calculation, fixed UnboundLocalError, fixed TypeError >>>
@@ -18,6 +18,10 @@ import ta # Assumes 'ta' is imported and available (checked in Part 1)
 from sklearn.cluster import KMeans # For context column calculation
 from sklearn.preprocessing import StandardScaler # For context column calculation
 import gc # For memory management
+
+_rsi_cache = {}  # [Patch v4.8.12] Cache RSIIndicator per period
+_atr_cache = {}  # [Patch v4.8.12] Cache AverageTrueRange per period
+_sma_cache = {}  # [Patch v4.8.12] Cache SMA results
 
 # Ensure global configurations are accessible if run independently
 DEFAULT_ROLLING_Z_WINDOW_M1 = 300; DEFAULT_ATR_ROLLING_AVG_PERIOD = 50
@@ -96,27 +100,42 @@ def sma(series, period):
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).fillna(0)
     if series_numeric.isnull().all(): logging.warning("SMA: Series contains only NaN values after numeric conversion and fill."); return pd.Series(np.nan, index=series.index, dtype='float32')
     try:
+        cache_key = (id(series), period)
+        if cache_key in _sma_cache:
+            return _sma_cache[cache_key]
         min_p = max(1, min(period, len(series_numeric)))
         sma_result = series_numeric.rolling(window=period, min_periods=min_p).mean()
-        sma_final = sma_result.reindex(series.index); del series_numeric, sma_result; gc.collect()
-        return sma_final.astype('float32')
-    except Exception as e: logging.error(f"SMA calculation failed for period {period}: {e}", exc_info=True); return pd.Series(np.nan, index=series.index, dtype='float32')
+        sma_final = sma_result.reindex(series.index).astype('float32')
+        _sma_cache[cache_key] = sma_final
+        del series_numeric, sma_result; gc.collect()
+        return sma_final
+    except Exception as e:
+        logging.error(f"SMA calculation failed for period {period}: {e}", exc_info=True)
+        return pd.Series(np.nan, index=series.index, dtype='float32')
 
 def rsi(series, period=14):
     if not isinstance(series, pd.Series): logging.error(f"RSI Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
+    # [Patch v4.8.12] Use module-level cache for RSIIndicator
     if series.empty: logging.debug("RSI: Input series is empty, returning empty series."); return pd.Series(dtype='float32')
     if 'ta' not in globals() or ta is None: logging.error("   (Error) RSI calculation failed: 'ta' library not loaded."); return pd.Series(np.nan, index=series.index, dtype='float32')
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
     if series_numeric.empty or len(series_numeric) < period: logging.warning(f"   (Warning) RSI calculation skipped: Not enough valid data points ({len(series_numeric)} < {period})."); return pd.Series(np.nan, index=series.index, dtype='float32')
     try:
-        rsi_indicator = ta.momentum.RSIIndicator(close=series_numeric, window=period, fillna=False)
-        rsi_values = rsi_indicator.rsi(); rsi_final = rsi_values.reindex(series.index).ffill()
-        del series_numeric, rsi_indicator, rsi_values; gc.collect()
+        cache_key = period
+        if cache_key not in _rsi_cache:
+            _rsi_cache[cache_key] = ta.momentum.RSIIndicator(close=series_numeric, window=period, fillna=False)
+        else:
+            _rsi_cache[cache_key]._close = series_numeric
+        rsi_values = _rsi_cache[cache_key].rsi(); rsi_final = rsi_values.reindex(series.index).ffill()
+        del series_numeric, rsi_values; gc.collect()
         return rsi_final.astype('float32')
-    except Exception as e: logging.error(f"   (Error) RSI calculation error for period {period}: {e}.", exc_info=True); return pd.Series(np.nan, index=series.index, dtype='float32')
+    except Exception as e:
+        logging.error(f"   (Error) RSI calculation error for period {period}: {e}.", exc_info=True)
+        return pd.Series(np.nan, index=series.index, dtype='float32')
 
 def atr(df_in, period=14):
     if not isinstance(df_in, pd.DataFrame): logging.error(f"ATR Error: Input must be a pandas DataFrame, got {type(df_in)}"); raise TypeError("Input must be a pandas DataFrame.")
+    # [Patch v4.8.12] Cache AverageTrueRange objects
     atr_col_name = f"ATR_{period}"; atr_shifted_col_name = f"ATR_{period}_Shifted"
     if df_in.empty:
         df_result = df_in.copy(); df_result[atr_col_name] = np.nan; df_result[atr_shifted_col_name] = np.nan
@@ -135,9 +154,17 @@ def atr(df_in, period=14):
     atr_series = None
     if 'ta' in globals() and ta is not None:
         try:
-            atr_indicator = ta.volatility.AverageTrueRange(high=df_temp['High'], low=df_temp['Low'], close=df_temp['Close'], window=period, fillna=False)
-            atr_series = atr_indicator.average_true_range(); del atr_indicator
-        except Exception as e_ta_atr: logging.warning(f"   (Warning) TA library ATR calculation failed: {e_ta_atr}. Falling back."); atr_series = None
+            cache_key = period
+            if cache_key not in _atr_cache:
+                _atr_cache[cache_key] = ta.volatility.AverageTrueRange(high=df_temp['High'], low=df_temp['Low'], close=df_temp['Close'], window=period, fillna=False)
+            else:
+                _atr_cache[cache_key]._high = df_temp['High']
+                _atr_cache[cache_key]._low = df_temp['Low']
+                _atr_cache[cache_key]._close = df_temp['Close']
+            atr_series = _atr_cache[cache_key].average_true_range()
+        except Exception as e_ta_atr:
+            logging.warning(f"   (Warning) TA library ATR calculation failed: {e_ta_atr}. Falling back.")
+            atr_series = None
     if atr_series is None:
         try:
             df_temp['H-L'] = df_temp['High'] - df_temp['Low']; df_temp['H-PC'] = abs(df_temp['High'] - df_temp['Close'].shift(1)); df_temp['L-PC'] = abs(df_temp['Low'] - df_temp['Close'].shift(1))
