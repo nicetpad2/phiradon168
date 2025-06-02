@@ -96,17 +96,29 @@ except ImportError:
         logging.error(f"   (Error) ไม่สามารถติดตั้ง tqdm: {e_install}", exc_info=True)
         tqdm = None # Set tqdm to None if installation fails
 
-# ta library
-try:
-    import ta
-    TA_VERSION = getattr(ta, '__version__', 'N/A')
-except ImportError:
-    logging.info("(Info) ไลบรารี 'ta' ไม่พบ กำลังติดตั้งอัตโนมัติ...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "ta"])
-    importlib.invalidate_caches()
-    import ta
-    TA_VERSION = getattr(ta, '__version__', 'N/A')
-log_library_version("TA", ta)
+# [Patch v4.8.12] Ensure TA library is installed once then record version
+TA_VERSION = "N/A"
+
+def _ensure_ta_installed():
+    """Install `ta` library if missing and store its version."""
+    global ta, TA_VERSION
+    try:
+        import ta  # noqa: F401
+    except ImportError:
+        logging.info("(Info) ไลบรารี 'ta' ไม่พบ กำลังติดตั้งอัตโนมัติ...")
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "ta"])
+        except Exception as e_install:
+            logging.warning(f"(Warning) ติดตั้งไลบรารี ta ไม่สำเร็จ: {e_install}")
+            return
+        importlib.invalidate_caches()
+        import ta
+    TA_VERSION = getattr(ta, "__version__", "N/A")
+    globals()["ta"] = ta
+    log_library_version("TA", ta)
+
+
+_ensure_ta_installed()
 
 # Optuna library
 try:
@@ -227,6 +239,7 @@ def is_colab():
     except ImportError:
         return False
 
+FILE_BASE = os.path.join(os.getcwd(), "Phiradon168")
 if is_colab():
     from google.colab import drive
     logging.info("(Info) รันบน Google Colab – กำลัง mount Google Drive...")
@@ -235,11 +248,13 @@ if is_colab():
         logging.info("(Success) Mount Google Drive สำเร็จ")
         FILE_BASE = "/content/drive/MyDrive/Phiradon168"
     except Exception as e_drive:
-        logging.warning(f"(Warning) ล้มเหลวในการ mount Drive: {e_drive} -- ดำเนินการต่อโดยใช้ Local Path แทน")
-        FILE_BASE = os.path.join(os.getcwd(), "Phiradon168")
+        logging.warning(
+            f"(Warning) ล้มเหลวในการ mount Drive: {e_drive} -- ดำเนินการต่อโดยใช้ Local Path แทน"
+        )
 else:
-    logging.info("(Info) ไม่ใช่ Colab – สมมติรันบน VPS และโฟลเดอร์ Google Drive ถูกซิงก์ไว้เรียบร้อยแล้ว")
-    FILE_BASE = os.path.join(os.getcwd(), "Phiradon168")
+    logging.info(
+        "(Info) ไม่ใช่ Colab – สมมติรันบน VPS และโฟลเดอร์ Google Drive ถูกซิงก์ไว้เรียบร้อยแล้ว"
+    )
 
 DEFAULT_CSV_PATH_M1 = os.path.join(FILE_BASE, "XAUUSD_M1.csv")
 DEFAULT_CSV_PATH_M15 = os.path.join(FILE_BASE, "XAUUSD_M15.csv")
