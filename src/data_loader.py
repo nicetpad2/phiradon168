@@ -38,7 +38,10 @@ import gzip
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 from IPython import get_ipython
-import requests
+try:
+    import requests
+except ImportError:  # pragma: no cover - optional dependency for certain features
+    requests = None
 import datetime # <<< ENSURED Standard import 'import datetime'
 
 # --- Helper for Safe Global Access (Defined *before* use in other parts) ---
