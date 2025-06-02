@@ -1,3 +1,8 @@
+### 2025-06-02
+- [Patch v4.8.12] Remove duplicate PREPARE_TRAIN_DATA and update font call
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (8 tests)
+
 ### 2024-05-16
 - [Patch v1.0.0] Refactor gold ai script into modules
 - New/Updated unit tests added for imports
