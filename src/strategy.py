@@ -13,6 +13,7 @@ import time
 import json
 import pandas as pd
 import numpy as np
+from .data_loader import safe_get_global  # [Patch] ensure availability when imported as package
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
 from sklearn.model_selection import train_test_split, TimeSeriesSplit # Ensure TimeSeriesSplit is imported

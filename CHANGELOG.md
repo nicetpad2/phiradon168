@@ -22,3 +22,7 @@
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (4 tests)
 
+### 2025-06-02
+- [Patch v4.8.5] Fix offline execution for ProjectP
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (4 tests)
