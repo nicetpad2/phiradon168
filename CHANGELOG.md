@@ -94,4 +94,9 @@
 - New/Updated unit tests added for src.strategy
 - QA: pytest -q passed (13 tests)
 
+### 2025-06-05
+- [Patch v4.9.0] ปรับปรุงการแปลงปี พ.ศ. → ค.ศ. ให้เป็นแบบ Vectorized
+- New/Updated unit tests added for src.data_loader
+- QA: pytest -q passed (13 tests)
+
 

@@ -728,12 +728,19 @@ def prepare_datetime(df_pd, timeframe_str=""):
         )
 
         logging.info("      [Converter] กำลังตรวจสอบและแปลงปี พ.ศ. เป็น ค.ศ. (ถ้าจำเป็น)...")
-        date_ints = pd.to_numeric(date_str_series, errors="coerce")
-        mask_be = date_ints > 24000000
+        # [Patch v4.9.0] Vectorize BE to CE conversion by extracting 4-digit year
+        years = pd.to_numeric(date_str_series.str.slice(0, 4), errors="coerce")
+        mask_be = years > 2400
         if mask_be.any():
-            logging.info(f"      [Converter] พบปี พ.ศ. ใน {mask_be.sum()} แถว, กำลังแปลงเป็น ค.ศ....")
-            date_str_series.loc[mask_be] = (date_ints[mask_be] - 5430000).astype(int).astype(str)
-        logging.info("      [Converter] (Success) แปลงปี พ.ศ. → ค.ศ. เสร็จสิ้น.")
+            logging.info(
+                f"      [Converter] พบปี พ.ศ. ใน {mask_be.sum()} แถว, กำลังแปลงเป็น ค.ศ...."
+            )
+            corrected_years = years.where(~mask_be, years - 543).astype(int).astype(str).str.zfill(4)
+            remainder = date_str_series.str.slice(4)
+            date_str_series = corrected_years + remainder
+            logging.info("      [Converter] (Success) แปลงปี พ.ศ. → ค.ศ. แบบ vectorized สำเร็จ.")
+        else:
+            logging.info("      [Converter] ไม่พบปีที่เป็น พ.ศ. (>2400). ไม่ต้องแปลง.")
 
         logging.debug("      Combining Date and Timestamp strings...")
         datetime_strings = date_str_series.str.cat(ts_str_series, sep=" ")
