@@ -22,10 +22,39 @@ except ImportError:
 # --------------------------------------------
 import time
 try:
-    from data_loader import setup_output_directory  # <<< [Patch v4.8.3] Import to resolve NameError >>>
+    from data_loader import (
+        setup_output_directory,
+        load_data,
+        prepare_datetime,
+        safe_load_csv_auto,
+    )
 except ImportError:  # pragma: no cover - fallback for package import
-    from .data_loader import setup_output_directory
+    from .data_loader import (
+        setup_output_directory,
+        load_data,
+        prepare_datetime,
+        safe_load_csv_auto,
+    )
+try:
+    from features import (
+        calculate_m15_trend_zone,
+        engineer_m1_features,
+        clean_m1_data,
+        calculate_m1_entry_signals,
+        load_features_for_model,
+    )
+    from strategy import run_all_folds_with_threshold
+except ImportError:  # pragma: no cover - fallback for package import
+    from .features import (
+        calculate_m15_trend_zone,
+        engineer_m1_features,
+        clean_m1_data,
+        calculate_m1_entry_signals,
+        load_features_for_model,
+    )
+    from .strategy import run_all_folds_with_threshold
 import pandas as pd
+import numpy as np
 import shutil # For file moving in pipeline mode
 import traceback
 from joblib import load # For loading models
