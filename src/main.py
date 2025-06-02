@@ -21,6 +21,10 @@ except ImportError:
     DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
 # --------------------------------------------
 import time
+try:
+    from data_loader import setup_output_directory  # <<< [Patch v4.8.3] Import to resolve NameError >>>
+except ImportError:  # pragma: no cover - fallback for package import
+    from .data_loader import setup_output_directory
 import pandas as pd
 import shutil # For file moving in pipeline mode
 import traceback

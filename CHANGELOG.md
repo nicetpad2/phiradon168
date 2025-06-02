@@ -17,3 +17,8 @@
 - [Patch v4.8.4] ปรับ config.py ให้รองรับการรันบน Colab และ VPS
 - New/Updated unit tests added for src.config
 - QA: pytest -q passed (5 tests)
+
+- [Patch v4.8.3] Import setup_output_directory in main
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (4 tests)
+
