@@ -1,0 +1,8 @@
+pandas==2.2.2
+numpy==2.0.2
+scikit-learn==1.6.1
+ta>=0.10.2
+optuna==4.3.0
+catboost==1.2.8
+psutil==5.9.5
+shap==0.47.2
