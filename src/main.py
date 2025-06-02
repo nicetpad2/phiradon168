@@ -12,6 +12,14 @@
 import logging
 import os
 import sys
+
+# --------------------------------------------
+# นำเข้า `ENTRY_CONFIG_PER_FOLD` จาก `config.py` ให้กลายเป็น `DEFAULT_ENTRY_CONFIG_PER_FOLD`
+try:
+    from .config import ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD
+except ImportError:
+    DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
+# --------------------------------------------
 import time
 import pandas as pd
 import shutil # For file moving in pipeline mode
@@ -317,8 +325,12 @@ try:
     permutation_importance_threshold
 except NameError:
     permutation_importance_threshold = DEFAULT_PERMUTATION_IMPORTANCE_THRESHOLD
+#
+# ถ้า `ENTRY_CONFIG_PER_FOLD` ยังไม่ถูกกำหนดในโมดูลนี้
+# ให้ใช้ `DEFAULT_ENTRY_CONFIG_PER_FOLD` (หรือ `{}` กรณี import ไม่สำเร็จ)
+#
 try:
-    ENTRY_CONFIG_PER_FOLD # Referenced in main
+    ENTRY_CONFIG_PER_FOLD  # อ้างอิงใน main
 except NameError:
     ENTRY_CONFIG_PER_FOLD = DEFAULT_ENTRY_CONFIG_PER_FOLD
 try:
