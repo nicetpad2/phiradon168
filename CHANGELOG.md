@@ -53,3 +53,7 @@
 ### 2025-06-03
 - [Patch v4.8.9] Fix ModuleNotFoundError for src submodules
 - QA: pytest -q passed (7 tests)
+
+### 2025-06-03
+- [Patch v4.8.11] Add requirements file
+- QA: pytest -q passed (7 tests)
