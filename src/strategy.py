@@ -13,6 +13,11 @@ import time
 import json
 import pandas as pd
 import numpy as np
+# [Patch v4.8.8] Import safe_set_datetime from data_loader with fallback
+try:
+    from data_loader import safe_set_datetime
+except ImportError:  # pragma: no cover - fallback when imported as package
+    from .data_loader import safe_set_datetime
 from .data_loader import safe_get_global  # [Patch] ensure availability when imported as package
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
