@@ -62,3 +62,7 @@
 - New/Updated unit tests added for src.main and src.config
 
 - QA: pytest -q passed (7 tests)
+### 2025-06-04
+- [Patch v4.8.12] Add Numba-accelerated backtest loop and model cache
+- New/Updated unit tests added for strategy module
+- QA: pytest -q passed (8 tests)
