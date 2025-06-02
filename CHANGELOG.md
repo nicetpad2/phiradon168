@@ -30,3 +30,8 @@
 ### 2025-06-02
 - [Patch v4.8.8] Add import for safe_set_datetime in strategy.py
 - QA: pytest -q passed (6 tests)
+
+### 2025-06-02
+- [Patch v4.8.9] Switch to absolute imports for script execution
+- New/Updated unit tests added for src.main and src.strategy
+- QA: pytest -q passed (6 tests)

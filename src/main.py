@@ -35,6 +35,7 @@ except ImportError:  # pragma: no cover - fallback for package import
         prepare_datetime,
         safe_load_csv_auto,
     )
+# [Patch v4.8.9] Switch to absolute imports for script execution
 try:
     from features import (
         calculate_m15_trend_zone,

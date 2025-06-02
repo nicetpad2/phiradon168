@@ -18,7 +18,11 @@ try:
     from data_loader import safe_set_datetime
 except ImportError:  # pragma: no cover - fallback when imported as package
     from .data_loader import safe_set_datetime
-from .data_loader import safe_get_global  # [Patch] ensure availability when imported as package
+# [Patch v4.8.9] Use absolute import for script execution with fallback
+try:
+    from data_loader import safe_get_global
+except ImportError:  # pragma: no cover - fallback when imported as package
+    from .data_loader import safe_get_global
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
 from sklearn.model_selection import train_test_split, TimeSeriesSplit # Ensure TimeSeriesSplit is imported
