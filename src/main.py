@@ -49,7 +49,7 @@ DEFAULT_DRIFT_TTEST_ALPHA = 0.05
 DEFAULT_INITIAL_CAPITAL = 100.0
 DEFAULT_N_WALK_FORWARD_SPLITS = 5
 DEFAULT_OUTPUT_BASE_DIR = "/content/drive/MyDrive/Phiradon168/logs"
-DEFAULT_OUTPUT_DIR_NAME = "outputgpt_v4.8.2" # Note: This might be updated by Part 1 if run
+DEFAULT_OUTPUT_DIR_NAME = "outputgpt_v4.8.4" # Note: This might be updated by Part 1 if run
 DEFAULT_DATA_FILE_PATH_M15 = "/content/drive/MyDrive/Phiradon168/XAUUSD_M15.csv"
 DEFAULT_DATA_FILE_PATH_M1 = "/content/drive/MyDrive/Phiradon168/XAUUSD_M1.csv"
 DEFAULT_META_META_CLASSIFIER_PATH = "meta_meta_classifier.pkl"
@@ -1294,7 +1294,7 @@ def main(run_mode='FULL_PIPELINE', suffix_from_prev_step=None):
 # ==============================================================================
 if __name__ == "__main__":
     start_time_script = time.time()
-    logging.info(f"(Starting) Script Gold Trading AI v4.8.2...") # Updated version
+    logging.info(f"(Starting) Script Gold Trading AI v4.8.4...") # Updated version
 
     selected_run_mode = 'FULL_PIPELINE'
     # selected_run_mode = 'PREPARE_TRAIN_DATA'
@@ -1358,7 +1358,7 @@ if __name__ == "__main__":
     finally:
         end_time_script = time.time()
         total_duration = end_time_script - start_time_script
-        logging.info(f"\n(Finished) Script Gold Trading AI v4.8.2 เสร็จสมบูรณ์!") # Updated version
+        logging.info(f"\n(Finished) Script Gold Trading AI v4.8.4 เสร็จสมบูรณ์!") # Updated version
         
         final_tuning_mode_log = "Unknown"
         # Check globals first, then locals if not found in globals (though it should be global)

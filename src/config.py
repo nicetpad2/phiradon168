@@ -4,11 +4,11 @@
 # <<< เพิ่ม Encoding declaration สำหรับอักษรไทย >>>
 
 # ==============================================================================
-# === PART 1: Setup & Configuration (v4.8.2) ===
+# === PART 1: Setup & Configuration (v4.8.4) ===
 # ==============================================================================
 # <<< MODIFIED v4.7.9: Implemented logging, added basic docstrings/comments >>>
 # <<< MODIFIED v4.8.1: Updated versioning for comprehensive fixes based on prompt >>>
-# <<< MODIFIED v4.8.2: Updated versioning, log filename, and added global df_m15_dt declaration >>>
+# <<< MODIFIED v4.8.4: Updated paths for Colab/VPS compatibility and versioning >>>
 import logging
 import subprocess
 import sys
@@ -44,7 +44,7 @@ import requests # For Font Download
 # --- Logging Configuration ---
 # กำหนดค่าพื้นฐานสำหรับการ Logging
 # สามารถปรับ level, format, และ filename ได้ตามต้องการ
-LOG_FILENAME = 'gold_ai_v4.8.2.log' # <<< MODIFIED v4.8.2: Updated log filename
+LOG_FILENAME = 'gold_ai_v4.8.4.log' # <<< MODIFIED v4.8.4: Updated log filename
 logging.basicConfig(
     level=logging.INFO, # ระดับ Log เริ่มต้น (INFO, DEBUG, WARNING, ERROR, CRITICAL)
     format='%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s',
@@ -54,7 +54,7 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout) # แสดงผลทาง Console ด้วย
     ]
 )
-logging.info("--- (Start) Gold AI v4.8.2 ---") # <<< MODIFIED v4.8.2: Updated version
+logging.info("--- (Start) Gold AI v4.8.4 ---") # <<< MODIFIED v4.8.4: Updated version
 logging.info("--- กำลังโหลดไลบรารีและตรวจสอบ Dependencies ---")
 
 # --- Library Installation & Checks ---
@@ -227,28 +227,32 @@ except ImportError:
         GPUtil = None
 
 # --- Colab/Drive Setup ---
-try:
-    import google.colab
-    IN_COLAB = True
-    logging.info("Running in Google Colab environment.")
-except ImportError:
-    IN_COLAB = False
-    logging.info("Not running in Google Colab environment.")
-
-if IN_COLAB:
-    from google.colab import drive
+def is_colab():
     try:
-        logging.info("Attempting to mount Google Drive...")
+        import google.colab  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+if is_colab():
+    from google.colab import drive
+    logging.info("(Info) รันบน Google Colab – กำลัง mount Google Drive...")
+    try:
         drive.mount('/content/drive', force_remount=True)
-        logging.info("Google Drive mounted successfully.")
+        logging.info("(Success) Mount Google Drive สำเร็จ")
     except Exception as e_drive:
-        logging.error(f"Failed to mount Google Drive: {e_drive}", exc_info=True)
+        logging.error(f"(Error) ล้มเหลวในการ mount Drive: {e_drive}")
+    FILE_BASE = "/content/drive/MyDrive/Phiradon168"
+    DEFAULT_CSV_PATH_M1 = os.path.join(FILE_BASE, "XAUUSD_M1.csv")
+    DEFAULT_CSV_PATH_M15 = os.path.join(FILE_BASE, "XAUUSD_M15.csv")
+    DEFAULT_LOG_DIR = os.path.join(FILE_BASE, "logs")
 else:
-    class DummyDrive:
-        def mount(self, *args, **kwargs):
-            logging.info("   (Info) ข้ามการ Mount Google Drive (ไม่ได้อยู่ใน Colab).")
-    drive = DummyDrive()
-    drive.mount()
+    logging.info("(Info) ไม่ใช่ Colab – สมมติรันบน VPS และโฟลเดอร์ Google Drive ถูกซิงก์ไว้เรียบร้อยแล้ว")
+    FILE_BASE = "/content/drive/MyDrive/Phiradon168"
+    DEFAULT_CSV_PATH_M1 = os.path.join(FILE_BASE, "XAUUSD_M1.csv")
+    DEFAULT_CSV_PATH_M15 = os.path.join(FILE_BASE, "XAUUSD_M15.csv")
+    DEFAULT_LOG_DIR = os.path.join(FILE_BASE, "logs")
+
 
 # --- GPU Acceleration Setup (Optional) ---
 USE_GPU_ACCELERATION = True
@@ -372,13 +376,13 @@ pd.options.mode.chained_assignment = None
 logging.debug("Global warnings filtered and pandas options set.")
 
 # ==============================================================================
-# === CONFIGURATION (v4.8.2) ===
+# === CONFIGURATION (v4.8.4) ===
 # ==============================================================================
 logging.info("Loading Global Configuration Settings...")
-OUTPUT_BASE_DIR = "/content/drive/MyDrive/Phiradon168/logs"
-OUTPUT_DIR_NAME = "outputgpt_v4.8.2"
-DATA_FILE_PATH_M15 = "/content/drive/MyDrive/Phiradon168/XAUUSD_M15.csv"
-DATA_FILE_PATH_M1 = "/content/drive/MyDrive/Phiradon168/XAUUSD_M1.csv"
+OUTPUT_BASE_DIR = DEFAULT_LOG_DIR
+OUTPUT_DIR_NAME = "outputgpt_v4.8.4"
+DATA_FILE_PATH_M15 = DEFAULT_CSV_PATH_M15
+DATA_FILE_PATH_M1 = DEFAULT_CSV_PATH_M1
 TRAIN_META_MODEL_BEFORE_RUN = True
 DEFAULT_MODEL_TO_LINK = "catboost"
 META_CLASSIFIER_PATH = "meta_classifier.pkl"
