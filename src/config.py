@@ -11,6 +11,7 @@
 # <<< MODIFIED v4.8.4: Updated paths for Colab/VPS compatibility and versioning >>>
 import logging
 import subprocess
+import importlib
 import sys
 import os
 import time
@@ -98,22 +99,14 @@ except ImportError:
 # ta library
 try:
     import ta
-    logging.debug("ta library already installed.")
-    log_library_version("TA", ta) # Log version
+    TA_VERSION = getattr(ta, '__version__', 'N/A')
 except ImportError:
-    logging.info("   กำลังติดตั้งไลบรารี ta...")
-    try:
-        process = subprocess.run(
-            [sys.executable, "-m", "pip", "install", "ta", "-q"],
-            check=True, capture_output=True, text=True,
-        )
-        logging.debug(f"   ผลการติดตั้ง ta: ...{process.stdout[-200:]}")
-        import ta
-        logging.info("   (Success) ติดตั้ง ta สำเร็จ.")
-        log_library_version("TA", ta) # Log version after install
-    except Exception as e_install:
-        logging.error(f"   (Error) ไม่สามารถติดตั้ง ta: {e_install}", exc_info=True)
-        ta = None # Set ta to None if installation fails
+    logging.info("(Info) ไลบรารี 'ta' ไม่พบ กำลังติดตั้งอัตโนมัติ...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "ta"])
+    importlib.invalidate_caches()
+    import ta
+    TA_VERSION = getattr(ta, '__version__', 'N/A')
+log_library_version("TA", ta)
 
 # Optuna library
 try:
@@ -240,18 +233,17 @@ if is_colab():
     try:
         drive.mount('/content/drive', force_remount=True)
         logging.info("(Success) Mount Google Drive สำเร็จ")
+        FILE_BASE = "/content/drive/MyDrive/Phiradon168"
     except Exception as e_drive:
-        logging.error(f"(Error) ล้มเหลวในการ mount Drive: {e_drive}")
-    FILE_BASE = "/content/drive/MyDrive/Phiradon168"
-    DEFAULT_CSV_PATH_M1 = os.path.join(FILE_BASE, "XAUUSD_M1.csv")
-    DEFAULT_CSV_PATH_M15 = os.path.join(FILE_BASE, "XAUUSD_M15.csv")
-    DEFAULT_LOG_DIR = os.path.join(FILE_BASE, "logs")
+        logging.warning(f"(Warning) ล้มเหลวในการ mount Drive: {e_drive} -- ดำเนินการต่อโดยใช้ Local Path แทน")
+        FILE_BASE = os.path.join(os.getcwd(), "Phiradon168")
 else:
     logging.info("(Info) ไม่ใช่ Colab – สมมติรันบน VPS และโฟลเดอร์ Google Drive ถูกซิงก์ไว้เรียบร้อยแล้ว")
-    FILE_BASE = "/content/drive/MyDrive/Phiradon168"
-    DEFAULT_CSV_PATH_M1 = os.path.join(FILE_BASE, "XAUUSD_M1.csv")
-    DEFAULT_CSV_PATH_M15 = os.path.join(FILE_BASE, "XAUUSD_M15.csv")
-    DEFAULT_LOG_DIR = os.path.join(FILE_BASE, "logs")
+    FILE_BASE = os.path.join(os.getcwd(), "Phiradon168")
+
+DEFAULT_CSV_PATH_M1 = os.path.join(FILE_BASE, "XAUUSD_M1.csv")
+DEFAULT_CSV_PATH_M15 = os.path.join(FILE_BASE, "XAUUSD_M15.csv")
+DEFAULT_LOG_DIR = os.path.join(FILE_BASE, "logs")
 
 
 # --- GPU Acceleration Setup (Optional) ---

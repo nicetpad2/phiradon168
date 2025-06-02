@@ -31,44 +31,28 @@ def print_gpu_utilization(_=None):
 # --------------------------------------------
 # นำเข้า `ENTRY_CONFIG_PER_FOLD` จาก `config.py` ให้กลายเป็น `DEFAULT_ENTRY_CONFIG_PER_FOLD`
 try:
-    from .config import ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD
-except ImportError:
+    if 'src.config' in sys.modules:
+        DEFAULT_ENTRY_CONFIG_PER_FOLD = sys.modules['src.config'].ENTRY_CONFIG_PER_FOLD
+    else:
+        from config import ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD
+except Exception:
     DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
 # --------------------------------------------
 import time
-try:
-    from data_loader import (
-        setup_output_directory,
-        load_data,
-        prepare_datetime,
-        safe_load_csv_auto,
-    )
-except ImportError:  # pragma: no cover - fallback for package import
-    from .data_loader import (
-        setup_output_directory,
-        load_data,
-        prepare_datetime,
-        safe_load_csv_auto,
-    )
-# [Patch v4.8.9] Switch to absolute imports for script execution
-try:
-    from features import (
-        calculate_m15_trend_zone,
-        engineer_m1_features,
-        clean_m1_data,
-        calculate_m1_entry_signals,
-        load_features_for_model,
-    )
-    from strategy import run_all_folds_with_threshold
-except ImportError:  # pragma: no cover - fallback for package import
-    from .features import (
-        calculate_m15_trend_zone,
-        engineer_m1_features,
-        clean_m1_data,
-        calculate_m1_entry_signals,
-        load_features_for_model,
-    )
-    from .strategy import run_all_folds_with_threshold
+from data_loader import (
+    setup_output_directory,
+    load_data,
+    prepare_datetime,
+    safe_load_csv_auto,
+)
+from features import (
+    calculate_m15_trend_zone,
+    engineer_m1_features,
+    clean_m1_data,
+    calculate_m1_entry_signals,
+    load_features_for_model,
+)
+from strategy import run_all_folds_with_threshold
 import pandas as pd
 import numpy as np
 import shutil # For file moving in pipeline mode
@@ -670,7 +654,7 @@ def main(run_mode='FULL_PIPELINE', suffix_from_prev_step=None):
         # --- Font Setup ---
         try:
             if 'setup_fonts' in globals() and callable(setup_fonts):
-                setup_fonts(OUTPUT_DIR)
+                setup_fonts()
             else:
                 logging.warning("Function 'setup_fonts' not found. Skipping font setup.")
         except Exception as e_font:
