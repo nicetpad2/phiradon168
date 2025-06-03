@@ -15,11 +15,29 @@ import logging
 from src.strategy import run_backtest_simulation_v34
 from src.data_loader import safe_load_csv_auto
 from src.features import engineer_m1_features  # [Patch v5.1.5]
+from src.config import FUND_PROFILES, DEFAULT_FUND_NAME  # [Patch v5.3.0]
+from src.training import real_train_func  # [Patch v5.3.0]
 
 logger = logging.getLogger(__name__)
 
 
-def main_profile(csv_path: str, num_rows: int = 5000) -> None:
+def get_fund_profile(name: str | None) -> dict:
+    """Return fund profile dict from config by name."""
+    if not name:
+        name = DEFAULT_FUND_NAME
+    profile = FUND_PROFILES.get(name, FUND_PROFILES.get(DEFAULT_FUND_NAME, {}))
+    profile = profile.copy()
+    profile['name'] = name
+    return profile
+
+
+def main_profile(
+    csv_path: str,
+    num_rows: int = 5000,
+    fund_profile_name: str | None = None,
+    train: bool = False,
+    train_output: str = "models",
+) -> None:
     """Run the backtest simulation with profiling enabled."""
     df = safe_load_csv_auto(csv_path)
     if df is None:
@@ -73,13 +91,18 @@ def main_profile(csv_path: str, num_rows: int = 5000) -> None:
         )
         return
     # Provide minimal fold_config and current_fold_index to avoid warnings
+    fund_profile = get_fund_profile(fund_profile_name)
     run_backtest_simulation_v34(
         df,
         label="profile",
         initial_capital_segment=10000,
         fold_config={},
         current_fold_index=0,
+        fund_profile=fund_profile,
     )
+
+    if train:
+        real_train_func(train_output)
 
 
 def profile_from_cli() -> None:
@@ -88,11 +111,20 @@ def profile_from_cli() -> None:
     parser.add_argument('--rows', type=int, default=5000, help='Number of rows to load')
     parser.add_argument('--limit', type=int, default=20, help='Number of functions to display')
     parser.add_argument('--output', help='File path to save the profiling result')
+    parser.add_argument('--fund', help='Fund profile name to use')  # [Patch v5.3.0]
+    parser.add_argument('--train', action='store_true', help='Run training after profiling')  # [Patch v5.3.0]
+    parser.add_argument('--train-output', default='models', help='Training output directory')  # [Patch v5.3.0]
     args = parser.parse_args()
 
     profiler = cProfile.Profile()
     profiler.enable()
-    main_profile(args.csv, args.rows)
+    main_profile(
+        args.csv,
+        args.rows,
+        fund_profile_name=args.fund,
+        train=args.train,
+        train_output=args.train_output,
+    )
     profiler.disable()
     stats = pstats.Stats(profiler).sort_stats('cumtime')
     if args.output:
