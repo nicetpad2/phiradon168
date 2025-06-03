@@ -13,37 +13,29 @@ def test_parse_csv_list():
     assert hs._parse_csv_list('0.1,0.2', float) == [0.1, 0.2]
 
 
+def test_parse_multi_params():
+    class Dummy:
+        def __init__(self):
+            self.param_a = '1,2'
+            self.param_b = '0.1,0.2'
+
+    params = hs._parse_multi_params(Dummy())
+    assert params == {'a': [1, 2], 'b': [0.1, 0.2]}
+
+
 def test_run_sweep_basic(tmp_path, monkeypatch):
-    def dummy_train_func(output_dir, learning_rate=0.01, depth=6):
+    def dummy_train_func(output_dir, learning_rate=0.01, depth=6, seed=0):
         return {
             'model_path': {'model': str(tmp_path / 'm.joblib')},
             'features': ['f'],
-            'metrics': {'acc': 1.0},
+            'metrics': {'accuracy': 1.0},
         }
 
     monkeypatch.setattr(hs, 'real_train_func', dummy_train_func)
-    hs.run_sweep(str(tmp_path), [0.1], [6])
+    grid = {'learning_rate': [0.1], 'depth': [6]}
+    hs.run_sweep(str(tmp_path), grid, seed=1, resume=False)
     df = pd.read_csv(tmp_path / 'summary.csv')
     assert df.loc[0, 'learning_rate'] == 0.1
     assert df.loc[0, 'depth'] == 6
+    assert df.loc[0, 'seed'] == 1
 
-
-def test_parse_grid_args():
-    entries = ['p1=1,2', 'p2=0.1,0.2']
-    grid = hs._parse_grid_args(entries)
-    assert grid == {'p1': [1, 2], 'p2': [0.1, 0.2]}
-
-
-def test_run_general_sweep(tmp_path, monkeypatch):
-    def dummy_train_func(**kwargs):
-        return {
-            'model_path': {'model': str(tmp_path / 'm.joblib')},
-            'features': ['f'],
-            'metrics': {'acc': 1.0},
-        }
-
-    monkeypatch.setattr(hs, 'real_train_func', dummy_train_func)
-    grid = {'learning_rate': [0.1], 'depth': [6], 'p1': [1]}
-    hs.run_general_sweep(str(tmp_path), grid)
-    df = pd.read_csv(tmp_path / 'summary.csv')
-    assert set(df.columns) >= {'learning_rate', 'depth', 'p1'}
