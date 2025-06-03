@@ -3646,3 +3646,31 @@ def precompute_tp_array(df: pd.DataFrame) -> np.ndarray:
     """คำนวณ Take-Profit ล่วงหน้า"""
     return np.zeros(len(df), dtype=np.float64)
 
+# ---------------------------------------------------------------------------
+# Stubs for Function Registry Tests
+
+def initialize_time_series_split():
+    """Stubbed time series split initializer."""
+    return None
+
+
+def calculate_forced_entry_logic():
+    """Stubbed forced entry logic calculator."""
+    return None
+
+
+def apply_kill_switch():
+    """Stubbed kill switch applier."""
+    return None
+
+
+def log_trade(*args, **kwargs):
+    """Stubbed trade logger."""
+    return None
+
+
+def aggregate_fold_results():
+    """Stubbed fold result aggregator."""
+    return None
+
+

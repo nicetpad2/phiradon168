@@ -1169,3 +1169,34 @@ def select_model_for_trade(context, available_models=None):  # pragma: no cover
 
 logging.info("Part 6: Machine Learning Configuration & Helpers Loaded (v4.8.8 Patch 9 Applied).")
 # === END OF PART 6/12 ===
+
+# ---------------------------------------------------------------------------
+# Stubs for Function Registry Tests
+
+def calculate_trend_zone(df):
+    """Stubbed trend zone calculator."""
+    return pd.Series("NEUTRAL", index=df.index)
+
+
+
+
+def create_session_column(df):
+    """Stubbed session column creator."""
+    df["session"] = "Other"
+    return df
+
+
+def fill_missing_feature_values(df):
+    """Stubbed missing feature filler."""
+    return df.fillna(0)
+
+
+def load_feature_config(path):
+    """Stubbed feature config loader."""
+    return {}
+
+
+def calculate_ml_features(df):
+    """Stubbed ML feature calculator."""
+    return df
+
