@@ -8,6 +8,7 @@ bottlenecks in the backtesting loop or feature calculations.
 import argparse
 import cProfile
 import pstats
+import sys
 import pandas as pd
 import logging
 
@@ -85,6 +86,8 @@ def profile_from_cli() -> None:
     parser = argparse.ArgumentParser(description="Profile backtest simulation")
     parser.add_argument('csv', help='Path to M1 data CSV')
     parser.add_argument('--rows', type=int, default=5000, help='Number of rows to load')
+    parser.add_argument('--limit', type=int, default=20, help='Number of functions to display')
+    parser.add_argument('--output', help='File path to save the profiling result')
     args = parser.parse_args()
 
     profiler = cProfile.Profile()
@@ -92,7 +95,12 @@ def profile_from_cli() -> None:
     main_profile(args.csv, args.rows)
     profiler.disable()
     stats = pstats.Stats(profiler).sort_stats('cumtime')
-    stats.print_stats(20)
+    if args.output:
+        with open(args.output, 'w') as f:
+            stats.stream = f
+            stats.print_stats(args.limit)
+    else:
+        stats.print_stats(args.limit)
 
 
 if __name__ == '__main__':
