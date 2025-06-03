@@ -291,9 +291,12 @@
 
 ### 2025-06-30
 
-- [Patch v5.1.6] profile_backtest.py: เติมการ Merge M15 Trend Zone และ Stub Entry/Exit Columns
-- New/Updated unit tests added for profile_backtest
+
+- [Patch v5.1.6] แก้ไข Merge และตรวจสอบฟีเจอร์ใน train_and_export_meta_model
+- New/Updated unit tests added for strategy
 - QA: pytest -q passed (186 tests)
+
+
 
 
 
