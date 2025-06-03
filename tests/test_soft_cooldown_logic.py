@@ -10,7 +10,7 @@ SOFT_COOLDOWN_LOOKBACK = 10
 SOFT_COOLDOWN_LOSS_COUNT = 6
 
 
-from cooldown_utils import is_soft_cooldown_triggered
+from cooldown_utils import is_soft_cooldown_triggered, step_soft_cooldown
 
 
 def test_soft_cooldown_requires_lookback():
@@ -27,3 +27,9 @@ def test_soft_cooldown_triggers_after_lookback():
         pnl_history, SOFT_COOLDOWN_LOOKBACK, SOFT_COOLDOWN_LOSS_COUNT
     )
     assert triggered and losses == SOFT_COOLDOWN_LOOKBACK
+
+
+def test_step_soft_cooldown():
+    assert step_soft_cooldown(5) == 4
+    assert step_soft_cooldown(1) == 0
+    assert step_soft_cooldown(0) == 0
