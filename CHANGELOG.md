@@ -308,3 +308,8 @@
 - [Patch v5.1.7] Update line numbers in function registry tests
 - QA: pytest -q passed (187 tests)
 
+### 2025-07-02
+- [Patch v5.1.8] Ensure 'Datetime' index name for merge_asof
+- New/Updated unit tests added for profile_backtest
+- QA: pytest -q passed (188 tests)
+

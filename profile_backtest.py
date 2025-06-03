@@ -32,6 +32,7 @@ def main_profile(csv_path: str, num_rows: int = 5000) -> None:
             # Fallback for files where the first column becomes the index
             if not isinstance(df.index, pd.DatetimeIndex):
                 df.index = pd.to_datetime(df.index, errors='coerce')
+            df.index.name = 'Datetime'
 
         # (1) Engineer all M1 features [Patch v5.1.5]
         df = engineer_m1_features(df)
@@ -42,6 +43,7 @@ def main_profile(csv_path: str, num_rows: int = 5000) -> None:
             df15 = safe_load_csv_auto(m15_csv)
             if df15 is not None and not df15.empty:
                 df15.index = pd.to_datetime(df15.index, errors='coerce')
+                df15.index.name = 'Datetime'
                 from src.features import calculate_m15_trend_zone
                 df15 = calculate_m15_trend_zone(df15)
                 df = pd.merge_asof(
