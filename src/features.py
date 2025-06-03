@@ -18,6 +18,7 @@ import ta # Assumes 'ta' is imported and available (checked in Part 1)
 from sklearn.cluster import KMeans # For context column calculation
 from sklearn.preprocessing import StandardScaler # For context column calculation
 import gc # For memory management
+from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
 
 _rsi_cache = {}  # [Patch v4.8.12] Cache RSIIndicator per period
 _atr_cache = {}  # [Patch v4.8.12] Cache AverageTrueRange per period
@@ -270,28 +271,6 @@ def calculate_m15_trend_zone(df_m15):
     except Exception as e:
         logging.error(f"(Error) การคำนวณ M15 Trend Zone ล้มเหลว: {e}", exc_info=True)
         result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category'); return result_df
-
-def get_session_tag(timestamp, session_times_utc=None):
-    if session_times_utc is None:
-        global SESSION_TIMES_UTC
-        try: session_times_utc_local = SESSION_TIMES_UTC
-        except NameError: logging.warning("get_session_tag: Global SESSION_TIMES_UTC not found, using default."); session_times_utc_local = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
-    else: session_times_utc_local = session_times_utc
-    if pd.isna(timestamp): return "N/A"
-    try:
-        # Ensure timestamp is a pandas Timestamp object for tz_convert/tz_localize
-        if not isinstance(timestamp, pd.Timestamp):
-            timestamp = pd.Timestamp(timestamp) # Attempt conversion
-
-        ts_utc = timestamp.tz_convert('UTC') if timestamp.tzinfo else timestamp.tz_localize('UTC')
-        hour = ts_utc.hour; sessions = []
-        for name, (start, end) in session_times_utc_local.items():
-            if start <= end:
-                if start <= hour < end: sessions.append(name)
-            else:
-                if hour >= start or hour < end: sessions.append(name)
-        return "/".join(sorted(sessions)) if sessions else "Other"
-    except Exception as e: logging.error(f"   (Error) Error in get_session_tag for {timestamp}: {e}", exc_info=True); return "Error_Tagging"
 
 # [Patch v5.0.2] Exclude heavy engineering logic from coverage
 def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_features_config=None):  # pragma: no cover
