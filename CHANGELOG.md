@@ -153,3 +153,7 @@
 - [Patch v5.0.9] เพิ่มชุดการทดสอบอีก 10 บล็อก และแก้ไขปัญหา skip
 - New/Updated unit tests added for src.features, src.data_loader
 - QA: pytest -q passed (93 tests)
+### 2025-06-09
+- [Patch v5.0.10] เพิ่มชุดการทดสอบอีก 10 บล็อกและแก้ไขการ skip
+- New/Updated unit tests added for src.data_loader, src.main
+- QA: pytest -q passed (103 tests)

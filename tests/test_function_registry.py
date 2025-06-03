@@ -44,15 +44,13 @@ FUNCTIONS_INFO = [
 @pytest.mark.parametrize("path, func_name, expected_lineno", FUNCTIONS_INFO)
 def test_function_exists(path, func_name, expected_lineno):
     """Verify that each function exists near the expected line number."""
-    if not os.path.exists(path):
-        pytest.skip(f"{path} does not exist")
+    assert os.path.exists(path), f"{path} does not exist"
     with open(path, "r", encoding="utf-8") as f:
         tree = ast.parse(f.read())
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name == func_name:
-            if abs(node.lineno - expected_lineno) > 5:
-                pytest.skip(
-                    f"Line mismatch for {func_name}: {node.lineno} (expected {expected_lineno})"
-                )
+            assert abs(node.lineno - expected_lineno) <= 5, (
+                f"Line mismatch for {func_name}: {node.lineno} (expected {expected_lineno})"
+            )
             return
-    pytest.skip(f"{func_name} not found in {path}")
+    assert False, f"{func_name} not found in {path}"
