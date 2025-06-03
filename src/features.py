@@ -342,9 +342,20 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
             cluster_features=['Gain_Z','Volatility_Index','Candle_Ratio','RSI','ADX']; features_present=[f for f in cluster_features if f in df.columns and df[f].notna().any()]
             if len(features_present)<2 or len(df[features_present].dropna())<3: df['cluster']=0; logging.warning("         (Warning) Not enough valid features/samples for clustering.")
             else:
-                X_cluster_raw=df[features_present].copy().replace([np.inf,-np.inf],np.nan); X_cluster=X_cluster_raw.fillna(X_cluster_raw.median()).fillna(0)
-                if len(X_cluster)>=3: scaler=StandardScaler(); X_scaled=scaler.fit_transform(X_cluster); kmeans=KMeans(n_clusters=3,random_state=42,n_init=10); df['cluster']=kmeans.fit_predict(X_scaled)
-                else: df['cluster']=0; logging.warning("         (Warning) Not enough samples after cleaning for clustering.")
+                X_cluster_raw = df[features_present].copy().replace([np.inf, -np.inf], np.nan)
+                X_cluster = X_cluster_raw.fillna(X_cluster_raw.median()).fillna(0)
+                # [Patch v5.0.16] Skip KMeans if duplicate samples could cause ConvergenceWarning
+                if len(X_cluster) >= 3:
+                    scaler = StandardScaler(); X_scaled = scaler.fit_transform(X_cluster)
+                    if len(np.unique(X_scaled, axis=0)) < 3:
+                        df['cluster'] = 0
+                        logging.warning("         (Warning) Not enough unique samples for clustering.")
+                    else:
+                        kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+                        df['cluster'] = kmeans.fit_predict(X_scaled)
+                else:
+                    df['cluster'] = 0
+                    logging.warning("         (Warning) Not enough samples after cleaning for clustering.")
         except Exception as e_cluster: df['cluster']=0; logging.error(f"         (Error) Clustering failed: {e_cluster}.",exc_info=True)
         if 'cluster' in df.columns: df['cluster']=pd.to_numeric(df['cluster'],downcast='integer')
     if 'spike_score' not in df.columns:
