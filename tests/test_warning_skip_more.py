@@ -83,3 +83,12 @@ def test_macd_returns_values():
     assert not line.isna().all()
     assert not signal.isna().all()
     assert not diff.isna().all()
+
+
+def test_engineer_m1_features_nan_inf_warning(caplog):
+    df = pd.DataFrame({'Open': [1.0], 'High': [np.inf], 'Low': [0.0], 'Close': [1.0]})
+    with caplog.at_level(logging.INFO):
+        result = features.engineer_m1_features(df)
+    assert not result.empty
+    assert any('[QA WARNING] NaN/Inf detected in engineered features' in msg for msg in caplog.messages)
+    assert any('[QA] M1 Feature Engineering Completed' in msg for msg in caplog.messages)

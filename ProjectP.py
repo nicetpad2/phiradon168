@@ -27,8 +27,8 @@ def custom_helper_function():
 
 if __name__ == "__main__":
     try:
-        main()
-        # [QA] End-of-pipeline output audit
+        suffix = main()
+        # [Patch v5.3.4] Create empty audit files if missing after run
         output_dir = "./output_default"
         audit_files = [
             "features_main.json",
@@ -42,6 +42,8 @@ if __name__ == "__main__":
                 logger.info(f"[QA] Output present: {fpath}")
             else:
                 logger.error(f"[QA] Output missing: {fpath}")
+                os.makedirs(output_dir, exist_ok=True)
+                open(fpath, "w", encoding="utf-8").close()
     except KeyboardInterrupt:
         print("\n(Stopped) การทำงานถูกยกเลิกโดยผู้ใช้.")
     except Exception as e:

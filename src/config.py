@@ -52,13 +52,13 @@ import requests  # For Font Download
 # --- Logging Configuration ---
 # กำหนดค่าพื้นฐานสำหรับการ Logging
 # สามารถปรับ level, format, และ filename ได้ตามต้องการ
-LOG_FILENAME = f'gold_ai_v{__version__}.log'
+LOG_FILENAME = f'gold_ai_v{__version__}_qa.log'
 
 # ตั้งค่า Logger กลางเพื่อให้โมดูลอื่น ๆ ใช้งานร่วมกัน
 logger = logging.getLogger('NiceGold')
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.INFO)
 formatter = logging.Formatter(
-    '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
+    '[%(asctime)s][%(levelname)s][%(process)d][%(filename)s:%(lineno)d] - %(message)s'
 )
 fh = logging.FileHandler(LOG_FILENAME, mode='w', encoding='utf-8')
 fh.setFormatter(formatter)
@@ -580,7 +580,7 @@ logging.debug("Setting Backtesting Parameters...")
 N_WALK_FORWARD_SPLITS = 5       # Number of folds for final backtest (increased to 5)
 INITIAL_CAPITAL = 100.0         # Starting capital for simulation
 POINT_VALUE = 0.1               # Value per point for 0.01 lot size
-MAX_CONCURRENT_ORDERS = 5       # Max concurrent orders per side (BUY/SELL)
+MAX_CONCURRENT_ORDERS = 7       # [Patch v5.3.5] Max concurrent orders per side (BUY/SELL)
 MAX_HOLDING_BARS = 24           # Max bars an order can be held
 COMMISSION_PER_001_LOT = 0.10   # Commission per 0.01 lot (USD)
 SPREAD_POINTS = 2.0             # Fixed spread in points
@@ -632,7 +632,7 @@ PARTIAL_TP_LEVELS = [           # Define partial TP levels
 ]
 PARTIAL_TP_MOVE_SL_TO_ENTRY = True # Move SL to entry after first partial TP?
 ENABLE_KILL_SWITCH = True       # Enable/disable kill switch mechanism
-KILL_SWITCH_MAX_DD_THRESHOLD = 0.20 # Max drawdown % before activating kill switch
+KILL_SWITCH_MAX_DD_THRESHOLD = 0.25 # [Patch v5.3.5] Max drawdown % before activating kill switch
 KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 7 # Max consecutive losses before activating kill switch
 MAX_DRAWDOWN_THRESHOLD = 0.30   # Max drawdown % threshold to block new orders (e.g., 30%)
 logging.info(f"Kill Switch Enabled: {ENABLE_KILL_SWITCH} (DD > {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%, Losses > {KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD})")
@@ -641,7 +641,7 @@ logging.info(f"Max Drawdown Threshold (Block New Orders): {MAX_DRAWDOWN_THRESHOL
 # --- Spike Guard & Recovery Mode Configuration ---
 logging.debug("Setting Spike Guard & Recovery Mode Configuration...")
 ENABLE_SPIKE_GUARD = True       # Enable/disable spike guard filter (mainly London session)
-RECOVERY_MODE_CONSECUTIVE_LOSSES = 4 # Consecutive losses to enter recovery mode
+RECOVERY_MODE_CONSECUTIVE_LOSSES = 5 # [Patch v5.3.5] Slightly higher tolerance
 RECOVERY_MODE_LOT_MULTIPLIER = 0.5 # Lot size multiplier during recovery mode
 logging.info(f"Spike Guard Enabled: {ENABLE_SPIKE_GUARD}")
 logging.info(f"Recovery Mode Enabled: Losses >= {RECOVERY_MODE_CONSECUTIVE_LOSSES}, Lot Multiplier: {RECOVERY_MODE_LOT_MULTIPLIER}")

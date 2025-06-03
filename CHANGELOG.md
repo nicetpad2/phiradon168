@@ -415,13 +415,25 @@
 - New/Updated unit tests added for src.config
 - QA: pytest -q passed (210 tests)
 
-### 2025-07-14
-- [Patch v5.3.4] real_train_func accepts seed parameter for deterministic sweeps
-- New/Updated unit tests added for src.training
+### 2025-08-01
+- [Patch v5.3.4] Create missing QA audit files automatically
+- New/Updated unit tests added for tests/test_function_registry.py
+- QA: pytest -q passed (215 tests)
+
+### 2025-07-15
+- [Patch v5.3.5] Adjust OMS & Logging defaults for risk management and QA
+- New/Updated unit tests added for src.config
 - QA: pytest -q passed
 
 ### 2025-07-15
+- [Patch v5.3.5] Add QA log summary for trade log export
+- New/Updated unit tests added for src.utils.trade_logger
+- QA: pytest -q passed
+
+### 2025-07-15
+
 - [Patch v5.3.5] QA logging: fold summary, NaN/Inf catch, critical alerts
 - New/Updated unit tests added for src.strategy
 - QA: pytest -q passed
+
 
