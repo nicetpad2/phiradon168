@@ -40,7 +40,7 @@ except Exception:
 # --------------------------------------------
 import time
 from data_loader import (
-    setup_output_directory,
+    setup_output_directory as dl_setup_output_directory,
     load_data,
     prepare_datetime,
     safe_load_csv_auto,
@@ -658,14 +658,14 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
         # --- Output Directory Setup ---
         if 'OUTPUT_DIR' not in globals() or not OUTPUT_DIR:
             if 'OUTPUT_BASE_DIR' in globals() and 'OUTPUT_DIR_NAME' in globals():
-                OUTPUT_DIR = setup_output_directory(OUTPUT_BASE_DIR, OUTPUT_DIR_NAME)
+                OUTPUT_DIR = dl_setup_output_directory(OUTPUT_BASE_DIR, OUTPUT_DIR_NAME)
             else:
                 logging.critical("OUTPUT_BASE_DIR or OUTPUT_DIR_NAME not defined.")
                 sys.exit("ออก: ไม่สามารถกำหนด Output Directory ได้.")
         else:
             logging.info(f"   (Info) Output directory already set: {OUTPUT_DIR}")
             # Ensure the directory exists and is writable even if already set
-            setup_output_directory(os.path.dirname(OUTPUT_DIR), os.path.basename(OUTPUT_DIR))
+            dl_setup_output_directory(os.path.dirname(OUTPUT_DIR), os.path.basename(OUTPUT_DIR))
 
         # --- Font Setup ---
         try:
@@ -1656,9 +1656,9 @@ def parse_arguments():
     return {}
 
 
-def setup_output_directory():
+def setup_output_directory(base_dir, dir_name):
     """Stubbed setup_output_directory for main."""
-    return "./"
+    return dl_setup_output_directory(base_dir, dir_name)
 
 
 def load_features_from_file(_):
