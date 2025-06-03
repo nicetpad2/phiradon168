@@ -194,8 +194,15 @@
 - New/Updated unit tests added for src.features, src.data_loader
 - QA: pytest -q passed (155 tests)
 
+
 ### 2025-06-15
 - [Patch v5.0.16] Handle duplicate samples to avoid ConvergenceWarning
 - New/Updated unit tests added for src.features, tests.test_function_registry
 - QA: pytest -q passed (165 tests)
+
+
+### 2025-06-15
+- [Patch v5.0.16] Fix soft cooldown trigger condition to require lookback trades
+- New/Updated unit tests added for tests.test_soft_cooldown_logic
+- QA: pytest -q passed (167 tests)
 
