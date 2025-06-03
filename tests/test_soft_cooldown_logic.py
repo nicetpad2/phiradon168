@@ -6,7 +6,8 @@ sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'src'))
 
 SOFT_COOLDOWN_LOOKBACK = 10
-SOFT_COOLDOWN_LOSS_COUNT = 3
+# [Patch v5.0.18] Updated threshold to match strategy defaults
+SOFT_COOLDOWN_LOSS_COUNT = 6
 
 
 from cooldown_utils import is_soft_cooldown_triggered

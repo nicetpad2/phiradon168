@@ -220,3 +220,8 @@
 - [Patch v5.0.17] Add soft cooldown helper and update tests
 - New/Updated unit tests added for src.cooldown_utils, tests.test_soft_cooldown_logic
 - QA: pytest -q passed (167 tests)
+### 2025-06-17
+- [Patch v5.0.18] Relax MACD and cooldown thresholds
+- New/Updated unit tests added for tests.test_soft_cooldown_logic, tests.test_function_registry
+- QA: pytest -q passed (168 tests)
+
