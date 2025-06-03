@@ -82,3 +82,27 @@ def test_main_profile_merges_m15(tmp_path, monkeypatch):
     profile_backtest.main_profile(str(m1_path), num_rows=4)
 
     assert 'Trend_Zone' in captured_df['df'].columns
+
+
+def test_main_profile_numeric_index(tmp_path, monkeypatch):
+    df = pd.DataFrame({
+        'Open': [1, 2, 3],
+        'High': [1, 2, 3],
+        'Low': [1, 2, 3],
+        'Close': [1, 2, 3]
+    })
+    csv_path = tmp_path / 'numeric_M1.csv'
+    df.to_csv(csv_path)
+
+    captured = {}
+
+    def dummy_run_backtest(df, *args, **kwargs):
+        captured['index'] = df.index
+
+    monkeypatch.setattr(profile_backtest, 'run_backtest_simulation_v34', dummy_run_backtest)
+
+    profile_backtest.main_profile(str(csv_path), num_rows=3)
+
+    assert isinstance(captured['index'], pd.DatetimeIndex)
+    assert captured['index'].name == 'Datetime'
+
