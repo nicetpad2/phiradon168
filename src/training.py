@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""[Patch v1.1.0] Training utilities for hyperparameter sweep."""
+"""[Patch v1.1.1] Training utilities for hyperparameter sweep."""
 import os
 import numpy as np
 import pandas as pd
@@ -16,7 +16,12 @@ except Exception:  # pragma: no cover - fallback if catboost missing
 
 
 # [Patch v1.1.0] Real training function using CatBoost (or logistic regression fallback)
-def real_train_func(output_dir: str, learning_rate: float = 0.01, depth: int = 6) -> dict:
+def real_train_func(
+    output_dir: str,
+    learning_rate: float = 0.01,
+    depth: int = 6,
+    l2_leaf_reg: int | float | None = None,
+) -> dict:
     """Train a simple model and return model path, used features and metrics."""
     os.makedirs(output_dir, exist_ok=True)
 
@@ -26,7 +31,15 @@ def real_train_func(output_dir: str, learning_rate: float = 0.01, depth: int = 6
     X_train, X_test, y_train, y_test = train_test_split(df_X, y, test_size=0.25, random_state=42)
 
     if CatBoostClassifier:
-        model = CatBoostClassifier(iterations=100, learning_rate=learning_rate, depth=depth, verbose=False)
+        cat_params = {
+            "iterations": 100,
+            "learning_rate": learning_rate,
+            "depth": depth,
+            "verbose": False,
+        }
+        if l2_leaf_reg is not None:
+            cat_params["l2_leaf_reg"] = l2_leaf_reg
+        model = CatBoostClassifier(**cat_params)
         model.fit(X_train, y_train)
         y_prob = model.predict_proba(X_test)[:, 1]
         y_pred = (y_prob > 0.5).astype(int)
@@ -39,7 +52,8 @@ def real_train_func(output_dir: str, learning_rate: float = 0.01, depth: int = 6
     acc = accuracy_score(y_test, y_pred)
     auc = roc_auc_score(y_test, y_prob)
 
-    model_filename = f"model_lr{learning_rate}_depth{depth}.joblib"
+    param_suffix = f"_l2{l2_leaf_reg}" if l2_leaf_reg is not None else ""
+    model_filename = f"model_lr{learning_rate}_depth{depth}{param_suffix}.joblib"
     model_path = os.path.join(output_dir, model_filename)
     dump(model, model_path)
 
