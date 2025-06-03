@@ -369,3 +369,7 @@
 - QA: pytest -q passed (199 tests)
 
 
+### 2025-07-11
+- [Patch v5.2.7] Update dependency versions in requirements.txt
+- QA: pytest -q passed (207 tests)
+
