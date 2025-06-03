@@ -25,9 +25,11 @@ def main() -> None:
         print(f"เริ่มฝึก dummy_train_func ด้วยพารามิเตอร์: {kwargs}")
         return {"model": "path"}, ["feature1", "feature2"]
 
-    results = run_hyperparameter_sweep(base_params, grid, train_func=dummy_train_func)
-
-    for idx, res in enumerate(results, start=1):
+    # \[Patch v5.1.0] รวมลำดับการแสดงผล Run ให้อยู่ใน loop เดียวกัน
+    for idx, res in enumerate(
+        run_hyperparameter_sweep(base_params, grid, train_func=dummy_train_func),
+        start=1,
+    ):
         print(f"Run {idx}: {res}")
 
 
