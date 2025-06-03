@@ -9,4 +9,7 @@ def custom_helper_function():
     return True
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n(Stopped) การทำงานถูกยกเลิกโดยผู้ใช้.")
