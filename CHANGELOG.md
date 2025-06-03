@@ -334,7 +334,9 @@
 - QA: pytest -q passed (193 tests)
 
 ### 2025-07-06
+
 - [Patch v5.2.2] Initialize pynvml in ProjectP to avoid NameError
 - New/Updated unit tests added for ProjectP
 - QA: pytest -q passed (195 tests)
+
 
