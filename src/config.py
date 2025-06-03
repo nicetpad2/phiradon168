@@ -25,6 +25,11 @@ from joblib import load, dump as joblib_dump
 import traceback
 import pandas as pd
 import numpy as np
+
+# อ่านเวอร์ชันจากไฟล์ VERSION
+VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
+with open(VERSION_FILE, 'r', encoding='utf-8') as vf:
+    __version__ = vf.read().strip()
 from sklearn.model_selection import TimeSeriesSplit, train_test_split
 from sklearn.preprocessing import StandardScaler, OrdinalEncoder # Added OrdinalEncoder back as it might be used by some logic
 from sklearn.metrics import (
@@ -46,7 +51,7 @@ import requests # For Font Download
 # --- Logging Configuration ---
 # กำหนดค่าพื้นฐานสำหรับการ Logging
 # สามารถปรับ level, format, และ filename ได้ตามต้องการ
-LOG_FILENAME = 'gold_ai_v4.8.4.log' # <<< MODIFIED v4.8.4: Updated log filename
+LOG_FILENAME = f'gold_ai_v{__version__}.log'
 logging.basicConfig(
     level=logging.INFO, # ระดับ Log เริ่มต้น (INFO, DEBUG, WARNING, ERROR, CRITICAL)
     format='%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s',
@@ -56,7 +61,7 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout) # แสดงผลทาง Console ด้วย
     ]
 )
-logging.info("--- (Start) Gold AI v4.8.4 ---") # <<< MODIFIED v4.8.4: Updated version
+logging.info(f"--- (Start) Gold AI v{__version__} ---")
 logging.info("--- กำลังโหลดไลบรารีและตรวจสอบ Dependencies ---")
 
 # --- Library Installation & Checks ---
@@ -404,7 +409,7 @@ logging.debug("Global warnings filtered and pandas options set.")
 # ==============================================================================
 logging.info("Loading Global Configuration Settings...")
 OUTPUT_BASE_DIR = DEFAULT_LOG_DIR
-OUTPUT_DIR_NAME = "outputgpt_v4.8.4"
+OUTPUT_DIR_NAME = f"outputgpt_v{__version__}"
 DATA_FILE_PATH_M15 = DEFAULT_CSV_PATH_M15
 DATA_FILE_PATH_M1 = DEFAULT_CSV_PATH_M1
 TRAIN_META_MODEL_BEFORE_RUN = True

@@ -1,3 +1,8 @@
+### 2025-06-20
+- [Patch v5.0.21] Centralize version management
+- New/Updated unit tests added for src.config and src.strategy
+- QA: pytest -q passed (170 tests)
+
 ### 2025-06-05
 - [Patch v5.0.1] Simplify FULL_PIPELINE fallback logic
 - New/Updated unit tests added for src.main
@@ -15,7 +20,7 @@
 ### 2024-05-16
 - [Patch v1.0.0] Refactor gold ai script into modules
 - New/Updated unit tests added for imports
-- QA: pytest -q passed (0 tests)
+- QA: pytest -q passed (170 tests)
 
 ### 2025-06-02
 - [Patch v1.0.1] Update default paths for data and logs

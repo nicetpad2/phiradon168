@@ -16,6 +16,11 @@ import numpy as np
 from typing import Dict, List
 from cooldown_utils import is_soft_cooldown_triggered, step_soft_cooldown
 from itertools import product
+
+# อ่านเวอร์ชันจากไฟล์ VERSION
+VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
+with open(VERSION_FILE, 'r', encoding='utf-8') as vf:
+    __version__ = vf.read().strip()
 try:
     import numba
     from numba import njit
@@ -182,7 +187,7 @@ def train_and_export_meta_model(
                                           Returns empty list if training fails.
     """
     start_train_time = time.time()
-    logging.info(f"\n(Training - v4.8.8 Patch 2) เริ่มต้นการ Train Meta Classifier (Purpose: {model_purpose.upper()})...") # Updated version in log
+    logging.info(f"\n(Training - v{__version__}) เริ่มต้นการ Train Meta Classifier (Purpose: {model_purpose.upper()})...") # Updated version in log
     logging.info(f"   Model Type: {model_type_to_train}")
     logging.info(f"   Sample Size Limit: {sample_size}")
     logging.info(f"   Features to Drop Before Final Train: {features_to_drop_before_train}")
@@ -979,12 +984,12 @@ def train_and_export_meta_model(
         logging.error(f"   (Error) Failed to save final features list for '{model_purpose}': {e_save_feat}", exc_info=True)
 
     end_train_time = time.time()
-    logging.info(f"(Finished - v4.8.8 Patch 2) Meta Classifier Training (Purpose: {model_purpose.upper()}) complete in {end_train_time - start_train_time:.2f} seconds.") # Updated version in log
+    logging.info(f"(Finished - v{__version__}) Meta Classifier Training (Purpose: {model_purpose.upper()}) complete in {end_train_time - start_train_time:.2f} seconds.") # Updated version in log
     if 'X_val_cat_for_shap' in locals(): del X_val_cat_for_shap
     gc.collect()
     return saved_model_paths, final_features_catboost
 
-logging.info("Part 7: Model Training Function Loaded (v4.8.8 Patch 2 Applied).")
+logging.info(f"Part 7: Model Training Function Loaded (v{__version__} Applied).")
 # === END OF PART 7/12 ===
 
 
@@ -2217,7 +2222,7 @@ def run_backtest_simulation_v34(
 
     return (df_sim, trade_log_df_segment, equity, equity_history, max_drawdown_pct, run_summary, blocked_order_log, sim_model_type_l1, sim_model_type_l2, kill_switch_activated, consecutive_losses, total_ib_lot_accumulator)
 
-logging.info("Part 8: Backtesting Engine Functions Loaded (v4.8.8 Patch 26.5.1 Applied).")
+logging.info(f"Part 8: Backtesting Engine Functions Loaded (v{__version__} Applied).")
 # === END OF PART 8/12 ===
 
 
