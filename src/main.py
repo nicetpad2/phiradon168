@@ -1299,6 +1299,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                     except Exception as e_drift_sum:
                         logging.error(f"   Error summarizing/saving drift results: {e_drift_sum}", exc_info=True)
 
+                qa_log_path = os.path.join(OUTPUT_DIR, '.qa.log')
                 if df_walk_forward_results_pd_fund is not None and not df_walk_forward_results_pd_fund.empty:
                     logging.info(f"\n--- Saving Results for Fund: {fund_name} (Suffix: {final_run_suffix_fund}) ---")
                     metrics_all_fund = {**metrics_buy_overall_fund, **metrics_sell_overall_fund}
@@ -1314,16 +1315,26 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                         logging.error(f"   (Error) Failed to save metrics summary: {e}", exc_info=True)
 
                     log_file_path = os.path.join(OUTPUT_DIR, f"trade_log_v32_walkforward{final_run_suffix_fund}.csv")
+                    saved_path = None
                     try:
                         trade_log_wf_fund.to_csv(log_file_path + ".gz", index=False, encoding="utf-8", compression="gzip")
+                        saved_path = log_file_path + ".gz"
                         logging.info(f"   (Success) Saved Trade Log (GZ): {log_file_path}.gz")
                     except Exception as e_gz:
                         logging.warning(f"   (Warning) Failed to save trade log as GZ: {e_gz}. Attempting CSV...")
                         try:
                             trade_log_wf_fund.to_csv(log_file_path, index=False, encoding="utf-8")
+                            saved_path = log_file_path
                             logging.info(f"   (Success) Saved Trade Log (CSV - Fallback): {log_file_path}")
                         except Exception as e_csv:
                             logging.error(f"   (Error) Failed to save trade log (CSV): {e_csv}", exc_info=True)
+                    if saved_path:
+                        with open(qa_log_path, 'a', encoding='utf-8') as qa_f:
+                            if trade_log_wf_fund.empty:
+                                qa_f.write(f"NO_TRADES {final_run_suffix_fund}\n")
+                            else:
+                                qa_f.write(f"TRADES {len(trade_log_wf_fund)} {final_run_suffix_fund}\n")
+                        assert os.path.exists(saved_path)
 
                     try:
                         fold_boundaries = [df_m1_final.index.min()] + [df_m1_final.iloc[test_index].index.max() for _, test_index in tscv.split(df_m1_final)]
@@ -1356,6 +1367,11 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                             logging.error(f"   (Error) Failed to save final M1 data (CSV): {e_csv}", exc_info=True)
                 else:
                     logging.error(f"(Error) Final Walk-forward (Fund: {fund_name}) ไม่ได้สร้างผลลัพธ์รวม (df_walk_forward_results_pd_fund is empty or None).")
+                    log_file_path = os.path.join(OUTPUT_DIR, f"trade_log_v32_walkforward{final_run_suffix_fund}.csv")
+                    pd.DataFrame().to_csv(log_file_path, index=False)
+                    with open(qa_log_path, 'a', encoding='utf-8') as qa_f:
+                        qa_f.write(f"NO_TRADES {final_run_suffix_fund}\n")
+                    assert os.path.exists(log_file_path)
                 del df_walk_forward_results_pd_fund, trade_log_wf_fund, all_equity_histories_fund, all_fold_metrics_fund
                 gc.collect()
 
