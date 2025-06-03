@@ -654,6 +654,25 @@ def ensure_main_features_file(output_dir):
     return path
 
 
+# [Patch v5.3.2] QA function to persist features_main.json
+def save_features_main_json(features, output_dir):
+    """[Patch] Save main features list, creating QA log if empty."""
+    os.makedirs(output_dir, exist_ok=True)
+    path = os.path.join(output_dir, 'features_main.json')
+    if features is None or len(features) == 0:
+        logger.warning("[QA] features_main.json is empty. Creating empty features file.")
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump([], f, ensure_ascii=False, indent=2)
+        qa_log = os.path.join(output_dir, 'features_main_qa.log')
+        with open(qa_log, 'w', encoding='utf-8') as f:
+            f.write("[QA] features_main.json EMPTY. Please check feature engineering logic.\n")
+    else:
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(features, f, ensure_ascii=False, indent=2)
+        logger.info(f"[QA] features_main.json saved successfully ({len(features)} features).")
+    return path
+
+
 # --- Main Execution Function ---
 def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=None):
     """

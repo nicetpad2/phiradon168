@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import logging
 import pandas as pd
 import numpy as np
 
@@ -91,3 +92,32 @@ def test_ensure_main_features_file_preserves(tmp_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
     assert data == ['A']
+
+
+def test_save_features_main_json_empty(tmp_path, caplog):
+    caplog.set_level(logging.WARNING)
+    path = main.save_features_main_json([], str(tmp_path))
+    file_path = tmp_path / 'features_main.json'
+    qa_log = tmp_path / 'features_main_qa.log'
+    assert path == str(file_path)
+    assert file_path.exists()
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    assert data == []
+    assert qa_log.exists()
+    assert "features_main.json is empty" in caplog.text
+
+
+def test_save_features_main_json_with_features(tmp_path, caplog):
+    caplog.set_level(logging.INFO)
+    feats = ['X', 'Y']
+    path = main.save_features_main_json(feats, str(tmp_path))
+    file_path = tmp_path / 'features_main.json'
+    qa_log = tmp_path / 'features_main_qa.log'
+    assert path == str(file_path)
+    assert file_path.exists()
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    assert data == feats
+    assert not qa_log.exists()
+    assert "saved successfully" in caplog.text
