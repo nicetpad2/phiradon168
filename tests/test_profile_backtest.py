@@ -106,3 +106,26 @@ def test_main_profile_numeric_index(tmp_path, monkeypatch):
     assert isinstance(captured['index'], pd.DatetimeIndex)
     assert captured['index'].name == 'Datetime'
 
+
+def test_profile_cli_output_file(tmp_path, monkeypatch):
+    df = pd.DataFrame({
+        'Datetime': pd.date_range('2022-01-01', periods=2, freq='min', tz='UTC'),
+        'Open': [1, 2],
+        'High': [1, 2],
+        'Low': [1, 2],
+        'Close': [1, 2]
+    })
+    m1 = tmp_path / 'mini_M1.csv'
+    df.to_csv(m1, index=False)
+
+    monkeypatch.setattr(profile_backtest, 'run_backtest_simulation_v34', lambda *a, **k: None)
+
+    out = tmp_path / 'stats.txt'
+    monkeypatch.setattr(sys, 'argv', ['profile_backtest.py', str(m1), '--rows', '2', '--limit', '5', '--output', str(out)])
+
+    profile_backtest.profile_from_cli()
+
+    assert out.is_file()
+    text = out.read_text()
+    assert 'ncalls' in text
+
