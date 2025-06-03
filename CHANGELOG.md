@@ -231,6 +231,7 @@
 - QA: pytest -q passed (168 tests)
 
 ### 2025-06-19
-- [Patch v5.1.0] Improve hyperparameter sweep utility
-- New/Updated unit tests added for tests.test_hyperparameter_sweep
-- QA: pytest -q passed (168 tests)
+- [Patch v5.0.20] Add soft cooldown bar countdown and helper
+- New/Updated unit tests added for tests.test_soft_cooldown_logic
+- QA: pytest -q passed (169 tests)
+

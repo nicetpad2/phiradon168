@@ -14,7 +14,7 @@ import json
 import pandas as pd
 import numpy as np
 from typing import Dict, List
-from cooldown_utils import is_soft_cooldown_triggered
+from cooldown_utils import is_soft_cooldown_triggered, step_soft_cooldown
 from itertools import product
 try:
     import numba
@@ -1675,6 +1675,7 @@ def run_backtest_simulation_v34(
     last_trade_cooldown_end_time = defaultdict(lambda: min_ts); last_tp_time = defaultdict(lambda: min_ts)
     bars_since_last_trade = 0; kill_switch_activated = initial_kill_switch_state; consecutive_losses = initial_consecutive_losses
     forced_entry_consecutive_losses = 0; forced_entry_temporarily_disabled = False; last_n_full_trade_pnls = []
+    soft_cooldown_bars_remaining = 0
     SOFT_COOLDOWN_LOOKBACK = 10
     # [Patch v5.0.18] Increase loss threshold to reduce trade blocking
     SOFT_COOLDOWN_LOSS_COUNT = 6
@@ -1975,14 +1976,19 @@ def run_backtest_simulation_v34(
                             can_open_order = False
                             block_reason = f"POS_MACD_SELL (MACD={current_macd_smooth:.3f})"
                 if can_open_order:
-                    cooldown_triggered, recent_losses_count = is_soft_cooldown_triggered(
-                        last_n_full_trade_pnls, SOFT_COOLDOWN_LOOKBACK, SOFT_COOLDOWN_LOSS_COUNT
-                    )
-                    if cooldown_triggered:
+                    if soft_cooldown_bars_remaining > 0:
                         can_open_order = False
-                        block_reason = (
-                            f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T ({recent_losses_count} losses)"
+                        block_reason = f"SOFT_COOLDOWN_ACTIVE({soft_cooldown_bars_remaining})"
+                    else:
+                        cooldown_triggered, recent_losses_count = is_soft_cooldown_triggered(
+                            last_n_full_trade_pnls, SOFT_COOLDOWN_LOOKBACK, SOFT_COOLDOWN_LOSS_COUNT
                         )
+                        if cooldown_triggered:
+                            soft_cooldown_bars_remaining = SOFT_COOLDOWN_LOOKBACK
+                            can_open_order = False
+                            block_reason = (
+                                f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T ({recent_losses_count} losses)"
+                            )
                 if block_reason: logging.debug(f"      Block Reason: {block_reason}")
                 active_l1_model = None; active_l1_features = None; selected_model_key = "N/A"; model_confidence = np.nan; meta_proba_tp_for_log = np.nan
                 if can_open_order and USE_META_CLASSIFIER and callable(model_switcher_func):
@@ -2085,6 +2091,7 @@ def run_backtest_simulation_v34(
             logging.debug(
                 f"   End of Bar {current_bar_index}. Active orders for next bar: {len(active_orders)}"
             )
+            soft_cooldown_bars_remaining = step_soft_cooldown(soft_cooldown_bars_remaining)
             current_bar_index += 1
     # <<< [Patch C - Unified] End of try-except for main loop >>>
     except Exception as e_loop:
