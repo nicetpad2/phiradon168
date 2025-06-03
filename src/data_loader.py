@@ -450,11 +450,12 @@ import gc
 # Ensure global configurations are accessible if run independently
 try:
     from src.config import MAX_NAT_RATIO_THRESHOLD as CONFIG_MAX_NAT_RATIO_THRESHOLD
-except Exception:
+except Exception:  # pragma: no cover - optional config module
     try:
         from config import MAX_NAT_RATIO_THRESHOLD as CONFIG_MAX_NAT_RATIO_THRESHOLD
     except Exception:
-        logging.warning("MAX_NAT_RATIO_THRESHOLD not defined globally, using default 0.05")
+        # [Patch v5.0.15] Downgrade to info level to avoid noisy warning during imports
+        logging.info("MAX_NAT_RATIO_THRESHOLD not defined globally; using default 0.05")
         CONFIG_MAX_NAT_RATIO_THRESHOLD = 0.05
 MAX_NAT_RATIO_THRESHOLD = globals().get("MAX_NAT_RATIO_THRESHOLD", CONFIG_MAX_NAT_RATIO_THRESHOLD)
 

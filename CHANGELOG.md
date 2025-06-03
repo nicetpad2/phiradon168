@@ -182,11 +182,19 @@
 - [Patch v5.0.14] Ensure features file creation and path handling
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (135 test
+
+
+### 2025-06-14
+- [Patch v5.0.15] Reduce warning level for missing MAX_NAT_RATIO_THRESHOLD
+- New/Updated unit tests added for src.data_loader
+- QA: pytest -q passed (145 tests)
+
 ### 2025-06-14
 - [Patch v5.0.15] เพิ่มชุดการทดสอบอีก 10 บล็อกและแก้ไข warning skip
 - New/Updated unit tests added for src.features, src.data_loader
 - QA: pytest -q passed (155 tests)
-### 2025-06-15
+
 - [Patch v5.0.16] เพิ่มชุดการทดสอบอีก 10 บล็อกและแก้ไข warning skip
 - New/Updated unit tests added for src.features
 - QA: pytest -q passed (164 tests)
+
