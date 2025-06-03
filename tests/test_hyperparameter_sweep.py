@@ -20,7 +20,7 @@ def test_run_hyperparameter_sweep_basic(tmp_path):
     assert len(results) == 4
     assert len(calls) == 4
     for res in results:
-        assert "model_paths" in res and "features" in res
+        assert "model_path" in res and "features" in res
 
 
 def test_run_optuna_catboost_sweep_smoke():
