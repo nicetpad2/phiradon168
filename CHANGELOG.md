@@ -194,3 +194,8 @@
 - New/Updated unit tests added for src.features, src.data_loader
 - QA: pytest -q passed (155 tests)
 
+### 2025-06-15
+- [Patch v5.0.16] Import train_and_export_meta_model in main
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (156 tests)
+
