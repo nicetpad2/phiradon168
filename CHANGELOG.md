@@ -297,3 +297,7 @@
 
 
 
+### 2025-06-30
+
+- [Patch v5.1.6] TRAIN_MODEL_ONLY: load prep data for trade log
+- QA: pytest -q passed (186 tests)
