@@ -14,6 +14,15 @@ def test_entry_config_import_error(monkeypatch):
     # Import src.main normally; config import should fail due to missing deps
     if 'src.main' in sys.modules:
         del sys.modules['src.main']
+    import builtins
+    real_import = builtins.__import__
+
+    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == 'src.config':
+            raise ImportError('mock fail')
+        return real_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, '__import__', fake_import)
     main = importlib.import_module('src.main')
     assert main.DEFAULT_ENTRY_CONFIG_PER_FOLD == {}
 
