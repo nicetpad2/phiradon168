@@ -129,3 +129,88 @@ def test_profile_cli_output_file(tmp_path, monkeypatch):
     text = out.read_text()
     assert 'ncalls' in text
 
+
+def test_main_profile_custom_fund(monkeypatch, tmp_path):
+    df = pd.DataFrame({
+        'Datetime': pd.date_range('2022-01-01', periods=2, freq='min', tz='UTC'),
+        'Open': [1, 2],
+        'High': [1, 2],
+        'Low': [1, 2],
+        'Close': [1, 2]
+    })
+    csv_path = tmp_path / 'fund_M1.csv'
+    df.to_csv(csv_path, index=False)
+
+    captured = {}
+
+    def dummy_run(df, *args, **kwargs):
+        captured['fund'] = kwargs.get('fund_profile')
+
+    monkeypatch.setattr(profile_backtest, 'run_backtest_simulation_v34', dummy_run)
+
+    profile_backtest.main_profile(str(csv_path), num_rows=2, fund_profile_name='AGGRESSIVE')
+
+    assert captured['fund']['mm_mode'] == 'high_freq'
+
+
+def test_main_profile_train_option(monkeypatch, tmp_path):
+    df = pd.DataFrame({
+        'Datetime': pd.date_range('2022-01-01', periods=2, freq='min', tz='UTC'),
+        'Open': [1, 2],
+        'High': [1, 2],
+        'Low': [1, 2],
+        'Close': [1, 2]
+    })
+    csv_path = tmp_path / 'train_M1.csv'
+    df.to_csv(csv_path, index=False)
+
+    monkeypatch.setattr(profile_backtest, 'run_backtest_simulation_v34', lambda *a, **k: None)
+
+    called = {}
+
+    def dummy_train(out, *args, **kwargs):
+        called['out'] = out
+        return {}
+
+    monkeypatch.setattr(profile_backtest, 'real_train_func', dummy_train)
+
+    out_dir = tmp_path / 'models'
+    profile_backtest.main_profile(str(csv_path), num_rows=2, train=True, train_output=str(out_dir))
+
+    assert called['out'] == str(out_dir)
+
+
+def test_profile_cli_fund_and_train(monkeypatch, tmp_path):
+    df = pd.DataFrame({
+        'Datetime': pd.date_range('2022-01-01', periods=2, freq='min', tz='UTC'),
+        'Open': [1, 2],
+        'High': [1, 2],
+        'Low': [1, 2],
+        'Close': [1, 2]
+    })
+    m1 = tmp_path / 'mini_M1.csv'
+    df.to_csv(m1, index=False)
+
+    monkeypatch.setattr(profile_backtest, 'run_backtest_simulation_v34', lambda *a, **k: None)
+
+    called = {}
+
+    def dummy_train(out, *a, **k):
+        called['out'] = out
+        return {}
+
+    monkeypatch.setattr(profile_backtest, 'real_train_func', dummy_train)
+
+    out = tmp_path / 'stats.txt'
+    train_dir = tmp_path / 'models'
+    monkeypatch.setattr(
+        sys,
+        'argv',
+        ['profile_backtest.py', str(m1), '--rows', '2', '--limit', '5', '--output', str(out), '--fund', 'SPIKE', '--train', '--train-output', str(train_dir)],
+    )
+
+    profile_backtest.profile_from_cli()
+
+    assert out.is_file()
+    assert called['out'] == str(train_dir)
+
