@@ -249,3 +249,8 @@
 - [Patch v5.1.1] Standardize absolute imports and add setup.py
 - New/Updated unit tests added for src.main and src.strategy
 - QA: pytest -q passed (170 tests)
+
+### 2025-06-22
+- [Patch v5.1.2] เพิ่มตัวแปร AUTO_INSTALL_LIBS และปรับ logic ตรวจสอบไลบรารี
+- New/Updated unit tests added for src.config และ README.md
+- QA: pytest -q passed (170 tests)
