@@ -279,8 +279,10 @@
 - QA: pytest -q passed (183 tests)
 
 ### 2025-06-28
-- [Patch v5.1.6] Import safe_load_csv_auto in strategy
-- New/Updated unit tests added for src.strategy
-- QA: pytest -q passed (186 tests)
+
+- [Patch v5.1.5] profile_backtest.py: เพิ่มการสร้าง Features M1 ก่อนรัน backtest
+- New/Updated unit tests added for profile_backtest
+- QA: pytest -q passed (183 tests)
+
 
 

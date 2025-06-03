@@ -13,6 +13,7 @@ import logging
 
 from src.strategy import run_backtest_simulation_v34
 from src.data_loader import safe_load_csv_auto
+from src.features import engineer_m1_features  # [Patch v5.1.5]
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,9 @@ def main_profile(csv_path: str, num_rows: int = 5000) -> None:
             # Fallback for files where the first column becomes the index
             if not isinstance(df.index, pd.DatetimeIndex):
                 df.index = pd.to_datetime(df.index, errors='coerce')
+
+        # [Patch v5.1.5] สร้าง Features M1 เพื่อให้พร้อมสำหรับ backtest
+        df = engineer_m1_features(df)
     # [Patch v5.1.0] ตรวจสอบคอลัมน์หลักก่อนเรียก backtest
     required_cols = ['Open', 'High', 'Low', 'Close']
     missing = [c for c in required_cols if c not in df.columns]
