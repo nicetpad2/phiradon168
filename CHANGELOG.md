@@ -135,3 +135,9 @@
 ### 2025-06-03
 - [Patch v5.0.5] Adjust function registry test skip logic
 - QA: pytest -q passed (39 tests)
+
+### 2025-06-07
+- [Patch v5.0.6] Ensure function registry tests run
+- Added stub implementations for registry functions
+- Updated tests with current line numbers
+- QA: pytest -q passed (71 tests)

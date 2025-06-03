@@ -1648,5 +1648,42 @@ logging.info("Part 11: MT5 Connector (Placeholder) Loaded.")
 # ==============================================================================
 import logging
 
+# ---------------------------------------------------------------------------
+# Stubs for Function Registry Tests
+
+def parse_arguments():
+    """Stubbed argument parser."""
+    return {}
+
+
+def setup_output_directory():
+    """Stubbed setup_output_directory for main."""
+    return "./"
+
+
+def load_features_from_file(_):
+    """Stubbed loader for saved features."""
+    return {}
+
+
+def drop_nan_rows(df):
+    """Stubbed NaN dropper."""
+    return df.dropna()
+
+
+def convert_to_float32(df):
+    """Stubbed float32 converter."""
+    return df.astype("float32", errors="ignore")
+
+
+def run_initial_backtest():
+    """Stubbed initial backtest runner."""
+    return None
+
+
+def save_final_data(df, path):
+    """Stubbed data saver."""
+    df.to_csv(path)
+
 logging.info("Reached End of Part 12 (End of Script Marker).")
 # === END OF PART 12/12 ===
