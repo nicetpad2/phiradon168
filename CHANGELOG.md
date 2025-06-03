@@ -284,5 +284,10 @@
 - New/Updated unit tests added for profile_backtest
 - QA: pytest -q passed (183 tests)
 
+### 2025-06-29
+
+- [Patch v5.1.6] Fix TRAIN_MODEL_ONLY M1 data path
+- QA: pytest -q passed (186 tests)
+
 
 
