@@ -321,4 +321,4 @@
 
 ### 2025-07-03
 - [Patch v5.2.0] เพิ่ม project root ใน sys.path เพื่อแก้ปัญหา import modules จาก src.*
-- QA: pytest -q passed (190 tests)
+
