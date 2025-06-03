@@ -5,7 +5,8 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'src'))
 
-from src.strategy import run_hyperparameter_sweep
+import pandas as pd
+from src.strategy import run_hyperparameter_sweep, run_optuna_catboost_sweep
 
 def test_run_hyperparameter_sweep_basic(tmp_path):
     calls = []
@@ -20,3 +21,11 @@ def test_run_hyperparameter_sweep_basic(tmp_path):
     assert len(calls) == 4
     for res in results:
         assert "model_paths" in res and "features" in res
+
+
+def test_run_optuna_catboost_sweep_smoke():
+    X = pd.DataFrame({"a": range(10), "b": range(10)})
+    y = pd.Series([0, 1] * 5)
+    best_val, best_params = run_optuna_catboost_sweep(X, y, n_trials=1, n_splits=2)
+    assert isinstance(best_val, float)
+    assert isinstance(best_params, dict)

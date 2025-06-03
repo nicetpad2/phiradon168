@@ -31,6 +31,7 @@ FUNCTIONS_INFO = [
     ("src/main.py", "convert_to_float32", 1696),
     ("src/main.py", "run_initial_backtest", 1701),
     ("src/main.py", "save_final_data", 1706),
+
     ("src/strategy.py", "run_backtest_simulation_v34", 1634),
     ("src/strategy.py", "initialize_time_series_split", 3688),
     ("src/strategy.py", "calculate_forced_entry_logic", 3693),
@@ -38,6 +39,7 @@ FUNCTIONS_INFO = [
     ("src/strategy.py", "log_trade", 3703),
     ("src/strategy.py", "calculate_metrics", 2614),
     ("src/strategy.py", "aggregate_fold_results", 3708),
+
     ("ProjectP.py", "custom_helper_function", 7),
 ]
 
