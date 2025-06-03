@@ -4,13 +4,7 @@
 สร้างสคริปต์ตัวอย่างสำหรับรันทดสอบ hyperparameter sweep
 """
 
-import os
-import sys
-
-REPO_ROOT = os.path.dirname(__file__)
-for p in (REPO_ROOT, os.path.join(REPO_ROOT, 'src')):
-    if p not in sys.path:
-        sys.path.insert(0, p)
+"""Example script for running hyperparameter sweeps."""
 
 from src.strategy import run_hyperparameter_sweep
 

@@ -28,17 +28,12 @@ except Exception:  # pragma: no cover - fallback when numba unavailable
     numba = None
     def njit(func):
         return func
+
 # [Patch v4.8.8] Import safe_set_datetime using unconditional absolute import
-try:
-    from data_loader import safe_set_datetime
-except ImportError:
-    from data_loader import safe_set_datetime  # Already on PYTHONPATH; fallback to direct import
+from src.data_loader import safe_set_datetime
 
 # [Patch v4.8.9] Import safe_get_global using unconditional absolute import
-try:
-    from data_loader import safe_get_global
-except ImportError:
-    from data_loader import safe_get_global  # fallback to direct import if package context missing
+from src.data_loader import safe_get_global
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
 from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score
