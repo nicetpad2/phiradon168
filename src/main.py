@@ -1066,8 +1066,12 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                     del df_m1_final, prep_trade_log_wf
                     gc.collect()
                     return current_run_suffix
-                except NameError as ne:
-                    logging.critical(f"   (CRITICAL) NameError during PREPARE_TRAIN_DATA backtest: {ne}. Likely missing function definition.", exc_info=True)
+                except (NameError, UnboundLocalError) as ne:
+                    # [Patch] Catch UnboundLocalError along with NameError to prevent pipeline crash
+                    logging.critical(
+                        f"   (CRITICAL) NameError/UnboundLocalError during PREPARE_TRAIN_DATA backtest: {ne}. Likely missing function definition.",
+                        exc_info=True,
+                    )
                     return None
                 except Exception as e_prep_run_save:
                     logging.error(f"   (Error) Failed to run backtest or save PREPARE_TRAIN_DATA results: {e_prep_run_save}", exc_info=True)
