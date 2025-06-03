@@ -415,3 +415,8 @@
 - New/Updated unit tests added for src.config
 - QA: pytest -q passed (210 tests)
 
+### 2025-07-14
+- [Patch v5.3.4] real_train_func accepts seed parameter for deterministic sweeps
+- New/Updated unit tests added for src.training
+- QA: pytest -q passed
+
