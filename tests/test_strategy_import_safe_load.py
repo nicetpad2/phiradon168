@@ -19,3 +19,4 @@ def test_strategy_imports_shap_helpers():
     assert hasattr(strategy, 'select_top_shap_features')
     assert hasattr(strategy, 'check_model_overfit')
     assert hasattr(strategy, 'analyze_feature_importance_shap')
+    assert hasattr(strategy, 'check_feature_noise_shap')

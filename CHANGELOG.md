@@ -340,3 +340,7 @@
 - QA: pytest -q passed (193 tests)
 
 
+### 2025-07-07
+- [Patch v5.2.3] Fix missing imports for metrics and SHAP noise checker
+- New/Updated unit tests added for src.strategy
+- QA: pytest -q passed (193 tests)
