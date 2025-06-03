@@ -44,6 +44,32 @@ except ImportError:  # pragma: no cover - optional dependency for certain featur
     requests = None
 import datetime # <<< ENSURED Standard import 'import datetime'
 
+# --- JSON Serialization Helper (moved earlier for global availability) ---
+# [Patch v5.2.2] Provide simple_converter for JSON dumps
+def simple_converter(o):  # pragma: no cover
+    """Converts common pandas/numpy types for JSON serialization."""
+    if isinstance(o, np.integer):
+        return int(o)
+    if isinstance(o, (np.floating, float)):
+        if np.isnan(o):
+            return None
+        if np.isinf(o):
+            return "Infinity" if o > 0 else "-Infinity"
+        return float(o)
+    if isinstance(o, pd.Timestamp):
+        return o.isoformat()
+    if isinstance(o, np.bool_):
+        return bool(o)
+    if pd.isna(o):
+        return None
+    if isinstance(o, (datetime.datetime, datetime.date)):
+        return o.isoformat()
+    try:
+        json.dumps(o)
+        return o
+    except TypeError:
+        return str(o)
+
 # --- Helper for Safe Global Access (Defined *before* use in other parts) ---
 # <<< [Patch] ADDED v4.8.5: Function definition moved here >>>
 def safe_get_global(var_name, default_value):
@@ -276,50 +302,6 @@ def safe_load_csv_auto(file_path):  # pragma: no cover
     except Exception as e:
         logging.error(f"         (Error) Failed to load file '{os.path.basename(file_path)}': {e}", exc_info=True)
         return None
-
-# --- JSON Serialization Helper ---
-# [Patch v5.0.2] Exclude simple_converter from coverage
-def simple_converter(o):  # pragma: no cover
-    """
-    Converts numpy/pandas types for JSON serialization, handling NaN/Inf/other non-serializable types.
-    Returns "Infinity" or "-Infinity" for np.inf/np.NINF to comply with JSON standard.
-    Handles np.nan and pd.NA/pd.NaT by returning None.
-    """
-    if isinstance(o, np.integer):
-        return int(o)
-    if isinstance(o, (np.floating, float)):
-        if np.isnan(o):
-            return None
-        if np.isinf(o):
-            return "Infinity" if o > 0 else "-Infinity"
-        return float(o)
-    if isinstance(o, pd.Timestamp):
-        return o.isoformat()
-    if isinstance(o, np.bool_):
-        return bool(o)
-    if pd.isna(o):
-        return None
-    if isinstance(o, (datetime.datetime, datetime.date)):
-        return o.isoformat()
-    try:
-        if isinstance(o, (str, bool, list, dict, type(None))):
-            json.dumps(o) # Test if directly serializable
-            return o
-        # Fallback for other types not directly serializable by default json.dumps
-        str_representation = str(o)
-        logging.debug(f"simple_converter: Type {type(o)} not directly serializable. Converting to string: '{str_representation[:100]}...'")
-        return str_representation
-    except TypeError:
-        # This TypeError might occur during json.dumps test if the object is complex
-        str_representation_on_error = str(o)
-        logging.warning(f"simple_converter: TypeError for type {type(o)}. Using str(): '{str_representation_on_error[:100]}...'")
-        return str_representation_on_error
-    except Exception as e:
-        # Catch any other unexpected errors during conversion or stringification
-        str_representation_on_general_error = str(o)
-        logging.error(f"simple_converter: Unexpected error for type {type(o)}: {e}. Using str(): '{str_representation_on_general_error[:100]}...'", exc_info=True)
-        return str_representation_on_general_error
-
 
 # --- Configuration Loading Helper ---
 # [Patch v5.0.2] Exclude load_app_config from coverage
