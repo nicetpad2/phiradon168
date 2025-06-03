@@ -503,7 +503,7 @@ except ImportError:
 
 # Ensure global configurations are accessible if run independently
 # Define defaults if globals are not found
-DEFAULT_META_MIN_PROBA_THRESH = 0.55
+DEFAULT_META_MIN_PROBA_THRESH = 0.5
 DEFAULT_ENABLE_OPTUNA_TUNING = False
 DEFAULT_OPTUNA_N_TRIALS = 50
 DEFAULT_OPTUNA_CV_SPLITS = 5
@@ -517,7 +517,7 @@ DEFAULT_META_CLASSIFIER_FEATURES = [
     "cluster", "spike_score", "Pattern_Label",
 ]
 # <<< [Patch] Added default for Meta-Meta threshold >>>
-DEFAULT_META_META_MIN_PROBA_THRESH = 0.55
+DEFAULT_META_META_MIN_PROBA_THRESH = 0.5
 
 try:
     USE_META_CLASSIFIER
@@ -1095,14 +1095,32 @@ def load_features_for_model(model_name, output_dir):  # pragma: no cover
     logging.info(f"   (Feature Load) Attempting to load features for '{model_name}' from: {features_file_path}")
 
     if not os.path.exists(features_file_path):
-        logging.warning(f"   (Warning) Feature file not found for model '{model_name}': {os.path.basename(features_file_path)}")
+        logging.warning(
+            f"   (Warning) Feature file not found for model '{model_name}': {os.path.basename(features_file_path)}"
+        )
         main_features_path = os.path.join(output_dir, "features_main.json")
-        if model_name != 'main' and os.path.exists(main_features_path):
-            logging.info(f"      (Fallback) Loading features from 'features_main.json' instead.")
-            features_file_path = main_features_path # Use main path for fallback
+        if model_name != "main" and os.path.exists(main_features_path):
+            logging.info(
+                "      (Fallback) Loading features from 'features_main.json' instead."
+            )
+            features_file_path = main_features_path  # Use main path for fallback
         else:
-            logging.error(f"      (Fallback Failed) Main feature file also not found or was requested.")
-            return None # Return None if neither specific nor main exists
+            logging.error(
+                "      (Fallback Failed) Main feature file also not found. Generating default features_main.json."
+            )
+            try:
+                os.makedirs(output_dir, exist_ok=True)
+                with open(main_features_path, "w", encoding="utf-8") as f_def:
+                    json.dump(DEFAULT_META_CLASSIFIER_FEATURES, f_def, ensure_ascii=False, indent=2)
+                logging.info(
+                    "      (Generated) Default features_main.json created using DEFAULT_META_CLASSIFIER_FEATURES."
+                )
+                features_file_path = main_features_path
+            except Exception as e_write:
+                logging.error(
+                    f"   (Error) Could not create default features_main.json: {e_write}"
+                )
+                return DEFAULT_META_CLASSIFIER_FEATURES
 
     try:
         with open(features_file_path, 'r', encoding='utf-8') as f:
