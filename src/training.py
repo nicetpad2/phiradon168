@@ -4,10 +4,26 @@ import os
 import numpy as np
 import pandas as pd
 from joblib import dump
+from src.config import logger
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.linear_model import LogisticRegression
+
+def save_model(model, output_dir: str, model_name: str) -> None:
+    """[Patch v5.3.2] Save model or create QA log if model is None."""
+    os.makedirs(output_dir, exist_ok=True)
+    path = os.path.join(output_dir, f"{model_name}.joblib")
+    if model is None:
+        logger.warning(
+            f"[QA] No model was trained for {model_name}. Creating empty model QA file."
+        )
+        qa_path = os.path.join(output_dir, f"{model_name}_qa.log")
+        with open(qa_path, "w", encoding="utf-8") as f:
+            f.write("[QA] No model trained. Output not generated.\n")
+    else:
+        dump(model, path)
+        logger.info(f"[QA] Model saved: {path}")
 
 try:
     from catboost import CatBoostClassifier
@@ -53,9 +69,9 @@ def real_train_func(
     auc = roc_auc_score(y_test, y_prob)
 
     param_suffix = f"_l2{l2_leaf_reg}" if l2_leaf_reg is not None else ""
-    model_filename = f"model_lr{learning_rate}_depth{depth}{param_suffix}.joblib"
-    model_path = os.path.join(output_dir, model_filename)
-    dump(model, model_path)
+    model_filename = f"model_lr{learning_rate}_depth{depth}{param_suffix}"
+    model_path = os.path.join(output_dir, f"{model_filename}.joblib")
+    save_model(model, output_dir, model_filename)
 
     return {
         "model_path": {"model": model_path},
