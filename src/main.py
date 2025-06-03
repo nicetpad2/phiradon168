@@ -791,11 +791,21 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
 
     if local_train_model and run_mode == 'TRAIN_MODEL_ONLY':
         logging.info("\n(Starting) กำลัง Train Meta Classifier (L1 - Main Model Only)...")
-        train_log_path_base = os.path.join(OUTPUT_DIR, "trade_log_v32_walkforward")
+        train_log_path_base = os.path.join(
+            OUTPUT_DIR,
+            "trade_log_v32_walkforward_prep_data_NORMAL",
+        )  # [Patch v5.1.6] Use PREPARE_TRAIN_DATA generated trade log
         train_m1_data_path_base = os.path.join(
             OUTPUT_DIR,
             "final_data_m1_v32_walkforward_prep_data_NORMAL",
         )  # [Patch v5.1.6] Use PREPARE_TRAIN_DATA generated M1 data
+
+        logging.info(
+            f"TRAIN_MODEL_ONLY: กำลังโหลด Trade Log จาก: {train_log_path_base}.csv(.gz)"
+        )
+        logging.info(
+            f"TRAIN_MODEL_ONLY: กำลังโหลด M1 Data จาก: {train_m1_data_path_base}.csv(.gz)"
+        )
         train_log_path = train_log_path_base + ".csv.gz" if os.path.exists(train_log_path_base + ".csv.gz") else train_log_path_base + ".csv"
         train_m1_data_path = train_m1_data_path_base + ".csv.gz" if os.path.exists(train_m1_data_path_base + ".csv.gz") else train_m1_data_path_base + ".csv"
 
@@ -953,6 +963,23 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                 sys.exit("   ออก: พบ NaN ที่ไม่คาดคิดในข้อมูล Final M1.")
             else:
                 logging.info("   (Success) Final M1 Data ผ่านการตรวจสอบ NaN.")
+
+            # [Patch v5.1.6] สร้างไฟล์ features_main.json จากคอลัมน์จริงของ M1 Data
+            # ก่อนที่จะเริ่มขั้นตอน Backtest หรือการบีบอัดไฟล์
+            try:
+                features_list_actual = [
+                    c for c in df_m1_final.columns
+                    if c not in ["datetime", "is_tp", "is_sl"]
+                    and pd.api.types.is_numeric_dtype(df_m1_final[c])
+                ]
+                features_path = os.path.join(OUTPUT_DIR, "features_main.json")
+                with open(features_path, "w", encoding="utf-8") as f_feat:
+                    json.dump(features_list_actual, f_feat, ensure_ascii=False, indent=2)
+                logging.info(
+                    f"[Patch] สร้าง features_main.json จาก M1 Data สำเร็จ ({len(features_list_actual)} features)."
+                )
+            except Exception as e_feat:
+                logging.error(f"[Patch] สร้าง features_main.json ล้มเหลว: {e_feat}")
 
             logging.debug("   Cleaning up intermediate dataframes after data preparation...")
             del df_m15_raw, df_m1_raw, df_m15_dt, df_m1_dt, df_m15_trend
