@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-[Patch v5.0.19] Simple hyperparameter sweep runner
+[Patch v5.1.0] Simple hyperparameter sweep runner
 สร้างสคริปต์ตัวอย่างสำหรับรันทดสอบ hyperparameter sweep
 """
 
@@ -25,8 +25,8 @@ def main() -> None:
     }
 
     def dummy_train_func(**kwargs):
-        # [Patch v5.0.19] ใช้ฟังก์ชันฝึกแบบจำลองจำลองเพื่อให้รันเร็ว
-        print(f"\u0e40\u0e23\u0e34\u0e48\u0e21\u0e1e\u0e32\u0e23\u0e32\u0e21\u0e34\u0e40\u0e15\u0e2d\u0e23\u0e4c: {kwargs}")
+        # [Patch v5.1.0] ใช้ฟังก์ชันฝึกแบบจำลองจำลองเพื่อให้รันเร็ว
+        print(f"เริ่มฝึก dummy_train_func ด้วยพารามิเตอร์: {kwargs}")
         return {"model": "path"}, ["feature1", "feature2"]
 
     results = run_hyperparameter_sweep(base_params, grid, train_func=dummy_train_func)
