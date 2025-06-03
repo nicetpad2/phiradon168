@@ -1673,7 +1673,13 @@ def run_backtest_simulation_v34(
     last_trade_cooldown_end_time = defaultdict(lambda: min_ts); last_tp_time = defaultdict(lambda: min_ts)
     bars_since_last_trade = 0; kill_switch_activated = initial_kill_switch_state; consecutive_losses = initial_consecutive_losses
     forced_entry_consecutive_losses = 0; forced_entry_temporarily_disabled = False; last_n_full_trade_pnls = []
-    SOFT_COOLDOWN_LOOKBACK = 10; SOFT_COOLDOWN_LOSS_COUNT = 3; kill_switch_trigger_time = pd.NaT
+    SOFT_COOLDOWN_LOOKBACK = 10
+    # [Patch v5.0.18] Increase loss threshold to reduce trade blocking
+    SOFT_COOLDOWN_LOSS_COUNT = 6
+    # [Patch v5.0.18] MACD entry thresholds to allow mild counter-trend trades
+    MACD_NEG_THRESHOLD_BUY = -0.05
+    MACD_POS_THRESHOLD_SELL = 0.05
+    kill_switch_trigger_time = pd.NaT
     current_risk_mode = "normal"; trade_history_list = []
     error_in_loop = False
 
@@ -1960,8 +1966,12 @@ def run_backtest_simulation_v34(
                             if abs(signal_score) >= strong_signal_thresh and pd.notna(current_gain_z) and current_gain_z >= strong_gainz_thresh and pattern_label in ['Breakout', 'StrongTrend']: relax_macd_cond = True
                         elif not is_forced_entry and abs(signal_score) >= strong_signal_thresh: relax_macd_cond = True
                     if not relax_macd_cond:
-                        if side == "BUY" and current_macd_smooth < 0: can_open_order = False; block_reason = f"NEG_MACD_BUY (MACD={current_macd_smooth:.3f})"
-                        elif side == "SELL" and current_macd_smooth > 0: can_open_order = False; block_reason = f"POS_MACD_SELL (MACD={current_macd_smooth:.3f})"
+                        if side == "BUY" and current_macd_smooth < MACD_NEG_THRESHOLD_BUY:
+                            can_open_order = False
+                            block_reason = f"NEG_MACD_BUY (MACD={current_macd_smooth:.3f})"
+                        elif side == "SELL" and current_macd_smooth > MACD_POS_THRESHOLD_SELL:
+                            can_open_order = False
+                            block_reason = f"POS_MACD_SELL (MACD={current_macd_smooth:.3f})"
                 if can_open_order:
                     cooldown_triggered, recent_losses_count = is_soft_cooldown_triggered(
                         last_n_full_trade_pnls, SOFT_COOLDOWN_LOOKBACK, SOFT_COOLDOWN_LOSS_COUNT
