@@ -320,5 +320,8 @@
 - QA: pytest -q passed (189 tests)
 
 ### 2025-07-03
-- [Patch v5.2.0] เพิ่ม project root ใน sys.path เพื่อแก้ปัญหา import modules จาก src.*
+
+- [Patch v5.2.0] Improve SHAP install flags and GPU/RAM utils
+- New/Updated unit tests added for src.config
+- QA: pytest -q passed (tbd tests)
 

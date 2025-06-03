@@ -271,8 +271,12 @@ except ImportError:
 
 # SHAP library
 # pragma: no cover
+SHAP_INSTALLED = False
+SHAP_AVAILABLE = False
 try:
     import shap
+    SHAP_INSTALLED = True
+    SHAP_AVAILABLE = True
     logging.debug("shap library already installed.")
     log_library_version("SHAP", shap)
 except ImportError:
@@ -286,6 +290,8 @@ except ImportError:
             )
             logging.debug(f"   ผลการติดตั้ง shap: ...{process.stdout[-200:]}")
             import shap
+            SHAP_INSTALLED = True
+            SHAP_AVAILABLE = True
             logging.info("   (Success) ติดตั้ง shap สำเร็จ.")
             log_library_version("SHAP", shap)
         except Exception as e_shap_install:
@@ -293,11 +299,37 @@ except ImportError:
                 f"   (Error) ไม่สามารถติดตั้ง shap: {e_shap_install}. การวิเคราะห์ SHAP จะถูกข้ามไป.",
                 exc_info=True,
             )
-            shap = None
+        shap = None
     else:
         logging.error("ไลบรารี 'shap' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
         shap = None
 # pragma: cover
+
+
+def install_shap():
+    """Install the shap library if not already available."""
+    global SHAP_INSTALLED, SHAP_AVAILABLE, shap
+    if SHAP_INSTALLED:
+        return
+    logging.info("   กำลังติดตั้งไลบรารี shap...")
+    try:
+        logging.info("      (การติดตั้ง SHAP อาจใช้เวลาสักครู่...)")
+        process = subprocess.run(
+            [sys.executable, "-m", "pip", "install", "shap", "-q"],
+            check=True, capture_output=True, text=True,
+        )
+        logging.debug(f"   ผลการติดตั้ง shap: ...{process.stdout[-200:]}")
+        import shap
+        SHAP_INSTALLED = True
+        SHAP_AVAILABLE = True
+        logging.info("   (Success) ติดตั้ง shap สำเร็จ.")
+        log_library_version("SHAP", shap)
+    except Exception as e_shap_install:
+        logging.error(
+            f"   (Error) ไม่สามารถติดตั้ง shap: {e_shap_install}. การวิเคราะห์ SHAP จะถูกข้ามไป.",
+            exc_info=True,
+        )
+        shap = None
 
 # GPUtil library (Optional for Resource Monitor)
 # pragma: no cover
@@ -353,7 +385,7 @@ DEFAULT_LOG_DIR = os.path.join(FILE_BASE, "logs")
 
 # --- GPU Acceleration Setup (Optional) ---
 # pragma: no cover
-USE_GPU_ACCELERATION = True
+USE_GPU_ACCELERATION = os.getenv("USE_GPU_ACCELERATION", "True").lower() in ("true", "1", "yes")
 cudf = None; cuml = None; cuStandardScaler = None; pynvml = None; nvml_handle = None
 logging.info("   (Checking) กำลังตรวจสอบความพร้อมใช้งาน GPU...")
 try:
@@ -373,8 +405,10 @@ try:
             logging.error(f"   (Warning) ข้อผิดพลาด NVML: {e_nvml}.", exc_info=True)
             pynvml = None
             if nvml_handle:
-                try: pynvml.nvmlShutdown()
-                except: pass
+                try:
+                    pynvml.nvmlShutdown()
+                except Exception:
+                    pass
                 nvml_handle = None
     else:
         logging.info("   (Info) PyTorch ไม่พบ GPU. การเร่งความเร็วด้วย GPU จะถูกปิด.")
@@ -385,8 +419,10 @@ except ImportError:
 except Exception as e_gpu:
     logging.error(f"   (Error) การตั้งค่า GPU ล้มเหลว: {e_gpu}", exc_info=True)
     if pynvml and nvml_handle:
-        try: pynvml.nvmlShutdown()
-        except: pass
+        try:
+            pynvml.nvmlShutdown()
+        except Exception:
+            pass
         nvml_handle = None
     USE_GPU_ACCELERATION = False
 logging.info(f"   สถานะการเร่งความเร็วด้วย GPU: {USE_GPU_ACCELERATION}")
@@ -406,17 +442,25 @@ def print_gpu_utilization(context=""):  # pragma: no cover
             gpu_util_str = f"{info.gpu}%"
             gpu_mem_str = f"{info.memory}% ({mem_info.used // 1024**2}MB / {mem_info.total // 1024**2}MB)"
         except pynvml.NVMLError as e_gpu_mon:
-            gpu_util_str = "NVML Err"; gpu_mem_str = f"NVML Err: {e_gpu_mon}"
+            gpu_util_str = "NVML Err"
+            gpu_mem_str = f"NVML Err: {e_gpu_mon}"
             logging.warning(f"NVML Error during GPU monitoring: {e_gpu_mon}. Disabling pynvml monitoring.")
-            try: pynvml.nvmlShutdown()
-            except: pass
+            if pynvml:
+                try:
+                    pynvml.nvmlShutdown()
+                except Exception:
+                    pass
             nvml_handle = None
             pynvml = None
         except Exception as e_gpu_mon_other:
-            gpu_util_str = "Err"; gpu_mem_str = f"Err: {e_gpu_mon_other}"
-            logging.error(f"Unexpected error during GPU monitoring: {e_gpu_mon_other}", exc_info=True)
-            try: pynvml.nvmlShutdown()
-            except: pass
+            gpu_util_str = "Err"
+            gpu_mem_str = f"Err: {e_gpu_mon_other}"
+            logging.warning(f"Unexpected error retrieving GPU stats: {e_gpu_mon_other}.")
+            if pynvml:
+                try:
+                    pynvml.nvmlShutdown()
+                except Exception:
+                    pass
             nvml_handle = None
             pynvml = None
     elif USE_GPU_ACCELERATION and not pynvml:
@@ -426,13 +470,13 @@ def print_gpu_utilization(context=""):  # pragma: no cover
 
     if psutil:
         try:
-            ram_info = psutil.virtual_memory()
-            ram_str = f"{ram_info.percent:.1f}% ({ram_info.used // 1024**2}MB / {ram_info.total // 1024**2}MB)"
-        except Exception as e_ram_mon:
-            ram_str = f"Error: {e_ram_mon}"
-            logging.error(f"Error getting RAM info: {e_ram_mon}", exc_info=True)
+            mem = psutil.virtual_memory()
+            ram_str = f"{mem.percent}% ({mem.used // 1024**2}MB / {mem.total // 1024**2}MB)"
+        except Exception as e_mem:
+            ram_str = "N/A"
+            logging.warning(f"Unable to retrieve RAM stats: {e_mem}.")
     else:
-        ram_str = "psutil N/A"
+        ram_str = "psutil not installed"
 
     logging.info(f"[{context}] GPU Util: {gpu_util_str} | Mem: {gpu_mem_str} | RAM: {ram_str}")
 
