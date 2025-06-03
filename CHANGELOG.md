@@ -368,4 +368,9 @@
 - [Patch v5.2.6] Update requirements list
 - QA: pytest -q passed (199 tests)
 
+### 2025-06-03
+- [Patch v5.2.7] Initialize metrics dicts to avoid UnboundLocalError
+- New/Updated unit tests adjusted for line offsets
+- QA: pytest -q passed (207 tests)
+
 

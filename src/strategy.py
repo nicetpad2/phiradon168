@@ -3493,13 +3493,63 @@ def run_all_folds_with_threshold(
         total_ib_lot_accumulator_run += ib_lot_buy + ib_lot_sell
 
         logging.info(f"   -- Calculating Metrics for Fold {fold+1} ({fund_name}) --")
-        metrics_buy_fold = calculate_metrics(log_buy, eq_buy, hist_buy, start_cap_buy, f"Fold {fold+1} Buy ({fund_name})", type_l1_b, type_l2_b, costs_buy, ib_lot_buy)
+        metrics_buy_fold = (
+            calculate_metrics(
+                log_buy,
+                eq_buy,
+                hist_buy,
+                start_cap_buy,
+                f"Fold {fold+1} Buy ({fund_name})",
+                type_l1_b,
+                type_l2_b,
+                costs_buy,
+                ib_lot_buy,
+            )
+            or {}
+        )
         metrics_buy_fold[f"Fold {fold+1} Buy ({fund_name}) Max Drawdown (Simulated) (%)"] = dd_buy * 100.0
-        metrics_buy_fold.update({f"Fold {fold+1} Buy ({fund_name}) Costs {k.replace('_', ' ').title()}": v for k, v in costs_buy.items() if k not in ["meta_model_type_l1", "meta_model_type_l2", "threshold_l1_used", "threshold_l2_used", "fund_profile", "total_ib_lot_accumulator"]})
+        metrics_buy_fold.update({
+            f"Fold {fold+1} Buy ({fund_name}) Costs {k.replace('_', ' ').title()}": v
+            for k, v in costs_buy.items()
+            if k
+            not in [
+                "meta_model_type_l1",
+                "meta_model_type_l2",
+                "threshold_l1_used",
+                "threshold_l2_used",
+                "fund_profile",
+                "total_ib_lot_accumulator",
+            ]
+        })
 
-        metrics_sell_fold = calculate_metrics(log_sell, eq_sell, hist_sell, start_cap_sell, f"Fold {fold+1} Sell ({fund_name})", type_l1_s, type_l2_s, costs_sell, ib_lot_sell)
+        metrics_sell_fold = (
+            calculate_metrics(
+                log_sell,
+                eq_sell,
+                hist_sell,
+                start_cap_sell,
+                f"Fold {fold+1} Sell ({fund_name})",
+                type_l1_s,
+                type_l2_s,
+                costs_sell,
+                ib_lot_sell,
+            )
+            or {}
+        )
         metrics_sell_fold[f"Fold {fold+1} Sell ({fund_name}) Max Drawdown (Simulated) (%)"] = dd_sell * 100.0
-        metrics_sell_fold.update({f"Fold {fold+1} Sell ({fund_name}) Costs {k.replace('_', ' ').title()}": v for k, v in costs_sell.items() if k not in ["meta_model_type_l1", "meta_model_type_l2", "threshold_l1_used", "threshold_l2_used", "fund_profile", "total_ib_lot_accumulator"]})
+        metrics_sell_fold.update({
+            f"Fold {fold+1} Sell ({fund_name}) Costs {k.replace('_', ' ').title()}": v
+            for k, v in costs_sell.items()
+            if k
+            not in [
+                "meta_model_type_l1",
+                "meta_model_type_l2",
+                "threshold_l1_used",
+                "threshold_l2_used",
+                "fund_profile",
+                "total_ib_lot_accumulator",
+            ]
+        })
 
         try:
             avg_score_buy = log_buy['Signal_Score'].mean() if log_buy is not None and not log_buy.empty and 'Signal_Score' in log_buy.columns else np.nan
