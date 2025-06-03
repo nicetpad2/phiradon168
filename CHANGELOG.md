@@ -373,4 +373,18 @@
 - [Patch v5.2.6] Update requirements list
 - QA: pytest -q passed (199 tests)
 
+### 2025-06-03
+- [Patch v5.2.7] Initialize metrics dicts to avoid UnboundLocalError
+- New/Updated unit tests adjusted for line offsets
+- QA: pytest -q passed (207 tests)
 
+
+### 2025-07-11
+- [Patch v5.2.7] Update dependency versions in requirements.txt
+- QA: pytest -q passed (207 tests)
+
+
+### 2025-07-11
+- [Patch v5.2.7] Catch UnboundLocalError in PREPARE_TRAIN_DATA
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (199 tests)
