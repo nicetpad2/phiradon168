@@ -167,3 +167,7 @@
 - [Patch v5.0.12] เพิ่มชุดการทดสอบอีก 10 บล็อกและแก้ไข warning skip
 - New/Updated unit tests added for src.features, src.data_loader
 - QA: pytest -q passed (123 tests)
+### 2025-06-12
+- [Patch v5.0.13] เพิ่มชุดการทดสอบอีก 10 บล็อกและแก้ไข warning skip
+- New/Updated unit tests added for src.main, src.strategy
+- QA: pytest -q passed (133 tests)
