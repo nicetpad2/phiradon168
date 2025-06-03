@@ -1,6 +1,9 @@
 """Session tagging utilities shared across modules."""
 
-import logging
+try:
+    from src.config import logger
+except Exception:  # pragma: no cover - fallback when config import fails
+    import logging as logger
 import pandas as pd
 
 
@@ -20,7 +23,7 @@ def get_session_tag(timestamp, session_times_utc=None):
         try:
             session_times_utc_local = SESSION_TIMES_UTC
         except NameError:
-            logging.warning(
+            logger.warning(
                 "get_session_tag: Global SESSION_TIMES_UTC not found, using default.")
             session_times_utc_local = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
     else:
@@ -43,5 +46,5 @@ def get_session_tag(timestamp, session_times_utc=None):
                     sessions.append(name)
         return "/".join(sorted(sessions)) if sessions else "Other"
     except Exception as e:  # pragma: no cover - unexpected failures
-        logging.error(f"   (Error) Error in get_session_tag for {timestamp}: {e}", exc_info=True)
+        logger.error(f"   (Error) Error in get_session_tag for {timestamp}: {e}", exc_info=True)
         return "Error_Tagging"

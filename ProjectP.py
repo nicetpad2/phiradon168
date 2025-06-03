@@ -1,5 +1,7 @@
 """Bootstrap script for running the main entry point."""
 
+from src.config import logger
+import sys
 from src.main import main
 
 def custom_helper_function():
@@ -11,3 +13,6 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         print("\n(Stopped) การทำงานถูกยกเลิกโดยผู้ใช้.")
+    except Exception as e:
+        logger.error("เกิดข้อผิดพลาดที่ไม่คาดคิด: %s", str(e), exc_info=True)
+        sys.exit(1)

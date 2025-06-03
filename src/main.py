@@ -9,6 +9,10 @@
 # <<< MODIFIED v4.8.1: Refined auto-train logic (log loading, context cols), confirmed dtype passing, verified model loading checks, added more robust function call checks >>>
 # <<< MODIFIED v4.8.2: Corrected SyntaxError in __main__ block (added except/finally for the main try block), updated log messages and versioning, robust global access in finally >>>
 # <<< MODIFIED v4.8.3: Applied SyntaxError fix for try-except global variable checks to all relevant globals in this part. >>>
+try:
+    from src.config import logger
+except Exception:  # pragma: no cover - fallback for tests
+    import logging as logger
 import logging
 import os
 import sys
@@ -1343,14 +1347,14 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
 # ==============================================================================
 if __name__ == "__main__":
     start_time_script = time.time()
-    logging.info(f"(Starting) Script Gold Trading AI v4.8.4...") # Updated version
+    logger.info(f"(Starting) Script Gold Trading AI v4.8.4...")
 
     selected_run_mode = 'FULL_PIPELINE'
     # selected_run_mode = 'PREPARE_TRAIN_DATA'
     # selected_run_mode = 'TRAIN_MODEL_ONLY'
     # selected_run_mode = 'FULL_RUN'
 
-    logging.info(f"(Starting) กำลังเริ่มการทำงานหลัก (main) ในโหมด: {selected_run_mode}...")
+    logger.info(f"(Starting) กำลังเริ่มการทำงานหลัก (main) ในโหมด: {selected_run_mode}...")
     final_run_suffix = None
     # <<< MODIFIED v4.8.2: Ensured this try...except...finally block is correctly structured >>>
     try:
@@ -1395,19 +1399,22 @@ if __name__ == "__main__":
         else:
             logging.info(f"\n(Skipping Log Analysis) Run mode '{selected_run_mode}' does not require log analysis.")
 
-    except SystemExit as se_main: # Renamed to avoid conflict
-        logging.critical(f"\n(Critical Error) สคริปต์ออกก่อนเวลา: {se_main}")
-        # Optionally re-raise or handle further if needed: raise se_main
+    except SystemExit as se_main:
+        logger.critical(f"\n(Critical Error) สคริปต์ออกก่อนเวลา: {se_main}")
     except KeyboardInterrupt:
-        logging.warning("\n(Stopped) การทำงานหยุดโดยผู้ใช้ (KeyboardInterrupt).")
-    except NameError as ne_main: # Renamed
-        logging.critical(f"\n(Error) NameError in __main__: '{ne_main}'. Critical function or variable likely missing.", exc_info=True)
-    except Exception as e_main_general: # Renamed
-        logging.critical("\n(Error) เกิดข้อผิดพลาดที่ไม่คาดคิดใน __main__:", exc_info=True)
+        logger.warning("\n(Stopped) การทำงานหยุดโดยผู้ใช้ (KeyboardInterrupt).")
+    except NameError as ne_main:
+        logger.critical(
+            f"\n(Error) NameError in __main__: '{ne_main}'. Critical function or variable likely missing.",
+            exc_info=True,
+        )
+    except Exception as e_main_general:
+        logger.error("เกิดข้อผิดพลาดที่ไม่คาดคิด: %s", str(e_main_general), exc_info=True)
+        sys.exit(1)
     finally:
         end_time_script = time.time()
         total_duration = end_time_script - start_time_script
-        logging.info(f"\n(Finished) Script Gold Trading AI v4.8.4 เสร็จสมบูรณ์!") # Updated version
+        logger.info(f"\n(Finished) Script Gold Trading AI v4.8.4 เสร็จสมบูรณ์!")
         
         final_tuning_mode_log = "Unknown"
         # Check globals first, then locals if not found in globals (though it should be global)
@@ -1415,7 +1422,7 @@ if __name__ == "__main__":
             final_tuning_mode_log = globals()['tuning_mode_used']
         elif 'tuning_mode_used' in locals() and locals()['tuning_mode_used'] is not None: # Check local scope as fallback
             final_tuning_mode_log = locals()['tuning_mode_used']
-        logging.info(f"   Tuning Mode ที่ใช้: {final_tuning_mode_log}")
+        logger.info(f"   Tuning Mode ที่ใช้: {final_tuning_mode_log}")
 
         output_dir_final_path = None
         try:
@@ -1431,17 +1438,17 @@ if __name__ == "__main__":
                 output_dir_final_path = output_dir_val
 
             if output_dir_final_path and os.path.exists(output_dir_final_path):
-                logging.info(f"   ผลลัพธ์ถูกบันทึกไปที่: {output_dir_final_path}")
-                logging.info(f"   ไฟล์ Log หลัก: {log_filename_val}") # Directly use LOG_FILENAME
+                logger.info(f"   ผลลัพธ์ถูกบันทึกไปที่: {output_dir_final_path}")
+                logger.info(f"   ไฟล์ Log หลัก: {log_filename_val}")
             elif output_dir_final_path:
-                logging.warning(f"   (Warning) ไม่พบ Output Directory ที่คาดหวัง: {output_dir_final_path}")
+                logger.warning(f"   (Warning) ไม่พบ Output Directory ที่คาดหวัง: {output_dir_final_path}")
             else:
-                logging.warning("   (Warning) ไม่สามารถกำหนด Output Directory path.")
+                logger.warning("   (Warning) ไม่สามารถกำหนด Output Directory path.")
         except Exception as e_report_path:
-            logging.warning(f"   (Warning) Error reporting output path: {e_report_path}")
+            logger.warning(f"   (Warning) Error reporting output path: {e_report_path}")
 
-        logging.info(f"   เวลาดำเนินการทั้งหมด: {total_duration:.2f} วินาที ({total_duration/60:.2f} นาที).")
-        logging.info("--- End of Script ---")
+        logger.info(f"   เวลาดำเนินการทั้งหมด: {total_duration:.2f} วินาที ({total_duration/60:.2f} นาที).")
+        logger.info("--- End of Script ---")
 
 # === END OF PART 10/12 ===
 # === START OF PART 11/12 ===
@@ -1456,7 +1463,7 @@ import time
 # import MetaTrader5 as mt5 # Import commented out as it's a placeholder
 # import pandas as pd # Import commented out as it's not used in placeholder
 
-logging.info("Loading Part 11: MT5 Connector (Placeholder)...")
+logger.info("Loading Part 11: MT5 Connector (Placeholder)...")
 
 # --- MT5 Connection Parameters (Placeholder Examples) ---
 # These would typically be loaded from a secure config file or environment variables
