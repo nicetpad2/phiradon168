@@ -97,10 +97,11 @@ DEFAULT_DRIFT_WASSERSTEIN_THRESHOLD = 0.1
 DEFAULT_DRIFT_TTEST_ALPHA = 0.05
 DEFAULT_INITIAL_CAPITAL = 100.0
 DEFAULT_N_WALK_FORWARD_SPLITS = 5
-DEFAULT_OUTPUT_BASE_DIR = "/content/drive/MyDrive/Phiradon168/logs"
-DEFAULT_OUTPUT_DIR_NAME = "outputgpt_v4.8.4" # Note: This might be updated by Part 1 if run
-# [Patch v5.0.11] Use CSV paths relative to this project for portability
+# [Patch v5.2.5] Use project-relative paths for portability
 _BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DEFAULT_OUTPUT_BASE_DIR = os.path.join(_BASE_DIR, "logs")
+DEFAULT_OUTPUT_DIR_NAME = "outputgpt_v4.8.4"  # Note: This might be updated by Part 1 if run
+# [Patch v5.0.11] Use CSV paths relative to this project for portability
 DEFAULT_DATA_FILE_PATH_M15 = os.path.join(_BASE_DIR, "XAUUSD_M15.csv")
 DEFAULT_DATA_FILE_PATH_M1 = os.path.join(_BASE_DIR, "XAUUSD_M1.csv")
 DEFAULT_META_META_CLASSIFIER_PATH = "meta_meta_classifier.pkl"
