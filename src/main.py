@@ -792,7 +792,10 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
     if local_train_model and run_mode == 'TRAIN_MODEL_ONLY':
         logging.info("\n(Starting) กำลัง Train Meta Classifier (L1 - Main Model Only)...")
         train_log_path_base = os.path.join(OUTPUT_DIR, "trade_log_v32_walkforward")
-        train_m1_data_path_base = os.path.join(OUTPUT_DIR, "final_data_m1_v32_walkforward")
+        train_m1_data_path_base = os.path.join(
+            OUTPUT_DIR,
+            "final_data_m1_v32_walkforward_prep_data_NORMAL",
+        )  # [Patch v5.1.6] Use PREPARE_TRAIN_DATA generated M1 data
         train_log_path = train_log_path_base + ".csv.gz" if os.path.exists(train_log_path_base + ".csv.gz") else train_log_path_base + ".csv"
         train_m1_data_path = train_m1_data_path_base + ".csv.gz" if os.path.exists(train_m1_data_path_base + ".csv.gz") else train_m1_data_path_base + ".csv"
 
