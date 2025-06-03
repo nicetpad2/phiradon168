@@ -10,6 +10,7 @@
 import logging
 import os
 import time
+from tqdm import tqdm
 import json
 import pandas as pd
 import numpy as np
@@ -3354,7 +3355,9 @@ def run_all_folds_with_threshold(
     total_ib_lot_accumulator_run = 0.0
 
     logging.info(f"      Starting Walk-Forward loop ({n_walk_forward_splits} folds)...")
-    for fold, (train_index, test_index) in enumerate(tscv.split(df_m1_final)):
+    for fold, (train_index, test_index) in enumerate(
+        tqdm(tscv.split(df_m1_final), total=n_walk_forward_splits, desc="Running folds", unit="fold")
+    ):
         fold_start_time = time.time()
         logging.info(f"\n{'='*15} Fold {fold + 1}/{n_walk_forward_splits} ({run_label}) {'='*15}")
 
@@ -3533,7 +3536,21 @@ def run_all_folds_with_threshold(
         logging.debug(f"        Memory cleanup complete for Fold {fold+1}.")
 
         fold_duration = time.time() - fold_start_time
-        logging.info(f"   (Success) Fold {fold+1} ({fund_name}) processed in: {fold_duration:.2f} seconds")
+        fold_equity = eq_sell
+        fold_winrate = (
+            metrics_buy_fold.get(f"Fold {fold+1} Buy ({fund_name}) Win Rate (Full) (%)", 0.0)
+            + metrics_sell_fold.get(f"Fold {fold+1} Sell ({fund_name}) Win Rate (Full) (%)", 0.0)
+        ) / 200.0
+        fold_maxdd = max(dd_buy, dd_sell)
+        logging.warning(
+            f"=============== Fold {fold+1}/{n_walk_forward_splits} ({fund_name}) ==============="
+        )
+        logging.warning(
+            f"   (Metrics) Fold {fold+1} processed in: {fold_duration:.2f} seconds"
+        )
+        logging.warning(
+            f"   (Summary) Equity={fold_equity:.2f}, Winrate={fold_winrate:.2%}, MaxDD={fold_maxdd:.2%}"
+        )
 
     run_duration = time.time() - start_time_run
     logging.info(f"      [Runner {run_label}] (Success) Full WF Sim completed (L1_Th={l1_thresh_display}) in {run_duration:.2f} seconds.")
