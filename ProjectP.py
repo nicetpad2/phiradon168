@@ -1,8 +1,13 @@
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
-from src.main import main
 
+# [Patch] Set up import paths for local modules
+REPO_ROOT = os.path.dirname(__file__)
+for p in (REPO_ROOT, os.path.join(REPO_ROOT, 'src')):
+    if p not in sys.path:
+        sys.path.insert(0, p)
+
+from src.main import main
 
 def custom_helper_function():
     """Stubbed helper for tests."""

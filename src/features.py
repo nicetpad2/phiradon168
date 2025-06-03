@@ -1095,8 +1095,8 @@ def load_features_for_model(model_name, output_dir):  # pragma: no cover
     logging.info(f"   (Feature Load) Attempting to load features for '{model_name}' from: {features_file_path}")
 
     if not os.path.exists(features_file_path):
-        logging.warning(
-            f"   (Warning) Feature file not found for model '{model_name}': {os.path.basename(features_file_path)}"
+        logging.info(
+            f"   (Info) Feature file not found for model '{model_name}': {os.path.basename(features_file_path)}"
         )
         main_features_path = os.path.join(output_dir, "features_main.json")
         if model_name != "main" and os.path.exists(main_features_path):
@@ -1105,8 +1105,8 @@ def load_features_for_model(model_name, output_dir):  # pragma: no cover
             )
             features_file_path = main_features_path  # Use main path for fallback
         else:
-            logging.error(
-                "      (Fallback Failed) Main feature file also not found. Generating default features_main.json."
+            logging.info(
+                "      (Generating) Default features_main.json."
             )
             try:
                 os.makedirs(output_dir, exist_ok=True)

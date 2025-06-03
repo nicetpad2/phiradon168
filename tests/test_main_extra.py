@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import pandas as pd
 import numpy as np
 
@@ -69,3 +70,24 @@ def test_convert_to_float32_mixed_dtypes():
 
 def test_run_initial_backtest_returns_none():
     assert main.run_initial_backtest() is None
+
+
+def test_ensure_main_features_file_creates(tmp_path):
+    path = main.ensure_main_features_file(str(tmp_path))
+    file_path = tmp_path / 'features_main.json'
+    assert path == str(file_path)
+    assert file_path.exists()
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    assert data == main.DEFAULT_META_CLASSIFIER_FEATURES
+
+
+def test_ensure_main_features_file_preserves(tmp_path):
+    file_path = tmp_path / 'features_main.json'
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(['A'], f)
+    path = main.ensure_main_features_file(str(tmp_path))
+    assert path == str(file_path)
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    assert data == ['A']
