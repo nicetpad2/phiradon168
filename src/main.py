@@ -1384,6 +1384,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             logging.info("Attempting to shut down pynvml...")
             if 'print_gpu_utilization' in globals() and callable(print_gpu_utilization): print_gpu_utilization("Final State")
             pynvml.nvmlShutdown()
+            nvml_handle = None  # [Patch] Clear handle after shutdown
             logging.info("(Success) ปิดการทำงาน pynvml สำเร็จ.")
         except Exception as e:
             logging.warning(f"(Warning) เกิดข้อผิดพลาดขณะปิด pynvml: {e}")
