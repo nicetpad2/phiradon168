@@ -33,8 +33,34 @@ def main_profile(csv_path: str, num_rows: int = 5000) -> None:
             if not isinstance(df.index, pd.DatetimeIndex):
                 df.index = pd.to_datetime(df.index, errors='coerce')
 
-        # [Patch v5.1.5] สร้าง Features M1 เพื่อให้พร้อมสำหรับ backtest
+        # (1) Engineer all M1 features [Patch v5.1.5]
         df = engineer_m1_features(df)
+
+        # (2) Merge M15 Trend Zone if available [Patch v5.1.6]
+        m15_csv = csv_path.replace('_M1.csv', '_M15.csv')
+        try:
+            df15 = safe_load_csv_auto(m15_csv)
+            if df15 is not None and not df15.empty:
+                df15.index = pd.to_datetime(df15.index, errors='coerce')
+                from src.features import calculate_m15_trend_zone
+                df15 = calculate_m15_trend_zone(df15)
+                df = pd.merge_asof(
+                    df.reset_index().rename(columns={'index': 'Datetime'}),
+                    df15.reset_index().rename(columns={'index': 'Datetime', 'Trend_Zone': 'M15_Trend_Zone'}),
+                    on='Datetime',
+                    direction='backward',
+                    tolerance=pd.Timedelta(minutes=15)
+                ).set_index('Datetime')
+                df['Trend_Zone'] = df.pop('M15_Trend_Zone')
+        except FileNotFoundError:
+            logger.warning(f"(Warning) M15 file not found: {m15_csv} – skipping Trend_Zone merge.")
+
+        # (3) Stub entry/exit columns so backtester won't crash [Patch v5.1.6]
+        df['Entry_Long'] = False
+        df['Entry_Short'] = False
+        df['Signal_Score'] = 0.0
+        df['Trade_Tag'] = ''
+        df['Trade_Reason'] = ''
     # [Patch v5.1.0] ตรวจสอบคอลัมน์หลักก่อนเรียก backtest
     required_cols = ['Open', 'High', 'Low', 'Close']
     missing = [c for c in required_cols if c not in df.columns]
