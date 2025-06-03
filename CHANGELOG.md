@@ -212,6 +212,11 @@
 - QA: pytest -q passed (167 tests)
 
 ### 2025-06-16
+- [Patch v5.0.18] Optuna CatBoost sweep function
+- New/Updated unit tests added for tests.test_hyperparameter_sweep, tests.test_function_registry
+- QA: pytest -q passed (168 tests)
+
+### 2025-06-16
 - [Patch v5.0.17] Add soft cooldown helper and update tests
 - New/Updated unit tests added for src.cooldown_utils, tests.test_soft_cooldown_logic
 - QA: pytest -q passed (167 tests)
