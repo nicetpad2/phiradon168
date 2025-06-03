@@ -41,6 +41,7 @@ from src.data_loader import safe_load_csv_auto  # [Patch v5.1.6] Ensure CSV load
 
 # [Patch v4.8.9] Import safe_get_global using unconditional absolute import
 from src.data_loader import safe_get_global
+from src.data_loader import simple_converter
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
 from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score
