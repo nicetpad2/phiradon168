@@ -420,3 +420,8 @@
 - New/Updated unit tests added for src.training
 - QA: pytest -q passed
 
+### 2025-07-15
+- [Patch v5.3.5] Adjust OMS & Logging defaults for risk management and QA
+- New/Updated unit tests added for src.config
+- QA: pytest -q passed
+
