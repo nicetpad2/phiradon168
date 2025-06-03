@@ -73,13 +73,12 @@ logger.addHandler(sh)
 logger.propagate = True
 atexit.register(logging.shutdown)
 root_logger = logging.getLogger()
-for h in root_logger.handlers:
-    try: h.close()
-    except Exception: pass
-root_logger.handlers = []
 root_logger.setLevel(logging.INFO)
+# [Patch] Preserve any existing handlers (e.g., from test frameworks)
+# rather than clearing them so that external log capture still works.
 for handler in logger.handlers:
-    root_logger.addHandler(handler)
+    if handler not in root_logger.handlers:
+        root_logger.addHandler(handler)
 logger.info(f"--- (Start) Gold AI v{__version__} ---")
 logger.info("--- กำลังโหลดไลบรารีและตรวจสอบ Dependencies ---")
 
