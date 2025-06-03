@@ -252,7 +252,7 @@ def is_colab():
     except ImportError:
         return False
 
-FILE_BASE = os.path.join(os.getcwd(), "Phiradon168")
+FILE_BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if is_colab():
     from google.colab import drive
     logging.info("(Info) รันบน Google Colab – กำลัง mount Google Drive...")
