@@ -273,3 +273,8 @@
 - New/Updated unit tests added for src.strategy
 - QA: pytest -q passed (183 tests)
 
+### 2025-06-27
+- [Patch v5.x.x] Temporarily disable MACD entry and Soft Cooldown filters
+- New/Updated unit tests added for tests.test_function_registry
+- QA: pytest -q passed (183 tests)
+
