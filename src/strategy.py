@@ -2216,6 +2216,13 @@ def run_backtest_simulation_v34(
                    f"BEs:{be_sl_triggered_count_run}, TSLs:{tsl_triggered_count_run}")
     logging.info(summary_msg)
     logging.info(f"      Equity สุดท้าย: ${equity:.2f} (จาก ${initial_capital_segment:.2f})")
+    if np.isnan(equity) or np.isinf(equity):
+        logging.critical(
+            "[QA][CRITICAL] Final Equity is NaN/Inf! Investigate logic/NaN propagation."
+        )
+    logging.warning(
+        f"[QA][SUMMARY] Fold Finished | Final Equity: ${equity:.2f} | Max DD: {max_drawdown_pct:.2%} | KILL SWITCH: {kill_switch_activated}"
+    )
     logging.info(f"      Blocks: MaxDD={orders_blocked_by_drawdown}, Cooldown={orders_blocked_by_cooldown}, LotScale={orders_lot_scaled}, ML1Skip={orders_skipped_ml_l1}(T={current_meta_threshold_l1:.2f})")
     new_blocks_count = sum(1 for b in blocked_order_log if b.get('reason') in ["HIGH_VOL_INDEX", "HIGH_ATR_LOW_SCORE", "NEG_MACD_BUY", "POS_MACD_SELL", f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T", "SPIKE_GUARD_LONDON"])
     logging.info(f"      Blocks (New v4.6/v4.8): Vol/ATR/MACD/SoftCool/Spike={new_blocks_count}")

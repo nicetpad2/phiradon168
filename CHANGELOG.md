@@ -431,6 +431,9 @@
 - QA: pytest -q passed
 
 ### 2025-07-15
-- [Patch v5.3.5] Add QA safeguards in feature engineering
-- New/Updated unit tests added for src.features
+
+- [Patch v5.3.5] QA logging: fold summary, NaN/Inf catch, critical alerts
+- New/Updated unit tests added for src.strategy
 - QA: pytest -q passed
+
+
