@@ -235,3 +235,7 @@
 - New/Updated unit tests added for tests.test_soft_cooldown_logic
 - QA: pytest -q passed (169 tests)
 
+### 2025-06-20
+- [Patch v5.1.0] ปรับข้อความ dummy_train_func เป็นภาษาไทย
+- QA: pytest -q passed (170 tests)
+
