@@ -21,7 +21,7 @@ def main() -> None:
     }
 
     def dummy_train_func(**kwargs):
-        # [Patch v5.1.0] ใช้ฟังก์ชันฝึกแบบจำลองจำลองเพื่อให้รันเร็ว
+        # [Patch v5.1.0] ปรับข้อความพิมพ์ให้เป็นภาษาไทย พร้อมระบุพารามิเตอร์ชัดเจน
         print(f"เริ่มฝึก dummy_train_func ด้วยพารามิเตอร์: {kwargs}")
         return {"model": "path"}, ["feature1", "feature2"]
 
