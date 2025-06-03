@@ -1296,18 +1296,18 @@ def spike_guard_london(row, session, consecutive_losses):
     if not isinstance(session, str) or "London" not in session:
         return True
 
-    spike_score_val = pd.to_numeric(row.get("spike_score"), errors='coerce')
+    spike_score_val = pd.to_numeric(getattr(row, "spike_score", np.nan), errors='coerce')
     if pd.notna(spike_score_val) and spike_score_val > 0.85:
         logging.debug(f"      (Spike Guard Filtered) Reason: London Session & High Spike Score ({spike_score_val:.2f} > 0.85)")
         return False
 
-    adx_val = pd.to_numeric(row.get("ADX"), errors='coerce')
-    wick_ratio_val = pd.to_numeric(row.get("Wick_Ratio"), errors='coerce')
-    vol_index_val = pd.to_numeric(row.get("Volatility_Index"), errors='coerce')
-    candle_body_val = pd.to_numeric(row.get("Candle_Body"), errors='coerce')
-    candle_range_val = pd.to_numeric(row.get("Candle_Range"), errors='coerce')
-    gain_val = pd.to_numeric(row.get("Gain"), errors='coerce')
-    atr_val = pd.to_numeric(row.get("ATR_14"), errors='coerce')
+    adx_val = pd.to_numeric(getattr(row, "ADX", np.nan), errors='coerce')
+    wick_ratio_val = pd.to_numeric(getattr(row, "Wick_Ratio", np.nan), errors='coerce')
+    vol_index_val = pd.to_numeric(getattr(row, "Volatility_Index", np.nan), errors='coerce')
+    candle_body_val = pd.to_numeric(getattr(row, "Candle_Body", np.nan), errors='coerce')
+    candle_range_val = pd.to_numeric(getattr(row, "Candle_Range", np.nan), errors='coerce')
+    gain_val = pd.to_numeric(getattr(row, "Gain", np.nan), errors='coerce')
+    atr_val = pd.to_numeric(getattr(row, "ATR_14", np.nan), errors='coerce')
 
     if any(pd.isna(v) for v in [adx_val, wick_ratio_val, vol_index_val, candle_body_val, candle_range_val, gain_val, atr_val]):
         return True
@@ -1342,7 +1342,7 @@ def is_entry_allowed(row, session, consecutive_losses, signal_score_threshold=No
     if not spike_guard_london(row, session, consecutive_losses):
         return False, "SPIKE_GUARD_LONDON"
 
-    signal_score = pd.to_numeric(row.get("Signal_Score"), errors='coerce')
+    signal_score = pd.to_numeric(getattr(row, "Signal_Score", np.nan), errors='coerce')
     if pd.isna(signal_score):
         return False, "INVALID_SIGNAL_SCORE (NaN)"
     if abs(signal_score) < signal_score_threshold:
@@ -1481,9 +1481,9 @@ def check_main_exit_conditions(order, row, current_bar_index, now_timestamp):
     tp_price_order = pd.to_numeric(order.get("tp_price"), errors='coerce')
     entry_price_order = pd.to_numeric(order.get("entry_price"), errors='coerce')
 
-    current_high = pd.to_numeric(row.get("High"), errors='coerce')
-    current_low = pd.to_numeric(row.get("Low"), errors='coerce')
-    current_close = pd.to_numeric(row.get("Close"), errors='coerce')
+    current_high = pd.to_numeric(getattr(row, "High", np.nan), errors='coerce')
+    current_low = pd.to_numeric(getattr(row, "Low", np.nan), errors='coerce')
+    current_close = pd.to_numeric(getattr(row, "Close", np.nan), errors='coerce')
     be_triggered = order.get('be_triggered', False)
     entry_bar_count_order = order.get("entry_bar_count")
     entry_time_log = order.get('entry_time', 'N/A') # For logging
@@ -1895,7 +1895,7 @@ def run_backtest_simulation_v34(
                     next_active_orders.append(order)
                 continue # Attempt to continue to the next order or next bar
 
-            m15_trend = row.get("Trend_Zone", "NEUTRAL"); entry_long_signal = row.get("Entry_Long", 0) == 1; entry_short_signal = row.get("Entry_Short", 0) == 1; trade_tag = row.get("Trade_Tag", "N/A"); signal_score = pd.to_numeric(row.get("Signal_Score"), errors='coerce'); trade_reason = row.get("Trade_Reason", "NONE"); pattern_label = row.get("Pattern_Label", "Normal")
+            m15_trend = getattr(row, "Trend_Zone", "NEUTRAL"); entry_long_signal = (getattr(row, "Entry_Long", 0) == 1); entry_short_signal = (getattr(row, "Entry_Short", 0) == 1); trade_tag = getattr(row, "Trade_Tag", "N/A"); signal_score = pd.to_numeric(getattr(row, "Signal_Score", np.nan), errors='coerce'); trade_reason = getattr(row, "Trade_Reason", "NONE"); pattern_label = getattr(row, "Pattern_Label", "Normal")
             final_m1_signal = "NONE"
             if side == "BUY" and entry_long_signal: final_m1_signal = "BUY"
             elif side == "SELL" and entry_short_signal: final_m1_signal = "SELL"
@@ -1920,7 +1920,7 @@ def run_backtest_simulation_v34(
                     logging.debug(f"   Checking Forced Entry conditions at {now} (Bars since last trade: {bars_since_last_trade})...")
                     fe_market_cond_met = True; block_reason_fe = "N/A"
                     if FORCED_ENTRY_CHECK_MARKET_COND:
-                        atr_fe = pd.to_numeric(row.get("ATR_14"), errors='coerce'); avg_atr_fe = pd.to_numeric(row.get("ATR_14_Rolling_Avg"), errors='coerce'); gain_z_fe = pd.to_numeric(row.get("Gain_Z"), errors='coerce'); pattern_fe = row.get("Pattern_Label", "Normal")
+                        atr_fe = pd.to_numeric(getattr(row, "ATR_14", np.nan), errors='coerce'); avg_atr_fe = pd.to_numeric(getattr(row, "ATR_14_Rolling_Avg", np.nan), errors='coerce'); gain_z_fe = pd.to_numeric(getattr(row, "Gain_Z", np.nan), errors='coerce'); pattern_fe = getattr(row, "Pattern_Label", "Normal")
                         if pd.isna(atr_fe) or pd.isna(avg_atr_fe) or pd.isna(gain_z_fe): fe_market_cond_met = False; block_reason_fe = "FE_NAN_COND"
                         elif avg_atr_fe > 1e-9 and atr_fe > (avg_atr_fe * FORCED_ENTRY_MAX_ATR_MULT): fe_market_cond_met = False; block_reason_fe = "FE_HIGH_ATR"
                         elif abs(gain_z_fe) < local_forced_entry_min_gain_z_abs: fe_market_cond_met = False; block_reason_fe = "FE_LOW_GAINZ"
@@ -1967,7 +1967,7 @@ def run_backtest_simulation_v34(
                 active_l1_model = None; active_l1_features = None; selected_model_key = "N/A"; model_confidence = np.nan; meta_proba_tp_for_log = np.nan
                 if can_open_order and USE_META_CLASSIFIER and callable(model_switcher_func):
                     logging.debug("      Applying ML Filter (L1) using Model Switcher...")
-                    context = {'session': session_tag, 'drift_score': fold_config.get('drift_score', 0.0), 'signal_score': signal_score if pd.notna(signal_score) else 0.0, 'pattern': pattern_label, 'cluster': row.get('cluster', 0), 'spike_score': row.get('spike_score', 0.0), 'current_time': now, 'consecutive_losses': consecutive_losses}
+                    context = {'session': session_tag, 'drift_score': fold_config.get('drift_score', 0.0), 'signal_score': signal_score if pd.notna(signal_score) else 0.0, 'pattern': pattern_label, 'cluster': getattr(row, 'cluster', 0), 'spike_score': getattr(row, 'spike_score', 0.0), 'current_time': now, 'consecutive_losses': consecutive_losses}
                     try:
                         selected_model_key, model_confidence = model_switcher_func(context, available_models); logging.debug(f"         Switcher selected model: '{selected_model_key}', Confidence: {model_confidence}"); model_info = available_models.get(selected_model_key)
                         if model_info and model_info.get('model') and model_info.get('features'): active_l1_model = model_info['model']; active_l1_features = model_info['features']
@@ -2002,7 +2002,7 @@ def run_backtest_simulation_v34(
                 if not can_open_order and block_reason:
                     log_ml_skip = block_reason.startswith("ML1_SKIP") or block_reason.startswith("FE_ML_SKIP")
                     if not log_ml_skip or logging.getLogger().level <= logging.DEBUG:
-                        log_entry_blocked = {"timestamp": now, "reason": block_reason, "side": side, "fund_profile": fund_profile.get('mm_mode', 'N/A'), "active_model": selected_model_key, "model_confidence": model_confidence, "meta_proba_tp": meta_proba_tp_for_log, "signal_score": signal_score if pd.notna(signal_score) else np.nan, "pattern_label": row.get("Pattern_Label", "N/A"), "is_reentry_attempt": is_reentry_trade, "is_forced_entry": is_forced_entry}
+                        log_entry_blocked = {"timestamp": now, "reason": block_reason, "side": side, "fund_profile": fund_profile.get('mm_mode', 'N/A'), "active_model": selected_model_key, "model_confidence": model_confidence, "meta_proba_tp": meta_proba_tp_for_log, "signal_score": signal_score if pd.notna(signal_score) else np.nan, "pattern_label": getattr(row, "Pattern_Label", "N/A"), "is_reentry_attempt": is_reentry_trade, "is_forced_entry": is_forced_entry}
                         blocked_order_log.append(log_entry_blocked)
                         if not log_ml_skip: logging.info(f"      Order Blocked. Reason: {block_reason}")
                 if can_open_order:
@@ -2021,14 +2021,14 @@ def run_backtest_simulation_v34(
                             mm_mode = fund_profile.get('mm_mode', 'balanced'); risk_pct = fund_profile.get('risk', DEFAULT_RISK_PER_TRADE); base_lot = calculate_lot_by_fund_mode(mm_mode, risk_pct, current_equity_check, atr_entry, sl_delta_price); boosted_lot = adjust_lot_tp2_boost(trade_history_list, base_lot); final_lot, risk_mode_applied = adjust_lot_recovery_mode(boosted_lot, consecutive_losses); logging.debug(f"         Calculated Lot: Base={base_lot:.2f}, Boosted={boosted_lot:.2f}, Final={final_lot:.2f} (RiskMode Applied={risk_mode_applied})")
                             if final_lot >= MIN_LOT_SIZE:
                                 entry_time = now; total_ib_lot_accumulator += final_lot; current_atr_num_ttp2 = pd.to_numeric(current_atr, errors='coerce'); enable_ttp2 = pd.notna(current_atr_num_ttp2) and current_atr_num_ttp2 > 4.0
-                                new_order = {"entry_idx": current_index, "entry_time": entry_time, "entry_price": entry_price, "original_lot": final_lot, "lot": final_lot, "original_sl_price": sl_price, "sl_price": sl_price, "tp_price": tp2_price, "tp1_price": tp1_price, "entry_bar_count": current_bar_index, "side": side, "m15_trend_zone": m15_trend, "trade_tag": current_trade_tag, "signal_score": signal_score if pd.notna(signal_score) else np.nan, "trade_reason": trade_reason if not is_forced_entry else f"FORCED_{trade_reason}", "session": session_tag, "pattern_label_entry": pattern_label, "be_triggered": False, "be_triggered_time": pd.NaT, "is_reentry": is_reentry_trade, "is_forced_entry": is_forced_entry, "meta_proba_tp": meta_proba_tp_for_log, "meta2_proba_tp": meta2_proba_tp_for_log, "partial_tp_processed_levels": set(), "atr_at_entry": atr_entry, "equity_before_open": current_equity_check, "entry_gain_z": current_gain_z if pd.notna(current_gain_z) else np.nan, "entry_macd_smooth": current_macd_smooth if pd.notna(current_macd_smooth) else np.nan, "entry_candle_ratio": row.get("Candle_Ratio", np.nan), "entry_adx": row.get("ADX", np.nan), "entry_volatility_index": current_vol_index if pd.notna(current_vol_index) else np.nan, "peak_since_tp1": np.nan, "trough_since_tp1": np.nan, "risk_mode_at_entry": risk_mode_applied, "use_trailing_for_tp2": enable_ttp2, "trailing_start_price": tp1_price if enable_ttp2 else np.nan, "trailing_step_r": ADAPTIVE_TSL_DEFAULT_STEP_R if enable_ttp2 else np.nan, "peak_since_ttp2_activation": np.nan, "trough_since_ttp2_activation": np.nan, "active_model_at_entry": selected_model_key, "model_confidence_at_entry": model_confidence, "tsl_activated": False, "peak_since_tsl_activation": np.nan, "trough_since_tsl_activation": np.nan}
+                                new_order = {"entry_idx": current_index, "entry_time": entry_time, "entry_price": entry_price, "original_lot": final_lot, "lot": final_lot, "original_sl_price": sl_price, "sl_price": sl_price, "tp_price": tp2_price, "tp1_price": tp1_price, "entry_bar_count": current_bar_index, "side": side, "m15_trend_zone": m15_trend, "trade_tag": current_trade_tag, "signal_score": signal_score if pd.notna(signal_score) else np.nan, "trade_reason": trade_reason if not is_forced_entry else f"FORCED_{trade_reason}", "session": session_tag, "pattern_label_entry": pattern_label, "be_triggered": False, "be_triggered_time": pd.NaT, "is_reentry": is_reentry_trade, "is_forced_entry": is_forced_entry, "meta_proba_tp": meta_proba_tp_for_log, "meta2_proba_tp": meta2_proba_tp_for_log, "partial_tp_processed_levels": set(), "atr_at_entry": atr_entry, "equity_before_open": current_equity_check, "entry_gain_z": current_gain_z if pd.notna(current_gain_z) else np.nan, "entry_macd_smooth": current_macd_smooth if pd.notna(current_macd_smooth) else np.nan, "entry_candle_ratio": getattr(row, "Candle_Ratio", np.nan), "entry_adx": getattr(row, "ADX", np.nan), "entry_volatility_index": current_vol_index if pd.notna(current_vol_index) else np.nan, "peak_since_tp1": np.nan, "trough_since_tp1": np.nan, "risk_mode_at_entry": risk_mode_applied, "use_trailing_for_tp2": enable_ttp2, "trailing_start_price": tp1_price if enable_ttp2 else np.nan, "trailing_step_r": ADAPTIVE_TSL_DEFAULT_STEP_R if enable_ttp2 else np.nan, "peak_since_ttp2_activation": np.nan, "trough_since_ttp2_activation": np.nan, "active_model_at_entry": selected_model_key, "model_confidence_at_entry": model_confidence, "tsl_activated": False, "peak_since_tsl_activation": np.nan, "trough_since_tsl_activation": np.nan}
                                 next_active_orders.append(new_order); logging.info(f"         +++ ORDER OPENED: Side={side}, Lot={final_lot:.2f}, Entry={entry_price:.5f}, SL={sl_price:.5f}, TP={tp2_price:.5f}")
-                                df_sim.loc[current_index, f"Order_Opened{label_suffix}"] = True; df_sim.loc[current_index, f"Lot_Size{label_suffix}"] = final_lot; df_sim.loc[current_index, f"Entry_Price_Actual{label_suffix}"] = entry_price; df_sim.loc[current_index, f"SL_Price_Actual{label_suffix}"] = sl_price; df_sim.loc[current_index, f"TP_Price_Actual{label_suffix}"] = tp2_price; df_sim.loc[current_index, f"ATR_At_Entry{label_suffix}"] = atr_entry; df_sim.loc[current_index, f"Equity_Before_Open{label_suffix}"] = current_equity_check; df_sim.loc[current_index, f"Is_Reentry{label_suffix}"] = is_reentry_trade; df_sim.loc[current_index, f"Forced_Entry{label_suffix}"] = is_forced_entry; df_sim.loc[current_index, f"Meta_Proba_TP{label_suffix}"] = meta_proba_tp_for_log; df_sim.loc[current_index, f"Meta2_Proba_TP{label_suffix}"] = meta2_proba_tp_for_log; df_sim.loc[current_index, f"Entry_Gain_Z{label_suffix}"] = current_gain_z if pd.notna(current_gain_z) else np.nan; df_sim.loc[current_index, f"Entry_MACD_Smooth{label_suffix}"] = current_macd_smooth if pd.notna(current_macd_smooth) else np.nan; df_sim.loc[current_index, f"Entry_Candle_Ratio{label_suffix}"] = row.get("Candle_Ratio", np.nan); df_sim.loc[current_index, f"Entry_ADX{label_suffix}"] = row.get("ADX", np.nan); df_sim.loc[current_index, f"Entry_Volatility_Index{label_suffix}"] = current_vol_index if pd.notna(current_vol_index) else np.nan; df_sim.loc[current_index, f"Active_Model{label_suffix}"] = selected_model_key; df_sim.loc[current_index, f"Model_Confidence{label_suffix}"] = model_confidence
+                                df_sim.loc[current_index, f"Order_Opened{label_suffix}"] = True; df_sim.loc[current_index, f"Lot_Size{label_suffix}"] = final_lot; df_sim.loc[current_index, f"Entry_Price_Actual{label_suffix}"] = entry_price; df_sim.loc[current_index, f"SL_Price_Actual{label_suffix}"] = sl_price; df_sim.loc[current_index, f"TP_Price_Actual{label_suffix}"] = tp2_price; df_sim.loc[current_index, f"ATR_At_Entry{label_suffix}"] = atr_entry; df_sim.loc[current_index, f"Equity_Before_Open{label_suffix}"] = current_equity_check; df_sim.loc[current_index, f"Is_Reentry{label_suffix}"] = is_reentry_trade; df_sim.loc[current_index, f"Forced_Entry{label_suffix}"] = is_forced_entry; df_sim.loc[current_index, f"Meta_Proba_TP{label_suffix}"] = meta_proba_tp_for_log; df_sim.loc[current_index, f"Meta2_Proba_TP{label_suffix}"] = meta2_proba_tp_for_log; df_sim.loc[current_index, f"Entry_Gain_Z{label_suffix}"] = current_gain_z if pd.notna(current_gain_z) else np.nan; df_sim.loc[current_index, f"Entry_MACD_Smooth{label_suffix}"] = current_macd_smooth if pd.notna(current_macd_smooth) else np.nan; df_sim.loc[current_index, f"Entry_Candle_Ratio{label_suffix}"] = getattr(row, "Candle_Ratio", np.nan); df_sim.loc[current_index, f"Entry_ADX{label_suffix}"] = getattr(row, "ADX", np.nan); df_sim.loc[current_index, f"Entry_Volatility_Index{label_suffix}"] = current_vol_index if pd.notna(current_vol_index) else np.nan; df_sim.loc[current_index, f"Active_Model{label_suffix}"] = selected_model_key; df_sim.loc[current_index, f"Model_Confidence{label_suffix}"] = model_confidence
                                 if is_reentry_trade: reentry_trades_opened += 1
                                 if is_forced_entry: forced_entry_trades_opened += 1
                                 bars_since_last_trade = 0
                             else:
-                                block_reason = f"LOT_SIZE_MIN ({final_lot:.2f} < {MIN_LOT_SIZE})"; logging.info(f"      Order Blocked. Reason: {block_reason}"); blocked_order_log.append({"timestamp": now, "reason": block_reason, "side": side, "fund_profile": fund_profile.get('mm_mode', 'N/A'), "active_model": selected_model_key, "model_confidence": model_confidence, "meta_proba_tp": meta_proba_tp_for_log, "signal_score": signal_score if pd.notna(signal_score) else np.nan, "pattern_label": row.get("Pattern_Label", "N/A"), "is_reentry_attempt": is_reentry_trade, "is_forced_entry": is_forced_entry, "calculated_lot": final_lot})
+                                block_reason = f"LOT_SIZE_MIN ({final_lot:.2f} < {MIN_LOT_SIZE})"; logging.info(f"      Order Blocked. Reason: {block_reason}"); blocked_order_log.append({"timestamp": now, "reason": block_reason, "side": side, "fund_profile": fund_profile.get('mm_mode', 'N/A'), "active_model": selected_model_key, "model_confidence": model_confidence, "meta_proba_tp": meta_proba_tp_for_log, "signal_score": signal_score if pd.notna(signal_score) else np.nan, "pattern_label": getattr(row, "Pattern_Label", "N/A"), "is_reentry_attempt": is_reentry_trade, "is_forced_entry": is_forced_entry, "calculated_lot": final_lot})
 
             equity = equity_at_start_of_bar + current_equity_change_this_bar
             logging.debug(f"   Equity at end of bar {current_bar_index}: {equity:.2f} (Change: {current_equity_change_this_bar:.2f})")

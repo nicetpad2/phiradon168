@@ -119,6 +119,11 @@
 - New/Updated unit tests added for src.strategy
 - QA: pytest -q passed (13 tests)
 
+### 2025-06-06
+- [Patch v4.8.9] Fix AttributeError in run_backtest_simulation_v34
+- New/Updated unit tests added for src.strategy
+- QA: pytest -q passed (34 tests)
+
 ### 2025-06-03
 - [Patch v5.0.3] เพิ่ม unit tests และปรับ coverage >50%
 - New/Updated unit tests added for src.features, src.data_loader
