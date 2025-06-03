@@ -263,3 +263,8 @@
 - [Patch v5.1.3] Consolidate get_session_tag into utils module
 - New/Updated unit tests added for src.utils.sessions
 - QA: pytest -q passed (174 tests)
+### 2025-06-24
+- [Patch v5.1.4] เพิ่ม unit tests ครอบคลุมฟังก์ชันหลัก
+- New/Updated unit tests added for src.strategy and src.features
+- QA: pytest -q passed (182 tests)
+
