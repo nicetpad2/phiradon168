@@ -24,13 +24,18 @@ FUNCTIONS_INFO = [
     ("src/features.py", "fill_missing_feature_values", 1207),
     ("src/features.py", "load_feature_config", 1212),
     ("src/features.py", "calculate_ml_features", 1217),
-    ("src/main.py", "parse_arguments", 1733),
-    ("src/main.py", "setup_output_directory", 1738),
-    ("src/main.py", "load_features_from_file", 1743),
-    ("src/main.py", "drop_nan_rows", 1748),
-    ("src/main.py", "convert_to_float32", 1753),
-    ("src/main.py", "run_initial_backtest", 1758),
-    ("src/main.py", "save_final_data", 1763),
+
+
+    ("src/main.py", "parse_arguments", 1745),
+    ("src/main.py", "setup_output_directory", 1750),
+    ("src/main.py", "load_features_from_file", 1755),
+    ("src/main.py", "drop_nan_rows", 1760),
+    ("src/main.py", "convert_to_float32", 1765),
+    ("src/main.py", "run_initial_backtest", 1770),
+    ("src/main.py", "save_final_data", 1775),
+
+
+
     ("src/strategy.py", "run_backtest_simulation_v34", 1663),
     ("src/strategy.py", "initialize_time_series_split", 3772),
     ("src/strategy.py", "calculate_forced_entry_logic", 3775),
