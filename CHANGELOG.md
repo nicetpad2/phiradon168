@@ -211,3 +211,8 @@
 - New/Updated unit tests added for src.strategy
 - QA: pytest -q passed (167 tests)
 
+### 2025-06-16
+- [Patch v5.0.18] Optuna CatBoost sweep function
+- New/Updated unit tests added for tests.test_hyperparameter_sweep, tests.test_function_registry
+- QA: pytest -q passed (168 tests)
+

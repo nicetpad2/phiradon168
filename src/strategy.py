@@ -35,7 +35,7 @@ except ImportError:
     from data_loader import safe_get_global  # fallback to direct import if package context missing
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
-from sklearn.model_selection import train_test_split, TimeSeriesSplit # Ensure TimeSeriesSplit is imported
+from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score
 import gc # For memory management
 # Import ML libraries conditionally (assuming they are checked/installed in Part 1)
 try:
@@ -3644,6 +3644,40 @@ def run_hyperparameter_sweep(
         model_paths, feats = train_func(**sweep_params)
         results.append({"params": sweep_params, "model_paths": model_paths, "features": feats})
     return results
+
+
+# [Patch v5.0.18] Add Optuna-based CatBoost sweep
+def run_optuna_catboost_sweep(
+    X: pd.DataFrame,
+    y: pd.Series,
+    n_trials: int = 50,
+    n_splits: int = 5,
+):
+    """Runs Optuna hyperparameter search for CatBoost."""
+    if optuna is None or CatBoostClassifier is None:
+        logging.error("(Error) optuna or catboost not available for sweep")
+        return None, {}
+
+    def objective(trial):
+        params = {
+            "iterations": trial.suggest_int("iterations", 50, 200),
+            "depth": trial.suggest_int("depth", 4, 10),
+            "learning_rate": trial.suggest_float("learning_rate", 1e-3, 1e-1, log=True),
+            "l2_leaf_reg": trial.suggest_float("l2_leaf_reg", 1e-2, 10, log=True),
+            "border_count": trial.suggest_int("border_count", 32, 64),
+            "random_strength": trial.suggest_float("random_strength", 0, 1),
+            "eval_metric": "AUC",
+            "verbose": False,
+            "task_type": "CPU",
+        }
+        model = CatBoostClassifier(**params)
+        cv = TimeSeriesSplit(n_splits=n_splits)
+        scores = cross_val_score(model, X, y, cv=cv, scoring="roc_auc")
+        return float(np.mean(scores))
+
+    study = optuna.create_study(direction="maximize")
+    study.optimize(objective, n_trials=n_trials)
+    return study.best_value, study.best_params
 
 
 def generate_open_signals(df: pd.DataFrame) -> np.ndarray:
