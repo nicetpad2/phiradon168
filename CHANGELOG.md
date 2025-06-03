@@ -318,3 +318,7 @@
 - [Patch v5.1.9] Auto-run PREPARE_TRAIN_DATA when training files are missing
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (189 tests)
+
+### 2025-07-03
+- [Patch v5.2.0] Import print_gpu_utilization in strategy module
+- QA: pytest -q passed (190 tests)
