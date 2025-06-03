@@ -304,3 +304,7 @@
 
 - [Patch v5.1.6] TRAIN_MODEL_ONLY: load prep data for trade log
 - QA: pytest -q passed (186 tests)
+### 2025-07-01
+- [Patch v5.1.7] Update line numbers in function registry tests
+- QA: pytest -q passed (187 tests)
+

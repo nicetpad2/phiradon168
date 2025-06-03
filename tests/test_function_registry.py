@@ -25,13 +25,13 @@ FUNCTIONS_INFO = [
     ("src/features.py", "load_feature_config", 1202),
     ("src/features.py", "calculate_ml_features", 1207),
 
-    ("src/main.py", "parse_arguments", 1693),
-    ("src/main.py", "setup_output_directory", 1698),
-    ("src/main.py", "load_features_from_file", 1703),
-    ("src/main.py", "drop_nan_rows", 1708),
-    ("src/main.py", "convert_to_float32", 1713),
-    ("src/main.py", "run_initial_backtest", 1718),
-    ("src/main.py", "save_final_data", 1723),
+    ("src/main.py", "parse_arguments", 1710),
+    ("src/main.py", "setup_output_directory", 1715),
+    ("src/main.py", "load_features_from_file", 1720),
+    ("src/main.py", "drop_nan_rows", 1725),
+    ("src/main.py", "convert_to_float32", 1730),
+    ("src/main.py", "run_initial_backtest", 1735),
+    ("src/main.py", "save_final_data", 1740),
 
 
     ("src/strategy.py", "run_backtest_simulation_v34", 1636),
