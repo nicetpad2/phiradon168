@@ -344,3 +344,8 @@
 - [Patch v5.2.3] Fix missing imports for metrics and SHAP noise checker
 - New/Updated unit tests added for src.strategy
 - QA: pytest -q passed (193 tests)
+### 2025-07-08
+- [Patch v5.2.4] Ensure default output directory exists
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (198 tests)
+

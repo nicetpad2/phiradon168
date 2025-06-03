@@ -140,6 +140,19 @@ DEFAULT_CATBOOST_GPU_RAM_PART = 0.95
 DEFAULT_SHAP_IMPORTANCE_THRESHOLD = 0.01
 DEFAULT_PERMUTATION_IMPORTANCE_THRESHOLD = 0.001
 
+# [Patch v5.2.4] Ensure default output directory exists
+def ensure_default_output_dir(path=DEFAULT_OUTPUT_DIR):
+    """สร้างโฟลเดอร์ผลลัพธ์เริ่มต้นหากยังไม่มี"""
+    try:
+        os.makedirs(path, exist_ok=True)
+        logging.info(f"   (Setup) ตรวจสอบโฟลเดอร์ผลลัพธ์: {path}")
+        return path
+    except Exception as e:
+        logging.error(f"   (Error) สร้างโฟลเดอร์ผลลัพธ์ไม่สำเร็จ: {e}", exc_info=True)
+        return None
+
+ensure_default_output_dir()
+
 try:
     OUTPUT_DIR
 except NameError:
