@@ -3643,33 +3643,27 @@ def run_simple_numba_backtest(df_all: pd.DataFrame, folds: List[tuple]) -> Dict[
     logging.info("All folds finished.")
     return results
 
-# [Patch v5.1.0] Hyperparameter sweep utility
-def run_hyperparameter_sweep(
-    base_params: Dict,
-    param_grid: Dict[str, list],
-    train_func=train_and_export_meta_model,
-):
-    """รันการค้นหา Hyperparameter แบบ grid search"""
-    logging.info("(HyperSweep) เริ่มต้นการทดสอบ hyperparameter...")
-    results = []
-    keys = list(param_grid.keys())
-    values = list(param_grid.values())
+### PART 13: Hyperparameter Sweep Utility (v5.1.0) ###
+def run_hyperparameter_sweep(base_params: dict, grid: dict, train_func):
+    """รันการค้นหา Hyperparameter แบบ grid search และพิมพ์ผลลัพธ์ทันที"""
+    keys = list(grid.keys())
+    values = list(grid.values())
     combinations = list(itertools.product(*values))
     output_dir = base_params.get("output_dir")
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
+
+    results = []
     for idx, combo in enumerate(combinations, start=1):
         params = base_params.copy()
         for k, v in zip(keys, combo):
             params[k] = v
         print(f"เริ่มพารามิเตอร์ run {idx}: {params}")
-        model_path, feat_list = train_func(**params)
-        result_entry = {
-            "params": params,
-            "model_path": model_path,
-            "features": feat_list,
-        }
+        model_path, feature_list = train_func(**params)
+        result_entry = {"params": params, "model_path": model_path, "features": feature_list}
+        print(f"Run {idx}: {result_entry}")
         results.append(result_entry)
+
     return results
 
 

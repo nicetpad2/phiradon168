@@ -21,6 +21,7 @@ def test_run_hyperparameter_sweep_basic(tmp_path, capsys):
     captured = capsys.readouterr().out
     assert output_dir.is_dir()
     assert "เริ่มพารามิเตอร์ run 1" in captured
+    assert "Run 1:" in captured
     assert len(results) == 4
     assert len(calls) == 4
     for res in results:

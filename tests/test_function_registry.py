@@ -41,7 +41,9 @@ FUNCTIONS_INFO = [
     ("src/strategy.py", "apply_kill_switch", 3736),
     ("src/strategy.py", "log_trade", 3739),
     ("src/strategy.py", "calculate_metrics", 2613),
-    ("src/strategy.py", "aggregate_fold_results", 3742),
+
+    ("src/strategy.py", "aggregate_fold_results", 3744),
+
 
 
 
