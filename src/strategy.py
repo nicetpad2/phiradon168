@@ -38,7 +38,7 @@ except Exception:  # pragma: no cover - fallback when numba unavailable
 # [Patch v4.8.8] Import safe_set_datetime using unconditional absolute import
 from src.data_loader import safe_set_datetime
 from src.data_loader import safe_load_csv_auto  # [Patch v5.1.6] Ensure CSV loader is imported
-from src.data_loader import simple_converter  # [Patch] เพิ่ม simple_converter สำหรับ JSON serialization
+from src.data_loader import simple_converter
 
 # [Patch v4.8.9] Import safe_get_global using unconditional absolute import
 from src.data_loader import safe_get_global
