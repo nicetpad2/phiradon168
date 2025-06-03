@@ -38,9 +38,15 @@ except Exception:  # pragma: no cover - fallback when numba unavailable
 # [Patch v4.8.8] Import safe_set_datetime using unconditional absolute import
 from src.data_loader import safe_set_datetime
 from src.data_loader import safe_load_csv_auto  # [Patch v5.1.6] Ensure CSV loader is imported
+from src.data_loader import simple_converter  # [Patch] เพิ่ม simple_converter สำหรับ JSON serialization
 
 # [Patch v4.8.9] Import safe_get_global using unconditional absolute import
 from src.data_loader import safe_get_global
+from src.features import (
+    select_top_shap_features,
+    check_model_overfit,
+    analyze_feature_importance_shap,
+)  # [Patch] นำเข้า Dynamic Feature Selection & Overfitting Helpers
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
 from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score
@@ -61,6 +67,19 @@ try:
     import optuna
 except ImportError:
     optuna = None
+
+# [Patch] นำเข้า pynvml สำหรับตรวจสอบ GPU (Prevent NameError)
+try:
+    import pynvml
+except ImportError:
+    pynvml = None
+    nvml_handle = None
+else:
+    try:
+        pynvml.nvmlInit()
+        nvml_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+    except Exception:
+        nvml_handle = None
 
 # Ensure global configurations are accessible if run independently
 # Define defaults if globals are not found
@@ -603,7 +622,7 @@ def train_and_export_meta_model(
             if potential_lag_features:
                 logging.info(f"         Lag Features ที่มีให้พิจารณา: {potential_lag_features}")
                 try:
-                    prelim_fi = prelim_model.get_feature_importance(as_dict=True)
+                    prelim_fi = prelim_model.get_feature_importance()
                     significant_lags = []
                     total_fi = sum(prelim_fi.values())
                     fi_threshold_abs = 0.1
