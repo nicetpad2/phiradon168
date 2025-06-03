@@ -2,6 +2,19 @@
 
 from src.config import logger
 import sys
+import logging
+
+# [Patch] Initialize pynvml for GPU status detection
+try:
+    import pynvml
+    pynvml.nvmlInit()
+    nvml_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+except ImportError:  # pragma: no cover - optional dependency
+    pynvml = None
+    nvml_handle = None
+except Exception:  # pragma: no cover - NVML failure fallback
+    nvml_handle = None
+
 from src.main import main
 
 def custom_helper_function():
@@ -16,3 +29,8 @@ if __name__ == '__main__':
     except Exception as e:
         logger.error("เกิดข้อผิดพลาดที่ไม่คาดคิด: %s", str(e), exc_info=True)
         sys.exit(1)
+    else:
+        if 'pynvml' in globals() and nvml_handle:
+            logging.info(f"GPU Initialized: {nvml_handle}")
+        else:
+            logging.info("GPU not available, running on CPU")
