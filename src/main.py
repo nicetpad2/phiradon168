@@ -809,6 +809,15 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
         train_log_path = train_log_path_base + ".csv.gz" if os.path.exists(train_log_path_base + ".csv.gz") else train_log_path_base + ".csv"
         train_m1_data_path = train_m1_data_path_base + ".csv.gz" if os.path.exists(train_m1_data_path_base + ".csv.gz") else train_m1_data_path_base + ".csv"
 
+        if not (os.path.exists(train_log_path) and os.path.exists(train_m1_data_path)):
+            logging.info("   (Info) ไม่พบไฟล์ฝึกสั่ง PREPARE_TRAIN_DATA อัตโนมัติ")
+            prepare_suffix = prepare_train_data()
+            if prepare_suffix is None:
+                logging.critical("   (Error) PREPARE_TRAIN_DATA ล้มเหลว ไม่สามารถ Train Model")
+                return None
+            train_log_path = train_log_path_base + ".csv.gz" if os.path.exists(train_log_path_base + ".csv.gz") else train_log_path_base + ".csv"
+            train_m1_data_path = train_m1_data_path_base + ".csv.gz" if os.path.exists(train_m1_data_path_base + ".csv.gz") else train_m1_data_path_base + ".csv"
+
         if os.path.exists(train_log_path) and os.path.exists(train_m1_data_path):
             logging.info(f"   พบไฟล์ที่จำเป็น: Log='{os.path.basename(train_log_path)}', M1='{os.path.basename(train_m1_data_path)}'")
             try:
