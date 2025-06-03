@@ -425,3 +425,8 @@
 - New/Updated unit tests added for src.config
 - QA: pytest -q passed
 
+### 2025-07-15
+- [Patch v5.3.5] Add QA log summary for trade log export
+- New/Updated unit tests added for src.utils.trade_logger
+- QA: pytest -q passed
+
