@@ -3493,8 +3493,9 @@ def run_all_folds_with_threshold(
         total_ib_lot_accumulator_run += ib_lot_buy + ib_lot_sell
 
         logging.info(f"   -- Calculating Metrics for Fold {fold+1} ({fund_name}) --")
-        metrics_buy_fold = (
-            calculate_metrics(
+        metrics_buy_fold = {}  # [Patch v5.3.1] initialize to avoid UnboundLocalError
+        try:
+            metrics_buy_fold = calculate_metrics(
                 log_buy,
                 eq_buy,
                 hist_buy,
@@ -3504,9 +3505,12 @@ def run_all_folds_with_threshold(
                 type_l2_b,
                 costs_buy,
                 ib_lot_buy,
+            ) or {}
+        except Exception as e:
+            logging.warning(
+                f"(Warning) Cannot calculate metrics for Fold {fold+1} Buy ({fund_name}): {e}"
             )
-            or {}
-        )
+            metrics_buy_fold = {}
         metrics_buy_fold[f"Fold {fold+1} Buy ({fund_name}) Max Drawdown (Simulated) (%)"] = dd_buy * 100.0
         metrics_buy_fold.update({
             f"Fold {fold+1} Buy ({fund_name}) Costs {k.replace('_', ' ').title()}": v
@@ -3522,8 +3526,9 @@ def run_all_folds_with_threshold(
             ]
         })
 
-        metrics_sell_fold = (
-            calculate_metrics(
+        metrics_sell_fold = {}  # [Patch v5.3.1] ensure defined even if calc fails
+        try:
+            metrics_sell_fold = calculate_metrics(
                 log_sell,
                 eq_sell,
                 hist_sell,
@@ -3533,9 +3538,12 @@ def run_all_folds_with_threshold(
                 type_l2_s,
                 costs_sell,
                 ib_lot_sell,
+            ) or {}
+        except Exception as e:
+            logging.warning(
+                f"(Warning) Cannot calculate metrics for Fold {fold+1} Sell ({fund_name}): {e}"
             )
-            or {}
-        )
+            metrics_sell_fold = {}
         metrics_sell_fold[f"Fold {fold+1} Sell ({fund_name}) Max Drawdown (Simulated) (%)"] = dd_sell * 100.0
         metrics_sell_fold.update({
             f"Fold {fold+1} Sell ({fund_name}) Costs {k.replace('_', ' ').title()}": v
@@ -3578,13 +3586,6 @@ def run_all_folds_with_threshold(
         if log_buy is not None and log_buy.empty and log_sell is not None and log_sell.empty:
             logging.warning(f"          [SUMMARY] Fold {fold+1} ({fund_name}): No trades opened. All entries blocked.")
 
-        logging.debug(f"        Cleaning up memory after Fold {fold+1}...")
-        del df_train_fold, df_test_fold, df_buy_res, df_sell_res
-        del log_buy, log_sell, hist_buy, hist_sell, blocked_buy, blocked_sell
-        del metrics_buy_fold, metrics_sell_fold, current_fold_metrics
-        gc.collect()
-        logging.debug(f"        Memory cleanup complete for Fold {fold+1}.")
-
         fold_duration = time.time() - fold_start_time
         fold_equity = eq_sell
         fold_winrate = (
@@ -3601,6 +3602,13 @@ def run_all_folds_with_threshold(
         logging.warning(
             f"   (Summary) Equity={fold_equity:.2f}, Winrate={fold_winrate:.2%}, MaxDD={fold_maxdd:.2%}"
         )
+
+        logging.debug(f"        Cleaning up memory after Fold {fold+1}...")
+        del df_train_fold, df_test_fold, df_buy_res, df_sell_res
+        del log_buy, log_sell, hist_buy, hist_sell, blocked_buy, blocked_sell
+        del metrics_buy_fold, metrics_sell_fold, current_fold_metrics
+        gc.collect()
+        logging.debug(f"        Memory cleanup complete for Fold {fold+1}.")
 
     run_duration = time.time() - start_time_run
     logging.info(f"      [Runner {run_label}] (Success) Full WF Sim completed (L1_Th={l1_thresh_display}) in {run_duration:.2f} seconds.")
