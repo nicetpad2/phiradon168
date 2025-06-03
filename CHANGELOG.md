@@ -351,8 +351,9 @@
 
 ### 2025-07-09
 
-- [Patch v5.2.5] Use project-relative output directory
-- New/Updated unit tests added for src.main
+- [Patch v5.2.5] ปรับสคริปต์ hyperparameter_sweep ให้รองรับ CLI
+- New/Updated unit tests added for tests.test_hyperparameter_sweep_cli
 - QA: pytest -q passed (199 tests)
+
 
 

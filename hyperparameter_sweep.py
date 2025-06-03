@@ -2,6 +2,11 @@
 """
 [Patch v1.1.0] Hyperparameter sweep using real training
 สคริปต์สำหรับรัน hyperparameter sweep และบันทึกผลลัพธ์
+
+[Patch v5.2.5] รองรับการกำหนดช่วงพารามิเตอร์ผ่านบรรทัดคำสั่ง
+- เพิ่มฟังก์ชัน `_parse_csv_list` สำหรับแปลงค่าคอมมา
+- ปรับ `run_sweep` ให้รับพารามิเตอร์แบบกำหนดเอง
+- QA: pytest -q passed
 """
 
 import os
@@ -9,15 +14,19 @@ import sys
 import argparse
 from itertools import product
 import pandas as pd
+from typing import Callable, List
 
 from src.config import logger
 from src.training import real_train_func
 
 
-def run_sweep(output_dir: str) -> None:
-    """Run hyperparameter combinations and save summary."""
-    learning_rates = [0.01, 0.05]
-    depths = [6, 8]
+def _parse_csv_list(text: str, cast: Callable) -> List:
+    """แปลงสตริงคอมมาเป็นลิสต์พร้อมประเภทข้อมูล"""  # [Patch v5.2.5]
+    return [cast(x.strip()) for x in text.split(',') if x.strip()]
+
+
+def run_sweep(output_dir: str, learning_rates: List[float], depths: List[int]) -> None:
+    """Run hyperparameter combinations and save summary."""  # [Patch v5.2.5]
     os.makedirs(output_dir, exist_ok=True)
     summary_rows = []
     for run_id, (lr, depth) in enumerate(product(learning_rates, depths), start=1):
@@ -46,8 +55,14 @@ def run_sweep(output_dir: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_dir', default='sweep_results')
+    parser.add_argument('--learning_rates', default='0.01,0.05')
+    parser.add_argument('--depths', default='6,8')
     args = parser.parse_args()
-    run_sweep(args.output_dir)
+
+    learning_rates = _parse_csv_list(args.learning_rates, float)
+    depths = _parse_csv_list(args.depths, int)
+
+    run_sweep(args.output_dir, learning_rates, depths)
 
 
 if __name__ == '__main__':
