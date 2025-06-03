@@ -333,3 +333,8 @@
 - New/Updated unit tests added for config and registry
 - QA: pytest -q passed (193 tests)
 
+### 2025-07-06
+- [Patch v5.2.2] Import SHAP utilities and fix GPU checks
+- New/Updated unit tests added for src.strategy
+- QA: pytest -q passed (193 tests)
+
