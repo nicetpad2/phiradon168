@@ -21,6 +21,7 @@ from src.cooldown_utils import (
 )
 from itertools import product
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
+from src.config import print_gpu_utilization  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
 
 # อ่านเวอร์ชันจากไฟล์ VERSION
 VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
