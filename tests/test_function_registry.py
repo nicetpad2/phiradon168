@@ -26,6 +26,7 @@ FUNCTIONS_INFO = [
     ("src/features.py", "calculate_ml_features", 1217),
 
 
+
     ("src/main.py", "parse_arguments", 1767),
     ("src/main.py", "setup_output_directory", 1772),
     ("src/main.py", "load_features_from_file", 1777),
@@ -33,6 +34,7 @@ FUNCTIONS_INFO = [
     ("src/main.py", "convert_to_float32", 1787),
     ("src/main.py", "run_initial_backtest", 1792),
     ("src/main.py", "save_final_data", 1797),
+
 
 
 
