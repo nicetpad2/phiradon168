@@ -580,7 +580,7 @@ logging.debug("Setting Backtesting Parameters...")
 N_WALK_FORWARD_SPLITS = 5       # Number of folds for final backtest (increased to 5)
 INITIAL_CAPITAL = 100.0         # Starting capital for simulation
 POINT_VALUE = 0.1               # Value per point for 0.01 lot size
-MAX_CONCURRENT_ORDERS = 5       # Max concurrent orders per side (BUY/SELL)
+MAX_CONCURRENT_ORDERS = 7       # Max concurrent orders per side (BUY/SELL)
 MAX_HOLDING_BARS = 24           # Max bars an order can be held
 COMMISSION_PER_001_LOT = 0.10   # Commission per 0.01 lot (USD)
 SPREAD_POINTS = 2.0             # Fixed spread in points
@@ -616,7 +616,7 @@ logging.debug(f"Session Times (UTC): {SESSION_TIMES_UTC}")
 logging.debug("Setting Fold-Specific Configuration...")
 ENTRY_CONFIG_PER_FOLD = {
     # Fold Index: {Config Dictionary}
-    0: {"sl_multiplier": 2.0, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": MIN_SIGNAL_SCORE_ENTRY, },
+    0: {"sl_multiplier": 2.8, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": MIN_SIGNAL_SCORE_ENTRY, },
     1: {"sl_multiplier": 2.0, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": MIN_SIGNAL_SCORE_ENTRY, },
     2: {"sl_multiplier": 2.0, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": MIN_SIGNAL_SCORE_ENTRY, },
     3: {"sl_multiplier": 2.0, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": MIN_SIGNAL_SCORE_ENTRY, },
@@ -632,7 +632,7 @@ PARTIAL_TP_LEVELS = [           # Define partial TP levels
 ]
 PARTIAL_TP_MOVE_SL_TO_ENTRY = True # Move SL to entry after first partial TP?
 ENABLE_KILL_SWITCH = True       # Enable/disable kill switch mechanism
-KILL_SWITCH_MAX_DD_THRESHOLD = 0.20 # Max drawdown % before activating kill switch
+KILL_SWITCH_MAX_DD_THRESHOLD = 0.25 # Max drawdown % before activating kill switch
 KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 7 # Max consecutive losses before activating kill switch
 MAX_DRAWDOWN_THRESHOLD = 0.30   # Max drawdown % threshold to block new orders (e.g., 30%)
 logging.info(f"Kill Switch Enabled: {ENABLE_KILL_SWITCH} (DD > {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%, Losses > {KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD})")
