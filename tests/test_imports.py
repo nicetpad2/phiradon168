@@ -5,6 +5,7 @@ FILES = [
     'src/config.py',
     'src/data_loader.py',
     'src/features.py',
+    'src/cooldown_utils.py',
     'src/strategy.py',
     'src/main.py',
 ]
