@@ -354,16 +354,10 @@ except ImportError:
 
 # --- Colab/Drive Setup ---
 def is_colab():
+    """Return True if running within Google Colab."""  # [Patch v5.3.3]
     try:
         import google.colab  # noqa: F401
-        try:
-            from IPython import get_ipython
-            ip = get_ipython()
-            if ip and getattr(ip, "kernel", None) is not None:
-                return True
-        except Exception:
-            pass
-        return False
+        return True
     except ImportError:
         return False
 
