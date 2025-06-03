@@ -8,6 +8,7 @@ import os
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
+import src.config as config
 
 
 def test_projectp_import_without_pynvml(monkeypatch):
@@ -66,3 +67,24 @@ def test_projectp_logs_gpu_release(monkeypatch, caplog):
         runpy.run_path("ProjectP.py", run_name="__main__")
     assert dummy_nvml.shutdown_called is True
     assert any("GPU resources released" in m for m in caplog.messages)
+
+
+def test_projectp_output_audit(monkeypatch, caplog, tmp_path):
+    """QA audit should log presence or absence of output files."""
+    out_dir = tmp_path / "output_default"
+    out_dir.mkdir()
+    # Create only some files
+    (out_dir / "features_main.json").write_text("{}")
+    (out_dir / "trade_log_NORMAL.csv").write_text("")
+
+    dummy_main = lambda: None
+    monkeypatch.setitem(sys.modules, "src.main", types.SimpleNamespace(main=dummy_main))
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["ProjectP.py"])
+    config.logger.setLevel(logging.INFO)
+    script_path = os.path.join(ROOT_DIR, "ProjectP.py")
+    with caplog.at_level(logging.INFO):
+        runpy.run_path(script_path, run_name="__main__")
+    # Should log present for existing file and missing for absent file
+    assert any("[QA] Output present" in m for m in caplog.messages)
+    assert any("[QA] Output missing" in m for m in caplog.messages)

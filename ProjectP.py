@@ -3,6 +3,7 @@
 from src.config import logger
 import sys
 import logging
+import os
 
 # [Patch] Initialize pynvml for GPU status detection
 try:
@@ -27,6 +28,20 @@ def custom_helper_function():
 if __name__ == "__main__":
     try:
         main()
+        # [QA] End-of-pipeline output audit
+        output_dir = "./output_default"
+        audit_files = [
+            "features_main.json",
+            "trade_log_BUY.csv",
+            "trade_log_SELL.csv",
+            "trade_log_NORMAL.csv",
+        ]
+        for f in audit_files:
+            fpath = os.path.join(output_dir, f)
+            if os.path.exists(fpath):
+                logger.info(f"[QA] Output present: {fpath}")
+            else:
+                logger.error(f"[QA] Output missing: {fpath}")
     except KeyboardInterrupt:
         print("\n(Stopped) การทำงานถูกยกเลิกโดยผู้ใช้.")
     except Exception as e:
