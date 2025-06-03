@@ -33,6 +33,7 @@ FUNCTIONS_INFO = [
     ("src/main.py", "save_final_data", 1706),
 
     ("src/strategy.py", "run_backtest_simulation_v34", 1634),
+
     ("src/strategy.py", "initialize_time_series_split", 3729),
     ("src/strategy.py", "calculate_forced_entry_logic", 3734),
     ("src/strategy.py", "apply_kill_switch", 3739),

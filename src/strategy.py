@@ -38,6 +38,8 @@ import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
 from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score
 import gc # For memory management
+import os
+import itertools
 # Import ML libraries conditionally (assuming they are checked/installed in Part 1)
 try:
     from catboost import CatBoostClassifier, Pool
@@ -3651,22 +3653,32 @@ def run_simple_numba_backtest(df_all: pd.DataFrame, folds: List[tuple]) -> Dict[
     logging.info("All folds finished.")
     return results
 
-# [Patch v5.0.17] Add hyperparameter sweep helper
+# [Patch v5.1.0] Hyperparameter sweep utility
 def run_hyperparameter_sweep(
     base_params: Dict,
     param_grid: Dict[str, list],
     train_func=train_and_export_meta_model,
 ):
-    """รันทดสอบ hyperparameter แบบ grid search อย่างง่าย"""
+    """รันการค้นหา Hyperparameter แบบ grid search"""
     logging.info("(HyperSweep) เริ่มต้นการทดสอบ hyperparameter...")
     results = []
     keys = list(param_grid.keys())
-    for values in product(*(param_grid[k] for k in keys)):
-        sweep_params = base_params.copy()
-        sweep_params.update(dict(zip(keys, values)))
-        logging.info(f"(HyperSweep) กำลังเทสพารามิเตอร์: {sweep_params}")
-        model_paths, feats = train_func(**sweep_params)
-        results.append({"params": sweep_params, "model_paths": model_paths, "features": feats})
+    values = list(param_grid.values())
+    combinations = itertools.product(*values)
+    output_dir = base_params.get("output_dir")
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+    for combo in combinations:
+        params = base_params.copy()
+        for k, v in zip(keys, combo):
+            params[k] = v
+        model_path, feat_list = train_func(**params)
+        result_entry = {
+            "params": params,
+            "model_path": model_path,
+            "features": feat_list,
+        }
+        results.append(result_entry)
     return results
 
 

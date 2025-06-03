@@ -229,7 +229,9 @@
 ### 2025-06-18
 - [Patch v5.0.19] Add example hyperparameter sweep script
 - QA: pytest -q passed (168 tests)
+
 ### 2025-06-19
 - [Patch v5.0.20] Add soft cooldown bar countdown and helper
 - New/Updated unit tests added for tests.test_soft_cooldown_logic
 - QA: pytest -q passed (169 tests)
+
