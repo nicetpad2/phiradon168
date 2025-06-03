@@ -349,3 +349,6 @@
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (198 tests)
 
+### 2025-07-09
+- [Patch v5.2.5] Set default logger level to WARNING
+- QA: pytest -q passed (199 tests)
