@@ -50,7 +50,7 @@ FUNCTIONS_INFO = [
 
 
 
-    ("ProjectP.py", "custom_helper_function", 7),
+    ("ProjectP.py", "custom_helper_function", 20),
 ]
 
 @pytest.mark.parametrize("path, func_name, expected_lineno", FUNCTIONS_INFO)
