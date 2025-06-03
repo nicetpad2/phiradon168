@@ -285,6 +285,7 @@ def calculate_m15_trend_zone(df_m15):
 
 # [Patch v5.0.2] Exclude heavy engineering logic from coverage
 def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_features_config=None):  # pragma: no cover
+    logging.info("[QA] Start M1 Feature Engineering")
     logging.info("(Processing) กำลังสร้าง Features M1 (v4.9.0)...") # <<< MODIFIED v4.9.0
     if not isinstance(df_m1, pd.DataFrame): logging.error("Engineer M1 Features Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m1.empty: logging.warning("   (Warning) ข้ามการสร้าง Features M1: DataFrame ว่างเปล่า."); return df_m1
@@ -388,6 +389,9 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
             df['session'] = df['session'].astype('category')
     if 'model_tag' not in df.columns: df['model_tag'] = 'N/A'
     logging.info("(Success) สร้าง Features M1 (v4.9.0) เสร็จสิ้น.") # <<< MODIFIED v4.9.0
+    if df.isnull().any().any() or np.isinf(df.select_dtypes(include=[np.number])).any().any():
+        logging.warning("[QA WARNING] NaN/Inf detected in engineered features")
+    logging.info("[QA] M1 Feature Engineering Completed")
     return df.reindex(df_m1.index)
 
 # [Patch v5.0.2] Exclude heavy cleaning logic from coverage
