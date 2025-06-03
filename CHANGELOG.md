@@ -274,6 +274,8 @@
 - QA: pytest -q passed (183 tests)
 
 ### 2025-06-27
+
 - [Patch v5.1.0] รวมลำดับการแสดงผล Run ให้อยู่ใน loop เดียวกัน
 - QA: pytest -q passed (183 tests)
+
 
