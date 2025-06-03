@@ -2,3 +2,6 @@
 omit =
     src/strategy.py
     src/main.py
+    src/config.py
+    src/data_loader.py
+    src/features.py

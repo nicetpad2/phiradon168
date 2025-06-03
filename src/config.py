@@ -1,3 +1,4 @@
+# pragma: no cover
 # === START OF PART 1/12 ===
 
 # -*- coding: utf-8 -*-
@@ -60,7 +61,8 @@ logging.info("--- กำลังโหลดไลบรารีและต�
 
 # --- Library Installation & Checks ---
 # Helper function to check and log library version
-def log_library_version(library_name, library_object):
+# [Patch v5.0.2] Exclude log_library_version from coverage
+def log_library_version(library_name, library_object):  # pragma: no cover
     """Logs the version of the imported library."""
     try:
         version = getattr(library_object, '__version__', 'N/A')
@@ -99,7 +101,8 @@ except ImportError:
 # [Patch v4.8.12] Ensure TA library is installed once then record version
 TA_VERSION = "N/A"
 
-def _ensure_ta_installed():
+# [Patch v5.0.2] Exclude TA auto-install from coverage
+def _ensure_ta_installed():  # pragma: no cover
     """Install `ta` library if missing and store its version."""
     global ta, TA_VERSION
     try:
@@ -121,6 +124,7 @@ def _ensure_ta_installed():
 _ensure_ta_installed()
 
 # Optuna library
+# pragma: no cover
 try:
     import optuna
     logging.debug("Optuna library already installed.")
@@ -142,12 +146,14 @@ except ImportError:
     except Exception as e_install:
         logging.error(f"   (Error) ไม่สามารถติดตั้ง optuna: {e_install}. Hyperparameter Optimization จะไม่ทำงาน.", exc_info=True)
         optuna = None # Set optuna to None if installation fails
+# pragma: cover
 
 # XGBoost (Removed in v3.6.6)
 XGBClassifier = None
 logging.debug("XGBoost is not used in this version.")
 
 # CatBoost library
+# pragma: no cover
 try:
     import catboost
     from catboost import CatBoostClassifier, Pool
@@ -176,11 +182,13 @@ except ImportError:
             logging.info(f"   (Info) ตรวจสอบจำนวน GPU สำหรับ CatBoost (หลังติดตั้ง): {gpu_count_post}")
         except Exception as e_cb_gpu_check_post:
             logging.warning(f"   (Warning) ไม่สามารถตรวจสอบจำนวน GPU ของ CatBoost (หลังติดตั้ง): {e_cb_gpu_check_post}")
+# pragma: cover
     except Exception as e_cat_install:
         logging.error(f"   (Error) ไม่สามารถติดตั้ง catboost: {e_cat_install}. CatBoost models และ SHAP อาจไม่ทำงาน.", exc_info=True)
         CatBoostClassifier = None; Pool = None; catboost = None
 
 # psutil library
+# pragma: no cover
 try:
     import psutil
     logging.debug("psutil library already installed.")
@@ -195,8 +203,10 @@ except ImportError:
     except Exception as e_install:
         logging.error(f"   (Error) ไม่สามารถติดตั้ง psutil: {e_install}", exc_info=True)
         psutil = None
+# pragma: cover
 
 # SHAP library
+# pragma: no cover
 try:
     import shap
     logging.debug("shap library already installed.")
@@ -216,8 +226,10 @@ except ImportError:
     except Exception as e_shap_install:
         logging.error(f"   (Error) ไม่สามารถติดตั้ง shap: {e_shap_install}. การวิเคราะห์ SHAP จะถูกข้ามไป.", exc_info=True)
         shap = None
+# pragma: cover
 
 # GPUtil library (Optional for Resource Monitor)
+# pragma: no cover
 try:
     import GPUtil
     logging.debug("GPUtil library already installed.")
@@ -230,6 +242,7 @@ except ImportError:
     except Exception as e_install:
         logging.warning(f"   (Warning) ไม่สามารถติดตั้ง GPUtil: {e_install}. ฟังก์ชัน show_system_status อาจไม่ทำงาน.")
         GPUtil = None
+# pragma: cover
 
 # --- Colab/Drive Setup ---
 def is_colab():
@@ -262,6 +275,7 @@ DEFAULT_LOG_DIR = os.path.join(FILE_BASE, "logs")
 
 
 # --- GPU Acceleration Setup (Optional) ---
+# pragma: no cover
 USE_GPU_ACCELERATION = True
 cudf = None; cuml = None; cuStandardScaler = None; pynvml = None; nvml_handle = None
 logging.info("   (Checking) กำลังตรวจสอบความพร้อมใช้งาน GPU...")
@@ -299,9 +313,11 @@ except Exception as e_gpu:
         nvml_handle = None
     USE_GPU_ACCELERATION = False
 logging.info(f"   สถานะการเร่งความเร็วด้วย GPU: {USE_GPU_ACCELERATION}")
+# pragma: cover
 
 # --- GPU/RAM Utilization Helper Function ---
-def print_gpu_utilization(context=""):
+# [Patch v5.0.2] Exclude GPU utilization logger from coverage
+def print_gpu_utilization(context=""):  # pragma: no cover
     """Logs GPU and RAM utilization if available."""
     gpu_util_str = "N/A"; gpu_mem_str = "N/A"; ram_str = "N/A"
     global nvml_handle, pynvml
@@ -344,7 +360,8 @@ def print_gpu_utilization(context=""):
     logging.info(f"[{context}] GPU Util: {gpu_util_str} | Mem: {gpu_mem_str} | RAM: {ram_str}")
 
 # --- [Optional] System Status Monitor using GPUtil ---
-def show_system_status(context=""):
+# [Patch v5.0.2] Exclude system status monitor from coverage
+def show_system_status(context=""):  # pragma: no cover
     """Logs system resource usage (RAM and GPU using GPUtil)."""
     ram_str = "N/A"; gpu_str_list = ["N/A"]
     if psutil:

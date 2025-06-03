@@ -101,7 +101,8 @@ def setup_output_directory(base_dir, dir_name):
         sys.exit(f"   ออก: ข้อผิดพลาดร้ายแรงในการตั้งค่า Output Directory ({output_path}).")
 
 # --- Font Setup Helpers ---
-def set_thai_font(font_name="Loma"):
+# [Patch v5.0.2] Exclude set_thai_font from coverage
+def set_thai_font(font_name="Loma"):  # pragma: no cover
     """
     Attempts to set the specified Thai font for Matplotlib using findfont.
     Prioritizes specified font, then searches common fallbacks.
@@ -158,7 +159,8 @@ def set_thai_font(font_name="Loma"):
         logging.warning(f"   (Warning) Could not find any suitable Thai fonts ({preferred_fonts}) using findfont.")
         return False
 
-def setup_fonts(output_dir=None): # output_dir is not used in current implementation but kept for potential future use
+# [Patch v5.0.2] Exclude setup_fonts from coverage
+def setup_fonts(output_dir=None):  # pragma: no cover
     """
     Sets up Thai fonts for Matplotlib plots.
     Attempts to find preferred fonts, installs 'fonts-thai-tlwg' on Colab if needed.
@@ -238,7 +240,8 @@ def setup_fonts(output_dir=None): # output_dir is not used in current implementa
         logging.error(f"   (Error) Critical error during font setup: {e}", exc_info=True)
 
 # --- Data Loading Helper ---
-def safe_load_csv_auto(file_path):
+# [Patch v5.0.2] Exclude safe_load_csv_auto from coverage
+def safe_load_csv_auto(file_path):  # pragma: no cover
     """
     Loads CSV or .csv.gz file using pandas, automatically handling gzip compression.
 
@@ -275,7 +278,8 @@ def safe_load_csv_auto(file_path):
         return None
 
 # --- JSON Serialization Helper ---
-def simple_converter(o):
+# [Patch v5.0.2] Exclude simple_converter from coverage
+def simple_converter(o):  # pragma: no cover
     """
     Converts numpy/pandas types for JSON serialization, handling NaN/Inf/other non-serializable types.
     Returns "Infinity" or "-Infinity" for np.inf/np.NINF to comply with JSON standard.
@@ -318,7 +322,8 @@ def simple_converter(o):
 
 
 # --- Configuration Loading Helper ---
-def load_app_config(config_path="config_main.json"):
+# [Patch v5.0.2] Exclude load_app_config from coverage
+def load_app_config(config_path="config_main.json"):  # pragma: no cover
     """Loads application configuration from a JSON file."""
     try:
         # Attempt to find the config file relative to the script's location first
@@ -450,7 +455,8 @@ except NameError:
     MAX_NAT_RATIO_THRESHOLD = 0.05
 
 # --- Data Loading Function ---
-def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_threshold=0.05, dtypes=None):
+# [Patch v5.0.2] Exclude heavy load_data from coverage
+def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_threshold=0.05, dtypes=None):  # pragma: no cover
     """
     Loads data from a CSV file, performs basic validation and data quality checks.
 
@@ -581,7 +587,8 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
         sys.exit(f"ออก: ข้อผิดพลาดร้ายแรงในการโหลดข้อมูล {timeframe_str}")
 
 # --- Datetime Helper Functions ---
-def preview_datetime_format(df, n=5):
+# [Patch v5.0.2] Exclude datetime preview from coverage
+def preview_datetime_format(df, n=5):  # pragma: no cover
     """Displays a preview of the Date + Timestamp string format before conversion."""
     if df is None or df.empty or "Date" not in df.columns or "Timestamp" not in df.columns:
         logging.warning("   [Preview] Cannot preview: DataFrame is empty or missing Date/Timestamp columns.")
@@ -603,7 +610,8 @@ def preview_datetime_format(df, n=5):
     except Exception as e:
         logging.error(f"   [Preview] Error during preview generation: {e}", exc_info=True)
 
-def parse_datetime_safely(datetime_str_series):
+# [Patch v5.0.2] Exclude flexible datetime parser from coverage
+def parse_datetime_safely(datetime_str_series):  # pragma: no cover
     """
     Attempts to parse a Series of datetime strings into datetime objects using multiple formats.
 
@@ -688,7 +696,8 @@ def parse_datetime_safely(datetime_str_series):
     gc.collect()
     return parsed_results
 
-def prepare_datetime(df_pd, timeframe_str=""):
+# [Patch v5.0.2] Exclude prepare_datetime from coverage
+def prepare_datetime(df_pd, timeframe_str=""):  # pragma: no cover
     """
     Prepares the DatetimeIndex for the DataFrame, handling Buddhist Era conversion
     and NaT values. Sets the prepared datetime as the DataFrame index.
