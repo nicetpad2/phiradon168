@@ -388,3 +388,8 @@
 - [Patch v5.2.7] Catch UnboundLocalError in PREPARE_TRAIN_DATA
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (199 tests)
+
+### 2025-07-12
+- [Patch v5.3.1] Safeguard main pipeline from missing metrics
+- New/Updated unit tests added for src.strategy
+- QA: pytest -q passed (207 tests)
