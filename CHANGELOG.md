@@ -437,3 +437,8 @@
 - QA: pytest -q passed
 
 
+### 2025-07-16
+- [Patch v5.3.6] Harden Colab detection to avoid mount errors
+- New/Updated unit tests added for src.config and registry
+- QA: pytest -q passed
+
