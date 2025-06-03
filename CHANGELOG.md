@@ -361,6 +361,11 @@
 - New/Updated unit tests added for hyperparameter_sweep
 - QA: pytest -q passed (199 tests)
 
+### 2025-07-11
+- [Patch v5.3.0] Enterprise hyperparameter sweep improvements
+- New/Updated unit tests added for hyperparameter_sweep
+- QA: pytest -q passed (199 tests)
+
 
 
 
