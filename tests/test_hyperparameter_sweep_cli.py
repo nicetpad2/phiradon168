@@ -26,3 +26,24 @@ def test_run_sweep_basic(tmp_path, monkeypatch):
     df = pd.read_csv(tmp_path / 'summary.csv')
     assert df.loc[0, 'learning_rate'] == 0.1
     assert df.loc[0, 'depth'] == 6
+
+
+def test_parse_grid_args():
+    entries = ['p1=1,2', 'p2=0.1,0.2']
+    grid = hs._parse_grid_args(entries)
+    assert grid == {'p1': [1, 2], 'p2': [0.1, 0.2]}
+
+
+def test_run_general_sweep(tmp_path, monkeypatch):
+    def dummy_train_func(**kwargs):
+        return {
+            'model_path': {'model': str(tmp_path / 'm.joblib')},
+            'features': ['f'],
+            'metrics': {'acc': 1.0},
+        }
+
+    monkeypatch.setattr(hs, 'real_train_func', dummy_train_func)
+    grid = {'learning_rate': [0.1], 'depth': [6], 'p1': [1]}
+    hs.run_general_sweep(str(tmp_path), grid)
+    df = pd.read_csv(tmp_path / 'summary.csv')
+    assert set(df.columns) >= {'learning_rate', 'depth', 'p1'}

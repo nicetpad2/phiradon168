@@ -355,6 +355,11 @@
 - New/Updated unit tests added for profile_backtest
 - QA: pytest -q passed (199 tests)
 
+### 2025-07-10
+- [Patch v5.2.6] ปรับปรุง hyperparameter_sweep ให้ใช้ run_hyperparameter_sweep
+- New/Updated unit tests added for hyperparameter_sweep
+- QA: pytest -q passed (199 tests)
+
 
 
 
