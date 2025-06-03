@@ -25,7 +25,7 @@ from joblib import load, dump as joblib_dump
 import traceback
 import pandas as pd
 import numpy as np
-
+AUTO_INSTALL_LIBS = False  # If False, skip auto-installation of libraries
 # อ่านเวอร์ชันจากไฟล์ VERSION
 VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
 with open(VERSION_FILE, 'r', encoding='utf-8') as vf:
@@ -90,37 +90,48 @@ try:
     from tqdm.notebook import tqdm
     logging.debug("tqdm library already installed.")
 except ImportError:
-    logging.info("   กำลังติดตั้งไลบรารี tqdm...")
-    try:
-        process = subprocess.run(
-            [sys.executable, "-m", "pip", "install", "tqdm", "-q"],
-            check=True, capture_output=True, text=True,
-        )
-        logging.debug(f"   ผลการติดตั้ง tqdm: ...{process.stdout[-200:]}")
-        from tqdm.notebook import tqdm
-        logging.info("   (Success) ติดตั้ง tqdm สำเร็จ.")
-    except Exception as e_install:
-        logging.error(f"   (Error) ไม่สามารถติดตั้ง tqdm: {e_install}", exc_info=True)
-        tqdm = None # Set tqdm to None if installation fails
+    if AUTO_INSTALL_LIBS:
+        logging.info("   กำลังติดตั้งไลบรารี tqdm...")
+        try:
+            process = subprocess.run(
+                [sys.executable, "-m", "pip", "install", "tqdm", "-q"],
+                check=True, capture_output=True, text=True,
+            )
+            logging.debug(f"   ผลการติดตั้ง tqdm: ...{process.stdout[-200:]}")
+            from tqdm.notebook import tqdm
+            logging.info("   (Success) ติดตั้ง tqdm สำเร็จ.")
+        except Exception as e_install:
+            logging.error(f"   (Error) ไม่สามารถติดตั้ง tqdm: {e_install}", exc_info=True)
+            tqdm = None
+    else:
+        logging.error("ไลบรารี 'tqdm' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
+        tqdm = None
 
 # [Patch v4.8.12] Ensure TA library is installed once then record version
 TA_VERSION = "N/A"
 
 # [Patch v5.0.2] Exclude TA auto-install from coverage
 def _ensure_ta_installed():  # pragma: no cover
-    """Install `ta` library if missing and store its version."""
+    """Ensure `ta` library is available and record its version."""
     global ta, TA_VERSION
     try:
         import ta  # noqa: F401
     except ImportError:
-        logging.info("(Info) ไลบรารี 'ta' ไม่พบ กำลังติดตั้งอัตโนมัติ...")
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "ta"])
-        except Exception as e_install:
-            logging.warning(f"(Warning) ติดตั้งไลบรารี ta ไม่สำเร็จ: {e_install}")
+        if AUTO_INSTALL_LIBS:
+            logging.info("(Info) ไลบรารี 'ta' ไม่พบ กำลังติดตั้งอัตโนมัติ...")
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "ta"])
+                importlib.invalidate_caches()
+                import ta as _ta
+            except Exception as e_install:
+                logging.warning(f"(Warning) ติดตั้งไลบรารี ta ไม่สำเร็จ: {e_install}")
+                TA_VERSION = None
+                return
+            ta = _ta
+        else:
+            logging.error("ไลบรารี 'ta' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
+            TA_VERSION = None
             return
-        importlib.invalidate_caches()
-        import ta
     TA_VERSION = getattr(ta, "__version__", "N/A")
     globals()["ta"] = ta
     log_library_version("TA", ta)
@@ -137,20 +148,27 @@ try:
     # Consider setting verbosity later if needed
     # optuna.logging.set_verbosity(optuna.logging.WARNING)
 except ImportError:
-    logging.info("   กำลังติดตั้งไลบรารี optuna...")
-    try:
-        process = subprocess.run(
-            [sys.executable, "-m", "pip", "install", "optuna", "-q"],
-            check=True, capture_output=True, text=True,
-        )
-        logging.debug(f"   ผลการติดตั้ง optuna: ...{process.stdout[-200:]}")
-        import optuna
-        logging.info("   (Success) ติดตั้ง optuna สำเร็จ.")
-        log_library_version("Optuna", optuna)
-        # optuna.logging.set_verbosity(optuna.logging.WARNING)
-    except Exception as e_install:
-        logging.error(f"   (Error) ไม่สามารถติดตั้ง optuna: {e_install}. Hyperparameter Optimization จะไม่ทำงาน.", exc_info=True)
-        optuna = None # Set optuna to None if installation fails
+    if AUTO_INSTALL_LIBS:
+        logging.info("   กำลังติดตั้งไลบรารี optuna...")
+        try:
+            process = subprocess.run(
+                [sys.executable, "-m", "pip", "install", "optuna", "-q"],
+                check=True, capture_output=True, text=True,
+            )
+            logging.debug(f"   ผลการติดตั้ง optuna: ...{process.stdout[-200:]}")
+            import optuna
+            logging.info("   (Success) ติดตั้ง optuna สำเร็จ.")
+            log_library_version("Optuna", optuna)
+            # optuna.logging.set_verbosity(optuna.logging.WARNING)
+        except Exception as e_install:
+            logging.error(
+                f"   (Error) ไม่สามารถติดตั้ง optuna: {e_install}. Hyperparameter Optimization จะไม่ทำงาน.",
+                exc_info=True,
+            )
+            optuna = None
+    else:
+        logging.error("ไลบรารี 'optuna' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
+        optuna = None
 # pragma: cover
 
 # XGBoost (Removed in v3.6.6)
@@ -170,27 +188,44 @@ try:
     except Exception as e_cb_gpu_check:
         logging.warning(f"   (Warning) ไม่สามารถตรวจสอบจำนวน GPU ของ CatBoost: {e_cb_gpu_check}")
 except ImportError:
-    logging.info("   กำลังติดตั้งไลบรารี catboost...")
-    try:
-        install_command = [sys.executable, "-m", "pip", "install", "catboost", "-q"]
-        process = subprocess.run(
-            install_command,
-            check=True, capture_output=True, text=True,
-        )
-        logging.debug(f"   ผลการติดตั้ง catboost: ...{process.stdout[-200:]}")
-        import catboost
-        from catboost import CatBoostClassifier, Pool
-        logging.info(f"   (Success) ติดตั้ง catboost สำเร็จ (เวอร์ชัน: {catboost.__version__}).")
+    if AUTO_INSTALL_LIBS:
+        logging.info("   กำลังติดตั้งไลบรารี catboost...")
         try:
-            from catboost.utils import get_gpu_device_count
-            gpu_count_post = get_gpu_device_count()
-            logging.info(f"   (Info) ตรวจสอบจำนวน GPU สำหรับ CatBoost (หลังติดตั้ง): {gpu_count_post}")
-        except Exception as e_cb_gpu_check_post:
-            logging.warning(f"   (Warning) ไม่สามารถตรวจสอบจำนวน GPU ของ CatBoost (หลังติดตั้ง): {e_cb_gpu_check_post}")
+            install_command = [sys.executable, "-m", "pip", "install", "catboost", "-q"]
+            process = subprocess.run(
+                install_command,
+                check=True, capture_output=True, text=True,
+            )
+            logging.debug(f"   ผลการติดตั้ง catboost: ...{process.stdout[-200:]}")
+            import catboost
+            from catboost import CatBoostClassifier, Pool
+            logging.info(
+                f"   (Success) ติดตั้ง catboost สำเร็จ (เวอร์ชัน: {catboost.__version__})."
+            )
+            try:
+                from catboost.utils import get_gpu_device_count
+                gpu_count_post = get_gpu_device_count()
+                logging.info(
+                    f"   (Info) ตรวจสอบจำนวน GPU สำหรับ CatBoost (หลังติดตั้ง): {gpu_count_post}"
+                )
+            except Exception as e_cb_gpu_check_post:
+                logging.warning(
+                    f"   (Warning) ไม่สามารถตรวจสอบจำนวน GPU ของ CatBoost (หลังติดตั้ง): {e_cb_gpu_check_post}"
+                )
+        except Exception as e_cat_install:
+            logging.error(
+                f"   (Error) ไม่สามารถติดตั้ง catboost: {e_cat_install}. CatBoost models และ SHAP อาจไม่ทำงาน.",
+                exc_info=True,
+            )
+            CatBoostClassifier = None
+            Pool = None
+            catboost = None
+    else:
+        logging.error("ไลบรารี 'catboost' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
+        CatBoostClassifier = None
+        Pool = None
+        catboost = None
 # pragma: cover
-    except Exception as e_cat_install:
-        logging.error(f"   (Error) ไม่สามารถติดตั้ง catboost: {e_cat_install}. CatBoost models และ SHAP อาจไม่ทำงาน.", exc_info=True)
-        CatBoostClassifier = None; Pool = None; catboost = None
 
 # psutil library
 # pragma: no cover
@@ -199,14 +234,18 @@ try:
     logging.debug("psutil library already installed.")
     log_library_version("psutil", psutil)
 except ImportError:
-    logging.info("   กำลังติดตั้ง psutil สำหรับตรวจสอบ RAM...")
-    try:
-        subprocess.run([sys.executable, "-m", "pip", "install", "psutil", "-q"], check=True)
-        import psutil
-        logging.info("   (Success) ติดตั้ง psutil สำเร็จ.")
-        log_library_version("psutil", psutil)
-    except Exception as e_install:
-        logging.error(f"   (Error) ไม่สามารถติดตั้ง psutil: {e_install}", exc_info=True)
+    if AUTO_INSTALL_LIBS:
+        logging.info("   กำลังติดตั้ง psutil สำหรับตรวจสอบ RAM...")
+        try:
+            subprocess.run([sys.executable, "-m", "pip", "install", "psutil", "-q"], check=True)
+            import psutil
+            logging.info("   (Success) ติดตั้ง psutil สำเร็จ.")
+            log_library_version("psutil", psutil)
+        except Exception as e_install:
+            logging.error(f"   (Error) ไม่สามารถติดตั้ง psutil: {e_install}", exc_info=True)
+            psutil = None
+    else:
+        logging.error("ไลบรารี 'psutil' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
         psutil = None
 # pragma: cover
 
@@ -217,19 +256,26 @@ try:
     logging.debug("shap library already installed.")
     log_library_version("SHAP", shap)
 except ImportError:
-    logging.info("   กำลังติดตั้งไลบรารี shap...")
-    try:
-        logging.info("      (การติดตั้ง SHAP อาจใช้เวลาสักครู่...)")
-        process = subprocess.run(
-            [sys.executable, "-m", "pip", "install", "shap", "-q"],
-            check=True, capture_output=True, text=True,
-        )
-        logging.debug(f"   ผลการติดตั้ง shap: ...{process.stdout[-200:]}")
-        import shap
-        logging.info("   (Success) ติดตั้ง shap สำเร็จ.")
-        log_library_version("SHAP", shap)
-    except Exception as e_shap_install:
-        logging.error(f"   (Error) ไม่สามารถติดตั้ง shap: {e_shap_install}. การวิเคราะห์ SHAP จะถูกข้ามไป.", exc_info=True)
+    if AUTO_INSTALL_LIBS:
+        logging.info("   กำลังติดตั้งไลบรารี shap...")
+        try:
+            logging.info("      (การติดตั้ง SHAP อาจใช้เวลาสักครู่...)")
+            process = subprocess.run(
+                [sys.executable, "-m", "pip", "install", "shap", "-q"],
+                check=True, capture_output=True, text=True,
+            )
+            logging.debug(f"   ผลการติดตั้ง shap: ...{process.stdout[-200:]}")
+            import shap
+            logging.info("   (Success) ติดตั้ง shap สำเร็จ.")
+            log_library_version("SHAP", shap)
+        except Exception as e_shap_install:
+            logging.error(
+                f"   (Error) ไม่สามารถติดตั้ง shap: {e_shap_install}. การวิเคราะห์ SHAP จะถูกข้ามไป.",
+                exc_info=True,
+            )
+            shap = None
+    else:
+        logging.error("ไลบรารี 'shap' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
         shap = None
 # pragma: cover
 
@@ -239,13 +285,19 @@ try:
     import GPUtil
     logging.debug("GPUtil library already installed.")
 except ImportError:
-    logging.info("   กำลังติดตั้ง GPUtil สำหรับตรวจสอบ GPU (Optional)...")
-    try:
-        subprocess.run([sys.executable, "-m", "pip", "install", "gputil", "-q"], check=True)
-        import GPUtil
-        logging.info("   (Success) ติดตั้ง GPUtil สำเร็จ.")
-    except Exception as e_install:
-        logging.warning(f"   (Warning) ไม่สามารถติดตั้ง GPUtil: {e_install}. ฟังก์ชัน show_system_status อาจไม่ทำงาน.")
+    if AUTO_INSTALL_LIBS:
+        logging.info("   กำลังติดตั้ง GPUtil สำหรับตรวจสอบ GPU (Optional)...")
+        try:
+            subprocess.run([sys.executable, "-m", "pip", "install", "gputil", "-q"], check=True)
+            import GPUtil
+            logging.info("   (Success) ติดตั้ง GPUtil สำเร็จ.")
+        except Exception as e_install:
+            logging.warning(
+                f"   (Warning) ไม่สามารถติดตั้ง GPUtil: {e_install}. ฟังก์ชัน show_system_status อาจไม่ทำงาน."
+            )
+            GPUtil = None
+    else:
+        logging.warning("ไลบรารี 'GPUtil' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
         GPUtil = None
 # pragma: cover
 
