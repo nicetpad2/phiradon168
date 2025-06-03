@@ -206,3 +206,8 @@
 - New/Updated unit tests added for tests.test_soft_cooldown_logic
 - QA: pytest -q passed (167 tests)
 
+### 2025-06-16
+- [Patch v5.0.17] Add hyperparameter sweep helper
+- New/Updated unit tests added for src.strategy
+- QA: pytest -q passed (167 tests)
+
