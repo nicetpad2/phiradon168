@@ -369,3 +369,8 @@
 - QA: pytest -q passed (199 tests)
 
 
+
+### 2025-07-11
+- [Patch v5.2.7] Catch UnboundLocalError in PREPARE_TRAIN_DATA
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (199 tests)
