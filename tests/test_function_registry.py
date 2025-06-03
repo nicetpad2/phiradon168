@@ -4,10 +4,10 @@ import pytest
 
 FUNCTIONS_INFO = [
     ("src/config.py", "log_library_version", 84),
-    ("src/config.py", "_ensure_ta_installed", 128),
-    ("src/config.py", "is_colab", 319),
-    ("src/config.py", "print_gpu_utilization", 391),
-    ("src/config.py", "show_system_status", 435),
+    ("src/config.py", "_ensure_ta_installed", 134),
+    ("src/config.py", "is_colab", 325),
+    ("src/config.py", "print_gpu_utilization", 397),
+    ("src/config.py", "show_system_status", 441),
     ("src/data_loader.py", "inspect_file_exists", 846),
     ("src/data_loader.py", "read_csv_with_date_parse", 851),
     ("src/data_loader.py", "check_nan_percent", 858),
@@ -36,12 +36,12 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/strategy.py", "initialize_time_series_split", 3724),
-    ("src/strategy.py", "calculate_forced_entry_logic", 3729),
-    ("src/strategy.py", "apply_kill_switch", 3734),
+    ("src/strategy.py", "initialize_time_series_split", 3732),
+    ("src/strategy.py", "calculate_forced_entry_logic", 3737),
+    ("src/strategy.py", "apply_kill_switch", 3736),
     ("src/strategy.py", "log_trade", 3739),
-    ("src/strategy.py", "calculate_metrics", 2605),
-    ("src/strategy.py", "aggregate_fold_results", 3744),
+    ("src/strategy.py", "calculate_metrics", 2613),
+    ("src/strategy.py", "aggregate_fold_results", 3742),
 
 
 
