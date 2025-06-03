@@ -46,10 +46,17 @@ from src.features import (
     select_top_shap_features,
     check_model_overfit,
     analyze_feature_importance_shap,
+    check_feature_noise_shap,  # [Patch] เพิ่มการ import เพื่อตรวจสอบ SHAP noise
 )  # [Patch] นำเข้า Dynamic Feature Selection & Overfitting Helpers
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
 from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score
+from sklearn.metrics import (
+    accuracy_score,
+    roc_auc_score,
+    log_loss,
+    classification_report,
+)  # [Patch] นำเข้า metric ที่ขาดหายไป
 import gc # For memory management
 import os
 import itertools
