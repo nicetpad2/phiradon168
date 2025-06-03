@@ -17,6 +17,7 @@ import sys
 import os
 import time
 import warnings
+import atexit
 import json
 import math
 import random
@@ -63,18 +64,22 @@ fh = logging.FileHandler(LOG_FILENAME, mode='w', encoding='utf-8')
 fh.setFormatter(formatter)
 sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(formatter)
+for h in logger.handlers:
+    try: h.close()
+    except Exception: pass
 logger.handlers.clear()
 logger.addHandler(fh)
 logger.addHandler(sh)
 logger.propagate = True
-
-# ให้ root logger ใช้ handler เดียวกับ logger กลางเพื่อรองรับโค้ดเดิมที่ใช้ logging
+atexit.register(logging.shutdown)
 root_logger = logging.getLogger()
+for h in root_logger.handlers:
+    try: h.close()
+    except Exception: pass
 root_logger.handlers = []
 root_logger.setLevel(logging.INFO)
 for handler in logger.handlers:
     root_logger.addHandler(handler)
-
 logger.info(f"--- (Start) Gold AI v{__version__} ---")
 logger.info("--- กำลังโหลดไลบรารีและตรวจสอบ Dependencies ---")
 
