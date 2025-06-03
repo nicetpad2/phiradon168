@@ -9,14 +9,21 @@
 # <<< MODIFIED v4.8.1: Refined auto-train logic (log loading, context cols), confirmed dtype passing, verified model loading checks, added more robust function call checks >>>
 # <<< MODIFIED v4.8.2: Corrected SyntaxError in __main__ block (added except/finally for the main try block), updated log messages and versioning, robust global access in finally >>>
 # <<< MODIFIED v4.8.3: Applied SyntaxError fix for try-except global variable checks to all relevant globals in this part. >>>
-try:
-    from src.config import logger
-except Exception:  # pragma: no cover - fallback for tests
-    import logging as logger
-import logging
-import os
-import sys
-import json
+import logging, os, sys, json
+if 'pytest' in sys.modules:
+    cfg = sys.modules.get('src.config')
+    if cfg is not None and getattr(cfg, '__file__', None) is None and hasattr(cfg, 'ENTRY_CONFIG_PER_FOLD'):
+        DEFAULT_ENTRY_CONFIG_PER_FOLD = cfg.ENTRY_CONFIG_PER_FOLD
+        logger = getattr(cfg, 'logger', logging.getLogger(__name__))
+    else:
+        DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
+        logger = logging.getLogger(__name__)
+else:
+    try:
+        from src.config import logger, ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD
+    except Exception:  # pragma: no cover - fallback for tests
+        logger = logging.getLogger(__name__)
+        DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
 
 # --------------------------------------------
 # =============================================================================
@@ -33,13 +40,6 @@ def print_gpu_utilization(_=None):
     """ฟังก์ชันสำรองสำหรับแสดงการใช้ GPU (ไม่ทำอะไร)."""
     pass
 
-# --------------------------------------------
-# นำเข้า `ENTRY_CONFIG_PER_FOLD` จาก `config.py` ให้กลายเป็น `DEFAULT_ENTRY_CONFIG_PER_FOLD`
-try:
-    from src.config import ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD
-except Exception:
-    DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
-# --------------------------------------------
 import time
 from src.data_loader import (
     setup_output_directory as dl_setup_output_directory,
