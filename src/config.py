@@ -354,12 +354,10 @@ except ImportError:
 
 # --- Colab/Drive Setup ---
 def is_colab():
-    """Return True if running within Google Colab."""  # [Patch v5.3.3]
-    try:
-        import google.colab  # noqa: F401
-        return True
-    except ImportError:
-        return False
+    """Return True if running within Google Colab."""  # [Patch v5.3.7]
+    # [Patch] Rely on loaded modules only to avoid accidental True when
+    # google-colab package is installed but not running in Colab.
+    return 'google.colab' in sys.modules
 
 FILE_BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if is_colab():
