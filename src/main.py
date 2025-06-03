@@ -12,6 +12,7 @@
 import logging
 import os
 import sys
+import json
 
 # --------------------------------------------
 # =============================================================================
@@ -609,6 +610,22 @@ def train_models():
     return main(run_mode='TRAIN_MODEL_ONLY')
 
 
+# [Patch v5.0.14] Ensure features_main.json exists
+def ensure_main_features_file(output_dir):
+    """[Patch] Create default features_main.json if it does not exist."""
+    path = os.path.join(output_dir, "features_main.json")
+    if os.path.exists(path):
+        return path
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(DEFAULT_META_CLASSIFIER_FEATURES, f, ensure_ascii=False, indent=2)
+        logging.info("[Patch] Created default features_main.json")
+    except Exception as e:
+        logging.error(f"[Patch] Failed to create features_main.json: {e}")
+    return path
+
+
 # --- Main Execution Function ---
 def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=None):
     """
@@ -668,6 +685,9 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             logging.info(f"   (Info) Output directory already set: {OUTPUT_DIR}")
             # Ensure the directory exists and is writable even if already set
             dl_setup_output_directory(os.path.dirname(OUTPUT_DIR), os.path.basename(OUTPUT_DIR))
+
+        # [Patch v5.0.14] Pre-create features_main.json to avoid warnings
+        ensure_main_features_file(OUTPUT_DIR)
 
         # --- Font Setup ---
         try:
