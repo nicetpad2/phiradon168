@@ -141,3 +141,7 @@
 - Added stub implementations for registry functions
 - Updated tests with current line numbers
 - QA: pytest -q passed (71 tests)
+### 2025-06-07
+- [Patch v5.0.7] Auto-create default features file and relax thresholds
+- New/Updated unit tests added for src.features
+- QA: pytest -q passed (71 tests)

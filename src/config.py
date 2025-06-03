@@ -529,7 +529,7 @@ logging.info(f"Recovery Mode Enabled: Losses >= {RECOVERY_MODE_CONSECUTIVE_LOSSE
 logging.debug("Setting Re-Entry Configuration...")
 USE_REENTRY = True              # Enable/disable re-entry logic
 REENTRY_COOLDOWN_BARS = 1       # Cooldown (in bars) after TP before allowing re-entry
-REENTRY_MIN_PROBA_THRESH = 0.55 # Minimum ML probability threshold for re-entry (uses META_MIN_PROBA_THRESH)
+REENTRY_MIN_PROBA_THRESH = 0.5 # Minimum ML probability threshold for re-entry (uses META_MIN_PROBA_THRESH)
 logging.info(f"Re-Entry Enabled: {USE_REENTRY} (Cooldown: {REENTRY_COOLDOWN_BARS} bars, Threshold: {REENTRY_MIN_PROBA_THRESH})")
 
 # --- Forced Entry Configuration ---
