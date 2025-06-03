@@ -244,3 +244,8 @@
 - [Patch v5.1.0] ปรับข้อความ dummy_train_func เป็นภาษาไทย
 - QA: pytest -q passed (170 tests)
 
+
+### 2025-06-21
+- [Patch v5.1.1] Standardize absolute imports and add setup.py
+- New/Updated unit tests added for src.main and src.strategy
+- QA: pytest -q passed (170 tests)

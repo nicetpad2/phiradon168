@@ -32,21 +32,18 @@ def print_gpu_utilization(_=None):
 # --------------------------------------------
 # นำเข้า `ENTRY_CONFIG_PER_FOLD` จาก `config.py` ให้กลายเป็น `DEFAULT_ENTRY_CONFIG_PER_FOLD`
 try:
-    if 'src.config' in sys.modules:
-        DEFAULT_ENTRY_CONFIG_PER_FOLD = sys.modules['src.config'].ENTRY_CONFIG_PER_FOLD
-    else:
-        from config import ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD
+    from src.config import ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD
 except Exception:
     DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
 # --------------------------------------------
 import time
-from data_loader import (
+from src.data_loader import (
     setup_output_directory as dl_setup_output_directory,
     load_data,
     prepare_datetime,
     safe_load_csv_auto,
 )
-from features import (
+from src.features import (
     calculate_m15_trend_zone,
     engineer_m1_features,
     clean_m1_data,
