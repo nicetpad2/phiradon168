@@ -3507,6 +3507,9 @@ def run_all_folds_with_threshold(
             )
             or {}
         )
+        if metrics_buy_fold is None:
+            logging.warning("[Patch v5.3.1] metrics_buy_fold is None. Assigning empty dict.")
+            metrics_buy_fold = {}
         metrics_buy_fold[f"Fold {fold+1} Buy ({fund_name}) Max Drawdown (Simulated) (%)"] = dd_buy * 100.0
         metrics_buy_fold.update({
             f"Fold {fold+1} Buy ({fund_name}) Costs {k.replace('_', ' ').title()}": v
@@ -3536,6 +3539,9 @@ def run_all_folds_with_threshold(
             )
             or {}
         )
+        if metrics_sell_fold is None:
+            logging.warning("[Patch v5.3.1] metrics_sell_fold is None. Assigning empty dict.")
+            metrics_sell_fold = {}
         metrics_sell_fold[f"Fold {fold+1} Sell ({fund_name}) Max Drawdown (Simulated) (%)"] = dd_sell * 100.0
         metrics_sell_fold.update({
             f"Fold {fold+1} Sell ({fund_name}) Costs {k.replace('_', ' ').title()}": v
