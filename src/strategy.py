@@ -1950,7 +1950,8 @@ def run_backtest_simulation_v34(
                 atr_filter_thresh = 3.0; score_filter_thresh = 3.5
                 if can_open_order and pd.notna(current_atr) and current_atr > atr_filter_thresh and pd.notna(signal_score) and abs(signal_score) < score_filter_thresh: can_open_order = False; block_reason = f"HIGH_ATR_LOW_SCORE (ATR={current_atr:.2f}, Score={signal_score:.2f})"
                 if can_open_order and pd.notna(current_macd_smooth):
-                    relax_macd_cond = False; strong_signal_thresh = 4.0; strong_gainz_thresh = 1.0
+                    # [Patch v5.x.x] Temporarily bypass MACD filter for testing
+                    relax_macd_cond = True; strong_signal_thresh = 4.0; strong_gainz_thresh = 1.0
                     if pd.notna(signal_score):
                         if is_forced_entry:
                             if abs(signal_score) >= strong_signal_thresh and pd.notna(current_gain_z) and current_gain_z >= strong_gainz_thresh and pattern_label in ['Breakout', 'StrongTrend']: relax_macd_cond = True
@@ -1963,19 +1964,21 @@ def run_backtest_simulation_v34(
                             can_open_order = False
                             block_reason = f"POS_MACD_SELL (MACD={current_macd_smooth:.3f})"
                 if can_open_order:
-                    if soft_cooldown_bars_remaining > 0:
-                        can_open_order = False
-                        block_reason = f"SOFT_COOLDOWN_ACTIVE({soft_cooldown_bars_remaining})"
-                    else:
-                        cooldown_triggered, recent_losses_count = is_soft_cooldown_triggered(
-                            last_n_full_trade_pnls, SOFT_COOLDOWN_LOOKBACK, SOFT_COOLDOWN_LOSS_COUNT
-                        )
-                        if cooldown_triggered:
-                            soft_cooldown_bars_remaining = SOFT_COOLDOWN_LOOKBACK
-                            can_open_order = False
-                            block_reason = (
-                                f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T ({recent_losses_count} losses)"
-                            )
+                    # [Patch v5.x.x] Disable Soft Cooldown logic during testing
+                    pass
+                    # if soft_cooldown_bars_remaining > 0:
+                    #     can_open_order = False
+                    #     block_reason = f"SOFT_COOLDOWN_ACTIVE({soft_cooldown_bars_remaining})"
+                    # else:
+                    #     cooldown_triggered, recent_losses_count = is_soft_cooldown_triggered(
+                    #         last_n_full_trade_pnls, SOFT_COOLDOWN_LOOKBACK, SOFT_COOLDOWN_LOSS_COUNT
+                    #     )
+                    #     if cooldown_triggered:
+                    #         soft_cooldown_bars_remaining = SOFT_COOLDOWN_LOOKBACK
+                    #         can_open_order = False
+                    #         block_reason = (
+                    #             f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T ({recent_losses_count} losses)"
+                    #         )
                 if block_reason: logging.debug(f"      Block Reason: {block_reason}")
                 active_l1_model = None; active_l1_features = None; selected_model_key = "N/A"; model_confidence = np.nan; meta_proba_tp_for_log = np.nan
                 if can_open_order and USE_META_CLASSIFIER and callable(model_switcher_func):
