@@ -9,9 +9,12 @@ import argparse
 import cProfile
 import pstats
 import pandas as pd
+import logging
 
 from src.strategy import run_backtest_simulation_v34
 from src.data_loader import safe_load_csv_auto
+
+logger = logging.getLogger(__name__)
 
 
 def main_profile(csv_path: str, num_rows: int = 5000) -> None:
@@ -28,6 +31,14 @@ def main_profile(csv_path: str, num_rows: int = 5000) -> None:
             # Fallback for files where the first column becomes the index
             if not isinstance(df.index, pd.DatetimeIndex):
                 df.index = pd.to_datetime(df.index, errors='coerce')
+    # [Patch v5.1.0] ตรวจสอบคอลัมน์หลักก่อนเรียก backtest
+    required_cols = ['Open', 'High', 'Low', 'Close']
+    missing = [c for c in required_cols if c not in df.columns]
+    if missing:
+        logger.error(
+            f"(Error) Missing required columns in input DataFrame for profile: {missing}"
+        )
+        return
     # Provide minimal fold_config and current_fold_index to avoid warnings
     run_backtest_simulation_v34(
         df,

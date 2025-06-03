@@ -273,3 +273,8 @@
 - New/Updated unit tests added for src.strategy
 - QA: pytest -q passed (183 tests)
 
+### 2025-06-27
+- [Patch v5.1.0] ตรวจสอบคอลัมน์ที่จำเป็นก่อนรัน backtest
+- New/Updated unit tests added for profile_backtest และ src.strategy
+- QA: pytest -q passed (185 tests)
+

@@ -1639,6 +1639,14 @@ def run_backtest_simulation_v34(
     Runs the core backtesting simulation loop for a single fold, side, and fund profile.
     (v4.8.8 Patch 26.5.1: Unified error handling, logging, and exit logic fixes)
     """
+    # [Patch v5.1.0] ตรวจสอบคอลัมน์สำคัญก่อนดำเนินการ backtest
+    required_cols = ["Open", "High", "Low", "Close"]
+    missing = [c for c in required_cols if c not in df_m1_segment_pd.columns]
+    if missing:
+        # เมื่อเรียกโดย profile_backtest จะตรวจสอบและ return ก่อนถึงจุดนี้
+        raise ValueError(
+            f"Missing required columns in input DataFrame for backtest: {missing}"
+        )
     global meta_model_type_used, meta_meta_model_type_used, USE_REENTRY, REENTRY_COOLDOWN_BARS, TIMEFRAME_MINUTES_M1, POINT_VALUE, MAX_CONCURRENT_ORDERS, MAX_HOLDING_BARS, COMMISSION_PER_001_LOT, SPREAD_POINTS, MIN_SLIPPAGE_POINTS, MAX_SLIPPAGE_POINTS, MAX_DRAWDOWN_THRESHOLD, ENABLE_FORCED_ENTRY, FORCED_ENTRY_BAR_THRESHOLD, FORCED_ENTRY_MIN_SIGNAL_SCORE, FORCED_ENTRY_LOOKBACK_PERIOD, FORCED_ENTRY_CHECK_MARKET_COND, FORCED_ENTRY_MAX_ATR_MULT, FORCED_ENTRY_MIN_GAIN_Z_ABS, FORCED_ENTRY_ALLOWED_REGIMES, FE_ML_FILTER_THRESHOLD, forced_entry_max_consecutive_losses, OUTPUT_DIR, USE_META_CLASSIFIER, BASE_BE_SL_R_THRESHOLD, DYNAMIC_BE_ATR_THRESHOLD_HIGH, DYNAMIC_BE_R_ADJUST_HIGH, META_MIN_PROBA_THRESH, REENTRY_MIN_PROBA_THRESH
 
     meta_proba_tp_for_log = np.nan; meta2_proba_tp_for_log = np.nan; meta_proba_tp_for_fe_log = np.nan; total_ib_lot_accumulator = 0.0
