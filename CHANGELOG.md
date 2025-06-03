@@ -420,3 +420,8 @@
 - New/Updated unit tests added for tests/test_function_registry.py
 - QA: pytest -q passed (215 tests)
 
+### 2025-07-15
+- [Patch v5.3.5] Adjust OMS & Logging defaults for risk management and QA
+- New/Updated unit tests added for src.config
+- QA: pytest -q passed
+
