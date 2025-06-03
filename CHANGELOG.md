@@ -357,4 +357,8 @@
 
 
 
+### 2025-07-10
+- [Patch v5.2.6] Update requirements list
+- QA: pytest -q passed (199 tests)
+
 
