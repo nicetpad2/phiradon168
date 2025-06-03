@@ -289,5 +289,11 @@
 - [Patch v5.1.6] Fix TRAIN_MODEL_ONLY M1 data path
 - QA: pytest -q passed (186 tests)
 
+### 2025-06-30
+
+- [Patch v5.1.6] แก้ไข Merge และตรวจสอบฟีเจอร์ใน train_and_export_meta_model
+- New/Updated unit tests added for strategy
+- QA: pytest -q passed (186 tests)
+
 
 

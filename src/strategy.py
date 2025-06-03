@@ -246,6 +246,10 @@ def train_and_export_meta_model(
             return None, []
         logging.info(f"   ใช้ Trade Log ที่ Filter แล้ว (Override) จำนวน {len(trade_log_df_override)} แถว สำหรับ Model Purpose: {model_purpose.upper()}")
         trade_log_df = trade_log_df_override.copy()
+        # [Patch v5.1.6] Ensure Trade Log has 'datetime' column for merge
+        if 'datetime' not in trade_log_df.columns:
+            trade_log_df['datetime'] = trade_log_df['entry_time']
+        trade_log_df['datetime'] = pd.to_datetime(trade_log_df['datetime'])
     elif trade_log_path and isinstance(trade_log_path, str):
         logging.info(f"   กำลังโหลด Trade Log (Default Path): {trade_log_path}")
         try:
@@ -261,6 +265,10 @@ def train_and_export_meta_model(
                 logging.error(f"(Error) Trade Log (Default Path) is missing required columns: {missing_cols_path}. Cannot proceed with training.")
                 return None, []
             logging.info(f"   โหลด Trade Log (Default) สำเร็จ ({len(trade_log_df)} แถว).")
+            # [Patch v5.1.6] Ensure Trade Log has 'datetime' column for merge
+            if 'datetime' not in trade_log_df.columns:
+                trade_log_df['datetime'] = trade_log_df['entry_time']
+            trade_log_df['datetime'] = pd.to_datetime(trade_log_df['datetime'])
         except Exception as e:
             logging.error(f"(Error) ไม่สามารถโหลด Trade Log (Default): {e}", exc_info=True)
             return None, []
@@ -291,7 +299,7 @@ def train_and_export_meta_model(
         if trade_log_df.empty:
             logging.error("(Error) ไม่มี Trades ที่ถูกต้องใน Log หลังการประมวลผล.")
             return None, []
-        trade_log_df = trade_log_df.sort_values("entry_time")
+        trade_log_df = trade_log_df.sort_values("datetime")
         logging.info(f"   ประมวลผล Trade Log สำเร็จ ({len(trade_log_df)} trades).")
 
     except Exception as e:
@@ -335,6 +343,8 @@ def train_and_export_meta_model(
             dup_count = m1_df.index.duplicated().sum()
             logging.warning(f"   (Warning) พบ Index ซ้ำ {dup_count} รายการใน M1 Data. กำลังลบรายการซ้ำ (เก็บรายการแรก)...")
             m1_df = m1_df[~m1_df.index.duplicated(keep='first')]
+        # [Patch v5.1.6] Ensure M1 DataFrame has 'datetime' column for merge
+        m1_df['datetime'] = m1_df.index
 
         logging.info(f"   โหลดและเตรียม M1 สำเร็จ ({len(m1_df)} แถว). จำนวน Features เริ่มต้น: {len(m1_df.columns)}")
     except Exception as e:
@@ -347,27 +357,25 @@ def train_and_export_meta_model(
 
     logging.info("   กำลังรวม Trade Log กับ M1 Features (merge_asof)...")
     try:
-        if not pd.api.types.is_datetime64_any_dtype(trade_log_df["entry_time"]):
-            logging.warning("   Converting trade_log entry_time to datetime again before merge.")
-            trade_log_df["entry_time"] = pd.to_datetime(trade_log_df["entry_time"], errors='coerce')
-            trade_log_df.dropna(subset=["entry_time"], inplace=True)
+        if not pd.api.types.is_datetime64_any_dtype(trade_log_df["datetime"]):
+            trade_log_df["datetime"] = pd.to_datetime(trade_log_df["datetime"], errors='coerce')
+            trade_log_df.dropna(subset=["datetime"], inplace=True)
         if trade_log_df.empty:
-            logging.error("(Error) ไม่มี Trades ที่มี entry_time ถูกต้องหลังการแปลง (ก่อน Merge).")
+            logging.error("(Error) ไม่มี Trades ที่มี datetime ถูกต้องหลังการแปลง (ก่อน Merge).")
             return None, []
-        if not trade_log_df["entry_time"].is_monotonic_increasing:
-            trade_log_df = trade_log_df.sort_values("entry_time")
-        if not isinstance(m1_df.index, pd.DatetimeIndex):
-            logging.error("   (Error) M1 index is not DatetimeIndex before merge.")
+        if not pd.api.types.is_datetime64_any_dtype(m1_df["datetime"]):
+            m1_df["datetime"] = pd.to_datetime(m1_df["datetime"], errors='coerce')
+            m1_df.dropna(subset=["datetime"], inplace=True)
+        if trade_log_df.empty or m1_df.empty:
+            logging.error("(Error) DataFrame ว่างหลังการเตรียม datetime สำหรับ merge.")
             return None, []
-        if not m1_df.index.is_monotonic_increasing:
-            logging.warning("   M1 index was not monotonic, sorting again before merge.")
-            m1_df = m1_df.sort_index()
-
+        trade_log_df_sorted = trade_log_df.sort_values("datetime").reset_index(drop=True)
+        m1_df_sorted = m1_df.sort_values("datetime").reset_index(drop=True)
+        logging.info("[Patch] เริ่ม Merge Trade Log กับ M1 Features (merge_asof)")
         merged_df = pd.merge_asof(
-            trade_log_df,
-            m1_df,
-            left_on="entry_time",
-            right_index=True,
+            trade_log_df_sorted,
+            m1_df_sorted,
+            on="datetime",
             direction="backward",
             tolerance=pd.Timedelta(minutes=5)
         )
@@ -375,11 +383,23 @@ def train_and_export_meta_model(
         del trade_log_df, m1_df
         gc.collect()
 
-        # Define initial features based on global config or loaded list
-        initial_features_for_selection = [f for f in META_CLASSIFIER_FEATURES if f in merged_df.columns]
-        if not initial_features_for_selection:
-            logging.error("(Error) ไม่มี Features เริ่มต้นที่ใช้ได้ในข้อมูลที่รวมแล้ว.")
+        # [Patch v5.1.6] Load feature list from features_main.json
+        features_json_path = os.path.join(output_dir, "features_main.json")
+        try:
+            with open(features_json_path, "r", encoding="utf-8") as f_feat:
+                feature_list = json.load(f_feat)
+        except Exception as e_feat:
+            logging.warning(f"[Patch] ไม่สามารถโหลด features_main.json: {e_feat}. ใช้ META_CLASSIFIER_FEATURES แทน")
+            feature_list = META_CLASSIFIER_FEATURES
+
+        available_features = [f for f in feature_list if f in merged_df.columns]
+        missing_features = [f for f in feature_list if f not in merged_df.columns]
+        logging.info(f"[Patch] Available Features หลัง Merge: {len(available_features)} รายการ")
+        logging.info(f"[Patch] Missing Features หลัง Merge: {len(missing_features)} รายการ: {missing_features}")
+        if not available_features:
+            logging.error(f"[Error] ไม่มี Features ใช้ได้หลัง Merge: feature_list ทั้งหมดหายไป! (missing: {missing_features})")
             return None, []
+        initial_features_for_selection = available_features
         logging.info(f"   Features เริ่มต้นสำหรับการเลือก ({len(initial_features_for_selection)}): {sorted(initial_features_for_selection)}")
 
         features_to_check_for_nan = initial_features_for_selection + ["is_tp"]
