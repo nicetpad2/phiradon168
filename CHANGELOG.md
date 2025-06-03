@@ -113,3 +113,8 @@
 - [Patch v4.9.0] Speed up backtest loop via itertuples
 - New/Updated unit tests added for src.strategy
 - QA: pytest -q passed (13 tests)
+
+### 2025-06-03
+- [Patch v5.0.3] เพิ่ม unit tests และปรับ coverage >50%
+- New/Updated unit tests added for src.features, src.data_loader
+- QA: pytest -q passed (34 tests)
