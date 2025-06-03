@@ -123,3 +123,10 @@
 - [Patch v5.0.3] เพิ่ม unit tests และปรับ coverage >50%
 - New/Updated unit tests added for src.features, src.data_loader
 - QA: pytest -q passed (34 tests)
+### 2025-06-03
+- [Patch v5.0.4] Add function registry tests with line checks
+- New/Updated unit tests added for tests.test_function_registry
+- QA: pytest -q passed (39 tests)
+### 2025-06-03
+- [Patch v5.0.5] Adjust function registry test skip logic
+- QA: pytest -q passed (39 tests)
