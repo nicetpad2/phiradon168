@@ -268,3 +268,8 @@
 - New/Updated unit tests added for src.strategy and src.features
 - QA: pytest -q passed (182 tests)
 
+### 2025-06-26
+- [Patch v5.1.0] เพิ่มฟังก์ชัน run_hyperparameter_sweep สำหรับ Grid Search
+- New/Updated unit tests added for src.strategy
+- QA: pytest -q passed (183 tests)
+

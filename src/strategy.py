@@ -3643,14 +3643,15 @@ def run_hyperparameter_sweep(
     results = []
     keys = list(param_grid.keys())
     values = list(param_grid.values())
-    combinations = itertools.product(*values)
+    combinations = list(itertools.product(*values))
     output_dir = base_params.get("output_dir")
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
-    for combo in combinations:
+    for idx, combo in enumerate(combinations, start=1):
         params = base_params.copy()
         for k, v in zip(keys, combo):
             params[k] = v
+        print(f"เริ่มพารามิเตอร์ run {idx}: {params}")
         model_path, feat_list = train_func(**params)
         result_entry = {
             "params": params,
