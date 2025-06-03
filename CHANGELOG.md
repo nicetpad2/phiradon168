@@ -1,3 +1,8 @@
+### 2025-06-30
+- [Patch v5.0.23] Fix GPU logging and optuna sweep fallback
+- New/Updated unit tests added for ProjectP and hyperparameter sweep
+- QA: pytest -q passed (206 tests)
+
 ### 2025-06-25
 - [Patch v5.0.22] Add backtest profiling script
 - New/Updated unit tests added for profile_backtest
