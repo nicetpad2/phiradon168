@@ -24,7 +24,7 @@ def test_parse_multi_params():
 
 
 def test_run_sweep_basic(tmp_path, monkeypatch):
-    def dummy_train_func(output_dir, learning_rate=0.01, depth=6, seed=0):
+    def dummy_train_func(output_dir, learning_rate=0.01, depth=6, l2_leaf_reg=None, seed=0):
         return {
             'model_path': {'model': str(tmp_path / 'm.joblib')},
             'features': ['f'],
