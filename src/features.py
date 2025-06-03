@@ -127,7 +127,17 @@ def rsi(series, period=14):
             _rsi_cache[cache_key] = ta.momentum.RSIIndicator(close=series_numeric, window=period, fillna=False)
         else:
             _rsi_cache[cache_key]._close = series_numeric
-        rsi_values = _rsi_cache[cache_key].rsi(); rsi_final = rsi_values.reindex(series.index).ffill()
+        rsi_values = _rsi_cache[cache_key].rsi()
+        try:
+            # [Patch v5.1.8] Handle duplicate timestamps when reindexing RSI
+            rsi_final = rsi_values.reindex(series.index).ffill()
+        except ValueError as e:
+            logging.warning(
+                f"(Warning) Failed to reindex RSI on series with duplicates: {e}. Dropping duplicate indices and retrying."
+            )
+            series_unique = series[~series.index.duplicated(keep='first')]
+            rsi_unique = rsi_values.reindex(series_unique.index).ffill()
+            rsi_final = rsi_unique.reindex(series.index, method='ffill')
         del series_numeric, rsi_values; gc.collect()
         return rsi_final.astype('float32')
     except Exception as e:
