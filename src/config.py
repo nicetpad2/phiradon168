@@ -83,6 +83,7 @@ logger.info("--- กำลังโหลดไลบรารีและตร
 # [Patch v5.0.2] Exclude log_library_version from coverage
 def log_library_version(library_name, library_object):  # pragma: no cover
     """Logs the version of the imported library."""
+    # [Patch v5.1.0] ยืนยันว่าฟังก์ชันใช้ตัวแปร logger ที่นำเข้าไว้ด้านบน
     try:
         version = getattr(library_object, '__version__', 'N/A')
         logger.info(f"   (Info) Using {library_name} version: {version}")

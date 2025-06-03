@@ -273,3 +273,7 @@
 - New/Updated unit tests added for src.strategy
 - QA: pytest -q passed (183 tests)
 
+### 2025-06-27
+- [Patch v5.1.0] ยืนยันการใช้งาน logger ใน config และข้อความ dummy_train_func
+- QA: pytest -q passed (183 tests)
+
