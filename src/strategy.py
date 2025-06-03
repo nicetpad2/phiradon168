@@ -16,6 +16,7 @@ import numpy as np
 from typing import Dict, List
 from cooldown_utils import is_soft_cooldown_triggered, step_soft_cooldown
 from itertools import product
+from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
 
 # อ่านเวอร์ชันจากไฟล์ VERSION
 VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
@@ -1140,32 +1141,6 @@ OUTPUT_DIR = safe_get_global('OUTPUT_DIR', DEFAULT_OUTPUT_DIR)
 # --- Backtesting Helper Functions ---
 # safe_set_datetime is now in Part 3
 
-def get_session_tag(timestamp, session_times_utc=None):
-    """Helper to get the trading session tag based on UTC timestamp."""
-    if session_times_utc is None:
-        global SESSION_TIMES_UTC
-        session_times_utc = SESSION_TIMES_UTC
-    if pd.isna(timestamp):
-        return "N/A"
-    try:
-        if timestamp.tzinfo is None:
-            ts_utc = pd.Timestamp(timestamp, tz='UTC')
-        else:
-            ts_utc = timestamp.tz_convert('UTC')
-
-        hour = ts_utc.hour
-        sessions = []
-        for name, (start, end) in session_times_utc.items():
-            if start <= end:
-                if start <= hour < end:
-                    sessions.append(name)
-            else:
-                if hour >= start or hour < end:
-                    sessions.append(name)
-        return "/".join(sorted(sessions)) if sessions else "Other"
-    except Exception as e:
-        logging.error(f"   (Error) Error in get_session_tag for {timestamp}: {e}", exc_info=True)
-        return "Error"
 
 def dynamic_tp2_multiplier(current_atr, avg_atr, base=None):
     """Calculates a dynamic TP multiplier based on current vs average ATR."""

@@ -254,3 +254,7 @@
 - [Patch v5.1.2] เพิ่มตัวแปร AUTO_INSTALL_LIBS และปรับ logic ตรวจสอบไลบรารี
 - New/Updated unit tests added for src.config และ README.md
 - QA: pytest -q passed (170 tests)
+### 2025-06-03
+- [Patch v5.1.3] Consolidate get_session_tag into utils module
+- New/Updated unit tests added for src.utils.sessions
+- QA: pytest -q passed (174 tests)
