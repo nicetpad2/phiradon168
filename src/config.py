@@ -616,7 +616,7 @@ logging.debug(f"Session Times (UTC): {SESSION_TIMES_UTC}")
 logging.debug("Setting Fold-Specific Configuration...")
 ENTRY_CONFIG_PER_FOLD = {
     # Fold Index: {Config Dictionary}
-    0: {"sl_multiplier": 2.0, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": MIN_SIGNAL_SCORE_ENTRY, },
+    0: {"sl_multiplier": 2.8, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": MIN_SIGNAL_SCORE_ENTRY, },
     1: {"sl_multiplier": 2.0, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": MIN_SIGNAL_SCORE_ENTRY, },
     2: {"sl_multiplier": 2.0, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": MIN_SIGNAL_SCORE_ENTRY, },
     3: {"sl_multiplier": 2.0, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": MIN_SIGNAL_SCORE_ENTRY, },
@@ -641,7 +641,7 @@ logging.info(f"Max Drawdown Threshold (Block New Orders): {MAX_DRAWDOWN_THRESHOL
 # --- Spike Guard & Recovery Mode Configuration ---
 logging.debug("Setting Spike Guard & Recovery Mode Configuration...")
 ENABLE_SPIKE_GUARD = True       # Enable/disable spike guard filter (mainly London session)
-RECOVERY_MODE_CONSECUTIVE_LOSSES = 5 # [Patch v5.3.5] Slightly higher tolerance
+RECOVERY_MODE_CONSECUTIVE_LOSSES = 4 # Consecutive losses to enter recovery mode
 RECOVERY_MODE_LOT_MULTIPLIER = 0.5 # Lot size multiplier during recovery mode
 logging.info(f"Spike Guard Enabled: {ENABLE_SPIKE_GUARD}")
 logging.info(f"Recovery Mode Enabled: Losses >= {RECOVERY_MODE_CONSECUTIVE_LOSSES}, Lot Multiplier: {RECOVERY_MODE_LOT_MULTIPLIER}")
