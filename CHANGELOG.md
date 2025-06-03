@@ -1,3 +1,8 @@
+### 2025-06-25
+- [Patch v5.0.22] Add backtest profiling script
+- New/Updated unit tests added for profile_backtest
+- QA: pytest -q passed (174 tests)
+
 ### 2025-06-20
 - [Patch v5.0.21] Centralize version management
 - New/Updated unit tests added for src.config and src.strategy
