@@ -1100,7 +1100,7 @@ DEFAULT_RISK_PER_TRADE = 0.01
 DEFAULT_USE_REENTRY = True
 DEFAULT_REENTRY_COOLDOWN_BARS = 1
 DEFAULT_TIMEFRAME_MINUTES_M1 = 1
-DEFAULT_MAX_CONCURRENT_ORDERS = 5
+DEFAULT_MAX_CONCURRENT_ORDERS = 7
 DEFAULT_MAX_HOLDING_BARS = 24
 DEFAULT_COMMISSION_PER_001_LOT = 0.10
 DEFAULT_SPREAD_POINTS = 2.0
@@ -1118,7 +1118,7 @@ DEFAULT_FORCED_ENTRY_ALLOWED_REGIMES = ["Normal", "Breakout", "StrongTrend"]
 DEFAULT_FE_ML_FILTER_THRESHOLD = 0.40
 DEFAULT_forced_entry_max_consecutive_losses = 2
 DEFAULT_min_equity_threshold_pct = 0.70
-DEFAULT_ENTRY_CONFIG_PER_FOLD = {0: {"sl_multiplier": 2.0, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": 2.0}}
+DEFAULT_ENTRY_CONFIG_PER_FOLD = {0: {"sl_multiplier": 2.8, "gain_z_thresh": 0.3, "cooldown_sec": 0, "min_signal_score": 2.0}}
 DEFAULT_BASE_BE_SL_R_THRESHOLD = 1.0
 DEFAULT_DYNAMIC_BE_ATR_THRESHOLD_HIGH = 1.2
 DEFAULT_DYNAMIC_BE_R_ADJUST_HIGH = 0.2
@@ -1126,7 +1126,7 @@ DEFAULT_ENABLE_PARTIAL_TP = True
 DEFAULT_PARTIAL_TP_LEVELS = [{"r_multiple": 0.8, "close_pct": 0.5}]
 DEFAULT_PARTIAL_TP_MOVE_SL_TO_ENTRY = True
 DEFAULT_ENABLE_KILL_SWITCH = True
-DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.20
+DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.25
 DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 7
 DEFAULT_FUND_PROFILES = {"NORMAL": {"risk": 0.01, "mm_mode": "balanced"}}
 DEFAULT_FUND_NAME = "NORMAL"
@@ -1765,7 +1765,11 @@ def run_backtest_simulation_v34(
             else: default_val = 0.0
             df_sim[col_name] = default_val
     logging.debug(f"Result columns initialized for suffix '{label_suffix}'.")
-    base_cfg = ENTRY_CONFIG_PER_FOLD.get(current_fold_index, ENTRY_CONFIG_PER_FOLD.get(0, {})); fold_sl_multiplier_base = fold_config.get("sl_multiplier", base_cfg.get("sl_multiplier", 2.0)); logging.info(f"   [Patch B Check] Using SL Multiplier: {fold_sl_multiplier_base} for Fold {current_fold_index+1} (from fold_config or base_cfg)")
+    base_cfg = ENTRY_CONFIG_PER_FOLD.get(current_fold_index, ENTRY_CONFIG_PER_FOLD.get(0, {}))
+    fold_sl_multiplier_base = fold_config.get("sl_multiplier", base_cfg.get("sl_multiplier", 2.8))
+    logging.info(
+        f"   [Patch B Check] Using SL Multiplier: {fold_sl_multiplier_base} for Fold {current_fold_index+1} (from fold_config or base_cfg)"
+    )
     base_be_r_thresh = BASE_BE_SL_R_THRESHOLD; base_tp_multiplier_config = BASE_TP_MULTIPLIER; local_forced_entry_min_gain_z_abs = FORCED_ENTRY_MIN_GAIN_Z_ABS
     ignore_rsi_scoring = fold_config.get('ignore_rsi_scoring', False); use_gain_based_exit = fold_config.get('use_gain_based_exit', False); drift_override_active = ignore_rsi_scoring or use_gain_based_exit; drift_override_reason = ""
     if ignore_rsi_scoring: drift_override_reason += "RSI_Drift "
@@ -1866,15 +1870,31 @@ def run_backtest_simulation_v34(
                         else: logging.warning(f"   (Warning) Cannot calculate Partial TP for order {order_entry_time}: Invalid SL delta price ({sl_delta_price_ptp}).")
                     current_atr_num_early_exit = pd.to_numeric(current_atr, errors='coerce')
                     if not order_closed_this_bar and order.get("partial_tp_processed_levels") and pd.notna(current_atr_num_early_exit) and current_atr_num_early_exit > 1e-9:
-                        reversal_threshold_atr = 1.5; early_exit_triggered = False
+                        # [Patch v5.3.5] Add buffer to EarlyExit and increase ATR threshold
+                        reversal_threshold_atr = 2.0
+                        entry_bar = order.get("entry_bar_count", current_bar_index)
+                        bars_since_open = current_bar_index - entry_bar
+                        early_exit_triggered = False
                         if order_side == "BUY":
                             peak_since_tp1 = order.get("peak_since_tp1")
-                            if pd.notna(peak_since_tp1): order["peak_since_tp1"] = max(peak_since_tp1, current_high); reversal_distance = order["peak_since_tp1"] - current_low; reversal_threshold_price = reversal_threshold_atr * current_atr_num_early_exit;
-                            if reversal_distance >= reversal_threshold_price: early_exit_triggered = True; close_reason = f"EarlyExit_Reversal_{reversal_threshold_atr}ATR"; exit_price = current_close
+                            if pd.notna(peak_since_tp1):
+                                order["peak_since_tp1"] = max(peak_since_tp1, current_high)
+                            reversal_distance = order["peak_since_tp1"] - current_low
+                            reversal_threshold_price = reversal_threshold_atr * current_atr_num_early_exit
+                            if bars_since_open > 3 and reversal_distance >= reversal_threshold_price:
+                                early_exit_triggered = True
+                                close_reason = f"EarlyExit_Reversal_{reversal_threshold_atr}ATR (buffer)"
+                                exit_price = current_close
                         elif order_side == "SELL":
                             trough_since_tp1 = order.get("trough_since_tp1")
-                            if pd.notna(trough_since_tp1): order["trough_since_tp1"] = min(trough_since_tp1, current_low); reversal_distance = current_high - order["trough_since_tp1"]; reversal_threshold_price = reversal_threshold_atr * current_atr_num_early_exit;
-                            if reversal_distance >= reversal_threshold_price: early_exit_triggered = True; close_reason = f"EarlyExit_Reversal_{reversal_threshold_atr}ATR"; exit_price = current_close
+                            if pd.notna(trough_since_tp1):
+                                order["trough_since_tp1"] = min(trough_since_tp1, current_low)
+                            reversal_distance = current_high - order["trough_since_tp1"]
+                            reversal_threshold_price = reversal_threshold_atr * current_atr_num_early_exit
+                            if bars_since_open > 3 and reversal_distance >= reversal_threshold_price:
+                                early_exit_triggered = True
+                                close_reason = f"EarlyExit_Reversal_{reversal_threshold_atr}ATR (buffer)"
+                                exit_price = current_close
                         if early_exit_triggered: logging.info(f"      Early Exit triggered for order {order_entry_time} at {now}. Reason: {close_reason}"); order_closed_this_bar = True; close_timestamp = now
 
                     if not order_closed_this_bar:
@@ -2216,6 +2236,9 @@ def run_backtest_simulation_v34(
                    f"BEs:{be_sl_triggered_count_run}, TSLs:{tsl_triggered_count_run}")
     logging.info(summary_msg)
     logging.info(f"      Equity สุดท้าย: ${equity:.2f} (จาก ${initial_capital_segment:.2f})")
+    # [Patch v5.3.5] Safeguard NaN/Inf Check in PnL and feature processing
+    if np.isnan(equity) or np.isinf(equity):
+        logging.critical("[CRITICAL] NaN/Inf detected in final equity, investigation required.")
     logging.info(f"      Blocks: MaxDD={orders_blocked_by_drawdown}, Cooldown={orders_blocked_by_cooldown}, LotScale={orders_lot_scaled}, ML1Skip={orders_skipped_ml_l1}(T={current_meta_threshold_l1:.2f})")
     new_blocks_count = sum(1 for b in blocked_order_log if b.get('reason') in ["HIGH_VOL_INDEX", "HIGH_ATR_LOW_SCORE", "NEG_MACD_BUY", "POS_MACD_SELL", f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T", "SPIKE_GUARD_LONDON"])
     logging.info(f"      Blocks (New v4.6/v4.8): Vol/ATR/MACD/SoftCool/Spike={new_blocks_count}")
@@ -2295,7 +2318,7 @@ DEFAULT_ENABLE_PARTIAL_TP = True
 DEFAULT_PARTIAL_TP_LEVELS = []
 DEFAULT_PARTIAL_TP_MOVE_SL_TO_ENTRY = True
 DEFAULT_ENABLE_KILL_SWITCH = True
-DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.20
+DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.25
 DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 7
 DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES = 4
 DEFAULT_min_equity_threshold_pct = 0.70
@@ -3601,6 +3624,17 @@ def run_all_folds_with_threshold(
         )
         logging.warning(
             f"   (Summary) Equity={fold_equity:.2f}, Winrate={fold_winrate:.2%}, MaxDD={fold_maxdd:.2%}"
+        )
+        # [Patch v5.3.5] Add QA summary after each fold
+        trades_buy = metrics_buy_fold.get(f"Fold {fold+1} Buy ({fund_name}) Total Trades (Full)", 0)
+        trades_sell = metrics_sell_fold.get(f"Fold {fold+1} Sell ({fund_name}) Total Trades (Full)", 0)
+        num_trades = trades_buy + trades_sell
+        risk_buy = metrics_buy_fold.get(f"Fold {fold+1} Buy ({fund_name}) Final Risk Mode", "N/A")
+        risk_sell = metrics_sell_fold.get(f"Fold {fold+1} Sell ({fund_name}) Final Risk Mode", "N/A")
+        recovery_active = risk_buy == "recovery" or risk_sell == "recovery"
+        kill_switch_triggered = final_ks_state_buy or final_ks_state_sell
+        logging.warning(
+            f"  [QA SUMMARY FOLD] | Final Equity: ${fold_equity:.2f} | Max DD: {fold_maxdd:.2%} | Winrate: {fold_winrate:.2%} | Trades: {num_trades} | KILL SWITCH: {kill_switch_triggered} | Recovery: {recovery_active}"
         )
 
         logging.debug(f"        Cleaning up memory after Fold {fold+1}...")
