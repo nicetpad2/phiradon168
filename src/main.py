@@ -67,6 +67,15 @@ import glob
 from joblib import load # For loading models
 import gc # For memory management
 
+# [Patch] Initialize pynvml to prevent NameError during GPU checks
+try:
+    import pynvml
+    pynvml.nvmlInit()
+    nvml_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+except Exception:  # pragma: no cover - allow running without NVML
+    pynvml = None
+    nvml_handle = None
+
 # Ensure global configurations are accessible if run independently
 # Define defaults if globals are not found
 DEFAULT_OUTPUT_DIR = "./output_default"
