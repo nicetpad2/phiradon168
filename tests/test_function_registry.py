@@ -25,6 +25,7 @@ FUNCTIONS_INFO = [
     ("src/features.py", "load_feature_config", 1212),
     ("src/features.py", "calculate_ml_features", 1217),
 
+
     ("src/main.py", "parse_arguments", 1745),
     ("src/main.py", "setup_output_directory", 1750),
     ("src/main.py", "load_features_from_file", 1755),
@@ -34,24 +35,17 @@ FUNCTIONS_INFO = [
     ("src/main.py", "save_final_data", 1775),
 
 
+
     ("src/strategy.py", "run_backtest_simulation_v34", 1663),
-
-
-
     ("src/strategy.py", "initialize_time_series_split", 3772),
     ("src/strategy.py", "calculate_forced_entry_logic", 3775),
     ("src/strategy.py", "apply_kill_switch", 3778),
     ("src/strategy.py", "log_trade", 3781),
     ("src/strategy.py", "calculate_metrics", 2661),
-
     ("src/strategy.py", "aggregate_fold_results", 3784),
-
-
-
-
-
     ("ProjectP.py", "custom_helper_function", 20),
 ]
+
 
 @pytest.mark.parametrize("path, func_name, expected_lineno", FUNCTIONS_INFO)
 def test_function_exists(path, func_name, expected_lineno):
@@ -61,8 +55,8 @@ def test_function_exists(path, func_name, expected_lineno):
         tree = ast.parse(f.read())
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name == func_name:
-            assert abs(node.lineno - expected_lineno) <= 5, (
-                f"Line mismatch for {func_name}: {node.lineno} (expected {expected_lineno})"
-            )
+            assert (
+                abs(node.lineno - expected_lineno) <= 5
+            ), f"Line mismatch for {func_name}: {node.lineno} (expected {expected_lineno})"
             return
     assert False, f"{func_name} not found in {path}"

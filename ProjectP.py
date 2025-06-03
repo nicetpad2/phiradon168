@@ -7,6 +7,7 @@ import logging
 # [Patch] Initialize pynvml for GPU status detection
 try:
     import pynvml
+
     pynvml.nvmlInit()
     nvml_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
 except ImportError:  # pragma: no cover - optional dependency
@@ -17,11 +18,13 @@ except Exception:  # pragma: no cover - NVML failure fallback
 
 from src.main import main
 
+
 def custom_helper_function():
     """Stubbed helper for tests."""
     return True
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
@@ -30,7 +33,11 @@ if __name__ == '__main__':
         logger.error("เกิดข้อผิดพลาดที่ไม่คาดคิด: %s", str(e), exc_info=True)
         sys.exit(1)
     else:
-        if 'pynvml' in globals() and nvml_handle:
-            logging.info(f"GPU Initialized: {nvml_handle}")
+        if "pynvml" in globals() and nvml_handle:
+            try:
+                pynvml.nvmlShutdown()
+                logging.info("GPU resources released")
+            except Exception as e:
+                logging.warning(f"Failed to shut down NVML: {e}")
         else:
             logging.info("GPU not available, running on CPU")
