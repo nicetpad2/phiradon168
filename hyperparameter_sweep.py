@@ -6,6 +6,8 @@
 
 """Example script for running hyperparameter sweeps."""
 
+from src.config import logger
+import sys
 from src.strategy import run_hyperparameter_sweep
 
 
@@ -30,4 +32,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        logger.error("เกิดข้อผิดพลาดที่ไม่คาดคิด: %s", str(e), exc_info=True)
+        sys.exit(1)

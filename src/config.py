@@ -46,23 +46,37 @@ from matplotlib.ticker import FuncFormatter
 from IPython import get_ipython
 import shutil
 import gzip
-import requests # For Font Download
+import requests  # For Font Download
 
 # --- Logging Configuration ---
 # กำหนดค่าพื้นฐานสำหรับการ Logging
 # สามารถปรับ level, format, และ filename ได้ตามต้องการ
 LOG_FILENAME = f'gold_ai_v{__version__}.log'
-logging.basicConfig(
-    level=logging.INFO, # ระดับ Log เริ่มต้น (INFO, DEBUG, WARNING, ERROR, CRITICAL)
-    format='%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
-    handlers=[
-        logging.FileHandler(LOG_FILENAME, mode='w', encoding='utf-8'), # บันทึกลงไฟล์ (เขียนทับทุกครั้งที่รัน)
-        logging.StreamHandler(sys.stdout) # แสดงผลทาง Console ด้วย
-    ]
+
+# ตั้งค่า Logger กลางเพื่อให้โมดูลอื่น ๆ ใช้งานร่วมกัน
+logger = logging.getLogger('NiceGold')
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter(
+    '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
 )
-logging.info(f"--- (Start) Gold AI v{__version__} ---")
-logging.info("--- กำลังโหลดไลบรารีและตรวจสอบ Dependencies ---")
+fh = logging.FileHandler(LOG_FILENAME, mode='w', encoding='utf-8')
+fh.setFormatter(formatter)
+sh = logging.StreamHandler(sys.stdout)
+sh.setFormatter(formatter)
+logger.handlers.clear()
+logger.addHandler(fh)
+logger.addHandler(sh)
+logger.propagate = True
+
+# ให้ root logger ใช้ handler เดียวกับ logger กลางเพื่อรองรับโค้ดเดิมที่ใช้ logging
+root_logger = logging.getLogger()
+root_logger.handlers = []
+root_logger.setLevel(logging.INFO)
+for handler in logger.handlers:
+    root_logger.addHandler(handler)
+
+logger.info(f"--- (Start) Gold AI v{__version__} ---")
+logger.info("--- กำลังโหลดไลบรารีและตรวจสอบ Dependencies ---")
 
 # --- Library Installation & Checks ---
 # Helper function to check and log library version
@@ -71,9 +85,9 @@ def log_library_version(library_name, library_object):  # pragma: no cover
     """Logs the version of the imported library."""
     try:
         version = getattr(library_object, '__version__', 'N/A')
-        logging.info(f"   (Info) Using {library_name} version: {version}")
+        logger.info(f"   (Info) Using {library_name} version: {version}")
     except Exception as e:
-        logging.warning(f"   (Warning) Could not retrieve {library_name} version: {e}")
+        logger.warning(f"   (Warning) Could not retrieve {library_name} version: {e}")
 
 # Log versions of core libraries
 log_library_version("Pandas", pd)

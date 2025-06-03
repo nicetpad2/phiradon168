@@ -3,11 +3,11 @@ import os
 import pytest
 
 FUNCTIONS_INFO = [
-    ("src/config.py", "log_library_version", 70),
-    ("src/config.py", "_ensure_ta_installed", 114),
-    ("src/config.py", "is_colab", 305),
-    ("src/config.py", "print_gpu_utilization", 377),
-    ("src/config.py", "show_system_status", 421),
+    ("src/config.py", "log_library_version", 84),
+    ("src/config.py", "_ensure_ta_installed", 128),
+    ("src/config.py", "is_colab", 319),
+    ("src/config.py", "print_gpu_utilization", 391),
+    ("src/config.py", "show_system_status", 435),
     ("src/data_loader.py", "inspect_file_exists", 846),
     ("src/data_loader.py", "read_csv_with_date_parse", 851),
     ("src/data_loader.py", "check_nan_percent", 858),
