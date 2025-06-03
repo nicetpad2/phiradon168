@@ -119,30 +119,31 @@ def rsi(series, period=14):
     # [Patch v4.8.12] Use module-level cache for RSIIndicator
     if series.empty: logging.debug("RSI: Input series is empty, returning empty series."); return pd.Series(dtype='float32')
     if 'ta' not in globals() or ta is None: logging.error("   (Error) RSI calculation failed: 'ta' library not loaded."); return pd.Series(np.nan, index=series.index, dtype='float32')  # pragma: no cover
+    # Convert to numeric and drop NaN/inf values
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
-    if series_numeric.empty or len(series_numeric) < period: logging.warning(f"   (Warning) RSI calculation skipped: Not enough valid data points ({len(series_numeric)} < {period})."); return pd.Series(np.nan, index=series.index, dtype='float32')  # pragma: no cover
+    if series_numeric.empty or len(series_numeric) < period:
+        logging.warning(
+            f"   (Warning) RSI calculation skipped: Not enough valid data points ({len(series_numeric)} < {period})."
+        )
+        return pd.Series(np.nan, index=series.index, dtype='float32')
+    # [Patch v5.1.10] Drop duplicate timestamps to avoid reindex errors
+    if series_numeric.index.duplicated().any():
+        series_numeric = series_numeric[~series_numeric.index.duplicated(keep='first')]
     try:
         cache_key = period
         if cache_key not in _rsi_cache:
             _rsi_cache[cache_key] = ta.momentum.RSIIndicator(close=series_numeric, window=period, fillna=False)
         else:
             _rsi_cache[cache_key]._close = series_numeric
-        rsi_values = _rsi_cache[cache_key].rsi()
-        try:
-            # [Patch v5.1.8] Handle duplicate timestamps when reindexing RSI
-            rsi_final = rsi_values.reindex(series.index).ffill()
-        except ValueError as e:
-            logging.warning(
-                f"(Warning) Failed to reindex RSI on series with duplicates: {e}. Dropping duplicate indices and retrying."
-            )
-            series_unique = series[~series.index.duplicated(keep='first')]
-            rsi_unique = rsi_values.reindex(series_unique.index).ffill()
-            rsi_final = rsi_unique.reindex(series.index, method='ffill')
-        del series_numeric, rsi_values; gc.collect()
-        return rsi_final.astype('float32')
+        rsi_series = _rsi_cache[cache_key].rsi()
+        # Reindex to original index with forward-fill
+        rsi_final = rsi_series.reindex(series.index, method='ffill').astype('float32')
+        del series_numeric, rsi_series
+        gc.collect()
+        return rsi_final
     except Exception as e:
         logging.error(f"   (Error) RSI calculation error for period {period}: {e}.", exc_info=True)
-        return pd.Series(np.nan, index=series.index, dtype='float32')  # pragma: no cover
+        return pd.Series(np.nan, index=series.index, dtype='float32')
 
 def atr(df_in, period=14):
     if not isinstance(df_in, pd.DataFrame): logging.error(f"ATR Error: Input must be a pandas DataFrame, got {type(df_in)}"); raise TypeError("Input must be a pandas DataFrame.")
