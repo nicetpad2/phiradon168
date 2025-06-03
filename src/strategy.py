@@ -14,7 +14,11 @@ import json
 import pandas as pd
 import numpy as np
 from typing import Dict, List
-from cooldown_utils import is_soft_cooldown_triggered, step_soft_cooldown
+# [Patch v5.2.0] Use explicit package import for cooldown utilities
+from src.cooldown_utils import (
+    is_soft_cooldown_triggered,
+    step_soft_cooldown,
+)
 from itertools import product
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
 
