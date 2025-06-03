@@ -14,6 +14,7 @@ import json
 import pandas as pd
 import numpy as np
 from typing import Dict, List
+from itertools import product
 try:
     import numba
     from numba import njit
@@ -3624,6 +3625,24 @@ def run_simple_numba_backtest(df_all: pd.DataFrame, folds: List[tuple]) -> Dict[
         )
         results[fold_idx] = trades_count
     logging.info("All folds finished.")
+    return results
+
+# [Patch v5.0.17] Add hyperparameter sweep helper
+def run_hyperparameter_sweep(
+    base_params: Dict,
+    param_grid: Dict[str, list],
+    train_func=train_and_export_meta_model,
+):
+    """รันทดสอบ hyperparameter แบบ grid search อย่างง่าย"""
+    logging.info("(HyperSweep) เริ่มต้นการทดสอบ hyperparameter...")
+    results = []
+    keys = list(param_grid.keys())
+    for values in product(*(param_grid[k] for k in keys)):
+        sweep_params = base_params.copy()
+        sweep_params.update(dict(zip(keys, values)))
+        logging.info(f"(HyperSweep) กำลังเทสพารามิเตอร์: {sweep_params}")
+        model_paths, feats = train_func(**sweep_params)
+        results.append({"params": sweep_params, "model_paths": model_paths, "features": feats})
     return results
 
 
