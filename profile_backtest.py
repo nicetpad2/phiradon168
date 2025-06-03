@@ -28,7 +28,14 @@ def main_profile(csv_path: str, num_rows: int = 5000) -> None:
             # Fallback for files where the first column becomes the index
             if not isinstance(df.index, pd.DatetimeIndex):
                 df.index = pd.to_datetime(df.index, errors='coerce')
-    run_backtest_simulation_v34(df, label="profile", initial_capital_segment=10000)
+    # Provide minimal fold_config and current_fold_index to avoid warnings
+    run_backtest_simulation_v34(
+        df,
+        label="profile",
+        initial_capital_segment=10000,
+        fold_config={},
+        current_fold_index=0,
+    )
 
 
 def profile_from_cli() -> None:
