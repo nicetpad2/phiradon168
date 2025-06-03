@@ -394,6 +394,11 @@
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (199 tests)
 
+### 2025-07-12
+- [Patch v5.3.1] Robust Metrics Assignment in run_all_folds_with_threshold
+- New/Updated unit tests added for src.strategy
+- QA: pytest -q passed (199 tests)
+
 
 ### 2025-07-12
 - [Patch v5.3.1] Safeguard main pipeline from missing metrics
