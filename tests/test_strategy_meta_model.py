@@ -21,7 +21,7 @@ class DummyPool:
 
 def test_train_and_export_meta_model(tmp_path, monkeypatch):
     trade_log = pd.DataFrame({
-        'entry_time': pd.date_range('2023-01-01', periods=5, freq='T'),
+        'entry_time': pd.date_range('2023-01-01', periods=5, freq='min'),
         'exit_reason': ['TP', 'SL', 'TP', 'SL', 'TP']
     })
     m1 = pd.DataFrame({
@@ -30,7 +30,7 @@ def test_train_and_export_meta_model(tmp_path, monkeypatch):
         'Low': np.linspace(1, 5, 5)-0.1,
         'Close': np.linspace(1, 5, 5),
         'ATR_14': np.ones(5)
-    }, index=pd.date_range('2023-01-01', periods=5, freq='T'))
+    }, index=pd.date_range('2023-01-01', periods=5, freq='min'))
     m1_path = tmp_path / 'm1.csv'
     m1.to_csv(m1_path)
     monkeypatch.setattr(strategy, 'USE_GPU_ACCELERATION', False, raising=False)
