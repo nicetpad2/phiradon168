@@ -1960,7 +1960,7 @@ def run_backtest_simulation_v34(
                     if not relax_macd_cond:
                         if side == "BUY" and current_macd_smooth < 0: can_open_order = False; block_reason = f"NEG_MACD_BUY (MACD={current_macd_smooth:.3f})"
                         elif side == "SELL" and current_macd_smooth > 0: can_open_order = False; block_reason = f"POS_MACD_SELL (MACD={current_macd_smooth:.3f})"
-                if can_open_order and len(last_n_full_trade_pnls) >= SOFT_COOLDOWN_LOSS_COUNT:
+                if can_open_order and len(last_n_full_trade_pnls) >= SOFT_COOLDOWN_LOOKBACK:
                     recent_losses_count = sum(1 for pnl in last_n_full_trade_pnls[-SOFT_COOLDOWN_LOOKBACK:] if pnl < 0)
                     if recent_losses_count >= SOFT_COOLDOWN_LOSS_COUNT: can_open_order = False; block_reason = f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T ({recent_losses_count} losses)"
                 if block_reason: logging.debug(f"      Block Reason: {block_reason}")
