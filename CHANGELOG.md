@@ -322,3 +322,7 @@
 ### 2025-07-03
 - [Patch v5.2.0] Import print_gpu_utilization in strategy module
 - QA: pytest -q passed (190 tests)
+### 2025-07-04
+- [Patch v5.1.10] Fixed RSI reindex issue due to duplicate timestamps
+- New/Updated unit tests added for src.features
+- QA: pytest -q passed (190 tests)
