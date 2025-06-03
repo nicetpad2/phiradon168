@@ -410,3 +410,8 @@
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed
 
+### 2025-07-13
+- [Patch v5.3.3] Fix Colab detection when running scripts
+- New/Updated unit tests added for src.config
+- QA: pytest -q passed (210 tests)
+

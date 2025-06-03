@@ -23,8 +23,6 @@ def _import_config(monkeypatch):
 def test_is_colab_false(monkeypatch):
     if 'google.colab' in sys.modules:
         monkeypatch.delitem(sys.modules, 'google.colab', raising=False)
-    monkeypatch.setitem(sys.modules, 'IPython', types.ModuleType('IPython'))
-    monkeypatch.setattr('IPython.get_ipython', lambda: None, raising=False)
     config = _import_config(monkeypatch)
     assert config.is_colab() is False
 
@@ -36,8 +34,5 @@ def test_is_colab_true(monkeypatch):
     parent.colab = dummy
     monkeypatch.setitem(sys.modules, 'google', parent)
     monkeypatch.setitem(sys.modules, 'google.colab', dummy)
-    ip_module = types.ModuleType('IPython')
-    ip_module.get_ipython = lambda: types.SimpleNamespace(kernel=object())
-    monkeypatch.setitem(sys.modules, 'IPython', ip_module)
     config = _import_config(monkeypatch)
     assert config.is_colab() is True
