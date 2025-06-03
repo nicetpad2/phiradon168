@@ -1,6 +1,10 @@
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
+
+# [Patch v5.0.14] Ensure proper import path for src package
+REPO_ROOT = os.path.dirname(__file__)
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
 from src.main import main
 
 
