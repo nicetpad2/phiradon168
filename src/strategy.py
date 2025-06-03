@@ -3797,8 +3797,9 @@ def run_optuna_catboost_sweep(
 ):
     """Runs Optuna hyperparameter search for CatBoost."""
     if optuna is None or CatBoostClassifier is None:
+        # [Patch v5.0.23] Return stub values when dependencies are missing
         logging.error("(Error) optuna or catboost not available for sweep")
-        return None, {}
+        return 0.0, {}
 
     def objective(trial):
         params = {

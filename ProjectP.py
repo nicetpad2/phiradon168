@@ -33,7 +33,10 @@ if __name__ == "__main__":
         logger.error("เกิดข้อผิดพลาดที่ไม่คาดคิด: %s", str(e), exc_info=True)
         sys.exit(1)
     else:
-        if "pynvml" in globals() and nvml_handle:
+        # [Patch v5.0.23] Respect USE_GPU_ACCELERATION flag when logging GPU status
+        main_mod = sys.modules.get("src.main")
+        use_gpu = getattr(main_mod, "USE_GPU_ACCELERATION", False)
+        if use_gpu and "pynvml" in globals() and nvml_handle:
             try:
                 pynvml.nvmlShutdown()
                 logging.info("GPU resources released")
