@@ -278,4 +278,9 @@
 - [Patch v5.1.0] รวมลำดับการแสดงผล Run ให้อยู่ใน loop เดียวกัน
 - QA: pytest -q passed (183 tests)
 
+### 2025-06-28
+- [Patch v5.1.5] profile_backtest.py: เพิ่มการสร้าง Features M1 ก่อนรัน backtest
+- New/Updated unit tests added for profile_backtest
+- QA: pytest -q passed (183 tests)
+
 

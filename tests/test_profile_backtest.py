@@ -10,7 +10,7 @@ import profile_backtest
 import logging
 
 
-def test_main_profile_runs(tmp_path):
+def test_main_profile_runs(tmp_path, monkeypatch):
     df = pd.DataFrame({
         'Datetime': pd.date_range('2022-01-01', periods=3, freq='min', tz='UTC'),
         'Open': [1, 2, 3],
@@ -20,7 +20,18 @@ def test_main_profile_runs(tmp_path):
     })
     csv_path = tmp_path / 'mini.csv'
     df.to_csv(csv_path, index=False)
+
+    captured_cols = {}
+
+    def dummy_run_backtest(df, *args, **kwargs):
+        captured_cols['cols'] = df.columns.tolist()
+
+    monkeypatch.setattr(profile_backtest, 'run_backtest_simulation_v34', dummy_run_backtest)
+
     profile_backtest.main_profile(str(csv_path), num_rows=2)
+
+    for required in ['ATR_14', 'Gain_Z', 'MACD_hist']:
+        assert required in captured_cols['cols']
 
 
 def test_main_profile_missing_columns(tmp_path, caplog):
