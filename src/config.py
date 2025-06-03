@@ -357,7 +357,14 @@ except ImportError:
 def is_colab():
     try:
         import google.colab  # noqa: F401
-        return True
+        try:
+            from IPython import get_ipython
+            ip = get_ipython()
+            if ip and getattr(ip, "kernel", None) is not None:
+                return True
+        except Exception:
+            pass
+        return False
     except ImportError:
         return False
 

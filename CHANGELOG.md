@@ -328,3 +328,8 @@
 - New/Updated unit tests added for src.features
 - QA: pytest -q passed (190 tests)
 
+### 2025-07-05
+- [Patch v5.2.1] Improve is_colab detection to avoid mount errors
+- New/Updated unit tests added for config and registry
+- QA: pytest -q passed (193 tests)
+
