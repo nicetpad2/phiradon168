@@ -2121,7 +2121,10 @@ def run_backtest_simulation_v34(
                         df_sim.loc[current_index, f"Active_Model{label_suffix}"] = f"ErrorFallback_{selected_model_key}"
                         df_sim.loc[current_index, f"Model_Confidence{label_suffix}"] = np.nan
                     if active_l1_model and active_l1_features:
-                        missing_ml_features = [f for f in active_l1_features if f not in row.index]
+                        # [Patch v5.1.1] Fix feature check for namedtuple rows
+                        missing_ml_features = [
+                            f for f in active_l1_features if f not in row._fields
+                        ]
                         if missing_ml_features: logging.error(f"      (Error) ML Filter ({selected_model_key}): Missing features {missing_ml_features} in row data. Skipping filter."); can_open_order = False; block_reason = f"ML1_FEAT_MISS_{selected_model_key.upper()}"
                         else:
                             try:
