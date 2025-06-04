@@ -959,10 +959,16 @@ def train_and_export_meta_model(
 
             if enable_threshold_tuning and y_proba_cat_val is not None:
                 try:
-                    best_t, best_s = find_best_threshold(y_proba_cat_val, y_val_cat)
-                    logging.info(f"[Patch] Tuned threshold to {best_t:.2f} (F1={best_s:.3f})")
+                    res = find_best_threshold(y_proba_cat_val, y_val_cat)
+                    best_t = res["best_threshold"]
+                    best_s = res["best_f1"]
+                    logging.info(
+                        f"[Patch] Tuned threshold to {best_t:.2f} (F1={best_s:.3f})"
+                    )
                 except Exception as e_thresh:
-                    logging.warning(f"[Patch] Threshold tuning failed: {e_thresh}")
+                    logging.warning(
+                        f"[Patch] Threshold tuning failed: {e_thresh}"
+                    )
 
             # --- SHAP Analysis on Validation Set ---
             if shap and X_val_cat_for_shap is not None and not X_val_cat_for_shap.empty and cat_model is not None: # Check cat_model exists
