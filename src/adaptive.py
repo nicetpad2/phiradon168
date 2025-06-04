@@ -1,6 +1,8 @@
 import json
 import logging
 from pathlib import Path
+import pandas as pd
+from src import features
 
 
 def adaptive_sl_tp(current_atr, avg_atr, base_sl=2.0, base_tp=1.8):
@@ -47,3 +49,49 @@ def log_best_params(params, fold_index, output_dir):
     except Exception as e:  # pragma: no cover - logging only
         logging.error(f"Could not save best params: {e}")
         return None
+
+
+def calculate_atr(df, period=14):
+    """Return the latest ATR value using features.atr."""
+    if not isinstance(df, pd.DataFrame):
+        return float('nan')
+    try:
+        atr_df = features.atr(df[['High', 'Low', 'Close']].copy(), period=period)
+        col = f"ATR_{period}"
+        if col in atr_df.columns:
+            val = pd.to_numeric(atr_df[col].iloc[-1], errors='coerce')
+            return float(val)
+    except Exception as e:  # pragma: no cover - logging only
+        logging.error(f"calculate_atr failed: {e}")
+    return float('nan')
+
+
+def atr_position_size(
+    equity,
+    atr,
+    risk_pct=0.01,
+    atr_mult=1.5,
+    pip_value=0.1,
+    min_lot=0.01,
+    max_lot=5.0,
+):
+    """Calculate lot size and SL distance based on ATR."""
+    try:
+        eq = float(equity)
+        atr_val = float(atr)
+    except (TypeError, ValueError):
+        return min_lot, float('nan')
+    if eq <= 0 or atr_val <= 0 or pip_value <= 0:
+        return min_lot, float('nan')
+
+    sl_delta_price = atr_val * atr_mult
+    risk_amount_usd = eq * risk_pct
+    sl_pips = sl_delta_price * 10.0
+    risk_per_001 = sl_pips * pip_value
+    if risk_per_001 <= 1e-9:
+        return min_lot, sl_delta_price
+
+    lot_units = risk_amount_usd / risk_per_001
+    lot = round(lot_units * 0.01, 2)
+    lot = max(min_lot, min(lot, max_lot))
+    return lot, sl_delta_price

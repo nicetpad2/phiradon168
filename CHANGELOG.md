@@ -1,4 +1,9 @@
 
+### 2025-08-13
+- [Patch v5.5.7] Add ATR-based position sizing
+- New/Updated unit tests added for src.adaptive
+- QA: pytest -q passed (278 tests)
+
 ### 2025-08-12
 - [Patch v5.5.6] Force COMPACT_LOG in tests, add summary
 - New/Updated unit tests added for tests.conftest

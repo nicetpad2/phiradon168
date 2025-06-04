@@ -6,7 +6,14 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'src'))
 
-from src.adaptive import adaptive_sl_tp, adaptive_risk, log_best_params
+from src.adaptive import (
+    adaptive_sl_tp,
+    adaptive_risk,
+    log_best_params,
+    calculate_atr,
+    atr_position_size,
+)
+import src.features as features
 
 
 def test_adaptive_sl_tp_high_vol():
@@ -45,3 +52,21 @@ def test_log_best_params(tmp_path):
     with open(path, 'r', encoding='utf-8') as fh:
         data = json.load(fh)
     assert data["a"] == 1
+
+
+def test_calculate_atr_and_position_size(monkeypatch):
+    import pandas as pd
+
+    df = pd.DataFrame({"High": [1, 2], "Low": [0.5, 1.5], "Close": [0.8, 1.8]})
+
+    monkeypatch.setattr(
+        features,
+        "atr",
+        lambda df_in, period=14: pd.DataFrame({"ATR_14": [0.2, 0.3]}, index=df_in.index),
+    )
+
+    atr_val = calculate_atr(df, period=14)
+    assert atr_val == 0.3
+
+    lot, sl = atr_position_size(1000, atr_val, risk_pct=0.01, atr_mult=1.5, pip_value=0.1)
+    assert lot > 0.0 and sl == atr_val * 1.5
