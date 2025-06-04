@@ -11,6 +11,15 @@
     และหาก `AUTO_INSTALL_LIBS=False` แล้วไม่พบไลบรารีสำคัญ (CatBoost, Optuna, SHAP)
     ระบบจะขึ้นคำเตือนและข้ามขั้นตอนที่เกี่ยวข้องโดยอัตโนมัติ ไม่ถือว่าเป็นข้อผิดพลาดร้ายแรง
 
+### การปรับค่า Drift Threshold
+หากต้องการปรับเกณฑ์การแจ้งเตือน Drift สำหรับฟีเจอร์ เช่น ADX
+สามารถกำหนดตัวแปรสภาพแวดล้อม `DRIFT_WASSERSTEIN_THRESHOLD` (ค่าปกติ `0.1`)
+ก่อนรันโปรแกรมได้ เช่น
+```bash
+export DRIFT_WASSERSTEIN_THRESHOLD=0.2
+python ProjectP.py
+```
+
 ## การวัดประสิทธิภาพ
 ใช้ `profile_backtest.py` เพื่อวัด bottleneck ของฟังก์ชันจำลองการเทรด
 ตัวอย่างการรัน:

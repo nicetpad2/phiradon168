@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests.test_function_registry
 - QA: pytest -q passed (265 tests)
 
+### 2025-08-11
+- [Patch v5.5.4] Add environment override for drift threshold
+- New/Updated unit tests added for tests.test_env_utils
+- QA: pytest -q passed (266 tests)
+
 ### 2025-08-09
 - [Patch v5.5.2] Adjust kill switch thresholds and add warnings
 - New/Updated unit tests added for src.strategy and main
