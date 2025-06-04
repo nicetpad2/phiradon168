@@ -6,12 +6,16 @@ except Exception:  # pragma: no cover - fallback when config import fails
     import logging as logger
 import pandas as pd
 
+# [Patch v5.5.5] Define module-level default to avoid NameError
+SESSION_TIMES_UTC = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
+
 
 def get_session_tag(timestamp, session_times_utc=None, *, session_tz_map=None, naive_tz='UTC'):
     """Return trading session tag for a given timestamp.
 
     # [Patch] v5.4.4: Added session_tz_map and naive_tz for DST-aware tagging
     # [Patch] v5.4.8: Persist default SESSION_TIMES_UTC to suppress repeated warnings
+    # [Patch] v5.5.5: Module-level default prevents missing global warnings
 
     Parameters
     ----------

@@ -601,4 +601,8 @@ QA: pytest -q passed (219 tests)
 
 - QA: pytest -q passed (266 tests)
 
+### 2025-06-08
+- [Patch v5.5.5] Persist default SESSION_TIMES_UTC in utils.sessions
+- QA: pytest -q passed
+
 
