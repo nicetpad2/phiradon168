@@ -50,22 +50,19 @@ def get_session_tag(timestamp, session_times_utc=None, *, session_tz_map=None, n
             timestamp = pd.Timestamp(timestamp)
         if timestamp.tzinfo is None:
             timestamp = timestamp.tz_localize(naive_tz)
+        ts_utc = timestamp.tz_convert('UTC')
+        sessions = []
         if session_tz_map:
-            sessions = []
             for name, (tz_name, start, end) in session_tz_map.items():
-                ts_local = timestamp.tz_convert(tz_name)
-                hour = ts_local.hour
+                hour = ts_utc.tz_convert(tz_name).hour
                 if start <= end:
                     if start <= hour < end:
                         sessions.append(name)
                 else:
                     if hour >= start or hour < end:
                         sessions.append(name)
-            return "/".join(sorted(sessions)) if sessions else "Other"
         else:
-            ts_utc = timestamp.tz_convert('UTC')
             hour = ts_utc.hour
-            sessions = []
             for name, (start, end) in session_times_utc_local.items():
                 if start <= end:
                     if start <= hour < end:
@@ -73,7 +70,10 @@ def get_session_tag(timestamp, session_times_utc=None, *, session_tz_map=None, n
                 else:
                     if hour >= start or hour < end:
                         sessions.append(name)
-            return "/".join(sorted(sessions)) if sessions else "Other"
+        if not sessions:
+            logger.warning(f"Timestamp {timestamp} is out of all session ranges")
+            return "N/A"
+        return "/".join(sorted(sessions))
     except Exception as e:  # pragma: no cover - unexpected failures
         logger.error(f"   (Error) Error in get_session_tag for {timestamp}: {e}", exc_info=True)
         return "Error_Tagging"
