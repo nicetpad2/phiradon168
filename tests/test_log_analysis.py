@@ -16,6 +16,7 @@ from src.log_analysis import (
     calculate_drawdown_stats,
     parse_alerts,
     calculate_alert_summary,
+    run_and_log_tests,
 )
 
 SAMPLE_LOG = """
@@ -74,4 +75,16 @@ def test_parse_alerts_and_summary(tmp_path):
     summary = calculate_alert_summary(str(log_file))
     assert summary.loc["WARNING"] == 1
     assert summary.loc["CRITICAL"] == 1
+
+
+def test_run_and_log_tests(tmp_path):
+    test_file = tmp_path / "test_sample.py"
+    test_file.write_text("def test_sample():\n    assert True\n")
+    log_output = tmp_path / "pytest.log"
+    exit_code = run_and_log_tests(str(log_output), [str(test_file)])
+    assert exit_code == 0
+    text = log_output.read_text()
+    assert "Test Run Start" in text
+    assert "Test Run End" in text
+    assert "1 passed" in text
 

@@ -5,6 +5,9 @@ from __future__ import annotations
 import pandas as pd
 import re
 from datetime import datetime
+import os
+import sys
+import subprocess
 
 
 
@@ -148,4 +151,40 @@ def compile_log_summary(df: pd.DataFrame, log_path: str | None = None) -> dict[s
     if log_path:
         summary["alerts"] = calculate_alert_summary(log_path)
     return summary
+
+
+def run_and_log_tests(output_log: str, args: list[str] | None = None) -> int:
+    """[Patch v5.5.13] Run pytest and log the full test process.
+
+    Parameters
+    ----------
+    output_log : str
+        Path to the log file to write results.
+    args : list[str], optional
+        Additional arguments passed directly to ``pytest``.
+
+    Returns
+    -------
+    int
+        Exit code returned by the pytest process.
+    """
+    start_time = datetime.utcnow()
+    cmd = [sys.executable, "-m", "pytest", "-q"]
+    if args:
+        cmd.extend(args)
+    env = os.environ.copy()
+    env.setdefault("COMPACT_LOG", "1")
+    proc = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    end_time = datetime.utcnow()
+
+    with open(output_log, "w", encoding="utf-8") as f:
+        f.write(f"=== Test Run Start: {start_time.isoformat()}Z ===\n")
+        f.write(proc.stdout)
+        if proc.stderr:
+            f.write("\n[stderr]\n")
+            f.write(proc.stderr)
+        f.write(f"=== Test Run End: {end_time.isoformat()}Z ===\n")
+        f.write(f"Exit Code: {proc.returncode}\n")
+
+    return proc.returncode
 

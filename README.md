@@ -102,3 +102,11 @@ drawdown = calculate_drawdown_stats(logs_df)
 alerts = calculate_alert_summary('logs')
 ```
 ฟังก์ชัน `calculate_position_size` ยังช่วยคำนวณขนาดลอตที่เหมาะสมตามทุนและระยะ SL
+
+หากต้องการบันทึกผลการรัน `pytest` แบบครบถ้วน สามารถใช้ `run_and_log_tests` ดังนี้
+
+```python
+from src.log_analysis import run_and_log_tests
+exit_code = run_and_log_tests('pytest_full.log')
+print('exit code', exit_code)
+```
