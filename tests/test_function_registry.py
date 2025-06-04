@@ -27,13 +27,13 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/main.py", "parse_arguments", 1802),
-    ("src/main.py", "setup_output_directory", 1807),
-    ("src/main.py", "load_features_from_file", 1812),
-    ("src/main.py", "drop_nan_rows", 1817),
-    ("src/main.py", "convert_to_float32", 1822),
-    ("src/main.py", "run_initial_backtest", 1827),
-    ("src/main.py", "save_final_data", 1832),
+    ("src/main.py", "parse_arguments", 1809),
+    ("src/main.py", "setup_output_directory", 1814),
+    ("src/main.py", "load_features_from_file", 1819),
+    ("src/main.py", "drop_nan_rows", 1824),
+    ("src/main.py", "convert_to_float32", 1829),
+    ("src/main.py", "run_initial_backtest", 1834),
+    ("src/main.py", "save_final_data", 1839),
 
 
 
