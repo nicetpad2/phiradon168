@@ -1,3 +1,8 @@
+### 2025-07-02
+- [Patch v5.0.24] Improve soft cooldown logic
+- New/Updated unit tests added for cooldown_utils
+- QA: pytest -q passed (225 tests)
+
 ### 2025-07-01
 - [Patch v5.3.10] Handle optional models as warnings
 - New/Updated unit tests added for src.main
