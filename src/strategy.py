@@ -621,11 +621,12 @@ def train_and_export_meta_model(
             if potential_lag_features:
                 logging.info(f"         Lag Features ที่มีให้พิจารณา: {potential_lag_features}")
                 try:
-                    # [Patch] Evaluate Lag Feature importance using SHAP on numpy array
-                    arr = X_select[potential_lag_features].to_numpy()
+                    # [Patch v5.5.4] Evaluate Lag Feature importance using SHAP with full feature set
+                    lag_pool = Pool(X_select, label=y_select, cat_features=cat_features_indices_select_cpu)
                     explainer_lag = shap.TreeExplainer(prelim_model)
-                    shap_vals_lag = explainer_lag.shap_values(arr)
+                    shap_vals_lag = explainer_lag.shap_values(lag_pool)
                     shap_vals_pos = None
+                    df_lag = None
                     if isinstance(shap_vals_lag, list) and len(shap_vals_lag) == 2:
                         shap_vals_pos = shap_vals_lag[1]
                     elif isinstance(shap_vals_lag, np.ndarray) and shap_vals_lag.ndim == 2:
@@ -633,7 +634,8 @@ def train_and_export_meta_model(
                     elif isinstance(shap_vals_lag, np.ndarray) and shap_vals_lag.ndim == 3 and shap_vals_lag.shape[0] >= 2:
                         shap_vals_pos = shap_vals_lag[1, :, :]
                     if shap_vals_pos is not None:
-                        mean_abs_lag = np.abs(shap_vals_pos).mean(axis=0)
+                        df_lag = pd.DataFrame(shap_vals_pos, columns=X_select.columns)[potential_lag_features]
+                        mean_abs_lag = df_lag.abs().mean().values
                         lag_df = pd.DataFrame({'feature': potential_lag_features, 'mean_abs_shap': mean_abs_lag})
                         total_shap = lag_df['mean_abs_shap'].sum()
                         lag_df['norm_shap'] = lag_df['mean_abs_shap'] / total_shap if total_shap > 1e-9 else 0.0
@@ -649,7 +651,7 @@ def train_and_export_meta_model(
                             selected_features.extend(added_lags)
                     else:
                         logging.info("         ไม่มี Lag Features ที่มีความสำคัญเบื้องต้นตามเกณฑ์.")
-                    del shap_vals_lag, shap_vals_pos, lag_df, mean_abs_lag, total_shap
+                    del shap_vals_lag, shap_vals_pos, df_lag, lag_df, mean_abs_lag, total_shap
                 except Exception as e_lag_fi:
                     logging.warning(f"Cannot evaluate Lag Features: {e_lag_fi}")
             else:

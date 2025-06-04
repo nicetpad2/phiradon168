@@ -396,13 +396,14 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
             )
             df['session'] = pd.Series('Other', index=df.index).astype('category')
     if 'model_tag' not in df.columns: df['model_tag'] = 'N/A'
-    logging.info("(Success) สร้าง Features M1 (v4.9.0) เสร็จสิ้น.") # <<< MODIFIED v4.9.0
-    if df.isnull().any().any() or np.isinf(df.select_dtypes(include=[np.number])).any().any():
-        logging.warning("[QA WARNING] NaN/Inf detected in engineered features")
+    logging.info("(Success) สร้าง Features M1 (v4.9.0) เสร็จสิ้น.")  # <<< MODIFIED v4.9.0
     numeric_cols_clean = df.select_dtypes(include=[np.number]).columns
     if len(numeric_cols_clean) > 0:
         df[numeric_cols_clean] = df[numeric_cols_clean].replace([np.inf, -np.inf], np.nan)
         df[numeric_cols_clean] = df[numeric_cols_clean].ffill().fillna(0)
+    # [Patch v5.5.4] Run QA check after cleaning to avoid false warnings
+    if df.isnull().any().any() or np.isinf(df[numeric_cols_clean]).any().any():
+        logging.warning("[QA WARNING] NaN/Inf detected in engineered features")
     logging.info("[QA] M1 Feature Engineering Completed")
     return df.reindex(df_m1.index)
 
