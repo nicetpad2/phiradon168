@@ -498,4 +498,9 @@
 - New/Updated unit tests added for src.cooldown_utils, src.main, src.strategy
 - QA: pytest -q passed (236 tests)
 
+### 2025-06-04
+- [Patch v5.4.4] Ensure trade log files always generated
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (236 tests)
+
 
