@@ -613,6 +613,74 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
         logging.critical(f"(Error) ไม่สามารถโหลดข้อมูล {timeframe_str}: {e}\n{traceback.format_exc()}", exc_info=True)
         sys.exit(f"ออก: ข้อผิดพลาดร้ายแรงในการโหลดข้อมูล {timeframe_str}")
 
+
+# [Patch v5.5.15] Optional caching layer for large CSV data
+def load_data_cached(file_path, timeframe_str="", cache_format=None, **kwargs):
+    """Load CSV using :func:`load_data` with optional caching.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the CSV data.
+    timeframe_str : str, optional
+        Timeframe identifier for logging.
+    cache_format : str, optional
+        If provided, cache the loaded DataFrame in this format
+        (``'parquet'``, ``'feather'`` or ``'hdf5'``). Subsequent calls
+        will load from the cached file if available.
+    kwargs : dict
+        Additional arguments forwarded to :func:`load_data`.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Loaded DataFrame, either from CSV or cached file.
+    """
+
+    ext_map = {
+        "parquet": ".parquet",
+        "feather": ".feather",
+        "hdf5": ".h5",
+    }
+
+    if cache_format:
+        ext = ext_map.get(cache_format.lower())
+        if ext:
+            cache_path = os.path.splitext(file_path)[0] + ext
+            if os.path.exists(cache_path):
+                logging.info(f"(Cache) โหลด {timeframe_str} จาก {cache_path}")
+                try:
+                    if cache_format.lower() == "parquet":
+                        return pd.read_parquet(cache_path)
+                    if cache_format.lower() == "feather":
+                        return pd.read_feather(cache_path)
+                    return pd.read_hdf(cache_path, key="data")
+                except Exception as e_load:
+                    logging.warning(
+                        f"(Cache) Failed to load {cache_format} file {cache_path}: {e_load}"
+                    )
+
+    df_loaded = load_data(file_path, timeframe_str, **kwargs)
+
+    if cache_format:
+        ext = ext_map.get(cache_format.lower())
+        if ext:
+            cache_path = os.path.splitext(file_path)[0] + ext
+            try:
+                if cache_format.lower() == "parquet":
+                    df_loaded.to_parquet(cache_path)
+                elif cache_format.lower() == "feather":
+                    df_loaded.reset_index().to_feather(cache_path)
+                else:
+                    df_loaded.to_hdf(cache_path, key="data", mode="w")
+                logging.info(f"(Cache) Saved {timeframe_str} to {cache_path}")
+            except Exception as e_save:
+                logging.warning(
+                    f"(Cache) Failed to save {cache_format} file {cache_path}: {e_save}"
+                )
+
+    return df_loaded
+
 # --- Datetime Helper Functions ---
 # [Patch v5.0.2] Exclude datetime preview from coverage
 def preview_datetime_format(df, n=5):  # pragma: no cover
