@@ -3,6 +3,10 @@
 - New/Updated unit tests added for tests.test_function_registry
 - QA: pytest -q passed (265 tests)
 
+### 2025-06-07
+- [Patch v5.5.4] Fix undefined TimeSeriesSplit variable in main
+- QA: pytest -q passed (265 tests)
+
 ### 2025-08-09
 - [Patch v5.5.2] Adjust kill switch thresholds and add warnings
 - New/Updated unit tests added for src.strategy and main
