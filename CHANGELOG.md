@@ -579,4 +579,9 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for strategy helper
 - QA: pytest -q passed
 
+### 2025-06-07
+- [Patch v5.6.0] Download feature lists when missing
+- New/Updated unit tests added for ensure_model_files_exist
+- QA: pytest -q passed (266 tests)
+
 
