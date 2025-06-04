@@ -1,3 +1,8 @@
+### 2025-08-27
+- [Patch v5.5.17] Refactor signal functions into `strategy` package
+- New/Updated unit tests added for tests.test_strategy_submodules
+- QA: pytest -q passed
+
 ### 2025-08-26
 - [Patch v5.5.16] Handle minimize-metric detection in wfv utilities
 - New/Updated unit tests added for tests.test_wfv_utils
