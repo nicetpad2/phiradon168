@@ -615,6 +615,8 @@ COMMISSION_PER_001_LOT = 0.10   # Commission per 0.01 lot (USD)
 SPREAD_POINTS = 2.0             # Fixed spread in points
 MIN_SLIPPAGE_POINTS = -5.0      # Minimum slippage in points (negative means better price)
 MAX_SLIPPAGE_POINTS = -1.0      # Maximum slippage in points (negative means better price)
+OMS_MARGIN_PIPS = 20.0          # [Patch v5.5.8] Minimum SL distance from entry
+OMS_MAX_DISTANCE_PIPS = 1000.0  # [Patch v5.5.8] Max allowed SL/TP distance
 
 # --- Entry/Exit Logic Parameters ---
 logging.debug("Setting Entry/Exit Logic Parameters...")

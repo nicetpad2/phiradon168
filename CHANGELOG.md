@@ -1,7 +1,9 @@
 ### 2025-08-20
-- [Patch v5.5.8] Add walk-forward grid search utilities
-- New/Updated unit tests added for src.wfv
-- QA: pytest -q passed
+
+- [Patch v5.5.8] Improve OMS Guardian with breakeven and SL/TP validation
+- New/Updated unit tests added for oms guardian helpers
+- QA: pytest -q passed (292 tests)
+
 
 
 ### 2025-08-13
