@@ -253,8 +253,8 @@ def detect_macd_divergence(prices: pd.Series, macd_hist: pd.Series, lookback: in
     if prices.empty or macd_hist.empty:
         return "none"
 
-    p = pd.to_numeric(prices, errors="coerce").fillna(method="ffill").fillna(method="bfill")
-    m = pd.to_numeric(macd_hist, errors="coerce").fillna(method="ffill").fillna(method="bfill")
+    p = pd.to_numeric(prices, errors="coerce").ffill().bfill()
+    m = pd.to_numeric(macd_hist, errors="coerce").ffill().bfill()
 
     look = max(3, min(len(p), lookback))
     p_sub = p.iloc[-look:]

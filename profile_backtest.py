@@ -11,7 +11,7 @@ import pstats
 import sys
 import pandas as pd
 import logging
-from multiprocessing import Pool
+from multiprocessing import Pool, get_context
 
 from src.strategy import run_backtest_simulation_v34
 from src.data_loader import safe_load_csv_auto
@@ -31,7 +31,8 @@ def calculate_features_for_fold(params):
 
 def run_parallel_feature_engineering(list_of_fold_params, processes=4):
     """Run feature engineering in parallel using multiprocessing Pool."""
-    with Pool(processes=processes) as pool:
+    ctx = get_context("spawn")
+    with ctx.Pool(processes=processes) as pool:
         results = pool.map(calculate_features_for_fold, list_of_fold_params)
     return results
 
