@@ -18,6 +18,7 @@ import ta # Assumes 'ta' is imported and available (checked in Part 1)
 from sklearn.cluster import KMeans # For context column calculation
 from sklearn.preprocessing import StandardScaler # For context column calculation
 import gc # For memory management
+from functools import lru_cache
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
 
 _rsi_cache = {}  # [Patch v4.8.12] Cache RSIIndicator per period
@@ -195,6 +196,20 @@ def atr(df_in, period=14):
     df_result = df_in.copy(); df_result[atr_col_name] = atr_series.reindex(df_in.index).astype('float32')
     df_result[atr_shifted_col_name] = atr_series.shift(1).reindex(df_in.index).astype('float32')
     del df_temp, atr_series; gc.collect(); return df_result
+
+
+@lru_cache(maxsize=None)
+def calculate_sma(symbol: str, timeframe: str, length: int, date: str, prices: tuple):
+    """Cached SMA calculation using LRU cache."""
+    series = pd.Series(prices, dtype='float32')
+    return sma(series, length)
+
+
+@lru_cache(maxsize=None)
+def calculate_rsi(symbol: str, timeframe: str, length: int, date: str, prices: tuple):
+    """Cached RSI calculation using LRU cache."""
+    series = pd.Series(prices, dtype='float32')
+    return rsi(series, period=length)
 
 def macd(series, window_slow=26, window_fast=12, window_sign=9):
     if not isinstance(series, pd.Series): logging.error(f"MACD Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
