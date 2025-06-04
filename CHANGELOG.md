@@ -537,3 +537,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_function_registry
 
 - QA: pytest -q passed (258 tests)
+### 2025-06-04
+- [Patch v5.4.9] Add sys.path fix for hyperparameter sweep CLI
+- New/Updated unit tests added for tuning.hyperparameter_sweep
+
+- QA: pytest -q passed (258 tests)
