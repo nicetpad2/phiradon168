@@ -15,9 +15,9 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "check_price_jumps", 851),
     ("src/data_loader.py", "convert_thai_years", 859),
     ("src/data_loader.py", "prepare_datetime_index", 866),
-    ("src/data_loader.py", "load_raw_data_m1", 873),
-    ("src/data_loader.py", "load_raw_data_m15", 878),
-    ("src/data_loader.py", "write_test_file", 883),
+    ("src/data_loader.py", "load_raw_data_m1", 891),
+    ("src/data_loader.py", "load_raw_data_m15", 902),
+    ("src/data_loader.py", "write_test_file", 907),
     ("src/features.py", "calculate_trend_zone", 1225),
     ("src/features.py", "tag_price_structure_patterns", 234),
     ("src/features.py", "create_session_column", 1232),
@@ -40,12 +40,12 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/strategy.py", "run_backtest_simulation_v34", 1695),
+    ("src/strategy.py", "run_backtest_simulation_v34", 1704),
     ("src/strategy.py", "initialize_time_series_split", 3964),
     ("src/strategy.py", "calculate_forced_entry_logic", 3967),
     ("src/strategy.py", "apply_kill_switch", 3970),
     ("src/strategy.py", "log_trade", 3973),
-    ("src/strategy.py", "calculate_metrics", 2731),
+    ("src/strategy.py", "calculate_metrics", 2740),
     ("src/strategy.py", "aggregate_fold_results", 3976),
     ("ProjectP.py", "custom_helper_function", 20),
 ]

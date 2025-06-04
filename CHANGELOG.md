@@ -503,3 +503,8 @@
 - New/Updated unit tests added for hyperparameter sweep filtering
 - QA: pytest -q passed (236 tests)
 
+### 2025-08-07
+- [Patch v5.4.4] Validate M1 data path before loading
+- New/Updated unit tests added for src.data_loader
+- QA: pytest -q passed (236 tests)
+
