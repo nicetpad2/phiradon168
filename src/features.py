@@ -104,7 +104,8 @@ def sma(series, period):
     try:
         cache_key = (id(series), period)
         if cache_key in _sma_cache:
-            return _sma_cache[cache_key]
+            cached = _sma_cache[cache_key]
+            return cached.reindex(series.index).astype('float32')
         min_p = max(1, min(period, len(series_numeric)))
         sma_result = series_numeric.rolling(window=period, min_periods=min_p).mean()
         sma_final = sma_result.reindex(series.index).astype('float32')
@@ -268,7 +269,8 @@ def calculate_m15_trend_zone(df_m15):
     cache_key = hash(tuple(df_m15.index)) if isinstance(df_m15, pd.DataFrame) else None
     if cache_key is not None and cache_key in _m15_trend_cache:
         logging.info("      [Cache] ใช้ผลลัพธ์ Trend Zone จาก cache")
-        return _m15_trend_cache[cache_key].copy()
+        cached_df = _m15_trend_cache[cache_key]
+        return cached_df.reindex(df_m15.index).copy()
     if not isinstance(df_m15, pd.DataFrame): logging.error("M15 Trend Zone Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m15.empty or "Close" not in df_m15.columns:
         result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category');
@@ -378,37 +380,21 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
             score=(wick_ratio*0.5+gain_z_abs*0.3+atr_val*0.2); score=np.where((atr_val>1.5)&(wick_ratio>0.6),score*1.2,score); df['spike_score']=score.clip(0,1).astype('float32')
         except Exception as e_spike: df['spike_score']=0.0; logging.error(f"         (Error) Spike score calculation failed: {e_spike}.",exc_info=True)
     if 'session' not in df.columns:
-        logging.info("      Creating 'session' column (vectorized)...")
+        logging.info("      Creating 'session' column...")
         try:
-            # ใช้วิธี Vectorized: ดึงชั่วโมงจาก DatetimeIndex แล้วแมปเป็น session
             if not isinstance(df.index, pd.DatetimeIndex):
-                # พยายามแปลง index เป็น DatetimeIndex ครั้งเดียว
                 df.index = pd.to_datetime(df.index, errors='coerce')
-            # ถ้าแปลงแล้วเป็น DatetimeIndex และไม่ว่าง
-            if isinstance(df.index, pd.DatetimeIndex) and not df.index.hasnans:
-                hrs = df.index.hour
-                # สร้างคอลัมน์ session เริ่มต้นเป็น 'Other'
-                df['session'] = 'Other'
-                # Asia: ช่วง 0-7 (UTC)
-                mask_asia = (hrs >= SESSION_TIMES_UTC['Asia'][0]) & (hrs < SESSION_TIMES_UTC['Asia'][1])
-                df.loc[mask_asia, 'session'] = 'Asia'
-                # London: ช่วง 7-15 (UTC)
-                mask_london = (hrs >= SESSION_TIMES_UTC['London'][0]) & (hrs < SESSION_TIMES_UTC['London'][1])
-                df.loc[mask_london, 'session'] = df.loc[mask_london, 'session'].apply(lambda x: 'Asia/London' if x=='Asia' else 'London')
-                # NY: ช่วง 13-20 (UTC)
-                mask_ny = (hrs >= SESSION_TIMES_UTC['NY'][0]) & (hrs < SESSION_TIMES_UTC['NY'][1])
-                df.loc[mask_ny, 'session'] = df.loc[mask_ny, 'session'].apply(lambda x: '/'.join(sorted([x, 'NY'])) if x in ['Asia','London','Asia/London'] else 'NY')
-                # กำหนด dtype category
-                df['session'] = df['session'].astype('category')
-                logging.info(f"         Session distribution:\n{df['session'].value_counts(normalize=True).round(3).to_string()}")
-            else:
-                # กรณีแปลงไม่ได้หรือมี NaT
-                df['session'] = 'Error_Index_Conv'
-                df['session'] = df['session'].astype('category')
+            sessions = pd.Index(df.index).map(get_session_tag)
+            df['session'] = pd.Series(sessions, index=df.index).astype('category')
+            logging.info(
+                f"         Session distribution:\n{df['session'].value_counts(normalize=True).round(3).to_string()}"
+            )
         except Exception as e_session:
-            logging.error(f"         (Error) Session calculation failed: {e_session}. Assigning 'Other'.", exc_info=True)
-            df['session'] = "Other"
-            df['session'] = df['session'].astype('category')
+            logging.error(
+                f"         (Error) Session calculation failed: {e_session}. Assigning 'Other'.",
+                exc_info=True,
+            )
+            df['session'] = pd.Series('Other', index=df.index).astype('category')
     if 'model_tag' not in df.columns: df['model_tag'] = 'N/A'
     logging.info("(Success) สร้าง Features M1 (v4.9.0) เสร็จสิ้น.") # <<< MODIFIED v4.9.0
     if df.isnull().any().any() or np.isinf(df.select_dtypes(include=[np.number])).any().any():
@@ -1221,6 +1207,20 @@ logging.info("Part 6: Machine Learning Configuration & Helpers Loaded (v4.8.8 Pa
 
 # ---------------------------------------------------------------------------
 # Stubs for Function Registry Tests
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def calculate_trend_zone(df):
     """Stubbed trend zone calculator."""
