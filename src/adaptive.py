@@ -75,3 +75,32 @@ def compute_dynamic_lot(base_lot, drawdown_pct):
     if dd > 0.05:
         return round(base_lot * 0.75, 2)
     return base_lot
+
+
+def compute_trailing_atr_stop(entry_price, current_price, atr_current, side, old_sl, atr_multiplier=1.5):
+    """Return updated stop-loss price based on current ATR movement."""
+    try:
+        entry = float(entry_price)
+        price = float(current_price)
+        atr = float(atr_current)
+        sl_old = float(old_sl)
+    except (TypeError, ValueError):
+        return old_sl
+
+    if atr <= 0:
+        return old_sl
+
+    if side == 'BUY':
+        profit = price - entry
+        if profit >= 2 * atr:
+            return max(sl_old, price - atr_multiplier * atr)
+        if profit >= atr:
+            return max(sl_old, entry)
+    elif side == 'SELL':
+        profit = entry - price
+        if profit >= 2 * atr:
+            return min(sl_old, price + atr_multiplier * atr)
+        if profit >= atr:
+            return min(sl_old, entry)
+
+    return old_sl

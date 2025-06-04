@@ -12,6 +12,7 @@ from src.adaptive import (
     log_best_params,
     compute_kelly_position,
     compute_dynamic_lot,
+    compute_trailing_atr_stop,
 )
 
 
@@ -63,3 +64,17 @@ def test_compute_dynamic_lot_reductions():
     assert compute_dynamic_lot(1.0, 0.07) == 0.75
     assert compute_dynamic_lot(1.0, 0.02) == 1.0
     assert compute_dynamic_lot(1.0, "x") == 1.0
+
+
+def test_compute_trailing_atr_stop_buy():
+    new_sl = compute_trailing_atr_stop(10.0, 11.2, 1.0, 'BUY', 9.5)
+    assert new_sl == 10.0
+    new_sl2 = compute_trailing_atr_stop(10.0, 12.5, 1.0, 'BUY', 10.0)
+    assert new_sl2 > 10.0
+
+
+def test_compute_trailing_atr_stop_sell():
+    new_sl = compute_trailing_atr_stop(10.0, 8.8, 1.0, 'SELL', 10.5)
+    assert new_sl == 10.0
+    new_sl2 = compute_trailing_atr_stop(10.0, 7.5, 1.0, 'SELL', 10.0)
+    assert new_sl2 < 10.0
