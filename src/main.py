@@ -62,6 +62,7 @@ from src.strategy import (
     train_and_export_meta_model,
     DriftObserver,
 )
+from src.utils import export_trade_log
 import pandas as pd
 import numpy as np
 import shutil # For file moving in pipeline mode
@@ -1381,6 +1382,11 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                             else:
                                 qa_f.write(f"TRADES {len(trade_log_wf_fund)} {final_run_suffix_fund}\n")
                         assert os.path.exists(saved_path)
+                        # [Patch v5.4.4] Export simplified trade log for QA checks
+                        try:
+                            export_trade_log(trade_log_wf_fund, OUTPUT_DIR, fund_name)
+                        except Exception as e_exp:
+                            logging.error(f"   (Error) Failed to export QA trade log: {e_exp}", exc_info=True)
 
                     try:
                         fold_boundaries = [df_m1_final.index.min()] + [df_m1_final.iloc[test_index].index.max() for _, test_index in tscv.split(df_m1_final)]
@@ -1415,6 +1421,11 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                     logging.error(f"(Error) Final Walk-forward (Fund: {fund_name}) ไม่ได้สร้างผลลัพธ์รวม (df_walk_forward_results_pd_fund is empty or None).")
                     log_file_path = os.path.join(OUTPUT_DIR, f"trade_log_v32_walkforward{final_run_suffix_fund}.csv")
                     pd.DataFrame().to_csv(log_file_path, index=False)
+                    # [Patch v5.4.4] Also export simplified QA trade log when no results
+                    try:
+                        export_trade_log(pd.DataFrame(), OUTPUT_DIR, fund_name)
+                    except Exception as e_exp:
+                        logging.error(f"   (Error) Failed to export QA trade log: {e_exp}", exc_info=True)
                     with open(qa_log_path, 'a', encoding='utf-8') as qa_f:
                         qa_f.write(f"NO_TRADES {final_run_suffix_fund}\n")
                     assert os.path.exists(log_file_path)
