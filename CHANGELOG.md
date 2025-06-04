@@ -1,3 +1,8 @@
+### 2025-08-31
+- [Patch v5.6.4] Relax entry score and forced-entry constraints
+- New/Updated unit tests added for strategy and config
+- QA: pytest -q passed (347 tests)
+
 #
 ### 2025-08-30
 - [Patch v5.6.3] Reduce log spam for out-of-session timestamps

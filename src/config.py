@@ -641,7 +641,7 @@ OMS_MAX_DISTANCE_PIPS = 1000.0  # [Patch v5.5.8] Max allowed SL/TP distance
 
 # --- Entry/Exit Logic Parameters ---
 logging.debug("Setting Entry/Exit Logic Parameters...")
-MIN_SIGNAL_SCORE_ENTRY = 2.0    # Minimum signal score required to open an order
+MIN_SIGNAL_SCORE_ENTRY = 1.0    # Minimum signal score required to open an order
 # [Patch v5.3.9] Adaptive threshold settings
 ADAPTIVE_SIGNAL_SCORE_WINDOW = 1000   # Bars used for quantile calculation
 ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.7  # Quantile for threshold (e.g., 70th)
@@ -664,8 +664,8 @@ M1_ENTRY_MACD_HIST_THRESH = -0.1  # (Not directly used in current logic, kept fo
 M15_TREND_EMA_FAST = 50         # Fast EMA period for M15 Trend Filter
 M15_TREND_EMA_SLOW = 200        # Slow EMA period for M15 Trend Filter
 M15_TREND_RSI_PERIOD = 14       # RSI period for M15 Trend Filter
-M15_TREND_RSI_UP = 52           # RSI threshold for M15 uptrend
-M15_TREND_RSI_DOWN = 48         # RSI threshold for M15 downtrend
+M15_TREND_RSI_UP = 51           # [Patch v5.6.4] Relaxed M15 trend zone thresholds
+M15_TREND_RSI_DOWN = 49         # [Patch v5.6.4] Relaxed M15 trend zone thresholds
 
 session_env = os.getenv("SESSION_TIMES_UTC")
 try:
@@ -734,8 +734,8 @@ USE_GAIN_Z_FOR_FORCED_ENTRY = False # (Not used)
 USE_CANDLE_RATIO_FOR_FORCED_ENTRY = False # (Not used)
 FORCED_ENTRY_CHECK_MARKET_COND = True # Check market conditions (ATR, GainZ) before FE?
 FORCED_ENTRY_MAX_ATR_MULT = 2.5 # Max ATR multiplier allowed for FE
-FORCED_ENTRY_MIN_GAIN_Z_ABS = 1.0 # Min absolute Gain_Z required for FE
-FORCED_ENTRY_ALLOWED_REGIMES = ["Normal", "Breakout", "StrongTrend"] # Allowed patterns for FE
+FORCED_ENTRY_MIN_GAIN_Z_ABS = 0.5 # [Patch v5.6.4] Lower Gain_Z requirement for FE
+FORCED_ENTRY_ALLOWED_REGIMES = ["Normal", "Breakout", "StrongTrend", "Reversal", "InsideBar", "Choppy"] # [Patch v5.6.4] Allow more patterns for FE
 FE_ML_FILTER_THRESHOLD = 0.40   # ML probability threshold for filtering FE (if used)
 ADAPTIVE_COOLDOWN_LOSS_MULTIPLIER = 0.2 # (Not directly used in FE, kept for potential future use)
 forced_entry_max_consecutive_losses = 2 # Max consecutive FE losses before temporary disable
