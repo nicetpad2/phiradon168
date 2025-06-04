@@ -1,7 +1,8 @@
 ### 2025-08-31
-- [Patch v5.6.4] Relax entry score and forced-entry constraints
-- New/Updated unit tests added for strategy and config
-- QA: pytest -q passed (347 tests)
+
+- [Patch v5.6.4] Extend Asia session to 22-8 and update tests
+- QA: pytest -q passed
+
 
 #
 ### 2025-08-30

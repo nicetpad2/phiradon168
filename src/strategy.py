@@ -1109,7 +1109,7 @@ except ImportError:
 # def safe_get_global(var_name, default_value): ...
 
 # Define defaults (these should match Part 2 ideally)
-DEFAULT_SESSION_TIMES_UTC = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
+DEFAULT_SESSION_TIMES_UTC = {"Asia": (22, 8), "London": (7, 16), "NY": (13, 21)}
 DEFAULT_BASE_TP_MULTIPLIER = 1.8
 DEFAULT_ADAPTIVE_TSL_HIGH_VOL_RATIO = 1.8
 DEFAULT_ADAPTIVE_TSL_LOW_VOL_RATIO = 0.75

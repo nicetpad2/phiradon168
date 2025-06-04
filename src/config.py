@@ -669,10 +669,10 @@ M15_TREND_RSI_DOWN = 49         # [Patch v5.6.4] Relaxed M15 trend zone threshol
 
 session_env = os.getenv("SESSION_TIMES_UTC")
 try:
-    SESSION_TIMES_UTC = json.loads(session_env) if session_env else {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
+    SESSION_TIMES_UTC = json.loads(session_env) if session_env else {"Asia": (22, 8), "London": (7, 16), "NY": (13, 21)}
 except Exception:
     logging.warning("(Warning) SESSION_TIMES_UTC env var invalid. Using default.")
-    SESSION_TIMES_UTC = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
+    SESSION_TIMES_UTC = {"Asia": (22, 8), "London": (7, 16), "NY": (13, 21)}
 logging.debug(f"Session Times (UTC): {SESSION_TIMES_UTC}")
 
 # --- Signal Toggle Configuration ---

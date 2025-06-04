@@ -51,7 +51,7 @@ def test_tag_price_structure_patterns_missing_columns_warning(caplog):
 
 
 def test_get_session_tag_outside_sessions_returns_na(caplog):
-    ts = pd.Timestamp('2024-01-01 23:00', tz='UTC')
+    ts = pd.Timestamp('2024-01-01 21:00', tz='UTC')
     with caplog.at_level(logging.WARNING):
         tag = features.get_session_tag(ts)
     assert tag == 'N/A'
