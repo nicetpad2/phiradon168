@@ -34,9 +34,11 @@ def test_get_session_tag_nat():
 
 def test_get_session_tag_missing_global(monkeypatch, caplog):
     monkeypatch.delattr(features, 'SESSION_TIMES_UTC', raising=False)
+    from src import utils
+    monkeypatch.delattr(utils.sessions, 'SESSION_TIMES_UTC', raising=False)
     ts = pd.Timestamp('2024-01-01 05:00', tz='UTC')
     with caplog.at_level(logging.WARNING):
-        tag = features.get_session_tag(ts)
+        tag = utils.sessions.get_session_tag(ts)
     assert tag == 'Asia'
     assert any('Global SESSION_TIMES_UTC not found' in msg for msg in caplog.messages)
 
