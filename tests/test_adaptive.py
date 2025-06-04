@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import logging
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
@@ -59,7 +60,14 @@ def test_log_best_params(tmp_path):
 
 def test_compute_kelly_position_valid():
     val = compute_kelly_position(0.6, 2)
-    assert 0.39 < val < 0.41
+    assert 39.9 < val < 40.1
+
+
+def test_compute_kelly_position_invalid_ratio(caplog):
+    with caplog.at_level(logging.WARNING):
+        val = compute_kelly_position(0.6, 0)
+    assert val == 0.0
+    assert any("win_loss_ratio" in m for m in caplog.messages)
 
 
 def test_compute_dynamic_lot_reductions():
@@ -99,3 +107,8 @@ def test_compute_trailing_atr_stop_sell():
     assert new_sl == 10.0
     new_sl2 = compute_trailing_atr_stop(10.0, 7.5, 1.0, 'SELL', 10.0)
     assert new_sl2 < 10.0
+
+
+def test_trailing_stop_case_insensitive():
+    assert compute_trailing_atr_stop(1.0, 2.0, 0.5, 'buy', 0.5) > 0.5
+    assert compute_trailing_atr_stop(1.0, 0.5, 0.5, 'Sell', 1.5) < 1.5
