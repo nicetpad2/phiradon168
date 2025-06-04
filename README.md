@@ -78,3 +78,15 @@ flowchart LR
 
 แผนภาพข้างต้นช่วยให้ทีมมองเห็นภาพรวมของกระบวนการได้รวดเร็ว ไม่ว่าจะเป็นการเตรียมข้อมูล
 การสร้างฟีเจอร์ การทดสอบย้อนกลับ ไปจนถึงการฝึกเมตาโมเดลและการนำผลลัพธ์ไปใช้งาน
+
+### การวิเคราะห์ Trade Logs
+เครื่องมือ `src/log_analysis.py` ช่วยสรุปผลการเทรดจากไฟล์ `logs` เพื่อดูช่วงเวลาที่ได้กำไรมากที่สุดและอัตราการชนะต่อชั่วโมง
+ตัวอย่างการใช้งาน:
+```python
+from src.log_analysis import parse_trade_logs, calculate_hourly_summary
+
+logs_df = parse_trade_logs('logs')
+summary = calculate_hourly_summary(logs_df)
+print(summary)
+```
+ฟังก์ชัน `calculate_position_size` ยังช่วยคำนวณขนาดลอตที่เหมาะสมตามทุนและระยะ SL
