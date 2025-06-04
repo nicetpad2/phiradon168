@@ -544,3 +544,7 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for src.config and tests.test_is_colab
 
 - QA: pytest -q passed (258 tests)
+### 2025-06-05
+- [Patch v5.5.0] Improve config fallbacks and model file handling
+- New/Updated unit tests added for existing suites
+- QA: pytest -q passed (258 tests)
