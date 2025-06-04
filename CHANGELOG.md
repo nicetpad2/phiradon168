@@ -1,4 +1,11 @@
 
+### 2025-08-28
+- [Patch v5.5.17] Improve adaptive module logging and validation
+- Updated unit tests for adaptive and function_registry
+- QA: pytest -q passed (330 tests)
+
+
+
 ### 2025-08-26
 - [Patch v5.6.0] Refactor font setup and CSV loader
 - New/Updated unit tests added for data_loader
