@@ -1896,10 +1896,11 @@ def run_backtest_simulation_v34(
     last_trade_cooldown_end_time = defaultdict(lambda: min_ts); last_tp_time = defaultdict(lambda: min_ts)
     bars_since_last_trade = 0; kill_switch_activated = initial_kill_switch_state; consecutive_losses = initial_consecutive_losses
     forced_entry_consecutive_losses = 0; forced_entry_temporarily_disabled = False; last_n_full_trade_pnls = []
+    last_n_full_trade_sides = []
     cd_state = CooldownState()
-    SOFT_COOLDOWN_LOOKBACK = 10
-    # [Patch v5.0.18] Increase loss threshold to reduce trade blocking
-    SOFT_COOLDOWN_LOSS_COUNT = 6
+    SOFT_COOLDOWN_LOOKBACK = 15
+    # [Patch v5.6.6] Increase lookback for more flexibility
+    SOFT_COOLDOWN_LOSS_COUNT = 8
     # [Patch v5.0.18] MACD entry thresholds to allow mild counter-trend trades
     MACD_NEG_THRESHOLD_BUY = -0.05
     MACD_POS_THRESHOLD_SELL = 0.05
@@ -2130,7 +2131,10 @@ def run_backtest_simulation_v34(
                             consecutive_losses = 0
                             update_losses(cd_state, net_pnl_usd)
                         last_n_full_trade_pnls.append(net_pnl_usd)
-                        if len(last_n_full_trade_pnls) > SOFT_COOLDOWN_LOOKBACK: last_n_full_trade_pnls.pop(0)
+                        last_n_full_trade_sides.append(order_side)
+                        if len(last_n_full_trade_pnls) > SOFT_COOLDOWN_LOOKBACK:
+                            last_n_full_trade_pnls.pop(0)
+                            last_n_full_trade_sides.pop(0)
                         if order.get("is_forced_entry", False):
                             if net_pnl_usd < 0:
                                 forced_entry_consecutive_losses += 1; logging.debug(f"      Forced Entry Loss. Consecutive FE losses: {forced_entry_consecutive_losses}")
@@ -2284,6 +2288,8 @@ def run_backtest_simulation_v34(
                             last_n_full_trade_pnls,
                             SOFT_COOLDOWN_LOOKBACK,
                             SOFT_COOLDOWN_LOSS_COUNT,
+                            last_n_full_trade_sides,
+                            side,
                         )
                         if cooldown_triggered:
                             cd_state.cooldown_bars_remaining = SOFT_COOLDOWN_LOOKBACK
@@ -2524,7 +2530,10 @@ def run_backtest_simulation_v34(
             if net_pnl_usd < 0: consecutive_losses += 1
             elif net_pnl_usd >= 0: consecutive_losses = 0
             last_n_full_trade_pnls.append(net_pnl_usd)
-            if len(last_n_full_trade_pnls) > SOFT_COOLDOWN_LOOKBACK: last_n_full_trade_pnls.pop(0)
+            last_n_full_trade_sides.append(order_side)
+            if len(last_n_full_trade_pnls) > SOFT_COOLDOWN_LOOKBACK:
+                last_n_full_trade_pnls.pop(0)
+                last_n_full_trade_sides.pop(0)
             entry_bar_idx_log_end = order.get("entry_idx")
             if entry_bar_idx_log_end is not None:
                 resolved_idx_end = _resolve_close_index(df_sim, entry_bar_idx_log_end, close_timestamp)
@@ -2615,6 +2624,7 @@ def run_backtest_simulation_v34(
     if 'trade_log' in locals(): del trade_log
     if 'trade_history_list' in locals(): del trade_history_list
     if 'last_n_full_trade_pnls' in locals(): del last_n_full_trade_pnls
+    if 'last_n_full_trade_sides' in locals(): del last_n_full_trade_sides
     maybe_collect()
     logging.debug(f"   Memory cleanup complete for: {label}")
 

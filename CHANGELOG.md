@@ -3,6 +3,9 @@
 - [Patch v5.6.5] Add momentum and wave pattern feature helpers
 - New/Updated unit tests added for tests.test_features_more
 
+### 2025-09-03
+- [Patch v5.6.6] Update soft cooldown logic with side filter
+- New/Updated unit tests added for tests.test_soft_cooldown_logic
 - QA: pytest -q passed
 
 ### 2025-09-01
