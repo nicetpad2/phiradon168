@@ -8,8 +8,10 @@
 - QA: pytest -q passed (309 tests)
 
 ### 2025-08-24
-- [Patch v5.5.14] Improve threshold optimization CLI
-- New/Updated unit tests added for tests.test_threshold_optimization
+
+- [Patch v5.5.9] Add profiling option for backtest
+- New/Updated unit tests added for profile_backtest, main_pipeline_cli
+
 - QA: pytest -q passed
 
 

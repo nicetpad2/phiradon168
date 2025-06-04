@@ -22,6 +22,16 @@ from src.training import real_train_func  # [Patch v5.3.0]
 logger = logging.getLogger(__name__)
 
 
+def run_profile(func, output_file: str) -> cProfile.Profile:
+    """Run ``func`` under ``cProfile`` and dump results to ``output_file``."""
+    profiler = cProfile.Profile()
+    profiler.enable()
+    func()
+    profiler.disable()
+    profiler.dump_stats(output_file)
+    return profiler
+
+
 def calculate_features_for_fold(params):
     """Helper for multiprocessing Pool to calculate features."""
     symbol, df = params
@@ -126,7 +136,8 @@ def profile_from_cli() -> None:
     parser.add_argument('csv', help='Path to M1 data CSV')
     parser.add_argument('--rows', type=int, default=5000, help='Number of rows to load')
     parser.add_argument('--limit', type=int, default=20, help='Number of functions to display')
-    parser.add_argument('--output', help='File path to save the profiling result')
+    parser.add_argument('--output', help='File path to save the stats table')
+    parser.add_argument('--output-file', default='backtest_profile.prof', help='Profiling result .prof file')
     parser.add_argument('--fund', help='Fund profile name to use')  # [Patch v5.3.0]
     parser.add_argument('--train', action='store_true', help='Run training after profiling')  # [Patch v5.3.0]
     parser.add_argument('--train-output', default='models', help='Training output directory')  # [Patch v5.3.0]
@@ -137,16 +148,16 @@ def profile_from_cli() -> None:
         if isinstance(h, logging.StreamHandler):
             h.setLevel(level)
 
-    profiler = cProfile.Profile()
-    profiler.enable()
-    main_profile(
-        args.csv,
-        args.rows,
-        fund_profile_name=args.fund,
-        train=args.train,
-        train_output=args.train_output,
+    profiler = run_profile(
+        lambda: main_profile(
+            args.csv,
+            args.rows,
+            fund_profile_name=args.fund,
+            train=args.train,
+            train_output=args.train_output,
+        ),
+        args.output_file,
     )
-    profiler.disable()
     stats = pstats.Stats(profiler).sort_stats('cumtime')
     if args.output:
         with open(args.output, 'w') as f:
