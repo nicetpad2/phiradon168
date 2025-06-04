@@ -1,4 +1,9 @@
 
+### 2025-08-28
+- [Patch v5.5.17] Improve adaptive module logging and validation
+- Updated unit tests for adaptive and function_registry
+- QA: pytest -q passed (330 tests)
+
 ### 2025-08-26
 - [Patch v5.5.16] Improve indicator NaN handling and RSI duplicate processing
 - Updated unit tests for function_registry
