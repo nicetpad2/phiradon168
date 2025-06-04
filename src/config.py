@@ -678,8 +678,8 @@ PARTIAL_TP_LEVELS = [           # Define partial TP levels
 PARTIAL_TP_MOVE_SL_TO_ENTRY = True # Move SL to entry after first partial TP?
 ENABLE_KILL_SWITCH = True       # Enable/disable kill switch mechanism
 KILL_SWITCH_MAX_DD_THRESHOLD = 0.25 # [Patch v5.3.5] Max drawdown % before activating kill switch
-KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 7 # Max consecutive losses before activating kill switch
-MAX_DRAWDOWN_THRESHOLD = 0.30   # Max drawdown % threshold to block new orders (e.g., 30%)
+KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 5 # [Patch] Lower threshold for earlier soft cooldown
+MAX_DRAWDOWN_THRESHOLD = 0.15   # [Patch] Reduce drawdown threshold to block orders sooner
 logging.info(f"Kill Switch Enabled: {ENABLE_KILL_SWITCH} (DD > {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%, Losses > {KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD})")
 logging.info(f"Max Drawdown Threshold (Block New Orders): {MAX_DRAWDOWN_THRESHOLD*100:.0f}%")
 
