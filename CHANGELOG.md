@@ -1,3 +1,7 @@
+### 2025-09-01
+- [Patch v5.6.5] Optimize per-bar updates with vectorized arrays
+- New/Updated unit tests added for function registry
+- QA: pytest -q passed (348 tests)
 ### 2025-08-31
 
 - [Patch v5.6.4] Extend Asia session to 22-8 and update tests
