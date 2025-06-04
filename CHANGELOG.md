@@ -1,3 +1,8 @@
+### 2025-08-11
+- [Patch v5.5.4] Move NaN/Inf QA check after cleaning
+- Updated unit tests to expect no warning
+- QA: pytest -q passed (265 tests)
+
 ### 2025-08-09
 - [Patch v5.5.2] Adjust kill switch thresholds and add warnings
 - New/Updated unit tests added for src.strategy and main
