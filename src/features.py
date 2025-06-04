@@ -1375,3 +1375,24 @@ def is_volume_spike(current_vol, avg_vol, multiplier=1.5):
         return False
     return cur > avg * multiplier
 
+
+# [Patch v5.5.15] HDF5 helpers for large feature sets
+def save_features_hdf5(df, path):
+    """Save a DataFrame to an HDF5 file."""
+    try:
+        df.to_hdf(path, key="data", mode="w")
+        logging.info(f"(Features) Saved features to {path}")
+    except Exception as e:
+        logging.error(f"(Features) Failed to save features to {path}: {e}", exc_info=True)
+
+
+def load_features_hdf5(path):
+    """Load a DataFrame from an HDF5 file."""
+    try:
+        df = pd.read_hdf(path, key="data")
+        logging.info(f"(Features) Loaded features from {path}")
+        return df
+    except Exception as e:
+        logging.error(f"(Features) Failed to load features from {path}: {e}", exc_info=True)
+        return None
+

@@ -63,6 +63,10 @@ python run_tests.py
 * ไฟล์ QA summary (`qa_summary_<label>.log`) และไฟล์แจ้งเตือนกรณีไม่มีข้อมูล (`<label>_trade_qa.log`)
   จะถูกเก็บไว้ภายใน `output_default/qa_logs/` โดยสามารถสร้างโฟลเดอร์ย่อยตามชื่อกองทุน
   เช่น `output_default/qa_logs/FUND_A/` เพื่อแยกข้อมูล QA ของแต่ละกองทุนอย่างเป็นระเบียบ
+* หากต้องประมวลผลอินดิเคเตอร์หลายชุดบนข้อมูลขนาดใหญ่ ควรใช้
+  `load_data_cached()` เพื่อบันทึกผลลัพธ์ในรูปแบบ Parquet/Feather
+  และสามารถบันทึก DataFrame ที่สร้างฟีเจอร์แล้วเป็นไฟล์ HDF5 ผ่าน
+  `save_features_hdf5()` เพื่อให้โหลดซ้ำได้เร็วขึ้น
 
 ## ภาพรวมกระบวนการทำงาน
 เพื่อให้เห็นขั้นตอนหลักของระบบได้ชัดเจนยิ่งขึ้น สามารถอ้างอิงแผนภาพ
@@ -91,6 +95,8 @@ from src.log_analysis import (
     calculate_drawdown_stats,
     parse_alerts,
     calculate_alert_summary,
+    export_summary_to_csv,
+    plot_summary,
 )
 
 logs_df = parse_trade_logs('logs')
@@ -100,5 +106,9 @@ reason_stats = calculate_reason_summary(logs_df)
 duration = calculate_duration_stats(logs_df)
 drawdown = calculate_drawdown_stats(logs_df)
 alerts = calculate_alert_summary('logs')
+export_summary_to_csv(summary.reset_index(), 'summary.csv.gz')
+fig = plot_summary(summary)
+fig.savefig('summary.png')
 ```
 ฟังก์ชัน `calculate_position_size` ยังช่วยคำนวณขนาดลอตที่เหมาะสมตามทุนและระยะ SL
+

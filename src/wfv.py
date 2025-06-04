@@ -16,13 +16,20 @@ MetricDict = Dict[str, float]
 logger = logging.getLogger(__name__)
 
 # metrics that should be minimized when evaluating the Pareto front
+# metrics containing the substring "dd" should also be minimized by default
 MINIMIZE_METRICS = {"maxdd", "max_dd", "drawdown"}
+
+
+def _is_minimize_metric(name: str) -> bool:
+    """Return ``True`` if the metric should be minimized."""
+    name = name.lower()
+    return "dd" in name or name in MINIMIZE_METRICS
 
 
 def _dominates(a: MetricDict, b: MetricDict, metrics: Sequence[str]) -> bool:
     """Return True if ``a`` dominates ``b`` for the given metrics."""
     def score(val: float, name: str) -> float:
-        return -val if name in MINIMIZE_METRICS else val
+        return -val if _is_minimize_metric(name) else val
 
     ge = all(score(a.get(m, float("-inf")), m) >= score(b.get(m, float("-inf")), m) for m in metrics)
     gt = any(score(a.get(m, float("-inf")), m) > score(b.get(m, float("-inf")), m) for m in metrics)

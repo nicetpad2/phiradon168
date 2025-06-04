@@ -16,6 +16,8 @@ from src.log_analysis import (
     calculate_drawdown_stats,
     parse_alerts,
     calculate_alert_summary,
+    export_summary_to_csv,
+    plot_summary,
 )
 
 SAMPLE_LOG = """
@@ -74,4 +76,24 @@ def test_parse_alerts_and_summary(tmp_path):
     summary = calculate_alert_summary(str(log_file))
     assert summary.loc["WARNING"] == 1
     assert summary.loc["CRITICAL"] == 1
+
+
+def test_invalid_log_path(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        parse_trade_logs(str(tmp_path / "missing.txt"))
+    with pytest.raises(ValueError):
+        parse_trade_logs(str(tmp_path / "invalid.csv"))
+
+
+def test_export_and_plot(tmp_path):
+    log_file = tmp_path / "test.log"
+    log_file.write_text(SAMPLE_LOG)
+    df = parse_trade_logs(str(log_file))
+    summary = calculate_hourly_summary(df)
+    out_file = tmp_path / "summary.csv.gz"
+    export_summary_to_csv(summary.reset_index(), str(out_file))
+    reloaded = pd.read_csv(out_file)
+    assert "hour" in reloaded.columns
+    fig = plot_summary(summary)
+    assert hasattr(fig, "savefig")
 
