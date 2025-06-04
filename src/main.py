@@ -18,13 +18,13 @@ if 'pytest' in sys.modules:
     cfg = sys.modules.get('src.config')
     if cfg is not None and getattr(cfg, '__file__', None) is None and hasattr(cfg, 'ENTRY_CONFIG_PER_FOLD'):
         DEFAULT_ENTRY_CONFIG_PER_FOLD = cfg.ENTRY_CONFIG_PER_FOLD
-        logger = getattr(cfg, 'logger', logging.getLogger(__name__))
+        logger = getattr(cfg, 'logger', logging.getLogger(__name__)); CFG_FUND_PROFILES = getattr(cfg, 'FUND_PROFILES', {}); CFG_MULTI_FUND_MODE = getattr(cfg, 'MULTI_FUND_MODE', True); CFG_DEFAULT_FUND_NAME = getattr(cfg, 'DEFAULT_FUND_NAME', 'NORMAL'); DEFAULT_FUND_PROFILES = CFG_FUND_PROFILES; DEFAULT_MULTI_FUND_MODE = CFG_MULTI_FUND_MODE; DEFAULT_FUND_NAME = CFG_DEFAULT_FUND_NAME
     else:
         DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
         logger = logging.getLogger(__name__)
 else:
     try:
-        from src.config import logger, ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD
+        from src.config import logger, ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD, FUND_PROFILES as CFG_FUND_PROFILES, MULTI_FUND_MODE as CFG_MULTI_FUND_MODE, DEFAULT_FUND_NAME as CFG_DEFAULT_FUND_NAME
     except Exception:  # pragma: no cover - fallback for tests
         logger = logging.getLogger(__name__)
         DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
@@ -86,13 +86,13 @@ DEFAULT_OUTPUT_DIR = "./output_default"
 DEFAULT_META_CLASSIFIER_PATH = "meta_classifier.pkl"
 DEFAULT_SPIKE_MODEL_PATH = "meta_classifier_spike.pkl"
 DEFAULT_CLUSTER_MODEL_PATH = "meta_classifier_cluster.pkl"
-DEFAULT_FUND_NAME = "NORMAL"
+DEFAULT_FUND_NAME = CFG_DEFAULT_FUND_NAME if 'CFG_DEFAULT_FUND_NAME' in globals() else "NORMAL"
 DEFAULT_MODEL_TO_LINK = "catboost"
 DEFAULT_ENABLE_OPTUNA_TUNING = False
 DEFAULT_SAMPLE_SIZE = 60000
 DEFAULT_FEATURES_TO_DROP = None
-DEFAULT_MULTI_FUND_MODE = True
-DEFAULT_FUND_PROFILES = {}
+DEFAULT_MULTI_FUND_MODE = CFG_MULTI_FUND_MODE if 'CFG_MULTI_FUND_MODE' in globals() else True
+DEFAULT_FUND_PROFILES = CFG_FUND_PROFILES if 'CFG_FUND_PROFILES' in globals() else {}
 DEFAULT_TRAIN_META_MODEL_BEFORE_RUN = True
 DEFAULT_META_CLASSIFIER_FEATURES = []
 DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES = 4
@@ -144,6 +144,7 @@ DEFAULT_EARLY_STOPPING_ROUNDS = 200
 DEFAULT_CATBOOST_GPU_RAM_PART = 0.95
 DEFAULT_SHAP_IMPORTANCE_THRESHOLD = 0.01
 DEFAULT_PERMUTATION_IMPORTANCE_THRESHOLD = 0.001
+
 
 # [Patch v5.2.4] Ensure default output directory exists
 def ensure_default_output_dir(path=DEFAULT_OUTPUT_DIR):
@@ -588,8 +589,8 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
             continue
 
         if trade_log_filtered is None or trade_log_filtered.empty:
-            logging.warning(f"         (Warning) No data available after filtering for '{model_purpose}' model. Skipping training.")
-            continue
+            logging.warning(f"         (Warning) No data after filtering for '{model_purpose}'. Using full log."); trade_log_filtered = trade_log_df_base.copy()
+            if trade_log_filtered.empty: logging.warning(f"         (Warning) Full trade log empty. Skipping '{model_purpose}'."); continue
 
         try:
             saved_paths, _ = train_and_export_meta_model(

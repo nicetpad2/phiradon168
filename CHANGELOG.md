@@ -480,3 +480,8 @@
 - Updated README with usage instructions
 - QA: pytest -q passed (224 tests)
 
+
+### 2025-06-04
+- [Patch v5.4.2] Fix FUND_PROFILES defaults and auto-train fallback
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (225 tests)
