@@ -1988,9 +1988,9 @@ def run_backtest_simulation_v34(
                 logging.debug(
                     f"   Skipping bar {current_index} due to missing/invalid price data."
                 )
-                df_sim.loc[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = max_drawdown_pct
-                df_sim.loc[current_index, f"Equity_Realistic{label_suffix}"] = equity
-                df_sim.loc[current_index, f"Active_Order_Count{label_suffix}"] = len(active_orders)
+                df_sim.at[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = max_drawdown_pct
+                df_sim.at[current_index, f"Equity_Realistic{label_suffix}"] = equity
+                df_sim.at[current_index, f"Active_Order_Count{label_suffix}"] = len(active_orders)
                 equity_history[current_index] = equity
                 current_bar_index += 1
                 continue
@@ -2146,12 +2146,12 @@ def run_backtest_simulation_v34(
             final_m1_signal = "NONE"
             if side == "BUY" and entry_long_signal: final_m1_signal = "BUY"
             elif side == "SELL" and entry_short_signal: final_m1_signal = "SELL"
-            df_sim.loc[current_index, f"M15_Trend_Zone{label_suffix}"] = m15_trend
-            df_sim.loc[current_index, f"M1_Entry_Signal{label_suffix}"] = final_m1_signal
-            df_sim.loc[current_index, f"Signal_Score{label_suffix}"] = signal_score if pd.notna(signal_score) else np.nan
-            df_sim.loc[current_index, f"Trade_Reason{label_suffix}"] = trade_reason if final_m1_signal != "NONE" else "NONE"
-            df_sim.loc[current_index, f"Session{label_suffix}"] = session_tag
-            df_sim.loc[current_index, f"Trade_Tag{label_suffix}"] = current_trade_tag
+            df_sim.at[current_index, f"M15_Trend_Zone{label_suffix}"] = m15_trend
+            df_sim.at[current_index, f"M1_Entry_Signal{label_suffix}"] = final_m1_signal
+            df_sim.at[current_index, f"Signal_Score{label_suffix}"] = signal_score if pd.notna(signal_score) else np.nan
+            df_sim.at[current_index, f"Trade_Reason{label_suffix}"] = trade_reason if final_m1_signal != "NONE" else "NONE"
+            df_sim.at[current_index, f"Session{label_suffix}"] = session_tag
+            df_sim.at[current_index, f"Trade_Tag{label_suffix}"] = current_trade_tag
             if USE_ADAPTIVE_SIGNAL_SCORE:
                 recent_df = df_sim.iloc[max(0, current_bar_index - ADAPTIVE_SIGNAL_SCORE_WINDOW):current_bar_index]
                 current_thresh = get_dynamic_signal_score_entry(
@@ -2279,14 +2279,14 @@ def run_backtest_simulation_v34(
                             logging.warning(f"         (Warning) Switcher selected '{selected_model_key}', but model/features invalid. Falling back to 'main'."); selected_model_key = 'main'; model_info = available_models.get('main')
                             if model_info and model_info.get('model') and model_info.get('features'): active_l1_model = model_info['model']; active_l1_features = model_info['features']
                             else: logging.error("         (Error) Fallback to main model failed. Skipping ML Filter."); can_open_order = False; block_reason = "ML1_MAIN_FALLBACK_FAIL"; active_l1_model = None
-                        df_sim.loc[current_index, f"Active_Model{label_suffix}"] = selected_model_key
-                        df_sim.loc[current_index, f"Model_Confidence{label_suffix}"] = model_confidence
+                        df_sim.at[current_index, f"Active_Model{label_suffix}"] = selected_model_key
+                        df_sim.at[current_index, f"Model_Confidence{label_suffix}"] = model_confidence
                     except Exception as e_switch:
                         logging.error(f"      (Error) Model Switcher failed: {e_switch}. Falling back to main model.", exc_info=True); selected_model_key = 'main'; model_info = available_models.get('main')
                         if model_info and model_info.get('model') and model_info.get('features'): active_l1_model = model_info['model']; active_l1_features = model_info['features']
                         else: logging.error("      (Error) Fallback to main model failed after switcher error. Skipping ML Filter."); can_open_order = False; block_reason = "ML1_SWITCH_ERR_FALLBACK_FAIL"; active_l1_model = None
-                        df_sim.loc[current_index, f"Active_Model{label_suffix}"] = f"ErrorFallback_{selected_model_key}"
-                        df_sim.loc[current_index, f"Model_Confidence{label_suffix}"] = np.nan
+                        df_sim.at[current_index, f"Active_Model{label_suffix}"] = f"ErrorFallback_{selected_model_key}"
+                        df_sim.at[current_index, f"Model_Confidence{label_suffix}"] = np.nan
                     if active_l1_model and active_l1_features:
                         # [Patch v5.1.1] Fix feature check for namedtuple rows
                         missing_ml_features = [
@@ -2367,7 +2367,7 @@ def run_backtest_simulation_v34(
                                 )
                                 new_order = {"entry_idx": current_index, "entry_time": entry_time, "entry_price": entry_price, "original_lot": final_lot, "lot": final_lot, "original_sl_price": sl_price, "sl_price": sl_price, "tp_price": tp2_price, "tp1_price": tp1_price, "entry_bar_count": current_bar_index, "side": side, "m15_trend_zone": m15_trend, "trade_tag": current_trade_tag, "signal_score": signal_score if pd.notna(signal_score) else np.nan, "trade_reason": trade_reason if not is_forced_entry else f"FORCED_{trade_reason}", "session": session_tag, "pattern_label_entry": pattern_label, "be_triggered": False, "be_triggered_time": pd.NaT, "is_reentry": is_reentry_trade, "is_forced_entry": is_forced_entry, "meta_proba_tp": meta_proba_tp_for_log, "meta2_proba_tp": meta2_proba_tp_for_log, "partial_tp_processed_levels": set(), "atr_at_entry": atr_entry, "equity_before_open": current_equity_check, "entry_gain_z": current_gain_z if pd.notna(current_gain_z) else np.nan, "entry_macd_smooth": current_macd_smooth if pd.notna(current_macd_smooth) else np.nan, "entry_candle_ratio": getattr(row, "Candle_Ratio", np.nan), "entry_adx": getattr(row, "ADX", np.nan), "entry_volatility_index": current_vol_index if pd.notna(current_vol_index) else np.nan, "peak_since_tp1": np.nan, "trough_since_tp1": np.nan, "risk_mode_at_entry": risk_mode_applied, "use_trailing_for_tp2": enable_ttp2, "trailing_start_price": tp1_price if enable_ttp2 else np.nan, "trailing_step_r": ADAPTIVE_TSL_DEFAULT_STEP_R if enable_ttp2 else np.nan, "peak_since_ttp2_activation": np.nan, "trough_since_ttp2_activation": np.nan, "active_model_at_entry": selected_model_key, "model_confidence_at_entry": model_confidence, "tsl_activated": False, "peak_since_tsl_activation": np.nan, "trough_since_tsl_activation": np.nan}
                                 next_active_orders.append(new_order); logging.info(f"         +++ ORDER OPENED: Side={side}, Lot={final_lot:.2f}, Entry={entry_price:.5f}, SL={sl_price:.5f}, TP={tp2_price:.5f}")
-                                df_sim.loc[current_index, f"Order_Opened{label_suffix}"] = True; df_sim.loc[current_index, f"Lot_Size{label_suffix}"] = final_lot; df_sim.loc[current_index, f"Entry_Price_Actual{label_suffix}"] = entry_price; df_sim.loc[current_index, f"SL_Price_Actual{label_suffix}"] = sl_price; df_sim.loc[current_index, f"TP_Price_Actual{label_suffix}"] = tp2_price; df_sim.loc[current_index, f"ATR_At_Entry{label_suffix}"] = atr_entry; df_sim.loc[current_index, f"Equity_Before_Open{label_suffix}"] = current_equity_check; df_sim.loc[current_index, f"Is_Reentry{label_suffix}"] = is_reentry_trade; df_sim.loc[current_index, f"Forced_Entry{label_suffix}"] = is_forced_entry; df_sim.loc[current_index, f"Meta_Proba_TP{label_suffix}"] = meta_proba_tp_for_log; df_sim.loc[current_index, f"Meta2_Proba_TP{label_suffix}"] = meta2_proba_tp_for_log; df_sim.loc[current_index, f"Entry_Gain_Z{label_suffix}"] = current_gain_z if pd.notna(current_gain_z) else np.nan; df_sim.loc[current_index, f"Entry_MACD_Smooth{label_suffix}"] = current_macd_smooth if pd.notna(current_macd_smooth) else np.nan; df_sim.loc[current_index, f"Entry_Candle_Ratio{label_suffix}"] = getattr(row, "Candle_Ratio", np.nan); df_sim.loc[current_index, f"Entry_ADX{label_suffix}"] = getattr(row, "ADX", np.nan); df_sim.loc[current_index, f"Entry_Volatility_Index{label_suffix}"] = current_vol_index if pd.notna(current_vol_index) else np.nan; df_sim.loc[current_index, f"Active_Model{label_suffix}"] = selected_model_key; df_sim.loc[current_index, f"Model_Confidence{label_suffix}"] = model_confidence
+                                df_sim.at[current_index, f"Order_Opened{label_suffix}"] = True; df_sim.at[current_index, f"Lot_Size{label_suffix}"] = final_lot; df_sim.at[current_index, f"Entry_Price_Actual{label_suffix}"] = entry_price; df_sim.at[current_index, f"SL_Price_Actual{label_suffix}"] = sl_price; df_sim.at[current_index, f"TP_Price_Actual{label_suffix}"] = tp2_price; df_sim.at[current_index, f"ATR_At_Entry{label_suffix}"] = atr_entry; df_sim.at[current_index, f"Equity_Before_Open{label_suffix}"] = current_equity_check; df_sim.at[current_index, f"Is_Reentry{label_suffix}"] = is_reentry_trade; df_sim.at[current_index, f"Forced_Entry{label_suffix}"] = is_forced_entry; df_sim.at[current_index, f"Meta_Proba_TP{label_suffix}"] = meta_proba_tp_for_log; df_sim.at[current_index, f"Meta2_Proba_TP{label_suffix}"] = meta2_proba_tp_for_log; df_sim.at[current_index, f"Entry_Gain_Z{label_suffix}"] = current_gain_z if pd.notna(current_gain_z) else np.nan; df_sim.at[current_index, f"Entry_MACD_Smooth{label_suffix}"] = current_macd_smooth if pd.notna(current_macd_smooth) else np.nan; df_sim.at[current_index, f"Entry_Candle_Ratio{label_suffix}"] = getattr(row, "Candle_Ratio", np.nan); df_sim.at[current_index, f"Entry_ADX{label_suffix}"] = getattr(row, "ADX", np.nan); df_sim.at[current_index, f"Entry_Volatility_Index{label_suffix}"] = current_vol_index if pd.notna(current_vol_index) else np.nan; df_sim.at[current_index, f"Active_Model{label_suffix}"] = selected_model_key; df_sim.at[current_index, f"Model_Confidence{label_suffix}"] = model_confidence
                                 if is_reentry_trade: reentry_trades_opened += 1
                                 if is_forced_entry: forced_entry_trades_opened += 1
                                 bars_since_last_trade = 0
@@ -2383,7 +2383,7 @@ def run_backtest_simulation_v34(
                     logging.warning(f"      Force closing {len(active_orders)} orders due to Margin Call at {now}.")
                     for mc_order in active_orders: trade_log_entry_mc = {"period": label, "side": mc_order.get("side"), "entry_idx": mc_order.get("entry_idx"), "entry_time": mc_order.get("entry_time"), "entry_price": mc_order.get("entry_price"), "close_time": now, "exit_price": current_close, "exit_reason": "MARGIN_CALL", "lot": mc_order.get("lot", 0.0), "pnl_usd_net": 0.0, "is_partial_tp": False, "partial_tp_level": len(mc_order.get("partial_tp_processed_levels", set())), "risk_mode_at_entry": mc_order.get("risk_mode_at_entry", "N/A"), "active_model_at_entry": mc_order.get("active_model_at_entry", "N/A")}; trade_log.append(trade_log_entry_mc)
                     active_orders.clear()
-                next_active_orders.clear(); df_sim.loc[current_index, f"Equity_Realistic{label_suffix}"] = 0.0; df_sim.loc[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = 1.0; df_sim.loc[current_index, f"Active_Order_Count{label_suffix}"] = 0; equity_history[current_index] = 0.0
+                next_active_orders.clear(); df_sim.at[current_index, f"Equity_Realistic{label_suffix}"] = 0.0; df_sim.at[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = 1.0; df_sim.at[current_index, f"Active_Order_Count{label_suffix}"] = 0; equity_history[current_index] = 0.0
                 remaining_indices = df_sim.index[df_sim.index > current_index]
                 if not remaining_indices.empty: logging.info(f"      Marking remaining {len(remaining_indices)} bars with 0 equity due to Margin Call."); df_sim.loc[remaining_indices, f"Equity_Realistic{label_suffix}"] = 0.0; df_sim.loc[remaining_indices, f"Max_Drawdown_At_Point{label_suffix}"] = 1.0; df_sim.loc[remaining_indices, f"Active_Order_Count{label_suffix}"] = 0
                 break
@@ -2393,9 +2393,9 @@ def run_backtest_simulation_v34(
             max_drawdown_pct = max(max_drawdown_pct, current_dd_final)
             logging.debug(f"   Drawdown: Current={current_dd_final*100:.2f}%, Max={max_drawdown_pct*100:.2f}%")
             update_drawdown(cd_state, current_dd_final)
-            df_sim.loc[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = max_drawdown_pct
-            df_sim.loc[current_index, f"Equity_Realistic{label_suffix}"] = equity
-            df_sim.loc[current_index, f"Active_Order_Count{label_suffix}"] = len(next_active_orders)
+            df_sim.at[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = max_drawdown_pct
+            df_sim.at[current_index, f"Equity_Realistic{label_suffix}"] = equity
+            df_sim.at[current_index, f"Active_Order_Count{label_suffix}"] = len(next_active_orders)
             equity_history[current_index] = equity
 
             if enable_kill_switch and not kill_switch_activated:
@@ -2436,7 +2436,7 @@ def run_backtest_simulation_v34(
                 if current_risk_mode == "recovery": logging.info("[Patch] Deactivating Recovery Mode.")
                 current_risk_mode = "normal"
             if current_risk_mode != previous_risk_mode: logging.info(f"      [{now}] Risk Mode for *next* bar set to: {current_risk_mode} (Losses: {consecutive_losses})")
-            df_sim.loc[current_index, f"Risk_Mode{label_suffix}"] = current_risk_mode
+            df_sim.at[current_index, f"Risk_Mode{label_suffix}"] = current_risk_mode
             active_orders = next_active_orders
             logging.debug(
                 f"   End of Bar {current_bar_index}. Active orders for next bar: {len(active_orders)}"

@@ -1,3 +1,7 @@
+### 2025-08-23
+- [Patch v5.5.13] Optimize DataFrame writes in backtest
+- QA: pytest -q passed (309 tests)
+
 
 ### 2025-08-22
 - [Patch v5.5.12] Add alert summary utilities in log_analysis
