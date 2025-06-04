@@ -758,5 +758,10 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for strategy and features
 - QA: pytest -q passed
 
+### 2025-06-10
+- [Patch v5.5.7] Vectorize equity and drawdown updates in run_backtest_simulation_v34
+- Updated unit tests line numbers for function registry
+- QA: pytest -q passed (348 tests)
+
 
 \n
