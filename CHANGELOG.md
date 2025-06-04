@@ -1,3 +1,8 @@
+### 2025-07-02
+- [Patch v5.4.3] real_train_func supports real data
+- New/Updated unit tests added for src.training
+- QA: pytest -q passed (236 tests)
+
 ### 2025-07-01
 - [Patch v5.3.10] Handle optional models as warnings
 - New/Updated unit tests added for src.main
