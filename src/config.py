@@ -712,6 +712,9 @@ DYNAMIC_GAINZ_DRIFT_THRESHOLD = 0.10 # Wasserstein threshold on Gain_Z to trigge
 DYNAMIC_GAINZ_ADJUSTMENT = 0.1  # Amount to add to Gain_Z entry threshold on high drift
 DYNAMIC_RISK_DD_THRESHOLD = 12.0 # Drawdown % to trigger risk reduction (not used)
 DYNAMIC_RISK_REDUCTION_FACTOR = 0.7 # Factor to reduce risk by on high DD (not used)
+ENABLE_ADAPTIVE_SLTP = False      # Toggle ATR-based SL/TP multipliers
+ENABLE_ADAPTIVE_RISK = False      # Toggle dynamic risk allocation
+ENABLE_BEST_PARAM_LOGGING = True  # Save best params per fold
 
 logging.info("Part 2: Core Parameters & Strategy Settings Loaded.")
 # === END OF PART 2/12 ===
