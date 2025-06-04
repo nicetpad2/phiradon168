@@ -80,6 +80,9 @@ from sklearn.metrics import (
 from src.evaluation import find_best_threshold
 from src.adaptive import compute_dynamic_lot, atr_position_size, compute_trailing_atr_stop
 import gc # For memory management
+from src.utils.gc_utils import maybe_collect
+from src.utils.gc_utils import maybe_collect
+from src.utils.gc_utils import maybe_collect
 import os
 import itertools
 # Import ML libraries conditionally (assuming they are checked/installed in Part 1)
@@ -410,7 +413,7 @@ def train_and_export_meta_model(
         )
         logging.info(f"   Merge completed. Shape after merge: {merged_df.shape}")
         del trade_log_df, m1_df
-        gc.collect()
+        maybe_collect()
 
         # [Patch v5.1.6] Load feature list from features_main.json
         features_json_path = os.path.join(output_dir, "features_main.json")
@@ -465,7 +468,7 @@ def train_and_export_meta_model(
         if 'trade_log_df' in locals() and 'trade_log_df' in globals() and trade_log_df is not None: del trade_log_df
         if 'm1_df' in locals() and 'm1_df' in globals() and m1_df is not None: del m1_df
         if 'merged_df' in locals() and 'merged_df' in globals() and merged_df is not None: del merged_df
-        gc.collect()
+        maybe_collect()
         return None, []
 
     selected_features = initial_features_for_selection
@@ -688,7 +691,7 @@ def train_and_export_meta_model(
         if 'shap_values_pos_class' in locals(): del shap_values_pos_class
         if 'selected_features_shap' in locals(): del selected_features_shap
         if 'selected_features_perm' in locals(): del selected_features_perm
-        gc.collect()
+        maybe_collect()
         logging.debug("      Memory cleanup complete.")
 
     else:
@@ -988,7 +991,7 @@ def train_and_export_meta_model(
                     else:
                         logging.warning("         (Warning) ไม่สามารถระบุ SHAP values สำหรับ TP Class (Final Validation) สำหรับ Noise Check.")
                     del shap_pool_val_final, explainer_val_final, shap_values_val_final, shap_values_cat_val
-                    gc.collect()
+                    maybe_collect()
                 except Exception as e_shap:
                     logging.error(f"         (Error) Error during SHAP Analysis/Noise Check (Final Model): {e_shap}", exc_info=True)
             else:
@@ -1006,7 +1009,7 @@ def train_and_export_meta_model(
             if 'X' in locals(): del X
             if 'y' in locals(): del y
             if 'merged_df' in locals() and 'merged_df' in globals() and merged_df is not None: del merged_df
-            gc.collect()
+            maybe_collect()
 
     # --- Save Final Model and Features ---
     logging.info(f"\n   --- Saving Final Model (Purpose: {model_purpose.upper()}) ---")
@@ -1054,7 +1057,7 @@ def train_and_export_meta_model(
     end_train_time = time.time()
     logging.info(f"(Finished - v{__version__}) Meta Classifier Training (Purpose: {model_purpose.upper()}) complete in {end_train_time - start_train_time:.2f} seconds.") # Updated version in log
     if 'X_val_cat_for_shap' in locals(): del X_val_cat_for_shap
-    gc.collect()
+    maybe_collect()
     return saved_model_paths, final_features_catboost
 
 logging.info(f"Part 7: Model Training Function Loaded (v{__version__} Applied).")
@@ -2571,7 +2574,7 @@ def run_backtest_simulation_v34(
     if 'trade_log' in locals(): del trade_log
     if 'trade_history_list' in locals(): del trade_history_list
     if 'last_n_full_trade_pnls' in locals(): del last_n_full_trade_pnls
-    gc.collect()
+    maybe_collect()
     logging.debug(f"   Memory cleanup complete for: {label}")
 
     return (df_sim, trade_log_df_segment, equity, equity_history, max_drawdown_pct, run_summary, blocked_order_log, sim_model_type_l1, sim_model_type_l2, kill_switch_activated, consecutive_losses, total_ib_lot_accumulator)
@@ -2821,7 +2824,7 @@ class DriftObserver:
                 feature_result["ttest_p"] = t_p
                 analyzed_count += 1
                 del train_series, test_series, w_dist, t_stat, t_p
-                gc.collect()
+                maybe_collect()
 
             except KeyError:
                 logging.error(f"      (Error) Feature '{feature}' missing during analysis Fold {fold_num + 1}.")
@@ -2837,7 +2840,7 @@ class DriftObserver:
 
         logging.info(f"    (DriftObserver) Fold {fold_num + 1} Summary: Analyzed={analyzed_count}, Skipped(NN/Insuf)={skipped_non_numeric}/{skipped_insufficient_data}, Errors={error_count}, Drift Alerts={drift_alert_count}")
         del common_features, features_to_analyze, missing_observed
-        gc.collect()
+        maybe_collect()
 
     def get_fold_drift_summary(self, fold_num):
         """
@@ -2929,7 +2932,7 @@ class DriftObserver:
 
         logging.info("  (Info) Skipping save of drift heatmap PNG (v3.6.8 Reduce Files).")
         del summary_df, summary_data, wasserstein_df_data
-        gc.collect()
+        maybe_collect()
 
     def export_fold_summary(self, output_dir, fold_num):
         """
@@ -2974,7 +2977,7 @@ class DriftObserver:
             fold_summary_df.to_csv(drift_fold_path, index=False, encoding="utf-8", float_format="%.4f")
             logging.debug(f"          (Success) Exported Drift Summary for Fold {fold_num+1}: {os.path.basename(drift_fold_path)}")
             del fold_summary_list, fold_summary_df
-            gc.collect()
+            maybe_collect()
         except Exception as e_export_fold:
             logging.error(f"  (Error) Failed to export Drift Summary for Fold {fold_num+1}: {e_export_fold}", exc_info=True)
         if False:
@@ -3155,7 +3158,7 @@ def calculate_metrics(trade_log_df, final_equity, equity_history_segment, initia
         sl_hit_count = len(sl_like_exits)
         metrics[f"{label} SL Hit Rate (%)"] = (sl_hit_count / total_exits) * 100.0 if total_exits > 0 else 0.0
         del pnl, wins, losses, sl_like_exits
-        gc.collect()
+        maybe_collect()
 
     else:
         logging.info(f"    No fully closed trades found for '{label}'. Calculating metrics based on partials/totals.")
@@ -3259,24 +3262,24 @@ def calculate_metrics(trade_log_df, final_equity, equity_history_segment, initia
                         metrics[f"{label} Calmar Ratio (approx)"] = calmar_ratio
                         logging.debug(f"      Calmar Ratio (approx): {calmar_ratio:.3f}")
                         del daily_ret, downside_ret
-                        gc.collect()
+                        maybe_collect()
                     else:
                         logging.warning(f"    (Warning) Cannot calculate ratios for '{label}': No daily returns or zero initial capital.")
                     del equity_resampled
-                    gc.collect()
+                    maybe_collect()
                 else:
                     logging.warning(f"    (Warning) Not enough resampled equity data points ({len(equity_resampled)}) for ratio calculation in '{label}'.")
             else:
                 logging.warning(f"    (Warning) Equity index for '{label}' is not DatetimeIndex. Cannot calculate ratio metrics.")
             del rolling_max, drawdown
-            gc.collect()
+            maybe_collect()
         except Exception as e:
             logging.error(f"    (Error) Error calculating equity/drawdown/ratio metrics for '{label}': {e}", exc_info=True)
     else:
         logging.warning(f"    (Warning) Not enough equity data points ({len(equity_series) if equity_series is not None else 0}) to calculate Drawdown/Ratios for '{label}'.")
 
     del full_trade_log_df, partial_tp_log_df, equity_series
-    gc.collect()
+    maybe_collect()
 
     logging.info(f"  (Metrics) Finished calculating metrics for: '{label}'.")
     return metrics
@@ -3429,7 +3432,7 @@ def plot_equity_curve(equity_series_data, title, initial_capital, output_dir, fi
     finally:
         plt.close()
         del equity_series_plot
-        gc.collect()
+        maybe_collect()
 
 # --- Log Analysis Functions ---
 def load_trade_log(log_file_path):
@@ -3525,7 +3528,7 @@ def run_log_analysis_pipeline(log_file_path, output_dir, consecutive_loss_config
     logging.info("\n=== Full Log Analysis Report (Summary) ===")
     # ... log summary ...
     del log_df # Clean up memory
-    gc.collect()
+    maybe_collect()
     return {} # Placeholder
 
 # --- Dynamic Parameter Adjustment Helper ---
@@ -3951,7 +3954,7 @@ def run_all_folds_with_threshold(
         del df_train_fold, df_test_fold, df_buy_res, df_sell_res
         del log_buy, log_sell, hist_buy, hist_sell, blocked_buy, blocked_sell
         del metrics_buy_fold, metrics_sell_fold, current_fold_metrics
-        gc.collect()
+        maybe_collect()
         logging.debug(f"        Memory cleanup complete for Fold {fold+1}.")
 
     run_duration = time.time() - start_time_run
@@ -3977,7 +3980,7 @@ def run_all_folds_with_threshold(
                 logging.warning("   (Warning) Final combined trade log is missing 'entry_time' column.")
             logging.info(f"      Combined Trade Log Shape: {trade_log_wf.shape}")
             del all_trade_logs
-            gc.collect()
+            maybe_collect()
         except Exception as e:
             logging.error(f"        (Error) Failed to concatenate trade logs (L1_Th={l1_thresh_display}): {e}.", exc_info=True)
             return None, None, pd.DataFrame(), pd.DataFrame(), {}, [], None, "N/A", "N/A", 0.0
@@ -3995,7 +3998,7 @@ def run_all_folds_with_threshold(
     logging.debug(f"      Combined BUY Equity Series Length: {len(eq_buy_series_final)}")
     logging.debug(f"      Combined SELL Equity Series Length: {len(eq_sell_series_final)}")
     del eq_buy_hist_combined, eq_sell_hist_combined
-    gc.collect()
+    maybe_collect()
 
     logging.info(f"      [Runner {run_label}] (Calculating) Calculating overall metrics (L1_Th={l1_thresh_display})...")
     metrics_buy_overall = None
@@ -4009,7 +4012,7 @@ def run_all_folds_with_threshold(
     metrics_buy_overall[f"Overall WF Buy ({fund_name}) Drift Overrides Active (Folds)"] = sum(m["buy"].get(f"Fold {i+1} Buy ({fund_name}) Drift Override Active", False) for i, m in enumerate(all_fold_metrics) if "buy" in m)
     metrics_buy_overall[f"Overall WF Buy ({fund_name}) Folds Ended In Recovery"] = sum(1 for i, m in enumerate(all_fold_metrics) if m.get("buy", {}).get(f"Fold {i+1} Buy ({fund_name}) Final Risk Mode") == "recovery")
     del log_wf_buy, eq_buy_series_final
-    gc.collect()
+    maybe_collect()
 
     metrics_sell_overall = None
     log_wf_sell = trade_log_wf[trade_log_wf["side"] == "SELL"].copy() if not trade_log_wf.empty else pd.DataFrame()
@@ -4021,7 +4024,7 @@ def run_all_folds_with_threshold(
     metrics_sell_overall[f"Overall WF Sell ({fund_name}) Drift Overrides Active (Folds)"] = sum(m["sell"].get(f"Fold {i+1} Sell ({fund_name}) Drift Override Active", False) for i, m in enumerate(all_fold_metrics) if "sell" in m)
     metrics_sell_overall[f"Overall WF Sell ({fund_name}) Folds Ended In Recovery"] = sum(1 for i, m in enumerate(all_fold_metrics) if m.get("sell", {}).get(f"Fold {i+1} Sell ({fund_name}) Final Risk Mode") == "recovery")
     del log_wf_sell, eq_sell_series_final
-    gc.collect()
+    maybe_collect()
 
     df_walk_forward_results_pd_final = pd.DataFrame()
     if all_fold_results_df:
@@ -4029,7 +4032,7 @@ def run_all_folds_with_threshold(
             logging.info("      Combining fold result DataFrames...")
             df_walk_forward_results_pd_final = pd.concat(all_fold_results_df, axis=0, sort=False)
             del all_fold_results_df
-            gc.collect()
+            maybe_collect()
             rows_before_dedup_final = len(df_walk_forward_results_pd_final)
             df_walk_forward_results_pd_final = df_walk_forward_results_pd_final[~df_walk_forward_results_pd_final.index.duplicated(keep='last')]
             rows_after_dedup_final = len(df_walk_forward_results_pd_final)

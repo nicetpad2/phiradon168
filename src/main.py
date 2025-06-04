@@ -13,7 +13,7 @@ import logging
 import os
 import sys
 import json
-from src.utils import get_env_float
+from src.utils import get_env_float, maybe_collect
 if 'pytest' in sys.modules:
     cfg = sys.modules.get('src.config')
     if cfg is not None and getattr(cfg, '__file__', None) is None and hasattr(cfg, 'ENTRY_CONFIG_PER_FOLD'):
@@ -830,7 +830,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                 else:
                     logging.error("   (Error) Train Model L1 (Main) ล้มเหลว."); return None
                 del train_log_df_override
-                gc.collect()
+                maybe_collect()
             except NameError as ne:
                 logging.critical(f"   (CRITICAL) NameError during TRAIN_MODEL_ONLY: {ne}. Likely missing function definition.", exc_info=True)
                 return None
@@ -979,7 +979,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             logging.debug("   Cleaning up intermediate dataframes after data preparation...")
             del df_m15_raw, df_m1_raw, df_m15_dt, df_m1_dt, df_m15_trend
             del df_m1_features, df_m1_cleaned, df_m1_merged, df_m1_merged_with_signals
-            gc.collect()
+            maybe_collect()
             logging.debug("   Intermediate dataframe cleanup complete.")
 
             if run_mode == 'PREPARE_TRAIN_DATA':
@@ -1023,7 +1023,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
 
                     logging.info(f"(Finished) PREPARE_TRAIN_DATA ran backtest and saved results -> suffix={suffix}")
                     del df_m1_final, prep_trade_log_wf
-                    gc.collect()
+                    maybe_collect()
                     return current_run_suffix
                 except (NameError, UnboundLocalError) as ne:
                     # [Patch] Catch UnboundLocalError along with NameError to prevent pipeline crash
@@ -1263,7 +1263,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                     else:
                         logging.warning("   (Warning) ไม่สามารถโหลด features_main.json หรือ first_fold_test_data ว่างเปล่า สำหรับ SHAP analysis.")
                     del first_fold_test_data_for_shap_final
-                    gc.collect()
+                    maybe_collect()
 
                 if drift_observer and fund_name == list(funds_to_run.keys())[0]:
                     logging.info("\n--- Drift Summary (Final Run - Overall) ---")
@@ -1361,7 +1361,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                         qa_f.write(f"NO_TRADES {final_run_suffix_fund}\n")
                     assert os.path.exists(log_file_path)
                 del df_walk_forward_results_pd_fund, trade_log_wf_fund, all_equity_histories_fund, all_fold_metrics_fund
-                gc.collect()
+                maybe_collect()
 
         if MULTI_FUND_MODE and run_mode == 'FULL_RUN' and len(funds_to_run) > 1:
             logging.info("\n" + "=" * 20 + " MULTI-FUND RUN COMPLETED " + "=" * 20)
@@ -1373,7 +1373,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                     all_funds_combined_log.to_csv(combined_log_path + ".gz", index=False, encoding="utf-8", compression="gzip")
                     logging.info(f"   (Success) Saved Combined Trade Log (GZ): {combined_log_path}.gz")
                     del all_funds_combined_log
-                    gc.collect()
+                    maybe_collect()
                 except Exception as e_comb_log:
                     logging.error(f"   (Error) Failed to save combined trade log: {e_comb_log}", exc_info=True)
             else:
@@ -1389,7 +1389,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             final_run_suffix = current_run_suffix
 
         if 'df_m1_final' in locals() and df_m1_final is not None: del df_m1_final
-        gc.collect()
+        maybe_collect()
 
     elif run_mode == 'TRAIN_MODEL_ONLY':
         logging.info("\n(Info) ข้าม Final Walk-Forward Run (Mode: TRAIN_MODEL_ONLY).")
@@ -1917,7 +1917,7 @@ def run_pipeline_stage(stage: str):
         out_path = os.path.join(OUTPUT_DIR, "preprocessed.parquet")
         df.to_parquet(out_path)
         del df
-        gc.collect()
+        maybe_collect()
         logger.info(f"[Pipeline] Preprocess complete -> {out_path}")
         return out_path
     if stage == 'backtest':

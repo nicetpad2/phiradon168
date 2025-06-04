@@ -441,6 +441,7 @@ import warnings
 import traceback
 # from datetime import datetime # <<< REMOVED: Should use global 'datetime' module imported earlier
 import gc
+from src.utils.gc_utils import maybe_collect
 # Ensure 'datetime' module is available from global imports (e.g., Part 3 or top of file)
 # import datetime # This would be redundant if already imported globally
 
@@ -566,7 +567,7 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
                 else:
                     logging.debug("      ไม่พบ Price Jumps ที่ผิดปกติ.")
                 del close_numeric, price_pct_change, large_jumps
-                gc.collect()
+                maybe_collect()
             else:
                 logging.debug("      ข้ามการตรวจสอบ Price Jumps (ข้อมูล Close ไม่พอหลัง dropna).")
         else:
@@ -604,7 +605,7 @@ def preview_datetime_format(df, n=5):  # pragma: no cover
         preview = preview_df.apply(lambda row: f"{row['Date']} {row['Timestamp']}", axis=1)
         logging.info("\n" + preview.to_string(index=False))
         del preview_df, preview
-        gc.collect()
+        maybe_collect()
     except Exception as e:
         logging.error(f"   [Preview] Error during preview generation: {e}", exc_info=True)
 
@@ -654,7 +655,7 @@ def parse_datetime_safely(datetime_str_series):  # pragma: no cover
                     f"      [Parser] (Success) Format '{fmt}' matched: {len(successful_indices_this_attempt)}. Remaining: {len(remaining_indices)}"
                 )
             del try_parse, successful_mask_this_attempt, successful_indices_this_attempt
-            gc.collect()
+            maybe_collect()
         except ValueError as ve:
             if not remaining_indices.empty:
                 first_failed_idx = remaining_indices[0]
@@ -680,7 +681,7 @@ def parse_datetime_safely(datetime_str_series):  # pragma: no cover
                 remaining_indices = remaining_indices.difference(successful_indices_general)
                 logging.info(f"         -> (Success) General parser matched: {len(successful_indices_general)}. Remaining: {len(remaining_indices)}")
             del try_general, successful_mask_general, successful_indices_general
-            gc.collect()
+            maybe_collect()
         except Exception as e_gen:
             logging.warning(f"         -> General parser error: {e_gen}", exc_info=True)
 
@@ -691,7 +692,7 @@ def parse_datetime_safely(datetime_str_series):  # pragma: no cover
         logging.warning(f"         Example failed strings:\n{failed_strings_log.to_string()}")
     logging.info("      [Parser] (Finished) Date/time parsing complete.")
     del series_to_parse, remaining_indices
-    gc.collect()
+    maybe_collect()
     return parsed_results
 
 # [Patch v5.0.2] Exclude prepare_datetime from coverage
@@ -755,7 +756,7 @@ def prepare_datetime(df_pd, timeframe_str=""):  # pragma: no cover
             datetime_strings, format="%Y%m%d %H:%M:%S", errors="coerce"
         )
         del date_str_series, ts_str_series
-        gc.collect()
+        maybe_collect()
 
         nat_count = df_pd["datetime_original"].isna().sum()
         if nat_count > 0:
@@ -783,7 +784,7 @@ def prepare_datetime(df_pd, timeframe_str=""):  # pragma: no cover
         else:
             logging.debug(f"   ไม่พบค่า NaT ใน {timeframe_str} หลังการ parse.")
         del datetime_strings
-        gc.collect()
+        maybe_collect()
 
         if "datetime_original" in df_pd.columns:
             df_pd["datetime_original"] = pd.to_datetime(df_pd["datetime_original"], errors='coerce')
