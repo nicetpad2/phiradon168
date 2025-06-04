@@ -62,6 +62,12 @@ def test_validate_m1_data_path_ok(tmp_path):
     assert dl.validate_m1_data_path(str(p)) is True
 
 
+def test_validate_m1_data_path_prep(tmp_path):
+    p = tmp_path / 'final_data_m1_v32_walkforward_prep_data_NORMAL.csv.gz'
+    pd.DataFrame({'Open':[1], 'High':[1], 'Low':[1], 'Close':[1]}).to_csv(p, compression='gzip')
+    assert dl.validate_m1_data_path(str(p)) is True
+
+
 def test_validate_m1_data_path_wrong_name(tmp_path, caplog):
     p = tmp_path / 'bad.csv'
     p.write_text('a,b\n1,2', encoding='utf-8')
@@ -74,3 +80,40 @@ def test_load_raw_data_m1_bad_path(tmp_path):
     p = tmp_path / 'wrong.csv'
     pd.DataFrame({'A': [1]}).to_csv(p)
     assert dl.load_raw_data_m1(str(p)) is None
+
+
+def test_load_final_m1_data_valid(tmp_path):
+    df = pd.DataFrame(
+        {
+            'Open': [1.0],
+            'High': [1.1],
+            'Low': [0.9],
+            'Close': [1.0],
+            'ATR_14': [0.1],
+        },
+        index=pd.date_range('2023-01-01', periods=1, freq='min', tz='UTC')
+    )
+    path = tmp_path / 'final_data_m1_v32_walkforward.csv.gz'
+    df.to_csv(path, compression='gzip')
+    trade_log = pd.DataFrame({'datetime': [pd.Timestamp('2023-01-01', tz='UTC')]})
+    loaded = dl.load_final_m1_data(str(path), trade_log)
+    assert isinstance(loaded.index, pd.DatetimeIndex)
+    assert loaded.index.tz == trade_log['datetime'].dt.tz
+
+
+def test_load_final_m1_data_corrupt(tmp_path, caplog):
+    path = tmp_path / 'final_data_m1_v32_walkforward.csv.gz'
+    path.write_text('corrupt')
+    trade_log = pd.DataFrame({'datetime': [pd.Timestamp('2023-01-01', tz='UTC')]})
+    with caplog.at_level('ERROR'):
+        res = dl.load_final_m1_data(str(path), trade_log)
+    assert res is None
+    assert 'Failed to load' in caplog.text or 'Error' in caplog.text
+
+
+def test_load_final_m1_data_missing_cols(tmp_path):
+    df = pd.DataFrame({'Open': [1]})
+    path = tmp_path / 'final_data_m1_v32_walkforward.csv.gz'
+    df.to_csv(path, compression='gzip')
+    trade_log = pd.DataFrame({'datetime': [pd.Timestamp('2023-01-01', tz='UTC')]})
+    assert dl.load_final_m1_data(str(path), trade_log) is None
