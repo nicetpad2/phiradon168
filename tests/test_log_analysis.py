@@ -7,7 +7,14 @@ import pytest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
-from src.log_analysis import parse_trade_logs, calculate_hourly_summary, calculate_position_size
+from src.log_analysis import (
+    parse_trade_logs,
+    calculate_hourly_summary,
+    calculate_position_size,
+    calculate_reason_summary,
+    calculate_duration_stats,
+    calculate_drawdown_stats,
+)
 
 SAMPLE_LOG = """
 INFO:root:   Attempting to Open New Order (Standard) for SELL at 2023-01-01 10:00:00+00:00...
@@ -40,4 +47,16 @@ def test_calculate_position_size():
     assert lot > 0
     with pytest.raises(ValueError):
         calculate_position_size(-1, 2, 50)
+
+
+def test_additional_log_metrics(tmp_path):
+    log_file = tmp_path / "test.log"
+    log_file.write_text(SAMPLE_LOG)
+    df = parse_trade_logs(str(log_file))
+    reason_counts = calculate_reason_summary(df)
+    assert reason_counts.loc["SL"] == 1
+    duration = calculate_duration_stats(df)
+    assert duration["max"] == 20
+    draw_stats = calculate_drawdown_stats(df)
+    assert draw_stats["total_pnl"] == pytest.approx(1.5)
 

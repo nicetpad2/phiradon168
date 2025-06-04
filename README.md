@@ -80,13 +80,22 @@ flowchart LR
 การสร้างฟีเจอร์ การทดสอบย้อนกลับ ไปจนถึงการฝึกเมตาโมเดลและการนำผลลัพธ์ไปใช้งาน
 
 ### การวิเคราะห์ Trade Logs
-เครื่องมือ `src/log_analysis.py` ช่วยสรุปผลการเทรดจากไฟล์ `logs` เพื่อดูช่วงเวลาที่ได้กำไรมากที่สุดและอัตราการชนะต่อชั่วโมง
+เครื่องมือ `src/log_analysis.py` ช่วยสรุปผลการเทรดจากไฟล์ `logs` ไม่ว่าจะเป็นช่วงเวลาที่ได้กำไรมากที่สุด อัตราการชนะต่อชั่วโมง สาเหตุการปิดออเดอร์ ระยะเวลาถือครอง และสถิติ drawdown
 ตัวอย่างการใช้งาน:
 ```python
-from src.log_analysis import parse_trade_logs, calculate_hourly_summary
+from src.log_analysis import (
+    parse_trade_logs,
+    calculate_hourly_summary,
+    calculate_reason_summary,
+    calculate_duration_stats,
+    calculate_drawdown_stats,
+)
 
 logs_df = parse_trade_logs('logs')
 summary = calculate_hourly_summary(logs_df)
 print(summary)
+reason_stats = calculate_reason_summary(logs_df)
+duration = calculate_duration_stats(logs_df)
+drawdown = calculate_drawdown_stats(logs_df)
 ```
 ฟังก์ชัน `calculate_position_size` ยังช่วยคำนวณขนาดลอตที่เหมาะสมตามทุนและระยะ SL

@@ -12,7 +12,10 @@ from src.adaptive import (
     log_best_params,
     compute_kelly_position,
     compute_dynamic_lot,
+    calculate_atr,
+    atr_position_size,
 )
+import src.features as features
 
 
 def test_adaptive_sl_tp_high_vol():
@@ -63,3 +66,21 @@ def test_compute_dynamic_lot_reductions():
     assert compute_dynamic_lot(1.0, 0.07) == 0.75
     assert compute_dynamic_lot(1.0, 0.02) == 1.0
     assert compute_dynamic_lot(1.0, "x") == 1.0
+
+
+def test_calculate_atr_and_position_size(monkeypatch):
+    import pandas as pd
+
+    df = pd.DataFrame({"High": [1, 2], "Low": [0.5, 1.5], "Close": [0.8, 1.8]})
+
+    monkeypatch.setattr(
+        features,
+        "atr",
+        lambda df_in, period=14: pd.DataFrame({"ATR_14": [0.2, 0.3]}, index=df_in.index),
+    )
+
+    atr_val = calculate_atr(df, period=14)
+    assert atr_val == 0.3
+
+    lot, sl = atr_position_size(1000, atr_val, risk_pct=0.01, atr_mult=1.5, pip_value=0.1)
+    assert lot > 0.0 and sl == atr_val * 1.5
