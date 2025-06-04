@@ -514,6 +514,8 @@ QA: pytest -q passed (219 tests)
 
 
 ### 2025-08-08
+
 - [Patch v5.4.5] Add evaluation utility for meta classifier
 - New/Updated unit tests added for src.evaluation
 - QA: pytest -q passed (236 tests)
+

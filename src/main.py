@@ -1092,6 +1092,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
         if M1_FEATURES_FOR_DRIFT:
             try:
                 drift_observer = DriftObserver(M1_FEATURES_FOR_DRIFT)
+                logging.debug(f"(Pipeline) Initialized DriftObserver with {len(M1_FEATURES_FOR_DRIFT)} features.")
             except NameError:
                 logging.warning("Class 'DriftObserver' not found. Skipping drift analysis.")
                 drift_observer = None
@@ -1100,6 +1101,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
 
     tuning_mode_used = "Fixed Params"
     logging.info(f"\n(Info) ข้าม Auto Threshold Tuning (ใช้ {tuning_mode_used} สำหรับ Model).")
+    logging.debug("(Pipeline) Auto Threshold Tuning step skipped. Preparing fund profiles...")
     best_l1_threshold_final = META_MIN_PROBA_THRESH;
     fold_specific_l1_thresholds = None; fold_specific_l2_thresholds = None
 

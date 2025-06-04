@@ -22,7 +22,11 @@ from src.cooldown_utils import (
 )
 from itertools import product
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
-from src.config import print_gpu_utilization  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
+from src.config import (
+    print_gpu_utilization,  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
+    USE_MACD_SIGNALS,
+    USE_RSI_SIGNALS,
+)
 
 # อ่านเวอร์ชันจากไฟล์ VERSION
 VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
@@ -48,6 +52,8 @@ from src.features import (
     check_model_overfit,
     analyze_feature_importance_shap,
     check_feature_noise_shap,  # [Patch] เพิ่มการ import เพื่อตรวจสอบ SHAP noise
+    rsi,
+    macd,
 )  # [Patch] นำเข้า Dynamic Feature Selection & Overfitting Helpers
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
@@ -3941,14 +3947,46 @@ def run_optuna_catboost_sweep(
     return study.best_value, study.best_params
 
 
-def generate_open_signals(df: pd.DataFrame) -> np.ndarray:
-    """สร้างสัญญาณเปิด order"""
-    return (df["Close"] > df["Close"].shift(1)).fillna(0).astype(np.int8).to_numpy()
+def generate_open_signals(
+    df: pd.DataFrame,
+    use_macd: bool = USE_MACD_SIGNALS,
+    use_rsi: bool = USE_RSI_SIGNALS,
+) -> np.ndarray:
+    """สร้างสัญญาณเปิด order พร้อมตัวเลือกเปิด/ปิด MACD และ RSI"""
+    open_mask = df["Close"] > df["Close"].shift(1)
+    if use_macd:
+        if "MACD_hist" not in df.columns:
+            _, _, macd_hist = macd(df["Close"])
+            df = df.copy()
+            df["MACD_hist"] = macd_hist
+        open_mask &= df["MACD_hist"] > 0
+    if use_rsi:
+        if "RSI" not in df.columns:
+            df = df.copy()
+            df["RSI"] = rsi(df["Close"])
+        open_mask &= df["RSI"] > 50
+    return open_mask.fillna(0).astype(np.int8).to_numpy()
 
 
-def generate_close_signals(df: pd.DataFrame) -> np.ndarray:
-    """สร้างสัญญาณปิด order"""
-    return (df["Close"] < df["Close"].shift(1)).fillna(0).astype(np.int8).to_numpy()
+def generate_close_signals(
+    df: pd.DataFrame,
+    use_macd: bool = USE_MACD_SIGNALS,
+    use_rsi: bool = USE_RSI_SIGNALS,
+) -> np.ndarray:
+    """สร้างสัญญาณปิด order พร้อมตัวเลือกเปิด/ปิด MACD และ RSI"""
+    close_mask = df["Close"] < df["Close"].shift(1)
+    if use_macd:
+        if "MACD_hist" not in df.columns:
+            _, _, macd_hist = macd(df["Close"])
+            df = df.copy()
+            df["MACD_hist"] = macd_hist
+        close_mask &= df["MACD_hist"] < 0
+    if use_rsi:
+        if "RSI" not in df.columns:
+            df = df.copy()
+            df["RSI"] = rsi(df["Close"])
+        close_mask &= df["RSI"] < 50
+    return close_mask.fillna(0).astype(np.int8).to_numpy()
 
 
 def precompute_sl_array(df: pd.DataFrame) -> np.ndarray:
