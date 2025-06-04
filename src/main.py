@@ -1130,40 +1130,43 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
     available_models = {}
     if run_mode == 'FULL_RUN':
         logging.info("\n--- กำลังโหลด Models และ Features สำหรับ FULL_RUN (Model Switcher) ---")
-        model_keys = ['main', 'spike', 'cluster']
         model_paths = {
             "main": os.path.join(OUTPUT_DIR, META_CLASSIFIER_PATH),
             "spike": os.path.join(OUTPUT_DIR, SPIKE_MODEL_PATH),
             "cluster": os.path.join(OUTPUT_DIR, CLUSTER_MODEL_PATH),
         }
 
+        model_keys = []
+        for key, path in model_paths.items():
+            if os.path.exists(path):
+                model_keys.append(key)
+            else:
+                logging.error(f"  (Error) ไม่พบไฟล์ Model '{key}' ({os.path.basename(path)}).")
+                if key == 'main':
+                    logging.critical("   (CRITICAL) Main model file is missing. Cannot proceed with FULL_RUN.")
+                    return None
+
         for model_key in model_keys:
             model_path = model_paths[model_key]
             logging.info(f"(Loading) พยายามโหลด Model '{model_key}' จาก: {model_path}")
             loaded_model = None
-            if not os.path.exists(model_path):
-                logging.error(f"  (Error) ไม่พบไฟล์ Model '{model_key}' ({os.path.basename(model_path)}).")
-                if model_key == 'main':
-                    logging.critical("   (CRITICAL) Main model file is missing. Cannot proceed with FULL_RUN.")
-                    return None
-            else:
-                try:
-                    loaded_model = load(model_path)
-                    model_type = loaded_model.__class__.__name__
-                    if "CatBoostClassifier" not in model_type:
-                        logging.error(f"  (Error) Model '{model_key}' is not a CatBoostClassifier (Type: {model_type}).")
-                        loaded_model = None
-                    elif not hasattr(loaded_model, 'predict_proba'):
-                        logging.error(f"  (Error) Model '{model_key}' does not have 'predict_proba' method.")
-                        loaded_model = None
-                    else:
-                        logging.info(f"  (Success) โหลด Model '{model_key}' ({model_type}) สำเร็จ.")
-                except Exception as e:
-                    logging.error(f"  (Error) ไม่สามารถโหลด Model '{model_key}': {e}", exc_info=True)
+            try:
+                loaded_model = load(model_path)
+                model_type = loaded_model.__class__.__name__
+                if "CatBoostClassifier" not in model_type:
+                    logging.error(f"  (Error) Model '{model_key}' is not a CatBoostClassifier (Type: {model_type}).")
                     loaded_model = None
-                    if model_key == 'main':
-                        logging.critical("   (CRITICAL) Failed to load main model. Cannot proceed.")
-                        return None
+                elif not hasattr(loaded_model, 'predict_proba'):
+                    logging.error(f"  (Error) Model '{model_key}' does not have 'predict_proba' method.")
+                    loaded_model = None
+                else:
+                    logging.info(f"  (Success) โหลด Model '{model_key}' ({model_type}) สำเร็จ.")
+            except Exception as e:
+                logging.error(f"  (Error) ไม่สามารถโหลด Model '{model_key}': {e}", exc_info=True)
+                loaded_model = None
+                if model_key == 'main':
+                    logging.critical("   (CRITICAL) Failed to load main model. Cannot proceed.")
+                    return None
 
             logging.info(f"(Loading) พยายามโหลด Features สำหรับ '{model_key}'...")
             features_list = load_features_for_model(model_key, OUTPUT_DIR)
