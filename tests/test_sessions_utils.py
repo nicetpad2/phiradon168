@@ -17,6 +17,12 @@ def test_get_session_tag_timezone_naive():
     assert get_session_tag(ts) == 'NY'
 
 
+def test_get_session_tag_custom_naive_tz():
+    ts = pd.Timestamp('2024-01-01 10:00')
+    tag = get_session_tag(ts, naive_tz='Asia/Bangkok')
+    assert tag == 'Asia'
+
+
 def test_get_session_tag_overlap():
     ts = pd.Timestamp('2024-01-01 14:00', tz='UTC')
     assert get_session_tag(ts) == 'London/NY'
