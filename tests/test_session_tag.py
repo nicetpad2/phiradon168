@@ -21,7 +21,7 @@ def test_engineer_session_vectorized_distribution():
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
         result = features.engineer_m1_features(df)
     categories = set(result['session'].unique())
-    expected = {'Asia', 'Asia/London', 'London', 'London/NY', 'NY', 'N/A'}
+    expected = {'Asia', 'Asia/London', 'London', 'London/NY', 'NY'}
     assert expected.issubset(categories)
     assert result['session'].dtype.name == 'category'
 

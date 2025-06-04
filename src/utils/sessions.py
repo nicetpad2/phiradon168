@@ -7,7 +7,7 @@ except Exception:  # pragma: no cover - fallback when config import fails
 import pandas as pd
 
 # [Patch v5.5.5] Define module-level default to avoid NameError
-SESSION_TIMES_UTC = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
+SESSION_TIMES_UTC = {"Asia": (22, 8), "London": (7, 16), "NY": (13, 21)}
 # [Patch v5.6.3] Track warned ranges to prevent log spam
 _WARNED_OUT_OF_RANGE = set()
 
@@ -50,7 +50,7 @@ def get_session_tag(
         except NameError:
             logger.warning(
                 "get_session_tag: Global SESSION_TIMES_UTC not found, using default.")
-            SESSION_TIMES_UTC = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
+            SESSION_TIMES_UTC = {"Asia": (22, 8), "London": (7, 16), "NY": (13, 21)}
             session_times_utc_local = SESSION_TIMES_UTC
     else:
         session_times_utc_local = session_times_utc

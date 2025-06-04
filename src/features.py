@@ -82,7 +82,7 @@ except NameError: ADAPTIVE_TSL_START_ATR_MULT = DEFAULT_ADAPTIVE_TSL_START_ATR_M
 try: META_CLASSIFIER_FEATURES
 except NameError: META_CLASSIFIER_FEATURES = []
 try: SESSION_TIMES_UTC
-except NameError: SESSION_TIMES_UTC = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
+except NameError: SESSION_TIMES_UTC = {"Asia": (22, 8), "London": (7, 16), "NY": (13, 21)}
 
 
 # --- Indicator Calculation Functions ---

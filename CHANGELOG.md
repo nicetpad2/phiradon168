@@ -1,3 +1,7 @@
+### 2025-08-31
+- [Patch v5.6.4] Extend Asia session to 22-8 and update tests
+- QA: pytest -q passed
+
 #
 ### 2025-08-30
 - [Patch v5.6.3] Reduce log spam for out-of-session timestamps
