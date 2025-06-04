@@ -1,3 +1,8 @@
+### 2025-08-26
+- [Patch v5.5.16] Handle minimize-metric detection in wfv utilities
+- New/Updated unit tests added for tests.test_wfv_utils
+- QA: pytest -q passed
+
 ### 2025-08-25
 - [Patch v5.5.15] Add pipeline config and GPU detection utilities
 - New/Updated unit tests added for tests.test_hardware_utils, tests.test_pipeline_config, tests.test_pipeline_error
