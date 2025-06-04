@@ -24,14 +24,23 @@ except Exception:  # pragma: no cover - NVML failure fallback
 from src.main import main
 
 
+def configure_logging():
+    """Set up consistent logging configuration."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s][%(filename)s:%(lineno)d] - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+
 def custom_helper_function():
     """Stubbed helper for tests."""
     return True
 
 
-def parse_args(args=None):
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser()
+def parse_projectp_args(args=None):
+    """Parse command line arguments for ProjectP."""
+    parser = argparse.ArgumentParser(description="สคริปต์ควบคุมโหมดการทำงาน")
     parser.add_argument(
         "--mode",
         choices=["preprocess", "sweep", "threshold", "backtest", "report", "all"],
@@ -41,44 +50,77 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
+def parse_args(args=None):  # backward compatibility
+    return parse_projectp_args(args)
+
+
+def run_preprocess():
+    """รันขั้นตอนเตรียมข้อมูลและฝึกโมเดล."""
+    return main()
+
+
+def run_sweep():
+    """รันการค้นหาค่าพารามิเตอร์."""
+    subprocess.run([sys.executable, "tuning/hyperparameter_sweep.py"], check=True)
+
+
+def run_threshold():
+    """รันการปรับค่า threshold."""
+    subprocess.run([sys.executable, "threshold_optimization.py"], check=True)
+
+
+def run_backtest():
+    """รันการทดสอบย้อนหลัง."""
+    model_dir = "models"
+    model_files = [f for f in os.listdir(model_dir) if f.startswith("model_") and f.endswith(".joblib")]
+    model_files.sort()
+    model_path = os.path.join(model_dir, model_files[-1]) if model_files else None
+    thresh_path = os.path.join(model_dir, "threshold_wfv_optuna_results.csv")
+    threshold = {}
+    if os.path.exists(thresh_path):
+        df = pd.read_csv(thresh_path)
+        threshold = df.median(numeric_only=True).to_dict()
+    pipeline.run_backtest_pipeline(pd.DataFrame(), pd.DataFrame(), model_path, threshold)
+
+
+def run_report():
+    """สร้างรายงานผลการทดสอบ."""
+    pipeline.run_report()
+
+
+def run_all_steps():
+    """รันทุกโหมดต่อเนื่องกัน."""
+    run_preprocess()
+    run_sweep()
+    run_threshold()
+    run_backtest()
+    run_report()
+
+
+def run_mode(mode):
+    """Run the selected mode."""
+    if mode == "preprocess":
+        run_preprocess()
+    elif mode == "sweep":
+        run_sweep()
+    elif mode == "threshold":
+        run_threshold()
+    elif mode == "backtest":
+        run_backtest()
+    elif mode == "report":
+        run_report()
+    elif mode == "all":
+        run_all_steps()
+    else:
+        raise ValueError(f"Unknown mode: {mode}")
+
+
 if __name__ == "__main__":
+    configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
     args = parse_args()
     try:
-        if args.mode == "preprocess":
-            suffix = main()
-        elif args.mode == "sweep":
-            subprocess.run([sys.executable, "tuning/hyperparameter_sweep.py"], check=True)
-        elif args.mode == "threshold":
-            subprocess.run([sys.executable, "threshold_optimization.py"], check=True)
-        elif args.mode == "backtest":
-            model_dir = "models"
-            model_files = [f for f in os.listdir(model_dir) if f.startswith("model_") and f.endswith(".joblib")]
-            model_files.sort()
-            model_path = os.path.join(model_dir, model_files[-1]) if model_files else None
-            thresh_path = os.path.join(model_dir, "threshold_wfv_optuna_results.csv")
-            threshold = {}
-            if os.path.exists(thresh_path):
-                df = pd.read_csv(thresh_path)
-                threshold = df.median(numeric_only=True).to_dict()
-            pipeline.run_backtest_pipeline(pd.DataFrame(), pd.DataFrame(), model_path, threshold)
-        elif args.mode == "report":
-            pipeline.run_report()
-        else:  # all
-            main()
-            subprocess.run([sys.executable, "tuning/hyperparameter_sweep.py"], check=True)
-            subprocess.run([sys.executable, "threshold_optimization.py"], check=True)
-            model_dir = "models"
-            model_files = [f for f in os.listdir(model_dir) if f.startswith("model_") and f.endswith(".joblib")]
-            model_files.sort()
-            model_path = os.path.join(model_dir, model_files[-1]) if model_files else None
-            thresh_path = os.path.join(model_dir, "threshold_wfv_optuna_results.csv")
-            threshold = {}
-            if os.path.exists(thresh_path):
-                df = pd.read_csv(thresh_path)
-                threshold = df.median(numeric_only=True).to_dict()
-            pipeline.run_backtest_pipeline(pd.DataFrame(), pd.DataFrame(), model_path, threshold)
-            pipeline.run_report()
-
+        run_mode(args.mode)
+        
         # [Patch v5.3.4] Create empty audit files if missing after run
         output_dir = "./output_default"
         audit_files = [
