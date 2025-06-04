@@ -359,16 +359,24 @@ except ImportError:
 
 # --- Colab/Drive Setup ---
 def is_colab():
-    """Return True if running within Google Colab."""  # [Patch v5.3.8]
+    """Return True if running within Google Colab."""  # [Patch v5.4.9]
+    # [Patch] Require an interactive kernel to avoid mount errors when running
+    # scripts externally. Environment variables alone are not sufficient.
     if os.environ.get("COLAB_RELEASE_TAG") or os.environ.get("COLAB_GPU"):
         try:
             import google.colab  # noqa: F401
-            return True
-        except ImportError:
+            ip = get_ipython()
+            if ip and getattr(ip, "kernel", None):
+                return True
+        except Exception:
             return False
     try:
         ip = get_ipython()
-        return bool(ip) and "google.colab" in str(ip.__class__)
+        return (
+            bool(ip)
+            and getattr(ip, "kernel", None) is not None
+            and "google.colab" in str(ip.__class__)
+        )
     except Exception:
         return False
 

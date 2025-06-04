@@ -537,3 +537,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_function_registry
 
 - QA: pytest -q passed (258 tests)
+
+### 2025-06-04
+- [Patch v5.4.9] Check for IPython kernel before mounting Google Drive
+- New/Updated unit tests added for src.config and tests.test_is_colab
+- QA: pytest -q passed (258 tests)
