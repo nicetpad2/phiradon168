@@ -1,3 +1,8 @@
+#
+### 2025-08-28
+- [Patch v5.6.1] Improve model utilities
+- New/Updated unit tests added for tests.test_model_utils_new
+- QA: pytest -q passed (325 tests)
 
 ### 2025-08-28
 
