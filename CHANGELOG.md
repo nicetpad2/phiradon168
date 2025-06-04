@@ -436,6 +436,12 @@
 - New/Updated unit tests added for src.strategy
 - QA: pytest -q passed
 
+### 2025-07-16
+
+- [Patch v5.3.6] Fix DriftObserver import in main
+- New/Updated unit tests added for DriftObserver
+- QA: pytest -q passed
+
 
 ### 2025-07-16
 - [Patch v5.3.5] Skip loading absent models in FULL_RUN
