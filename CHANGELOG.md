@@ -446,6 +446,11 @@
 - [Patch v5.3.7] Improve Colab detection logic
 - New/Updated unit tests added for src.config
 
+### 2025-08-03
+- [Patch v5.3.8] Update registry line numbers for main stubs
+- New/Updated unit tests added for tests.test_function_registry
+- QA: pytest -q passed (219 tests)
+
 
 
 
