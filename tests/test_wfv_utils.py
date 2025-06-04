@@ -50,6 +50,27 @@ def test_walk_forward_grid_search_multi_objective(caplog):
     assert res.iloc[0]["tp"] == 1.5 and res.iloc[0]["sl"] == 0.5
 
 
+def test_walk_forward_minimizes_dd_substrings():
+    df = pd.DataFrame({"Close": range(10)})
+
+    def bt(df, tp=1.0, sl=1.0):
+        pnl = float(df["Close"].mean() * tp - sl)
+        equity_dd = 0.2 if sl > 0.5 else 0.1
+        return {"pnl": pnl, "winrate": 0.5, "equity_dd": equity_dd}
+
+    grid = {"tp": [1.0, 1.5], "sl": [1.0, 0.4]}
+    res = walk_forward_grid_search(
+        df,
+        grid,
+        bt,
+        train_window=4,
+        test_window=2,
+        step=2,
+        objective_metrics=["pnl", "equity_dd"],
+    )
+    assert res.iloc[0]["tp"] == 1.5 and res.iloc[0]["sl"] == 0.4
+
+
 def test_prune_features_by_importance():
     df = pd.DataFrame({"a": [1], "b": [2], "c": [3]})
     imp = {"a": 0.02, "b": 0.005, "c": 0.5}
