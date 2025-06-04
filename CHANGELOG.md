@@ -1,3 +1,8 @@
+### 2025-06-04
+- [Patch v5.5.9] Integrate basic MetaModel utilities and Optuna sweep
+- New/Updated unit tests added for model_utils and optuna sweep
+- QA: pytest -q passed (303 tests)
+
 ### 2025-08-20
 
 - [Patch v5.5.8] Improve OMS Guardian with breakeven and SL/TP validation
