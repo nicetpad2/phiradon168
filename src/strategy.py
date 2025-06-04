@@ -289,7 +289,8 @@ def train_and_export_meta_model(
     elif trade_log_path and isinstance(trade_log_path, str):
         logging.info(f"   กำลังโหลด Trade Log (Default Path): {trade_log_path}")
         try:
-            trade_log_df = safe_load_csv_auto(trade_log_path)
+            # [Patch v5.4.5] Limit loaded rows to manage memory for large logs
+            trade_log_df = safe_load_csv_auto(trade_log_path, row_limit=sample_size)
             if trade_log_df is None:
                 raise ValueError("safe_load_csv_auto returned None for trade log.")
             if trade_log_df.empty:
@@ -348,7 +349,8 @@ def train_and_export_meta_model(
         return None, []
 
     try:
-        m1_df = safe_load_csv_auto(m1_data_path)
+        # [Patch v5.4.5] Limit loaded rows to manage memory for large datasets
+        m1_df = safe_load_csv_auto(m1_data_path, row_limit=sample_size)
         if m1_df is None: raise ValueError("safe_load_csv_auto returned None for M1 data.")
         if m1_df.empty:
             logging.error("   (Error) M1 Data file is empty. Cannot proceed with training.")
