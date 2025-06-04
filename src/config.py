@@ -26,7 +26,8 @@ from joblib import load, dump as joblib_dump
 import traceback
 import pandas as pd
 import numpy as np
-AUTO_INSTALL_LIBS = False  # If False, skip auto-installation of libraries
+# [Patch v5.5.1] Enable auto-installation of libraries
+AUTO_INSTALL_LIBS = True  # If False, skip auto-installation of libraries
 # อ่านเวอร์ชันจากไฟล์ VERSION
 VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
 with open(VERSION_FILE, 'r', encoding='utf-8') as vf:
