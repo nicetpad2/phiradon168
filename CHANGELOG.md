@@ -436,6 +436,11 @@
 - New/Updated unit tests added for src.strategy
 - QA: pytest -q passed
 
+### 2025-07-16
+- [Patch v5.3.6] Harden Colab detection to avoid mount errors
+- New/Updated unit tests added for src.config and registry
+- QA: pytest -q passed
+
 ### 2025-08-02
 - [Patch v5.3.7] Improve Colab detection logic
 - New/Updated unit tests added for src.config
