@@ -9,11 +9,10 @@
 # <<< MODIFIED v4.8.1: Refined auto-train logic (log loading, context cols), confirmed dtype passing, verified model loading checks, added more robust function call checks >>>
 # <<< MODIFIED v4.8.2: Corrected SyntaxError in __main__ block (added except/finally for the main try block), updated log messages and versioning, robust global access in finally >>>
 # <<< MODIFIED v4.8.3: Applied SyntaxError fix for try-except global variable checks to all relevant globals in this part. >>>
-import logging, os, sys, json
-# [Patch v5.2.0] เพิ่มโฟลเดอร์ project root เข้า sys.path เพื่อป้องกัน ImportError
-project_root = os.path.dirname(os.path.abspath(__file__))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+import logging
+import os
+import sys
+import json
 if 'pytest' in sys.modules:
     cfg = sys.modules.get('src.config')
     if cfg is not None and getattr(cfg, '__file__', None) is None and hasattr(cfg, 'ENTRY_CONFIG_PER_FOLD'):
@@ -550,6 +549,9 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
     except FileNotFoundError as fnf_error:
         logging.critical(f"      (Error) Required data file not found: {fnf_error}")
         logging.critical("         Skipping auto-training due to missing data.")
+        logging.info(
+            "         โปรดสร้าง trade log ใหม่หรือโหลดข้อมูลด้วย PREPARE_TRAIN_DATA ก่อนดำเนินการ"
+        )
         return
     except Exception as e_load_base:
         logging.error(f"      (Error) Failed to load or process base data for auto-training: {e_load_base}", exc_info=True)

@@ -33,3 +33,14 @@ def test_step_soft_cooldown():
     assert step_soft_cooldown(5) == 4
     assert step_soft_cooldown(1) == 0
     assert step_soft_cooldown(0) == 0
+
+
+def test_soft_cooldown_blocked_rate_adjust():
+    pnl_history = [-1] * SOFT_COOLDOWN_LOOKBACK
+    triggered, _ = is_soft_cooldown_triggered(
+        pnl_history,
+        SOFT_COOLDOWN_LOOKBACK,
+        SOFT_COOLDOWN_LOSS_COUNT,
+        blocked_rate=0.6,
+    )
+    assert triggered

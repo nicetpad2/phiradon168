@@ -198,6 +198,7 @@ def train_and_export_meta_model(
     sample_size=sample_size,
     features_to_drop_before_train=features_to_drop,
     early_stopping_rounds=early_stopping_rounds_config,
+    fold_index=None,
 ):
     """
     Trains and exports a Meta Classifier (L1) model for a specific purpose
@@ -207,6 +208,7 @@ def train_and_export_meta_model(
 
     Args:
         # ... (Args remain the same) ...
+        fold_index (int, optional): หมายเลขโฟลด์สำหรับแสดงใน log เมื่อไม่มีข้อมูล
 
     Returns:
         tuple[dict, list]: A tuple containing:
@@ -447,7 +449,10 @@ def train_and_export_meta_model(
         if rows_dropped > 0:
             logging.info(f"   [NaN Check] ลบ {rows_dropped} Trades ที่มี Missing Features หรือ NaN ใน Features/Target.")
         if merged_df.empty:
-            logging.error("(Error) ไม่มีข้อมูลสมบูรณ์หลังการรวมและ Drop NaN.")
+            if fold_index is not None:
+                logging.error(f"โฟลด์ {fold_index} ไม่มีข้อมูลเพียงพอสำหรับฝึกโมเดล")
+            else:
+                logging.error("(Error) ไม่มีข้อมูลสมบูรณ์หลังการรวมและ Drop NaN.")
             return None, []
         logging.info(f"   (Success) การรวมข้อมูลเสร็จสมบูรณ์ ({len(merged_df)} samples before sampling).")
 

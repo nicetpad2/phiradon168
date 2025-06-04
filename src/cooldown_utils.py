@@ -3,8 +3,20 @@
 from typing import List
 
 
-def is_soft_cooldown_triggered(pnls: List[float], lookback: int = 10, loss_count: int = 3):
-    """Return True if number of losses in the last `lookback` trades >= `loss_count`."""
+def is_soft_cooldown_triggered(
+    pnls: List[float],
+    lookback: int = 10,
+    loss_count: int = 3,
+    blocked_rate: float = 0.0,
+):
+    """Return True if losses exceed threshold within lookback.
+
+    If `blocked_rate` > 0.5, reduce `loss_count` and `lookback` to make cooldown
+    easier to trigger.
+    """
+    if blocked_rate > 0.5:
+        loss_count = max(1, loss_count - 1)
+        lookback = max(5, lookback - 2)
     if len(pnls) < lookback:
         return False, 0
     recent_losses = sum(1 for p in pnls[-lookback:] if p < 0)
