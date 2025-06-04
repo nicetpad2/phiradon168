@@ -83,7 +83,8 @@
   - Analyze historical folds to tune TP/SL multipliers, `gain_z_thresh`, `rsi` limits, and session logic
   - Leverage Optuna or Bayesian optimization on walk-forward splits
   - Provide “recommended defaults” for SNIPER_CONFIG, RELAX_CONFIG, and ULTRA_RELAX_CONFIG
-  - Publish tuning reports and shapley-value summaries for transparency  
+  - Publish tuning reports and shapley-value summaries for transparency
+  - Manage adaptive risk and SL/TP scaling modules
 
 ---
 
