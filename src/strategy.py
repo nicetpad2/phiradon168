@@ -1490,6 +1490,14 @@ def is_mtf_trend_confirmed(m15_trend, side):
         return False
     return True
 
+# [Patch v5.6.5] Volatility filter helper
+def passes_volatility_filter(vol_index, min_ratio=1.0):
+    """Return True if Volatility_Index >= min_ratio."""
+    vol_val = pd.to_numeric(vol_index, errors="coerce")
+    if pd.isna(vol_val):
+        return False
+    return vol_val >= min_ratio
+
 def is_entry_allowed(row, session, consecutive_losses, side, m15_trend=None, signal_score_threshold=None):
     """Checks if entry is allowed based on filters with debug logging."""
     if signal_score_threshold is None:
@@ -1503,6 +1511,11 @@ def is_entry_allowed(row, session, consecutive_losses, side, m15_trend=None, sig
     if not is_mtf_trend_confirmed(m15_trend, side):
         logging.debug("      Entry blocked by M15 Trend filter.")
         return False, f"M15_TREND_{str(m15_trend).upper()}"
+
+    vol_index_val = pd.to_numeric(getattr(row, "Volatility_Index", np.nan), errors='coerce')
+    if not passes_volatility_filter(vol_index_val):
+        logging.debug(f"      Entry blocked by Low Volatility ({vol_index_val})")
+        return False, f"LOW_VOLATILITY({vol_index_val})"
 
     signal_score = pd.to_numeric(getattr(row, "Signal_Score", np.nan), errors='coerce')
     if pd.isna(signal_score):
