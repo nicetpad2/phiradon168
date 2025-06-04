@@ -1,7 +1,7 @@
 
 ### 2025-08-21
-- [Patch v5.5.9] Add stage-based pipeline execution in main.py
-- New/Updated unit tests added for function registry
+- [Patch v5.5.9] Add pipeline CLI and threshold optimization script
+- New/Updated unit tests added for tests.test_threshold_optimization, tests.test_main_pipeline_cli
 - QA: pytest -q passed
 
 
@@ -664,3 +664,4 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed
 
 
+\n
