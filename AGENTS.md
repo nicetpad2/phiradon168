@@ -150,7 +150,8 @@
 - **Key Responsibilities:**
   - Create interactive dashboards (e.g., equity curves, SHAP summary charts, fold performance heatmaps)
   - Use Matplotlib (no seaborn) for static plots; export PNG/HTML for reports
-  - Develop HTML/JavaScript dashboards (e.g., with Plotly or Dash) for executive summaries  
+  - Develop HTML/JavaScript dashboards (e.g., with Plotly or Dash) for executive summaries
+  - New module `src.dashboard` generates Plotly HTML dashboards for WFV results
 
 ---
 

@@ -1,11 +1,18 @@
 ### 2025-09-02
+
 - [Patch v5.6.5] Relax soft cooldown conditions and shorten cooldown duration
 - New/Updated unit tests added for cooldown_utils and strategy
 - QA: pytest -q passed (351 tests)
 
+
 ### 2025-09-01
 - [Patch v5.6.4] Fix boundary logic for session tagging and reduce duplicate warnings
 - New/Updated unit tests added for tests.test_sessions_utils
+- QA: pytest -q passed
+
+### 2025-06-04
+- [Patch v5.6.5] Add volatility filter to entry logic
+- New/Updated unit tests added for tests.test_namedtuple_row and tests.test_volatility_filter
 - QA: pytest -q passed
 
 ### 2025-08-31
@@ -770,3 +777,7 @@ QA: pytest -q passed (219 tests)
 
 
 \n
+### 2025-06-04
+- [Patch v5.6.4] Add dashboard module and alert when MDD exceeds 10%
+- New/Updated unit tests added for tests.test_dashboard
+- QA: pytest -q passed

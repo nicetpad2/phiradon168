@@ -99,6 +99,10 @@ python run_tests.py
   `load_data_cached()` เพื่อบันทึกผลลัพธ์ในรูปแบบ Parquet/Feather
   และสามารถบันทึก DataFrame ที่สร้างฟีเจอร์แล้วเป็นไฟล์ HDF5 ผ่าน
   `save_features_hdf5()` เพื่อให้โหลดซ้ำได้เร็วขึ้น
+* ฟังก์ชันใหม่ `add_momentum_features()` และ `calculate_cumulative_delta_price()`
+  ช่วยสร้างฟีเจอร์ Momentum/Delta สำหรับฝึก MetaModel
+* ใช้ `merge_wave_pattern_labels()` เมื่อต้องการเพิ่มป้ายกำกับแพตเทิร์นจาก
+  ไฟล์บันทึกของ Wave_Marker_Unit
 ## การรันบน Colab และ VPS
 ระบบจะตรวจสอบโดยอัตโนมัติว่ารันบน Google Colab หรือไม่ผ่านฟังก์ชัน `is_colab()` ใน `src/config.py`
 - หากเป็น Colab จะทำการ mount Google Drive และติดตั้งฟอนต์ให้เอง สามารถรัน `python ProjectP.py` หรือ `python main.py --stage all` ได้ทันที
