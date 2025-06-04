@@ -507,8 +507,7 @@ QA: pytest -q passed (219 tests)
 
 
 ### 2025-08-07
-- [Patch v5.4.4] Validate M1 data path before loading
-- New/Updated unit tests added for src.data_loader
-
-- QA: pytest -q passed (236 tests)
+- [Patch v5.4.4] Aggregate trade logs across folds
+- New/Updated unit tests added for trade logger aggregation
+- QA: pytest -q passed (238 tests)
 
