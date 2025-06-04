@@ -49,6 +49,7 @@ from IPython import get_ipython
 import shutil
 import gzip
 import requests  # For Font Download
+from src.utils import get_env_float
 
 # --- Logging Configuration ---
 # กำหนดค่าพื้นฐานสำหรับการ Logging
@@ -737,7 +738,8 @@ PATTERN_CHOPPY_WICK_RATIO = 0.6 # Max wick ratio for 'Choppy' pattern
 
 # --- Drift & Data Quality Configuration ---
 logging.debug("Setting Drift & Data Quality Configuration...")
-DRIFT_WASSERSTEIN_THRESHOLD = 0.1 # Wasserstein Distance threshold for drift alert
+# [Patch v5.5.4] Allow override via environment variable
+DRIFT_WASSERSTEIN_THRESHOLD = get_env_float("DRIFT_WASSERSTEIN_THRESHOLD", 0.1)
 DRIFT_TTEST_ALPHA = 0.05        # Alpha level for T-test drift detection
 SIGNIFICANCE_LEVEL = 0.05       # (Not directly used, kept for potential analysis)
 M1_FEATURES_FOR_DRIFT = []      # Will be populated in clean_m1_data (Part 5)
