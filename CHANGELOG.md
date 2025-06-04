@@ -491,3 +491,7 @@
 - [Patch v5.4.2] Fix FUND_PROFILES defaults and auto-train fallback
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (225 tests)
+### 2025-09-01
+- [Patch v5.4.3] Timezone alignment, caching, CLI log level
+- New/Updated unit tests added for features and profile_backtest
+- QA: pytest -q passed (237 tests)

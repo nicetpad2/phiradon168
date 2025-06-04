@@ -114,7 +114,12 @@ def profile_from_cli() -> None:
     parser.add_argument('--fund', help='Fund profile name to use')  # [Patch v5.3.0]
     parser.add_argument('--train', action='store_true', help='Run training after profiling')  # [Patch v5.3.0]
     parser.add_argument('--train-output', default='models', help='Training output directory')  # [Patch v5.3.0]
+    parser.add_argument('--console_level', default='INFO', help='Console log level')
     args = parser.parse_args()
+    level = getattr(logging, args.console_level.upper(), logging.INFO)
+    for h in logging.getLogger().handlers:
+        if isinstance(h, logging.StreamHandler):
+            h.setLevel(level)
 
     profiler = cProfile.Profile()
     profiler.enable()
