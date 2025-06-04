@@ -39,19 +39,43 @@ def real_train_func(
     depth: int = 6,
     l2_leaf_reg: int | float | None = None,
     seed: int = 42,
+    trade_log_path: str | None = None,
+    m1_path: str | None = None,
 ) -> dict:
     """Train a simple model and return model path, used features and metrics."""
     os.makedirs(output_dir, exist_ok=True)
 
     np.random.seed(seed)  # [Patch v5.3.4] Ensure deterministic training
 
-    X, y = make_classification(
-        n_samples=200,
-        n_features=5,
-        n_informative=3,
-        random_state=seed,
-    )
-    feature_names = [f"f{i}" for i in range(X.shape[1])]
+    if trade_log_path and m1_path and os.path.exists(trade_log_path) and os.path.exists(m1_path):
+        # [Patch v5.4.3] Allow using real trade data when paths are provided
+        trade_df = pd.read_csv(trade_log_path)
+        m1_df = pd.read_csv(m1_path)
+        feature_cols = m1_df.select_dtypes(include=[np.number]).columns.tolist()
+        if not feature_cols:
+            raise ValueError("No numeric columns found in m1 data")
+        min_len = min(len(trade_df), len(m1_df))
+        X = m1_df.loc[:min_len-1, feature_cols].to_numpy()
+        if 'profit' in trade_df.columns:
+            y_raw = trade_df.loc[:min_len-1, 'profit']
+        elif 'pnl_usd_net' in trade_df.columns:
+            y_raw = trade_df.loc[:min_len-1, 'pnl_usd_net']
+        else:
+            num_cols = trade_df.select_dtypes(include=[np.number]).columns
+            if num_cols.empty:
+                raise ValueError("No numeric target column found in trade log")
+            y_raw = trade_df.loc[:min_len-1, num_cols[0]]
+        y = (y_raw > 0).astype(int).to_numpy()
+        feature_names = feature_cols
+    else:
+        X, y = make_classification(
+            n_samples=200,
+            n_features=5,
+            n_informative=3,
+            random_state=seed,
+        )
+        feature_names = [f"f{i}" for i in range(X.shape[1])]
+
     df_X = pd.DataFrame(X, columns=feature_names)
     X_train, X_test, y_train, y_test = train_test_split(
         df_X,

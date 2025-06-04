@@ -18,12 +18,13 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "load_raw_data_m1", 873),
     ("src/data_loader.py", "load_raw_data_m15", 878),
     ("src/data_loader.py", "write_test_file", 883),
-    ("src/features.py", "calculate_trend_zone", 1194),
+    ("src/features.py", "calculate_trend_zone", 1225),
     ("src/features.py", "tag_price_structure_patterns", 234),
-    ("src/features.py", "create_session_column", 1201),
-    ("src/features.py", "fill_missing_feature_values", 1207),
-    ("src/features.py", "load_feature_config", 1212),
-    ("src/features.py", "calculate_ml_features", 1217),
+    ("src/features.py", "create_session_column", 1232),
+    ("src/features.py", "fill_missing_feature_values", 1238),
+    ("src/features.py", "load_feature_config", 1243),
+    ("src/features.py", "calculate_ml_features", 1248),
+
 
 
 
@@ -34,17 +35,13 @@ FUNCTIONS_INFO = [
     ("src/main.py", "convert_to_float32", 1835),
     ("src/main.py", "run_initial_backtest", 1840),
     ("src/main.py", "save_final_data", 1845),
-
-
-
-
     ("src/strategy.py", "run_backtest_simulation_v34", 1695),
-    ("src/strategy.py", "initialize_time_series_split", 3928),
-    ("src/strategy.py", "calculate_forced_entry_logic", 3931),
-    ("src/strategy.py", "apply_kill_switch", 3934),
-    ("src/strategy.py", "log_trade", 3937),
+    ("src/strategy.py", "initialize_time_series_split", 3964),
+    ("src/strategy.py", "calculate_forced_entry_logic", 3967),
+    ("src/strategy.py", "apply_kill_switch", 3970),
+    ("src/strategy.py", "log_trade", 3973),
     ("src/strategy.py", "calculate_metrics", 2731),
-    ("src/strategy.py", "aggregate_fold_results", 3940),
+    ("src/strategy.py", "aggregate_fold_results", 3976),
     ("ProjectP.py", "custom_helper_function", 20),
 ]
 

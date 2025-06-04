@@ -13,6 +13,7 @@ import pandas as pd
 import traceback
 from itertools import product
 from typing import Callable, List, Dict
+import inspect
 from datetime import datetime
 from tqdm import tqdm
 
@@ -33,6 +34,12 @@ def _parse_multi_params(args) -> Dict[str, List]:
             param = arg[6:]
             params[param] = _parse_csv_list(value, float if '.' in value else int)
     return params
+
+
+def _filter_kwargs(func: Callable, kwargs: Dict[str, object]) -> Dict[str, object]:
+    """คัดเฉพาะ kwargs ที่ฟังก์ชันรองรับ"""
+    sig = inspect.signature(func)
+    return {k: v for k, v in kwargs.items() if k in sig.parameters}
 
 
 def run_sweep(output_dir: str, params_grid: Dict[str, List], seed: int = 42, resume: bool = True) -> None:
@@ -68,7 +75,8 @@ def run_sweep(output_dir: str, params_grid: Dict[str, List], seed: int = 42, res
         log_msg = f"Run {run_id}: {param_dict}"
         logger.info(log_msg)
         try:
-            result = real_train_func(output_dir=output_dir, **param_dict)
+            call_dict = _filter_kwargs(real_train_func, param_dict)
+            result = real_train_func(output_dir=output_dir, **call_dict)
             summary_row = {
                 'run_id': run_id,
                 **param_dict,
