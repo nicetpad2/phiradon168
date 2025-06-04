@@ -453,3 +453,8 @@
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (218 tests)
 
+
+### 2025-06-04
+- [Patch v5.3.8] Improve logger propagation and refine is_colab detection
+- New/Updated unit tests added for src.config and tests
+- QA: pytest -q passed (219 tests)
