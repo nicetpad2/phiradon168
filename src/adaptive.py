@@ -47,3 +47,31 @@ def log_best_params(params, fold_index, output_dir):
     except Exception as e:  # pragma: no cover - logging only
         logging.error(f"Could not save best params: {e}")
         return None
+
+
+def compute_kelly_position(current_winrate, win_loss_ratio):
+    """Return Kelly fraction based on win rate and win/loss ratio."""
+    try:
+        p = float(current_winrate)
+        b = float(win_loss_ratio)
+        if b <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        return 0.0
+
+    kelly = p - (1 - p) / b
+    return max(0.0, min(kelly, 1.0))
+
+
+def compute_dynamic_lot(base_lot, drawdown_pct):
+    """Reduce lot size based on drawdown percentage."""
+    try:
+        dd = float(drawdown_pct)
+    except (TypeError, ValueError):
+        return base_lot
+
+    if dd > 0.10:
+        return round(base_lot * 0.5, 2)
+    if dd > 0.05:
+        return round(base_lot * 0.75, 2)
+    return base_lot
