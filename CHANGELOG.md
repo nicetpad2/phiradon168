@@ -1,9 +1,9 @@
 
 ### 2025-08-28
-- [Patch v5.5.17] Improve adaptive module logging and validation
-- Updated unit tests for adaptive and function_registry
-- QA: pytest -q passed (330 tests)
 
+- [Patch v5.6.1] Add dataclass-based order logging with rotating file support
+- New/Updated unit tests added for tests.test_trade_logger
+- QA: pytest -q passed (325 tests)
 
 
 ### 2025-08-26
