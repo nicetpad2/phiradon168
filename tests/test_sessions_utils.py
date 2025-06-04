@@ -47,3 +47,24 @@ def test_get_session_tag_dst_adjustment():
     }
     assert get_session_tag(ts, session_tz_map=tz_map) == 'Asia'
 # DST aware test
+
+
+def test_get_session_tag_end_boundary_ny():
+    ts = pd.Timestamp('2024-01-01 21:00', tz='UTC')
+    assert get_session_tag(ts) == 'NY'
+
+
+def test_get_session_tag_end_boundary_asia():
+    ts = pd.Timestamp('2024-01-01 08:00', tz='UTC')
+    assert get_session_tag(ts) == 'Asia/London'
+
+
+def test_get_session_tag_warn_once(caplog):
+    ts1 = pd.Timestamp('2024-01-01 03:00', tz='UTC')
+    ts2 = ts1 + pd.Timedelta(minutes=15)
+    custom = {'Test': (0, 1)}
+    with caplog.at_level('WARNING'):
+        assert get_session_tag(ts1, session_times_utc=custom, warn_once=True) == 'N/A'
+        assert get_session_tag(ts2, session_times_utc=custom, warn_once=True) == 'N/A'
+    warnings = [r for r in caplog.records if 'out of all session ranges' in r.getMessage()]
+    assert len(warnings) == 1

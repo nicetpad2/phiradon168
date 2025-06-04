@@ -1,3 +1,8 @@
+### 2025-09-01
+- [Patch v5.6.4] Fix boundary logic for session tagging and reduce duplicate warnings
+- New/Updated unit tests added for tests.test_sessions_utils
+- QA: pytest -q passed
+
 ### 2025-08-31
 
 - [Patch v5.6.4] Extend Asia session to 22-8 and update tests
