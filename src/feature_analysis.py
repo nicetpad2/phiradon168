@@ -51,6 +51,23 @@ def detect_low_variance_features(df: pd.DataFrame, feature_list: List[str], thre
     return low_var
 
 
+def select_top_pnl_features(
+    df: pd.DataFrame,
+    target_col: str = "pnl_usd_net",
+    n: int = 10,
+) -> List[str]:
+    """เลือกฟีเจอร์ที่สัมพันธ์กับกำไรมากที่สุดตามค่า Correlation"""
+    if target_col not in df.columns:
+        logger.warning("Target column %s not found", target_col)
+        return []
+    numeric_df = df.select_dtypes(include=[float, int])
+    if target_col not in numeric_df.columns:
+        numeric_df[target_col] = pd.to_numeric(df[target_col], errors="coerce")
+    corr = numeric_df.corr()[target_col].drop(target_col)
+    corr = corr.abs().sort_values(ascending=False)
+    return corr.head(n).index.tolist()
+
+
 def main(sample_rows: int = 5000):  # pragma: no cover - CLI helper
     """Run feature distribution analysis on a sample of the M1 dataset."""
     data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "XAUUSD_M1.csv")

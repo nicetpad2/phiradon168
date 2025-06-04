@@ -4,7 +4,9 @@ import os
 import numpy as np
 import pandas as pd
 from joblib import dump
-from src.config import logger
+from src.config import logger, USE_GPU_ACCELERATION, optuna
+from src.utils.model_utils import evaluate_model
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, roc_auc_score
@@ -124,3 +126,38 @@ def real_train_func(
         "features": feature_names,
         "metrics": {"accuracy": acc, "auc": auc},
     }
+
+
+def optuna_sweep(
+    X: pd.DataFrame,
+    y: pd.Series,
+    n_trials: int = 20,
+    output_path: str = "output_default/meta_classifier_optuna.pkl",
+) -> dict:
+    """ปรับ Hyperparameter ด้วย Optuna และบันทึกโมเดล"""
+    if optuna is None:
+        logger.error("optuna not available")
+        return {}
+
+    def objective(trial):
+        params = {
+            "n_estimators": trial.suggest_int("n_estimators", 50, 200),
+            "max_depth": trial.suggest_int("max_depth", 3, 10),
+        }
+        if USE_GPU_ACCELERATION:
+            params["n_jobs"] = -1
+        model = RandomForestClassifier(**params)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.25, random_state=42
+        )
+        model.fit(X_train, y_train)
+        acc, auc = evaluate_model(model, X_test, y_test)
+        return auc if not np.isnan(auc) else acc
+
+    study = optuna.create_study(direction="maximize")
+    study.optimize(objective, n_trials=n_trials)
+    best_params = study.best_params
+    best_model = RandomForestClassifier(**best_params)
+    best_model.fit(X, y)
+    save_model(best_model, os.path.dirname(output_path), os.path.splitext(os.path.basename(output_path))[0])
+    return best_params

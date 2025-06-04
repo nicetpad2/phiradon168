@@ -15,6 +15,7 @@ import json
 import pandas as pd
 import numpy as np
 from typing import Dict, List
+from src.utils.model_utils import predict
 # [Patch v5.2.0] Use explicit package import for cooldown utilities
 from src.cooldown_utils import (
     is_soft_cooldown_triggered,
@@ -2299,6 +2300,12 @@ def run_backtest_simulation_v34(
                                 cat_cols_ml = X_ml.select_dtypes(exclude=np.number).columns
                                 for cat_col in cat_cols_ml: X_ml[cat_col] = X_ml[cat_col].astype(str).fillna("Missing")
                                 proba_tp = active_l1_model.predict_proba(X_ml)[0, 1]; meta_proba_tp_for_log = proba_tp; logging.debug(f"         ML Model '{selected_model_key}' Predicted Proba(TP): {proba_tp:.4f}")
+                                meta_proba = predict(active_l1_model, X_ml)
+                                if meta_proba < 0.6:
+                                    can_open_order = False
+                                    block_reason = "ML_META_FILTER"
+                                    orders_skipped_ml_l1 += 1
+                                    logging.debug(f"      Block Reason: {block_reason} (MetaProba {meta_proba:.4f} < 0.60)")
                                 ml_threshold = current_reentry_threshold_l1 if is_reentry_trade else current_meta_threshold_l1; logging.debug(f"         Applying ML Threshold: {ml_threshold:.4f} ({'Re-Entry' if is_reentry_trade else 'Standard'})")
                                 if proba_tp < ml_threshold: can_open_order = False; block_reason = f"ML1_SKIP_{selected_model_key.upper()}" if not is_reentry_trade else f"ML1_SKIP_RE_{selected_model_key.upper()}"; orders_skipped_ml_l1 += 1; logging.debug(f"      Block Reason: {block_reason} (Proba {proba_tp:.4f} < {ml_threshold:.4f})")
                             except Exception as e_ml1: logging.error(f"      (Error) ML Filter ({selected_model_key}) failed during prediction: {e_ml1}", exc_info=True); can_open_order = False; block_reason = f"ML1_ERR_{selected_model_key.upper()}" if not is_reentry_trade else f"ML1_ERR_RE_{selected_model_key.upper()}"; meta_proba_tp_for_log = np.nan
