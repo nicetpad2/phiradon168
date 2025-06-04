@@ -20,7 +20,7 @@ setup(
     entry_points={
         'console_scripts': [
             'nicegold-main = src.main:main',
-            'nicegold-sweep = hyperparameter_sweep:main'
+            'nicegold-sweep = tuning.hyperparameter_sweep:main'
         ]
     }
 )

@@ -5,7 +5,7 @@ import pandas as pd
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
 
-import hyperparameter_sweep as hs
+import tuning.hyperparameter_sweep as hs
 
 
 def test_parse_csv_list():

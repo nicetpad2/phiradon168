@@ -3,7 +3,7 @@
 from typing import List
 
 
-def is_soft_cooldown_triggered(pnls: List[float], lookback: int = 10, loss_count: int = 3):
+def is_soft_cooldown_triggered(pnls: List[float], lookback: int = 15, loss_count: int = 2):
     """[Patch v5.0.24] Determine if soft cooldown should activate.
 
     If fewer than ``lookback`` trades exist, all available PnLs are considered.
