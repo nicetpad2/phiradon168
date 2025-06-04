@@ -1,6 +1,8 @@
 ### 2025-09-02
-- [Patch v5.6.5] Add Optuna WFV search utility
-- New/Updated unit tests added for tests.test_optuna_wfv
+
+- [Patch v5.6.5] Add momentum and wave pattern feature helpers
+- New/Updated unit tests added for tests.test_features_more
+
 - QA: pytest -q passed
 
 ### 2025-09-01
