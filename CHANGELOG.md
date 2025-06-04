@@ -463,3 +463,8 @@
 - [Patch v5.3.8] Improve logger propagation and refine is_colab detection
 - New/Updated unit tests added for src.config and tests
 - QA: pytest -q passed (219 tests)
+
+### 2025-08-04
+- [Patch v5.3.9] Allow configurable log level via LOG_LEVEL env
+- New/Updated unit tests added for src.config
+- QA: pytest -q passed (221 tests)
