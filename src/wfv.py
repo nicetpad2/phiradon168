@@ -158,3 +158,79 @@ def prune_features_by_importance(
     """
     drop_cols = [f for f, v in importances.items() if v < threshold and f in df.columns]
     return df.drop(columns=drop_cols, errors="ignore"), drop_cols
+
+
+# [Patch v5.6.5] Optuna-based WFV hyperparameter search
+def optuna_walk_forward(
+    df: pd.DataFrame,
+    param_space: Dict[str, Tuple[float, float, float]],
+    backtest_func: Callable[[pd.DataFrame, ...], MetricDict],
+    train_window: int,
+    test_window: int,
+    step: int,
+    n_trials: int = 10,
+    direction: str = "maximize",
+    objective_metric: str = "r_multiple",
+) -> pd.DataFrame:
+    """Run Optuna optimization with walk-forward validation.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Time-indexed price/feature data.
+    param_space : dict
+        Mapping of param name to ``(low, high, step)``.
+    backtest_func : Callable
+        Function returning a metrics dict per fold.
+    train_window : int
+        Number of rows for the training window.
+    test_window : int
+        Number of rows for the testing window.
+    step : int
+        Step size between folds.
+    n_trials : int, optional
+        Number of Optuna trials. Defaults to 10.
+    direction : str, optional
+        Optimization direction. Defaults to ``"maximize"``.
+    objective_metric : str, optional
+        Metric name used as the objective. Defaults to ``"r_multiple"``.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame summarizing each trial with parameters and score.
+    """
+    from src.config import optuna as _optuna
+
+    if _optuna is None:  # pragma: no cover - optuna may be missing
+        logger.warning("optuna not available; returning empty results")
+        return pd.DataFrame()
+
+    def objective(trial: "_optuna.trial.Trial") -> float:
+        params = {}
+        for name, (low, high, step_size) in param_space.items():
+            if isinstance(low, int) and isinstance(high, int) and float(step_size).is_integer():
+                params[name] = trial.suggest_int(name, int(low), int(high), step=int(step_size))
+            else:
+                params[name] = trial.suggest_float(name, float(low), float(high), step=step_size)
+
+        results = []
+        start = 0
+        while start + train_window + test_window <= len(df):
+            test = df.iloc[start + train_window : start + train_window + test_window]
+            metrics = backtest_func(test, **params)
+            results.append(metrics)
+            start += step
+
+        df_res = pd.DataFrame(results)
+        return float(df_res.get(objective_metric, df_res.get("pnl", 0.0)).mean())
+
+    sampler = _optuna.samplers.RandomSampler(seed=42)
+    study = _optuna.create_study(direction=direction, sampler=sampler)
+    study.optimize(objective, n_trials=n_trials)
+
+    rows = []
+    for t in study.trials:
+        rows.append({"trial": t.number, **t.params, "value": t.value})
+
+    return pd.DataFrame(rows)
