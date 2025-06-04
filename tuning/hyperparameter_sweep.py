@@ -8,6 +8,9 @@
 """
 import os
 import sys
+
+# [Patch v5.4.9] Ensure repo root is available when executed directly
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import argparse
 import pandas as pd
 import traceback
