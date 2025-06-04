@@ -8,9 +8,18 @@ import pandas as pd
 
 # [Patch v5.5.5] Define module-level default to avoid NameError
 SESSION_TIMES_UTC = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
+# [Patch v5.6.3] Track warned ranges to prevent log spam
+_WARNED_OUT_OF_RANGE = set()
 
 
-def get_session_tag(timestamp, session_times_utc=None, *, session_tz_map=None, naive_tz='UTC'):
+def get_session_tag(
+    timestamp,
+    session_times_utc=None,
+    *,
+    session_tz_map=None,
+    naive_tz='UTC',
+    warn_once=False,
+):
     """Return trading session tag for a given timestamp.
 
     # [Patch] v5.4.4: Added session_tz_map and naive_tz for DST-aware tagging
@@ -30,6 +39,9 @@ def get_session_tag(timestamp, session_times_utc=None, *, session_tz_map=None, n
         daylight saving time is handled automatically.
     naive_tz : str, optional
         Timezone to assume when ``timestamp`` is naive. Default is ``'UTC'``.
+    warn_once : bool, optional
+        If True, warnings for out-of-range timestamps are logged only once per
+        hour.
     """
     if session_times_utc is None:
         global SESSION_TIMES_UTC
@@ -71,7 +83,13 @@ def get_session_tag(timestamp, session_times_utc=None, *, session_tz_map=None, n
                     if hour >= start or hour < end:
                         sessions.append(name)
         if not sessions:
-            logger.warning(f"Timestamp {timestamp} is out of all session ranges")
+            hour_key = ts_utc.floor('h')
+            if not warn_once or hour_key not in _WARNED_OUT_OF_RANGE:
+                logger.warning(
+                    f"Timestamp {timestamp} is out of all session ranges"
+                )
+                if warn_once:
+                    _WARNED_OUT_OF_RANGE.add(hour_key)
             return "N/A"
         return "/".join(sorted(sessions))
     except Exception as e:  # pragma: no cover - unexpected failures

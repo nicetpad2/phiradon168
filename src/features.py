@@ -495,7 +495,7 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
         try:
             if not isinstance(df.index, pd.DatetimeIndex):
                 df.index = pd.to_datetime(df.index, errors='coerce')
-            sessions = pd.Index(df.index).map(get_session_tag)
+            sessions = pd.Index(df.index).map(lambda ts: get_session_tag(ts, warn_once=True))
             df['session'] = pd.Series(sessions, index=df.index).astype('category')
             logging.info(
                 f"         Session distribution:\n{df['session'].value_counts(normalize=True).round(3).to_string()}"
