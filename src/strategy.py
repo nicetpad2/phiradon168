@@ -15,6 +15,7 @@ import json
 import pandas as pd
 import numpy as np
 from typing import Dict, List
+from src.utils.model_utils import predict
 # [Patch v5.2.0] Use explicit package import for cooldown utilities
 from src.cooldown_utils import (
     is_soft_cooldown_triggered,
@@ -77,7 +78,7 @@ from sklearn.metrics import (
     classification_report,
 )  # [Patch] นำเข้า metric ที่ขาดหายไป
 from src.evaluation import find_best_threshold
-from src.adaptive import compute_dynamic_lot, atr_position_size
+from src.adaptive import compute_dynamic_lot, atr_position_size, compute_trailing_atr_stop
 import gc # For memory management
 import os
 import itertools
@@ -1772,6 +1773,26 @@ def _update_open_order_state(order, current_high, current_low, current_atr, avg_
             new_sl_price_after_tsl_val = pd.to_numeric(order.get("sl_price"), errors='coerce')
             sl_after_tsl_text = f"{new_sl_price_after_tsl_val:.5f}" if pd.notna(new_sl_price_after_tsl_val) else "NaN"
             logging.debug(f"            Order {entry_time_log} after update_tsl_only. SL after={sl_after_tsl_text}")
+
+            # Trailing ATR stop-loss update
+            new_sl_atr = compute_trailing_atr_stop(
+                entry_price,
+                current_high if order_side == "BUY" else current_low,
+                current_atr,
+                order_side,
+                order.get("sl_price"),
+            )
+            new_sl_val = pd.to_numeric(new_sl_atr, errors="coerce")
+            current_sl_val = pd.to_numeric(order.get("sl_price"), errors="coerce")
+            if pd.notna(new_sl_val) and pd.notna(current_sl_val):
+                if (order_side == "BUY" and new_sl_val > current_sl_val) or (
+                    order_side == "SELL" and new_sl_val < current_sl_val
+                ):
+                    logging.info(
+                        f"         [ATR SL] Updating SL from {current_sl_val:.5f} to {new_sl_val:.5f} for order {entry_time_log}"
+                    )
+                    order["sl_price"] = new_sl_val
+                    tsl_updated_this_bar = True
     else:
         logging.debug(f"            Skipping TSL checks for order {entry_time_log} because BE was triggered in this bar.")
 
@@ -2279,6 +2300,12 @@ def run_backtest_simulation_v34(
                                 cat_cols_ml = X_ml.select_dtypes(exclude=np.number).columns
                                 for cat_col in cat_cols_ml: X_ml[cat_col] = X_ml[cat_col].astype(str).fillna("Missing")
                                 proba_tp = active_l1_model.predict_proba(X_ml)[0, 1]; meta_proba_tp_for_log = proba_tp; logging.debug(f"         ML Model '{selected_model_key}' Predicted Proba(TP): {proba_tp:.4f}")
+                                meta_proba = predict(active_l1_model, X_ml)
+                                if meta_proba < 0.6:
+                                    can_open_order = False
+                                    block_reason = "ML_META_FILTER"
+                                    orders_skipped_ml_l1 += 1
+                                    logging.debug(f"      Block Reason: {block_reason} (MetaProba {meta_proba:.4f} < 0.60)")
                                 ml_threshold = current_reentry_threshold_l1 if is_reentry_trade else current_meta_threshold_l1; logging.debug(f"         Applying ML Threshold: {ml_threshold:.4f} ({'Re-Entry' if is_reentry_trade else 'Standard'})")
                                 if proba_tp < ml_threshold: can_open_order = False; block_reason = f"ML1_SKIP_{selected_model_key.upper()}" if not is_reentry_trade else f"ML1_SKIP_RE_{selected_model_key.upper()}"; orders_skipped_ml_l1 += 1; logging.debug(f"      Block Reason: {block_reason} (Proba {proba_tp:.4f} < {ml_threshold:.4f})")
                             except Exception as e_ml1: logging.error(f"      (Error) ML Filter ({selected_model_key}) failed during prediction: {e_ml1}", exc_info=True); can_open_order = False; block_reason = f"ML1_ERR_{selected_model_key.upper()}" if not is_reentry_trade else f"ML1_ERR_RE_{selected_model_key.upper()}"; meta_proba_tp_for_log = np.nan
