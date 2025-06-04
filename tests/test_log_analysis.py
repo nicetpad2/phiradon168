@@ -14,6 +14,8 @@ from src.log_analysis import (
     calculate_reason_summary,
     calculate_duration_stats,
     calculate_drawdown_stats,
+    parse_alerts,
+    calculate_alert_summary,
 )
 
 SAMPLE_LOG = """
@@ -23,6 +25,8 @@ INFO:root:         [Patch PnL Final] Closed Lot=0.01, PnL(Net USD)=-1.0 (Raw PNL
 INFO:root:   Attempting to Open New Order (Standard) for SELL at 2023-01-01 11:00:00+00:00...
 INFO:root:      Order Closing: Time=2023-01-01 11:20:00+00:00, Final Reason=Full Close on Partial TP 1, ExitPrice=1890, EntryTime=2023-01-01 11:00:00+00:00
 INFO:root:         [Patch PnL Final] Closed Lot=0.01, PnL(Net USD)=2.5 (Raw PNL=2.8, Comm=0.1, SpreadCost=0.2, Slip=-0.2)
+WARNING:root:Potential issue detected
+CRITICAL:root:Critical failure occurred
 """
 
 def test_parse_trade_logs(tmp_path):
@@ -59,4 +63,15 @@ def test_additional_log_metrics(tmp_path):
     assert duration["max"] == 20
     draw_stats = calculate_drawdown_stats(df)
     assert draw_stats["total_pnl"] == pytest.approx(1.5)
+
+
+def test_parse_alerts_and_summary(tmp_path):
+    log_file = tmp_path / "test.log"
+    log_file.write_text(SAMPLE_LOG)
+    alerts = parse_alerts(str(log_file))
+    assert len(alerts) == 2
+    assert set(alerts["level"]) == {"WARNING", "CRITICAL"}
+    summary = calculate_alert_summary(str(log_file))
+    assert summary.loc["WARNING"] == 1
+    assert summary.loc["CRITICAL"] == 1
 
