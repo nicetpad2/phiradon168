@@ -1,3 +1,8 @@
+### 2025-08-26
+- [Patch v5.6.0] Refactor font setup and CSV loader
+- New/Updated unit tests added for data_loader
+- QA: pytest -q passed (325 tests)
+
 ### 2025-08-25
 
 - [Patch v5.5.15] Improve data_loader timezone handling and add data quality checks
