@@ -1090,7 +1090,7 @@ DEFAULT_ADAPTIVE_TSL_HIGH_VOL_STEP_R = 1.0
 DEFAULT_ADAPTIVE_TSL_LOW_VOL_STEP_R = 0.3
 DEFAULT_ADAPTIVE_TSL_START_ATR_MULT = 1.5
 DEFAULT_ENABLE_SPIKE_GUARD = True
-DEFAULT_MIN_SIGNAL_SCORE_ENTRY = 2.0
+DEFAULT_MIN_SIGNAL_SCORE_ENTRY = 1.0  # [Patch v5.3.9]
 DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES = 4
 DEFAULT_RECOVERY_MODE_LOT_MULTIPLIER = 0.5
 DEFAULT_MIN_LOT_SIZE = 0.01
@@ -1319,13 +1319,12 @@ def update_trailing_tp2(order, atr, multiplier):
 
 
 def spike_guard_london(row, session, consecutive_losses):
-    """
-    Applies spike guard filter, primarily for London session.
-    (v4.8.8 Patch 5: Re-verified logic)
-    """
+    """Spike guard filter for London session with debug reasons."""
     if not ENABLE_SPIKE_GUARD:
+        logging.debug("      (Spike Guard) Disabled via config.")
         return True
     if not isinstance(session, str) or "London" not in session:
+        logging.debug("      (Spike Guard) Not London session - skipping.")
         return True
 
     spike_score_val = pd.to_numeric(getattr(row, "spike_score", np.nan), errors='coerce')
@@ -1342,6 +1341,7 @@ def spike_guard_london(row, session, consecutive_losses):
     atr_val = pd.to_numeric(getattr(row, "ATR_14", np.nan), errors='coerce')
 
     if any(pd.isna(v) for v in [adx_val, wick_ratio_val, vol_index_val, candle_body_val, candle_range_val, gain_val, atr_val]):
+        logging.debug("      (Spike Guard) Missing values - skip filter.")
         return True
 
     safe_candle_range_val = max(candle_range_val, 1e-9)
@@ -1361,25 +1361,33 @@ def spike_guard_london(row, session, consecutive_losses):
 
     if gain_val > 3 and atr_val > 4 and (candle_body_val / safe_candle_range_val) > 0.3:
         logging.debug("      (Spike Guard Allowed) Reason: Strong directional move override.")
+        logging.debug("      (Spike Guard Allowed) Reason: Strong directional move override.")
         return True
 
+    logging.debug("      (Spike Guard) Passed all checks.")
     return True
 
 def is_entry_allowed(row, session, consecutive_losses, signal_score_threshold=None):
-    """Checks if entry is allowed based on filters."""
+    """Checks if entry is allowed based on filters with debug logging."""
     if signal_score_threshold is None:
         global MIN_SIGNAL_SCORE_ENTRY
         signal_score_threshold = MIN_SIGNAL_SCORE_ENTRY
 
     if not spike_guard_london(row, session, consecutive_losses):
+        logging.debug("      Entry blocked by Spike Guard.")
         return False, "SPIKE_GUARD_LONDON"
 
     signal_score = pd.to_numeric(getattr(row, "Signal_Score", np.nan), errors='coerce')
     if pd.isna(signal_score):
+        logging.debug("      Entry blocked: Invalid Signal Score (NaN)")
         return False, "INVALID_SIGNAL_SCORE (NaN)"
     if abs(signal_score) < signal_score_threshold:
+        logging.debug(
+            f"      Entry blocked: Low Signal Score {signal_score:.2f} < {signal_score_threshold}"
+        )
         return False, f"LOW_SIGNAL_SCORE ({signal_score:.2f}<{signal_score_threshold})"
 
+    logging.debug("      Entry allowed by filters.")
     return True, "ALLOWED"
 
 def adjust_lot_recovery_mode(base_lot, consecutive_losses):
