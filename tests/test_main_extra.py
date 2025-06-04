@@ -15,14 +15,14 @@ import src.strategy as strategy
 
 def test_generate_open_signals_basic():
     df = pd.DataFrame({'Close': [1.0, 1.2, 1.1]})
-    signals = strategy.generate_open_signals(df)
+    signals = strategy.generate_open_signals(df, use_macd=False, use_rsi=False)
     assert signals.dtype == np.int8
     assert signals.tolist() == [0, 1, 0]
 
 
 def test_generate_close_signals_basic():
     df = pd.DataFrame({'Close': [1.0, 0.9, 1.1]})
-    signals = strategy.generate_close_signals(df)
+    signals = strategy.generate_close_signals(df, use_macd=False, use_rsi=False)
     assert signals.tolist() == [0, 1, 0]
 
 
