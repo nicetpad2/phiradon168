@@ -65,6 +65,7 @@ from sklearn.metrics import (
     log_loss,
     classification_report,
 )  # [Patch] นำเข้า metric ที่ขาดหายไป
+from src.evaluation import find_best_threshold
 import gc # For memory management
 import os
 import itertools
@@ -205,6 +206,7 @@ def train_and_export_meta_model(
     sample_size=sample_size,
     features_to_drop_before_train=features_to_drop,
     early_stopping_rounds=early_stopping_rounds_config,
+    enable_threshold_tuning=False,
     fold_index=None,
 ):
     """
@@ -936,6 +938,13 @@ def train_and_export_meta_model(
 
             except Exception as e_quality_check:
                 logging.error(f"      (Error) Error during Final Model Quality Check: {e_quality_check}", exc_info=True)
+
+            if enable_threshold_tuning and y_proba_cat_val is not None:
+                try:
+                    best_t, best_s = find_best_threshold(y_proba_cat_val, y_val_cat)
+                    logging.info(f"[Patch] Tuned threshold to {best_t:.2f} (F1={best_s:.3f})")
+                except Exception as e_thresh:
+                    logging.warning(f"[Patch] Threshold tuning failed: {e_thresh}")
 
             # --- SHAP Analysis on Validation Set ---
             if shap and X_val_cat_for_shap is not None and not X_val_cat_for_shap.empty and cat_model is not None: # Check cat_model exists

@@ -1,9 +1,27 @@
 import os
 import json
+from typing import Iterable, Tuple
+import numpy as np
 import pandas as pd
 from joblib import load
-from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.metrics import accuracy_score, roc_auc_score, f1_score
 from src.config import logger
+
+
+def find_best_threshold(proba: Iterable[float], y_true: Iterable[int]) -> Tuple[float, float]:
+    """Find threshold that maximizes F1 score."""
+    proba = np.array(list(proba))
+    y_true = np.array(list(y_true))
+    thresholds = np.arange(0.1, 0.9, 0.05)
+    best_t = 0.5
+    best_s = 0.0
+    for t in thresholds:
+        preds = (proba >= t).astype(int)
+        score = f1_score(y_true, preds)
+        if score > best_s:
+            best_s = score
+            best_t = t
+    return best_t, best_s
 
 
 def evaluate_meta_classifier(model_path: str, validation_path: str, features_path: str | None = None):

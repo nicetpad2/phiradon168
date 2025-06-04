@@ -550,8 +550,13 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (258 tests)
 
 
-### 2025-06-05
+### 2025-06-04
+- [Patch v5.4.7] Tune MetaClassifier threshold
+- New/Updated unit tests added for evaluation and strategy
+- QA: pytest -q passed (260 tests)
+
 - [Patch v5.5.1] Enable automatic library installation
 - New/Updated unit tests added for src.config
 
 - QA: pytest -q passed (258 tests)
+
