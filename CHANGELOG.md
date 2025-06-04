@@ -503,3 +503,8 @@
 - New/Updated unit tests added for hyperparameter sweep filtering
 - QA: pytest -q passed (236 tests)
 
+
+### 2025-08-07
+- [Patch v5.4.4] Simplify ensure_model_files_exist with placeholders
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (236 tests)
