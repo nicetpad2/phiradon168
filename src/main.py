@@ -9,11 +9,10 @@
 # <<< MODIFIED v4.8.1: Refined auto-train logic (log loading, context cols), confirmed dtype passing, verified model loading checks, added more robust function call checks >>>
 # <<< MODIFIED v4.8.2: Corrected SyntaxError in __main__ block (added except/finally for the main try block), updated log messages and versioning, robust global access in finally >>>
 # <<< MODIFIED v4.8.3: Applied SyntaxError fix for try-except global variable checks to all relevant globals in this part. >>>
-import logging, os, sys, json
-# [Patch v5.2.0] เพิ่มโฟลเดอร์ project root เข้า sys.path เพื่อป้องกัน ImportError
-project_root = os.path.dirname(os.path.abspath(__file__))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+import logging
+import os
+import sys
+import json
 if 'pytest' in sys.modules:
     cfg = sys.modules.get('src.config')
     if cfg is not None and getattr(cfg, '__file__', None) is None and hasattr(cfg, 'ENTRY_CONFIG_PER_FOLD'):
@@ -88,7 +87,7 @@ DEFAULT_SPIKE_MODEL_PATH = "meta_classifier_spike.pkl"
 DEFAULT_CLUSTER_MODEL_PATH = "meta_classifier_cluster.pkl"
 DEFAULT_FUND_NAME = CFG_DEFAULT_FUND_NAME if 'CFG_DEFAULT_FUND_NAME' in globals() else "NORMAL"
 DEFAULT_MODEL_TO_LINK = "catboost"
-DEFAULT_ENABLE_OPTUNA_TUNING = False
+DEFAULT_ENABLE_OPTUNA_TUNING = True
 DEFAULT_SAMPLE_SIZE = 60000
 DEFAULT_FEATURES_TO_DROP = None
 DEFAULT_MULTI_FUND_MODE = CFG_MULTI_FUND_MODE if 'CFG_MULTI_FUND_MODE' in globals() else True
@@ -550,6 +549,9 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
     except FileNotFoundError as fnf_error:
         logging.critical(f"      (Error) Required data file not found: {fnf_error}")
         logging.critical("         Skipping auto-training due to missing data.")
+        logging.info(
+            "         โปรดสร้าง trade log ใหม่หรือโหลดข้อมูลด้วย PREPARE_TRAIN_DATA ก่อนดำเนินการ"
+        )
         return
     except Exception as e_load_base:
         logging.error(f"      (Error) Failed to load or process base data for auto-training: {e_load_base}", exc_info=True)
@@ -944,8 +946,16 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                 sys.exit("ออก: M1 ว่างเปล่าหลัง clean_m1_data.")
 
             logging.info("(Processing) กำลังรวม M15 Trend Zone...");
-            if not isinstance(df_m1_cleaned.index, pd.DatetimeIndex): df_m1_cleaned.index = pd.to_datetime(df_m1_cleaned.index, errors='coerce'); df_m1_cleaned = df_m1_cleaned[df_m1_cleaned.index.notna()]
-            if not isinstance(df_m15_trend.index, pd.DatetimeIndex): df_m15_trend.index = pd.to_datetime(df_m15_trend.index, errors='coerce'); df_m15_trend = df_m15_trend[df_m15_trend.index.notna()]
+            if not isinstance(df_m1_cleaned.index, pd.DatetimeIndex):
+                df_m1_cleaned.index = pd.to_datetime(df_m1_cleaned.index, errors='coerce', utc=True)
+            else:
+                df_m1_cleaned.index = pd.to_datetime(df_m1_cleaned.index, utc=True)
+            df_m1_cleaned = df_m1_cleaned[df_m1_cleaned.index.notna()]
+            if not isinstance(df_m15_trend.index, pd.DatetimeIndex):
+                df_m15_trend.index = pd.to_datetime(df_m15_trend.index, errors='coerce', utc=True)
+            else:
+                df_m15_trend.index = pd.to_datetime(df_m15_trend.index, utc=True)
+            df_m15_trend = df_m15_trend[df_m15_trend.index.notna()]
             df_m1_cleaned = df_m1_cleaned.sort_index(); df_m15_trend = df_m15_trend.sort_index()
             df_m1_merged = pd.merge_asof(df_m1_cleaned, df_m15_trend[["Trend_Zone"]], left_index=True, right_index=True, direction="backward", tolerance=pd.Timedelta(minutes=TIMEFRAME_MINUTES_M15 * 2))
             initial_trend_nan = df_m1_merged["Trend_Zone"].isna().sum();

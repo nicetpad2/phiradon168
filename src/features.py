@@ -23,6 +23,7 @@ from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
 _rsi_cache = {}  # [Patch v4.8.12] Cache RSIIndicator per period
 _atr_cache = {}  # [Patch v4.8.12] Cache AverageTrueRange per period
 _sma_cache = {}  # [Patch v4.8.12] Cache SMA results
+_m15_trend_cache = {}
 
 # Ensure global configurations are accessible if run independently
 DEFAULT_ROLLING_Z_WINDOW_M1 = 300; DEFAULT_ATR_ROLLING_AVG_PERIOD = 50
@@ -264,24 +265,45 @@ def tag_price_structure_patterns(df):
 
 def calculate_m15_trend_zone(df_m15):
     logging.info("(Processing) กำลังคำนวณ M15 Trend Zone...")
+    cache_key = hash(tuple(df_m15.index)) if isinstance(df_m15, pd.DataFrame) else None
+    if cache_key is not None and cache_key in _m15_trend_cache:
+        logging.info("      [Cache] ใช้ผลลัพธ์ Trend Zone จาก cache")
+        return _m15_trend_cache[cache_key].copy()
     if not isinstance(df_m15, pd.DataFrame): logging.error("M15 Trend Zone Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m15.empty or "Close" not in df_m15.columns:
-        result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category'); return result_df
+        result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category');
+        if cache_key is not None:
+            _m15_trend_cache[cache_key] = result_df
+        return result_df
     df = df_m15.copy()
     try:
         df["Close"] = pd.to_numeric(df["Close"], errors='coerce')
-        if df["Close"].isnull().all(): result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category'); return result_df
+        if df["Close"].isnull().all():
+            result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category');
+            if cache_key is not None:
+                _m15_trend_cache[cache_key] = result_df
+            return result_df
         df["EMA_Fast"] = ema(df["Close"], M15_TREND_EMA_FAST); df["EMA_Slow"] = ema(df["Close"], M15_TREND_EMA_SLOW); df["RSI"] = rsi(df["Close"], M15_TREND_RSI_PERIOD)
         df.dropna(subset=["EMA_Fast", "EMA_Slow", "RSI"], inplace=True)
-        if df.empty: result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category'); return result_df
+        if df.empty:
+            result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category');
+            if cache_key is not None:
+                _m15_trend_cache[cache_key] = result_df
+            return result_df
         is_up = (df["EMA_Fast"] > df["EMA_Slow"]) & (df["RSI"] > M15_TREND_RSI_UP); is_down = (df["EMA_Fast"] < df["EMA_Slow"]) & (df["RSI"] < M15_TREND_RSI_DOWN)
         df["Trend_Zone"] = "NEUTRAL"; df.loc[is_up, "Trend_Zone"] = "UP"; df.loc[is_down, "Trend_Zone"] = "DOWN"
         if not df.empty: logging.info(f"   การกระจาย M15 Trend Zone:\n{df['Trend_Zone'].value_counts(normalize=True).round(3).to_string()}")
         result_df = df[["Trend_Zone"]].reindex(df_m15.index).fillna("NEUTRAL"); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category')
-        del df, is_up, is_down; gc.collect(); return result_df
+        del df, is_up, is_down; gc.collect();
+        if cache_key is not None:
+            _m15_trend_cache[cache_key] = result_df
+        return result_df
     except Exception as e:
         logging.error(f"(Error) การคำนวณ M15 Trend Zone ล้มเหลว: {e}", exc_info=True)
-        result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category'); return result_df
+        result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category');
+        if cache_key is not None:
+            _m15_trend_cache[cache_key] = result_df
+        return result_df
 
 # [Patch v5.0.2] Exclude heavy engineering logic from coverage
 def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_features_config=None):  # pragma: no cover
@@ -391,6 +413,10 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
     logging.info("(Success) สร้าง Features M1 (v4.9.0) เสร็จสิ้น.") # <<< MODIFIED v4.9.0
     if df.isnull().any().any() or np.isinf(df.select_dtypes(include=[np.number])).any().any():
         logging.warning("[QA WARNING] NaN/Inf detected in engineered features")
+    numeric_cols_clean = df.select_dtypes(include=[np.number]).columns
+    if len(numeric_cols_clean) > 0:
+        df[numeric_cols_clean] = df[numeric_cols_clean].replace([np.inf, -np.inf], np.nan)
+        df[numeric_cols_clean] = df[numeric_cols_clean].ffill().fillna(0)
     logging.info("[QA] M1 Feature Engineering Completed")
     return df.reindex(df_m1.index)
 
@@ -509,7 +535,7 @@ except ImportError:
 # Ensure global configurations are accessible if run independently
 # Define defaults if globals are not found
 DEFAULT_META_MIN_PROBA_THRESH = 0.5
-DEFAULT_ENABLE_OPTUNA_TUNING = False
+DEFAULT_ENABLE_OPTUNA_TUNING = True
 DEFAULT_OPTUNA_N_TRIALS = 50
 DEFAULT_OPTUNA_CV_SPLITS = 5
 DEFAULT_OPTUNA_METRIC = "AUC"
