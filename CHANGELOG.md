@@ -527,3 +527,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.4.6] Move sweep module to tuning, adjust cooldown defaults, add docs/README
 - New/Updated unit tests added for tests.test_hyperparameter_sweep_cli, tests.test_soft_cooldown_logic
 - QA: pytest -q passed
+### 2025-06-04
+- [Patch v5.4.7] Update line numbers in function registry test
+- New/Updated unit tests added for tests.test_function_registry
+- QA: pytest -q passed (258 tests)
