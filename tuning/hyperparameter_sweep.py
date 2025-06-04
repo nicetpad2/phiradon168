@@ -55,7 +55,8 @@ def run_sweep(output_dir: str, params_grid: Dict[str, List], seed: int = 42, res
     if resume and os.path.exists(summary_path):
         df_exist = pd.read_csv(summary_path)
         existing = set(
-            tuple(row[param] for param in params_grid) for _, row in df_exist.iterrows()
+            tuple(getattr(row, param) for param in params_grid)
+            for row in df_exist.itertuples(index=False)
         )
 
     param_names = list(params_grid.keys())

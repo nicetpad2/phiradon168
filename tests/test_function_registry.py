@@ -21,6 +21,7 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "load_raw_data_m15", 987),
     ("src/data_loader.py", "write_test_file", 992),
 
+
     ("src/features.py", "calculate_trend_zone", 1337),
     ("src/features.py", "tag_price_structure_patterns", 310),
     ("src/features.py", "create_session_column", 1344),
