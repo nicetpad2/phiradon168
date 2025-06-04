@@ -1,6 +1,8 @@
+
 ### 2025-08-13
 - [Patch v5.5.8] Enhance log analysis with detailed metrics
 - New/Updated unit tests added for tests.test_log_analysis
+
 
 - QA: pytest -q passed
 
@@ -9,6 +11,7 @@
 - New/Updated unit tests added for tests.test_log_analysis
 
 - QA: pytest -q passed (280 tests)
+
 
 ### 2025-08-12
 - [Patch v5.5.6] Force COMPACT_LOG in tests, add summary
@@ -619,6 +622,11 @@ QA: pytest -q passed (219 tests)
 
 ### 2025-06-08
 - [Patch v5.5.5] Persist default SESSION_TIMES_UTC in utils.sessions
+- QA: pytest -q passed
+
+### 2025-06-09
+- [Patch v5.5.6] Add M15 multi-timeframe trend filter for order entry
+- New/Updated unit tests added for strategy and features
 - QA: pytest -q passed
 
 

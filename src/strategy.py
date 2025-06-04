@@ -19,6 +19,13 @@ from typing import Dict, List
 from src.cooldown_utils import (
     is_soft_cooldown_triggered,
     step_soft_cooldown,
+    CooldownState,
+    update_losses,
+    update_drawdown,
+    should_enter_cooldown,
+    enter_cooldown,
+    should_warn_drawdown,
+    should_warn_losses,
 )
 from itertools import product
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
@@ -68,6 +75,7 @@ from sklearn.metrics import (
     classification_report,
 )  # [Patch] นำเข้า metric ที่ขาดหายไป
 from src.evaluation import find_best_threshold
+from src.adaptive import compute_dynamic_lot
 import gc # For memory management
 import os
 import itertools
@@ -1139,8 +1147,8 @@ DEFAULT_ENABLE_PARTIAL_TP = True
 DEFAULT_PARTIAL_TP_LEVELS = [{"r_multiple": 0.8, "close_pct": 0.5}]
 DEFAULT_PARTIAL_TP_MOVE_SL_TO_ENTRY = True
 DEFAULT_ENABLE_KILL_SWITCH = True
-DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.30
-DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 10
+DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.15
+DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 5
 DEFAULT_KILL_SWITCH_WARNING_MAX_DD_THRESHOLD = 0.25
 DEFAULT_KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD = 7
 DEFAULT_FUND_PROFILES = {"NORMAL": {"risk": 0.01, "mm_mode": "balanced"}}
@@ -1402,7 +1410,17 @@ def spike_guard_london(row, session, consecutive_losses):
     logging.debug("      (Spike Guard) Passed all checks.")
     return True
 
-def is_entry_allowed(row, session, consecutive_losses, signal_score_threshold=None):
+# [Patch v5.5.6] Multi-timeframe trend confirmation
+def is_mtf_trend_confirmed(m15_trend, side):
+    """Validate entry direction using M15 trend zone."""
+    trend = str(m15_trend).upper() if isinstance(m15_trend, str) else "NEUTRAL"
+    if side == "BUY" and trend != "UP":
+        return False
+    if side == "SELL" and trend != "DOWN":
+        return False
+    return True
+
+def is_entry_allowed(row, session, consecutive_losses, side, m15_trend=None, signal_score_threshold=None):
     """Checks if entry is allowed based on filters with debug logging."""
     if signal_score_threshold is None:
         global MIN_SIGNAL_SCORE_ENTRY
@@ -1411,6 +1429,10 @@ def is_entry_allowed(row, session, consecutive_losses, signal_score_threshold=No
     if not spike_guard_london(row, session, consecutive_losses):
         logging.debug("      Entry blocked by Spike Guard.")
         return False, "SPIKE_GUARD_LONDON"
+
+    if not is_mtf_trend_confirmed(m15_trend, side):
+        logging.debug("      Entry blocked by M15 Trend filter.")
+        return False, f"M15_TREND_{str(m15_trend).upper()}"
 
     signal_score = pd.to_numeric(getattr(row, "Signal_Score", np.nan), errors='coerce')
     if pd.isna(signal_score):
@@ -1765,7 +1787,7 @@ def run_backtest_simulation_v34(
     last_trade_cooldown_end_time = defaultdict(lambda: min_ts); last_tp_time = defaultdict(lambda: min_ts)
     bars_since_last_trade = 0; kill_switch_activated = initial_kill_switch_state; consecutive_losses = initial_consecutive_losses
     forced_entry_consecutive_losses = 0; forced_entry_temporarily_disabled = False; last_n_full_trade_pnls = []
-    soft_cooldown_bars_remaining = 0
+    cd_state = CooldownState()
     SOFT_COOLDOWN_LOOKBACK = 10
     # [Patch v5.0.18] Increase loss threshold to reduce trade blocking
     SOFT_COOLDOWN_LOSS_COUNT = 6
@@ -1980,10 +2002,18 @@ def run_backtest_simulation_v34(
                         if not close_reason.startswith("Partial TP"):
                             trade_log_entry_base = {"period": label, "side": order_side, "entry_idx": order.get("entry_idx"), "entry_time": order.get("entry_time"), "entry_price": entry_price, "close_time": close_timestamp, "exit_price": exit_price, "exit_reason": close_reason, "lot": lot_size, "original_sl_price": order.get("original_sl_price", np.nan), "final_sl_price": order.get("sl_price"), "tp_price": order.get("tp_price", np.nan), "pnl_points_gross": pnl_points, "pnl_points_net_spread": pnl_points_net_spread, "pnl_usd_gross": raw_pnl_usd, "commission_usd": commission_usd, "spread_cost_usd": spread_cost_usd, "slippage_usd": slippage_usd, "pnl_usd_net": net_pnl_usd, "equity_before": equity_at_start_of_bar, "equity_after": equity_at_start_of_bar + current_equity_change_this_bar, "M15_Trend_Zone": order.get("m15_trend_zone", "N/A"), "Signal_Score": order.get("signal_score", np.nan), "Trade_Reason": order.get("trade_reason", "N/A"), "Session": order.get("session", "N/A"), "BE_Triggered_Time": order.get("be_triggered_time", pd.NaT), "Pattern_Label_Entry": order.get("pattern_label_entry", "N/A"), "Is_Reentry": order.get("is_reentry", False), "Is_Forced_Entry": order.get("is_forced_entry", False), "Meta_Proba_TP": order.get("meta_proba_tp", np.nan), "Meta2_Proba_TP": order.get("meta2_proba_tp", np.nan), "is_partial_tp": False, "partial_tp_level": len(order.get("partial_tp_processed_levels", set())), "atr_at_entry": atr_at_entry_log, "equity_before_open": equity_before_open_log, "entry_gain_z": entry_gain_z_log, "entry_macd_smooth": entry_macd_smooth_log, "entry_candle_ratio": entry_candle_ratio_log, "entry_adx": entry_adx_log, "entry_volatility_index": entry_volatility_index_log, "trade_tag": order_trade_tag, "risk_mode_at_entry": risk_mode_at_entry_log, "active_model_at_entry": active_model_at_entry, "model_confidence_at_entry": model_confidence_at_entry}
                             trade_log.append(trade_log_entry_base); trade_history_list.append(close_reason)
-                        if net_pnl_usd < 0: consecutive_losses += 1; logging.debug(f"      Loss recorded. Consecutive losses: {consecutive_losses}")
+                        if net_pnl_usd < 0:
+                            consecutive_losses += 1
+                            logging.debug(f"      Loss recorded. Consecutive losses: {consecutive_losses}")
+                            loss_pct = abs(net_pnl_usd) / max(equity_at_start_of_bar, 1e-9)
+                            if loss_pct >= 0.01:
+                                cd_state.cooldown_bars_remaining = enter_cooldown(cd_state, SOFT_COOLDOWN_LOOKBACK)
+                                logging.info("      (Soft Cooldown) Entered due to >1% loss")
+                            update_losses(cd_state, net_pnl_usd)
                         elif net_pnl_usd >= 0:
                             if consecutive_losses > 0: logging.debug(f"      Win/BE recorded. Resetting consecutive losses from {consecutive_losses} to 0.")
                             consecutive_losses = 0
+                            update_losses(cd_state, net_pnl_usd)
                         last_n_full_trade_pnls.append(net_pnl_usd)
                         if len(last_n_full_trade_pnls) > SOFT_COOLDOWN_LOOKBACK: last_n_full_trade_pnls.pop(0)
                         if order.get("is_forced_entry", False):
@@ -2050,7 +2080,15 @@ def run_backtest_simulation_v34(
                     last_logged_signal_thresh = current_thresh
             else:
                 current_thresh = MIN_SIGNAL_SCORE_ENTRY
-            entry_allowed, block_reason_entry = is_entry_allowed(row, session_tag, consecutive_losses, signal_score_threshold=current_thresh); open_new_order = False; is_reentry_trade = False; is_forced_entry = False
+            entry_allowed, block_reason_entry = is_entry_allowed(
+                row,
+                session_tag,
+                consecutive_losses,
+                side,
+                m15_trend,
+                signal_score_threshold=current_thresh,
+            );
+            open_new_order = False; is_reentry_trade = False; is_forced_entry = False
             if entry_allowed:
                 if (side == "BUY" and final_m1_signal == "BUY") or (side == "SELL" and final_m1_signal == "SELL"):
                     open_new_order = True; logging.debug(f"   Standard Entry Signal detected for {side} at {now}.")
@@ -2111,21 +2149,21 @@ def run_backtest_simulation_v34(
                             can_open_order = False
                             block_reason = f"POS_MACD_SELL (MACD={current_macd_smooth:.3f})"
                 if can_open_order:
-                    # [Patch v5.x.x] Disable Soft Cooldown logic during testing
-                    pass
-                    # if soft_cooldown_bars_remaining > 0:
-                    #     can_open_order = False
-                    #     block_reason = f"SOFT_COOLDOWN_ACTIVE({soft_cooldown_bars_remaining})"
-                    # else:
-                    #     cooldown_triggered, recent_losses_count = is_soft_cooldown_triggered(
-                    #         last_n_full_trade_pnls, SOFT_COOLDOWN_LOOKBACK, SOFT_COOLDOWN_LOSS_COUNT
-                    #     )
-                    #     if cooldown_triggered:
-                    #         soft_cooldown_bars_remaining = SOFT_COOLDOWN_LOOKBACK
-                    #         can_open_order = False
-                    #         block_reason = (
-                    #             f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T ({recent_losses_count} losses)"
-                    #         )
+                    if cd_state.cooldown_bars_remaining > 0:
+                        can_open_order = False
+                        block_reason = f"SOFT_COOLDOWN_ACTIVE({cd_state.cooldown_bars_remaining})"
+                    else:
+                        cooldown_triggered, recent_losses_count = is_soft_cooldown_triggered(
+                            last_n_full_trade_pnls,
+                            SOFT_COOLDOWN_LOOKBACK,
+                            SOFT_COOLDOWN_LOSS_COUNT,
+                        )
+                        if cooldown_triggered:
+                            cd_state.cooldown_bars_remaining = SOFT_COOLDOWN_LOOKBACK
+                            can_open_order = False
+                            block_reason = (
+                                f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T ({recent_losses_count} losses)"
+                            )
                 if block_reason: logging.debug(f"      Block Reason: {block_reason}")
                 active_l1_model = None; active_l1_features = None; selected_model_key = "N/A"; model_confidence = np.nan; meta_proba_tp_for_log = np.nan
                 if can_open_order and USE_META_CLASSIFIER and callable(model_switcher_func):
@@ -2186,7 +2224,23 @@ def run_backtest_simulation_v34(
                             else:
                                 logging.debug(f"         [Patch] Using ATR-Based SL/TP. Fold SL Multiplier: {fold_sl_multiplier_base:.2f}, ATR Entry: {atr_entry:.5f}"); sl_delta_price = atr_entry * fold_sl_multiplier_base; sl_price = entry_price - sl_delta_price if side == "BUY" else entry_price + sl_delta_price; tp1_delta = sl_delta_price * 1.0; tp1_price = entry_price + tp1_delta if side == "BUY" else entry_price - tp1_delta; tp2_r = dynamic_tp2_multiplier(current_atr, current_avg_atr, base=base_tp_multiplier_config); tp2_delta = sl_delta_price * tp2_r; tp2_price = entry_price + tp2_delta if side == "BUY" else entry_price - tp2_delta
                             logging.debug(f"         Calculated SL={sl_price:.5f}, TP1={tp1_price:.5f}, TP2={tp2_price:.5f} (SL Delta Price={sl_delta_price:.5f})")
-                            mm_mode = fund_profile.get('mm_mode', 'balanced'); risk_pct = fund_profile.get('risk', DEFAULT_RISK_PER_TRADE); base_lot = calculate_lot_by_fund_mode(mm_mode, risk_pct, current_equity_check, atr_entry, sl_delta_price); boosted_lot = adjust_lot_tp2_boost(trade_history_list, base_lot); final_lot, risk_mode_applied = adjust_lot_recovery_mode(boosted_lot, consecutive_losses); logging.debug(f"         Calculated Lot: Base={base_lot:.2f}, Boosted={boosted_lot:.2f}, Final={final_lot:.2f} (RiskMode Applied={risk_mode_applied})")
+                            mm_mode = fund_profile.get('mm_mode', 'balanced')
+                            risk_pct = fund_profile.get('risk', DEFAULT_RISK_PER_TRADE)
+                            base_lot = calculate_lot_by_fund_mode(
+                                mm_mode,
+                                risk_pct,
+                                current_equity_check,
+                                atr_entry,
+                                sl_delta_price,
+                            )
+                            base_lot = compute_dynamic_lot(base_lot, current_dd_check)
+                            boosted_lot = adjust_lot_tp2_boost(trade_history_list, base_lot)
+                            final_lot, risk_mode_applied = adjust_lot_recovery_mode(
+                                boosted_lot, consecutive_losses
+                            )
+                            logging.debug(
+                                f"         Calculated Lot: Base={base_lot:.2f}, Boosted={boosted_lot:.2f}, Final={final_lot:.2f} (RiskMode Applied={risk_mode_applied})"
+                            )
                             if final_lot >= MIN_LOT_SIZE:
                                 entry_time = now; total_ib_lot_accumulator += final_lot; current_atr_num_ttp2 = pd.to_numeric(current_atr, errors='coerce'); enable_ttp2 = pd.notna(current_atr_num_ttp2) and current_atr_num_ttp2 > 4.0
                                 new_order = {"entry_idx": current_index, "entry_time": entry_time, "entry_price": entry_price, "original_lot": final_lot, "lot": final_lot, "original_sl_price": sl_price, "sl_price": sl_price, "tp_price": tp2_price, "tp1_price": tp1_price, "entry_bar_count": current_bar_index, "side": side, "m15_trend_zone": m15_trend, "trade_tag": current_trade_tag, "signal_score": signal_score if pd.notna(signal_score) else np.nan, "trade_reason": trade_reason if not is_forced_entry else f"FORCED_{trade_reason}", "session": session_tag, "pattern_label_entry": pattern_label, "be_triggered": False, "be_triggered_time": pd.NaT, "is_reentry": is_reentry_trade, "is_forced_entry": is_forced_entry, "meta_proba_tp": meta_proba_tp_for_log, "meta2_proba_tp": meta2_proba_tp_for_log, "partial_tp_processed_levels": set(), "atr_at_entry": atr_entry, "equity_before_open": current_equity_check, "entry_gain_z": current_gain_z if pd.notna(current_gain_z) else np.nan, "entry_macd_smooth": current_macd_smooth if pd.notna(current_macd_smooth) else np.nan, "entry_candle_ratio": getattr(row, "Candle_Ratio", np.nan), "entry_adx": getattr(row, "ADX", np.nan), "entry_volatility_index": current_vol_index if pd.notna(current_vol_index) else np.nan, "peak_since_tp1": np.nan, "trough_since_tp1": np.nan, "risk_mode_at_entry": risk_mode_applied, "use_trailing_for_tp2": enable_ttp2, "trailing_start_price": tp1_price if enable_ttp2 else np.nan, "trailing_step_r": ADAPTIVE_TSL_DEFAULT_STEP_R if enable_ttp2 else np.nan, "peak_since_ttp2_activation": np.nan, "trough_since_ttp2_activation": np.nan, "active_model_at_entry": selected_model_key, "model_confidence_at_entry": model_confidence, "tsl_activated": False, "peak_since_tsl_activation": np.nan, "trough_since_tsl_activation": np.nan}
@@ -2212,28 +2266,45 @@ def run_backtest_simulation_v34(
                 if not remaining_indices.empty: logging.info(f"      Marking remaining {len(remaining_indices)} bars with 0 equity due to Margin Call."); df_sim.loc[remaining_indices, f"Equity_Realistic{label_suffix}"] = 0.0; df_sim.loc[remaining_indices, f"Max_Drawdown_At_Point{label_suffix}"] = 1.0; df_sim.loc[remaining_indices, f"Active_Order_Count{label_suffix}"] = 0
                 break
 
-            peak_equity = max(peak_equity, equity); current_dd_final = (peak_equity - equity) / peak_equity if peak_equity > 1e-9 else 0.0; max_drawdown_pct = max(max_drawdown_pct, current_dd_final); logging.debug(f"   Drawdown: Current={current_dd_final*100:.2f}%, Max={max_drawdown_pct*100:.2f}%")
-            df_sim.loc[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = max_drawdown_pct; df_sim.loc[current_index, f"Equity_Realistic{label_suffix}"] = equity; df_sim.loc[current_index, f"Active_Order_Count{label_suffix}"] = len(next_active_orders); equity_history[current_index] = equity
+            peak_equity = max(peak_equity, equity)
+            current_dd_final = (peak_equity - equity) / peak_equity if peak_equity > 1e-9 else 0.0
+            max_drawdown_pct = max(max_drawdown_pct, current_dd_final)
+            logging.debug(f"   Drawdown: Current={current_dd_final*100:.2f}%, Max={max_drawdown_pct*100:.2f}%")
+            update_drawdown(cd_state, current_dd_final)
+            df_sim.loc[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = max_drawdown_pct
+            df_sim.loc[current_index, f"Equity_Realistic{label_suffix}"] = equity
+            df_sim.loc[current_index, f"Active_Order_Count{label_suffix}"] = len(next_active_orders)
+            equity_history[current_index] = equity
 
             if enable_kill_switch and not kill_switch_activated:
-                logging.debug(f"   Checking Kill Switch: DD={current_dd_final*100:.2f}% (Warn>{KILL_SWITCH_WARNING_MAX_DD_THRESHOLD*100:.0f}%, Kill>{KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%), Losses={consecutive_losses} (Warn>{KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD}, Kill>{kill_switch_consecutive_losses_config})")
+                logging.debug(
+                    f"   Checking Kill Switch: DD={current_dd_final*100:.2f}% (Warn>{KILL_SWITCH_WARNING_MAX_DD_THRESHOLD*100:.0f}%, Kill>{KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%), Losses={consecutive_losses} (Warn>{KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD}, Kill>{kill_switch_consecutive_losses_config})"
+                )
                 if current_dd_final > KILL_SWITCH_MAX_DD_THRESHOLD:
                     logging.warning("[Patch] Kill Switch triggered due to drawdown.")
-                    logging.critical(f"(CRITICAL) KILL SWITCH ACTIVATED (Max DD): {label} at {now}. Drawdown {current_dd_final*100:.2f}% > {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%. Stopping simulation loop.")
+                    logging.critical(
+                        f"(CRITICAL) KILL SWITCH ACTIVATED (Max DD): {label} at {now}. Drawdown {current_dd_final*100:.2f}% > {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%. Stopping simulation loop."
+                    )
                     kill_switch_activated = True
                     kill_switch_trigger_time = now
                     break
                 elif consecutive_losses >= kill_switch_consecutive_losses_config:
                     logging.warning("[Patch] Kill Switch triggered due to consecutive losses.")
-                    logging.critical(f"     (CRITICAL) KILL SWITCH ACTIVATED (Consecutive Losses): {label} at {now}. Losses: {consecutive_losses} >= {kill_switch_consecutive_losses_config}. Stopping simulation loop.")
+                    logging.critical(
+                        f"     (CRITICAL) KILL SWITCH ACTIVATED (Consecutive Losses): {label} at {now}. Losses: {consecutive_losses} >= {kill_switch_consecutive_losses_config}. Stopping simulation loop."
+                    )
                     kill_switch_activated = True
                     kill_switch_trigger_time = now
                     break
                 else:
-                    if current_dd_final > KILL_SWITCH_WARNING_MAX_DD_THRESHOLD:
-                        logging.warning(f"(Warning) Drawdown {current_dd_final*100:.2f}% ยังไม่ถึง threshold {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%")
-                    if consecutive_losses >= KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD:
-                        logging.warning(f"(Warning) Consecutive losses = {consecutive_losses}, ยังไม่ถึง threshold สำหรับ Kill Switch.")
+                    if should_warn_drawdown(cd_state, KILL_SWITCH_WARNING_MAX_DD_THRESHOLD):
+                        logging.warning(
+                            f"(Warning) Drawdown {current_dd_final*100:.2f}% ยังไม่ถึง threshold {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%"
+                        )
+                    if should_warn_losses(cd_state, KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD):
+                        logging.warning(
+                            f"(Warning) Consecutive losses = {consecutive_losses}, ยังไม่ถึง threshold สำหรับ Kill Switch."
+                        )
 
             previous_risk_mode = current_risk_mode
             if consecutive_losses >= recovery_mode_consecutive_losses_config:
@@ -2248,7 +2319,7 @@ def run_backtest_simulation_v34(
             logging.debug(
                 f"   End of Bar {current_bar_index}. Active orders for next bar: {len(active_orders)}"
             )
-            soft_cooldown_bars_remaining = step_soft_cooldown(soft_cooldown_bars_remaining)
+            cd_state.cooldown_bars_remaining = step_soft_cooldown(cd_state.cooldown_bars_remaining)
             current_bar_index += 1
     # <<< [Patch C - Unified] End of try-except for main loop >>>
     except Exception as e_loop:
@@ -2423,8 +2494,8 @@ DEFAULT_ENABLE_PARTIAL_TP = True
 DEFAULT_PARTIAL_TP_LEVELS = []
 DEFAULT_PARTIAL_TP_MOVE_SL_TO_ENTRY = True
 DEFAULT_ENABLE_KILL_SWITCH = True
-DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.30
-DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 10
+DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.15
+DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 5
 DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES = 4
 DEFAULT_min_equity_threshold_pct = 0.70
 DEFAULT_DYNAMIC_GAINZ_DRIFT_THRESHOLD = 0.10

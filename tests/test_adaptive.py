@@ -6,7 +6,13 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'src'))
 
-from src.adaptive import adaptive_sl_tp, adaptive_risk, log_best_params
+from src.adaptive import (
+    adaptive_sl_tp,
+    adaptive_risk,
+    log_best_params,
+    compute_kelly_position,
+    compute_dynamic_lot,
+)
 
 
 def test_adaptive_sl_tp_high_vol():
@@ -45,3 +51,15 @@ def test_log_best_params(tmp_path):
     with open(path, 'r', encoding='utf-8') as fh:
         data = json.load(fh)
     assert data["a"] == 1
+
+
+def test_compute_kelly_position_valid():
+    val = compute_kelly_position(0.6, 2)
+    assert 0.39 < val < 0.41
+
+
+def test_compute_dynamic_lot_reductions():
+    assert compute_dynamic_lot(1.0, 0.11) == 0.5
+    assert compute_dynamic_lot(1.0, 0.07) == 0.75
+    assert compute_dynamic_lot(1.0, 0.02) == 1.0
+    assert compute_dynamic_lot(1.0, "x") == 1.0
