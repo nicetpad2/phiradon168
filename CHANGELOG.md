@@ -507,7 +507,8 @@ QA: pytest -q passed (219 tests)
 
 
 ### 2025-08-07
-- [Patch v5.4.4] Aggregate trade logs across folds
-- New/Updated unit tests added for trade logger aggregation
-- QA: pytest -q passed (238 tests)
+
+- [Patch v5.4.4] Simplify ensure_model_files_exist with placeholders
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (236 tests)
 
