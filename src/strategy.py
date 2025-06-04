@@ -1691,6 +1691,21 @@ def _update_open_order_state(order, current_high, current_low, current_atr, avg_
     tp_after_str = f"{tp_price_val_after:.5f}" if pd.notna(tp_price_val_after) else "NaN"
     logging.debug(f"            Order {entry_time_log} after update_trailing_tp2. TP after={tp_after_str}")
     return order, be_triggered_this_bar, tsl_updated_this_bar, be_sl_counter, tsl_counter
+
+# <<< [Patch v5.5.2] Helper to resolve close index >>>
+def _resolve_close_index(df_sim, entry_idx, close_timestamp):
+    """Return a valid index for closing orders."""
+    if entry_idx is None:
+        return None
+    if entry_idx in df_sim.index:
+        return entry_idx
+    nearest_pos = df_sim.index.get_indexer([close_timestamp], method="nearest")[0]
+    resolved_idx = df_sim.index[nearest_pos]
+    logging.warning(
+        f"(Warning) entry index {entry_idx} not in df_sim.index. ใช้ nearest_idx {resolved_idx} แทน."
+    )
+    return resolved_idx
+
 # <<< [Patch] MODIFIED v4.8.8 (Patch 26.5.1): Applied [PATCH C - Unified] for error handling and logging fix. >>>
 def run_backtest_simulation_v34(
     df_m1_segment_pd,
@@ -1972,11 +1987,14 @@ def run_backtest_simulation_v34(
                                 forced_entry_consecutive_losses = 0
                                 if forced_entry_temporarily_disabled: forced_entry_temporarily_disabled = False; logging.info("         (Forced Entry Enabled) Re-enabled after winning/BE forced entry trade.")
                         entry_bar_idx_log = order.get("entry_idx")
-                        if entry_bar_idx_log is not None and entry_bar_idx_log in df_sim.index:
-                            safe_set_datetime(df_sim, entry_bar_idx_log, f"Order_Closed_Time{label_suffix}", close_timestamp)
-                            df_sim.loc[entry_bar_idx_log, f"PnL_Realized_USD{label_suffix}"] = net_pnl_usd; df_sim.loc[entry_bar_idx_log, f"Commission_USD{label_suffix}"] = commission_usd; df_sim.loc[entry_bar_idx_log, f"Spread_Cost_USD{label_suffix}"] = spread_cost_usd; df_sim.loc[entry_bar_idx_log, f"Slippage_USD{label_suffix}"] = slippage_usd; df_sim.loc[entry_bar_idx_log, f"Exit_Reason_Actual{label_suffix}"] = close_reason; df_sim.loc[entry_bar_idx_log, f"Exit_Price_Actual{label_suffix}"] = exit_price; df_sim.loc[entry_bar_idx_log, f"PnL_Points_Actual{label_suffix}"] = pnl_points_net_spread
-                            safe_set_datetime(df_sim, entry_bar_idx_log, f"BE_Triggered_Time{label_suffix}", order.get("be_triggered_time", pd.NaT))
-                        else: logging.warning(f"      (Warning) Could not find entry index '{entry_bar_idx_log}' in df_sim to update results for order {order_entry_time}.")
+                        if entry_bar_idx_log is not None:
+                            resolved_idx = _resolve_close_index(df_sim, entry_bar_idx_log, close_timestamp)
+                            if resolved_idx is not None:
+                                safe_set_datetime(df_sim, resolved_idx, f"Order_Closed_Time{label_suffix}", close_timestamp)
+                                df_sim.loc[resolved_idx, f"PnL_Realized_USD{label_suffix}"] = net_pnl_usd; df_sim.loc[resolved_idx, f"Commission_USD{label_suffix}"] = commission_usd; df_sim.loc[resolved_idx, f"Spread_Cost_USD{label_suffix}"] = spread_cost_usd; df_sim.loc[resolved_idx, f"Slippage_USD{label_suffix}"] = slippage_usd; df_sim.loc[resolved_idx, f"Exit_Reason_Actual{label_suffix}"] = close_reason; df_sim.loc[resolved_idx, f"Exit_Price_Actual{label_suffix}"] = exit_price; df_sim.loc[resolved_idx, f"PnL_Points_Actual{label_suffix}"] = pnl_points_net_spread
+                                safe_set_datetime(df_sim, resolved_idx, f"BE_Triggered_Time{label_suffix}", order.get("be_triggered_time", pd.NaT))
+                        else:
+                            logging.warning(f"      (Warning) Could not find entry index '{entry_bar_idx_log}' in df_sim to update results for order {order_entry_time}.")
                         continue
                     else:
                         logging.debug(f"         Order {order_entry_time} remains open. Updating BE/TSL/TTP2...")
@@ -2251,10 +2269,13 @@ def run_backtest_simulation_v34(
             last_n_full_trade_pnls.append(net_pnl_usd)
             if len(last_n_full_trade_pnls) > SOFT_COOLDOWN_LOOKBACK: last_n_full_trade_pnls.pop(0)
             entry_bar_idx_log_end = order.get("entry_idx")
-            if entry_bar_idx_log_end is not None and entry_bar_idx_log_end in df_sim.index:
-                safe_set_datetime(df_sim, entry_bar_idx_log_end, f"Order_Closed_Time{label_suffix}", close_timestamp)
-                df_sim.loc[entry_bar_idx_log_end, f"PnL_Realized_USD{label_suffix}"] = net_pnl_usd; df_sim.loc[entry_bar_idx_log_end, f"Commission_USD{label_suffix}"] = commission_usd; df_sim.loc[entry_bar_idx_log_end, f"Spread_Cost_USD{label_suffix}"] = spread_cost_usd; df_sim.loc[entry_bar_idx_log_end, f"Slippage_USD{label_suffix}"] = slippage_usd; df_sim.loc[entry_bar_idx_log_end, f"Exit_Reason_Actual{label_suffix}"] = close_reason; df_sim.loc[entry_bar_idx_log_end, f"Exit_Price_Actual{label_suffix}"] = exit_price; df_sim.loc[entry_bar_idx_log_end, f"PnL_Points_Actual{label_suffix}"] = pnl_points_net_spread
-            else: logging.warning(f"   (Warning) Could not find entry index '{entry_bar_idx_log_end}' in df_sim to update results for order {order_entry_time_end} (End of Period).")
+            if entry_bar_idx_log_end is not None:
+                resolved_idx_end = _resolve_close_index(df_sim, entry_bar_idx_log_end, close_timestamp)
+                if resolved_idx_end is not None:
+                    safe_set_datetime(df_sim, resolved_idx_end, f"Order_Closed_Time{label_suffix}", close_timestamp)
+                    df_sim.loc[resolved_idx_end, f"PnL_Realized_USD{label_suffix}"] = net_pnl_usd; df_sim.loc[resolved_idx_end, f"Commission_USD{label_suffix}"] = commission_usd; df_sim.loc[resolved_idx_end, f"Spread_Cost_USD{label_suffix}"] = spread_cost_usd; df_sim.loc[resolved_idx_end, f"Slippage_USD{label_suffix}"] = slippage_usd; df_sim.loc[resolved_idx_end, f"Exit_Reason_Actual{label_suffix}"] = close_reason; df_sim.loc[resolved_idx_end, f"Exit_Price_Actual{label_suffix}"] = exit_price; df_sim.loc[resolved_idx_end, f"PnL_Points_Actual{label_suffix}"] = pnl_points_net_spread
+            else:
+                logging.warning(f"   (Warning) Could not find entry index '{entry_bar_idx_log_end}' in df_sim to update results for order {order_entry_time_end} (End of Period).")
         if end_time not in equity_history: equity_history[end_time] = equity
         if not df_sim.empty:
             last_valid_idx = df_sim.index[-1]

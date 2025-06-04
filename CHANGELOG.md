@@ -560,3 +560,8 @@ QA: pytest -q passed (219 tests)
 
 - QA: pytest -q passed (258 tests)
 
+
+### 2025-06-06
+- [Patch v5.5.2] Handle missing entry index with nearest lookup
+- New/Updated unit tests added for strategy helper
+- QA: pytest -q passed
