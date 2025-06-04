@@ -1,3 +1,6 @@
+### 2025-08-08
+- [Patch v5.4.5] Update features_main.json with default features
+- QA: pytest -q (partial)
 ### 2025-07-02
 
 [Patch v5.0.24] Improve soft cooldown logic
@@ -514,7 +517,9 @@ QA: pytest -q passed (219 tests)
 
 
 ### 2025-08-08
+
 - [Patch v5.4.5] Validate final M1 data loading and timezone alignment
 - New/Updated unit tests added for data_loader and function_registry
 - QA: pytest -q passed (251 tests)
+
 

@@ -427,16 +427,30 @@ except NameError:
 
 # --- Auto-Train Trigger Function ---
 def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path):
-    """[Patch v5.4.4] Ensure main model and feature files exist or auto-train."""
+    """[Patch v5.4.5] Ensure all model and feature files exist or auto-train."""
     logging.info("\n--- (Auto-Train Check) Ensuring Model Files Exist ---")
 
-    model_path = os.path.join(output_dir, META_CLASSIFIER_PATH)
-    features_path = os.path.join(output_dir, "features_main.json")
-    if os.path.exists(model_path) and os.path.exists(features_path):
-        logging.info("   (Success) Model file and feature list already exist.")
+    required = {
+        'main': (META_CLASSIFIER_PATH, 'features_main.json'),
+        'spike': (SPIKE_MODEL_PATH, 'features_spike.json'),
+        'cluster': (CLUSTER_MODEL_PATH, 'features_cluster.json'),
+    }
+
+    missing_models = []
+    for key, (model_file, feature_file) in required.items():
+        model_path = os.path.join(output_dir, model_file)
+        feature_path = os.path.join(output_dir, feature_file)
+        if not (os.path.exists(model_path) and os.path.exists(feature_path)):
+            missing_models.append(key)
+            logging.warning(f"Missing model file for '{key}' ({model_file}).")
+
+    if not missing_models:
+        logging.info("   (Success) Model files and feature lists already exist.")
         return
 
-    logging.warning("   (Info) Required files missing. Attempting to auto-train main model...")
+    logging.warning(
+        f"   Triggering Auto-Training for Missing Models: {missing_models}"
+    )
 
     train_log_path = None
     for ext in (".csv.gz", ".csv"):
@@ -455,52 +469,60 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
     if train_log_path is None or m1_path is None:
         logging.error("   (Error) Training data missing. Creating placeholder model files.")
         os.makedirs(output_dir, exist_ok=True)
-        open(model_path, "a").close()
-        open(features_path, "a").close()
+        for key in missing_models:
+            open(os.path.join(output_dir, required[key][0]), "a").close()
+            open(os.path.join(output_dir, required[key][1]), "a").close()
         return
 
     trade_log_df = safe_load_csv_auto(train_log_path)
     if trade_log_df is None or trade_log_df.empty:
         logging.error("   (Error) Loaded trade log is empty. Creating placeholder model files.")
         os.makedirs(output_dir, exist_ok=True)
-        open(model_path, "a").close()
-        open(features_path, "a").close()
+        for key in missing_models:
+            open(os.path.join(output_dir, required[key][0]), "a").close()
+            open(os.path.join(output_dir, required[key][1]), "a").close()
         return
 
-    try:
-        saved_paths, features = train_and_export_meta_model(
-            trade_log_path=None,
-            m1_data_path=m1_path,
-            output_dir=output_dir,
-            model_purpose="main",
-            trade_log_df_override=trade_log_df,
-            model_type_to_train="catboost",
-            link_model_as_default=DEFAULT_MODEL_TO_LINK,
-            enable_dynamic_feature_selection=True,
-            feature_selection_method="shap",
-            shap_importance_threshold=shap_importance_threshold,
-            permutation_importance_threshold=permutation_importance_threshold,
-            enable_optuna_tuning=False,
-            sample_size=sample_size,
-            features_to_drop_before_train=features_to_drop,
-            early_stopping_rounds=early_stopping_rounds_config,
-        )
-        if saved_paths is None or "main" not in saved_paths:
-            raise RuntimeError("Training did not produce a model file")
-    except Exception as e:
-        logging.error(f"   (Error) Auto-training failed: {e}", exc_info=True)
-        os.makedirs(output_dir, exist_ok=True)
-        open(model_path, "a").close()
-        open(features_path, "a").close()
-        return
+    for key in missing_models:
+        try:
+            saved_paths, features = train_and_export_meta_model(
+                trade_log_path=None,
+                m1_data_path=m1_path,
+                output_dir=output_dir,
+                model_purpose=key,
+                trade_log_df_override=trade_log_df,
+                model_type_to_train="catboost",
+                link_model_as_default=DEFAULT_MODEL_TO_LINK,
+                enable_dynamic_feature_selection=True,
+                feature_selection_method="shap",
+                shap_importance_threshold=shap_importance_threshold,
+                permutation_importance_threshold=permutation_importance_threshold,
+                enable_optuna_tuning=False,
+                sample_size=sample_size,
+                features_to_drop_before_train=features_to_drop,
+                early_stopping_rounds=early_stopping_rounds_config,
+            )
+            if saved_paths is None or key not in saved_paths:
+                raise RuntimeError("Training did not produce a model file")
+        except Exception as e:
+            logging.error(f"   (Error) Auto-training failed for '{key}': {e}", exc_info=True)
+            os.makedirs(output_dir, exist_ok=True)
+            open(os.path.join(output_dir, required[key][0]), "a").close()
+            open(os.path.join(output_dir, required[key][1]), "a").close()
+            continue
 
-    if not os.path.exists(model_path):
-        os.makedirs(output_dir, exist_ok=True)
-        open(model_path, "a").close()
-    if features is None:
-        open(features_path, "a").close()
-    else:
-        save_features_main_json(features, output_dir)
+        model_path = os.path.join(output_dir, required[key][0])
+        features_path = os.path.join(output_dir, required[key][1])
+        if not os.path.exists(model_path):
+            os.makedirs(output_dir, exist_ok=True)
+            open(model_path, "a").close()
+        if features is None:
+            open(features_path, "a").close()
+        else:
+            if key == 'main':
+                save_features_main_json(features, output_dir)
+            else:
+                save_features_json(features, key, output_dir)
     logging.info("--- (Auto-Train Check) Finished ---")
 
 
@@ -549,6 +571,15 @@ def save_features_main_json(features, output_dir):
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(features, f, ensure_ascii=False, indent=2)
         logger.info(f"[QA] features_main.json saved successfully ({len(features)} features).")
+    return path
+
+# [Patch v5.4.5] Generic function to save features for sub-models
+def save_features_json(features, model_name, output_dir):
+    """Save feature list for a specific model name."""
+    os.makedirs(output_dir, exist_ok=True)
+    path = os.path.join(output_dir, f"features_{model_name}.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(features if features is not None else [], f, ensure_ascii=False, indent=2)
     return path
 
 
@@ -833,7 +864,8 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             initial_trend_nan = df_m1_merged["Trend_Zone"].isna().sum();
             if initial_trend_nan > 0:
                 logging.debug(f"   Filling {initial_trend_nan} NaN values in Trend_Zone with 'NEUTRAL'.")
-                df_m1_merged["Trend_Zone"].fillna("NEUTRAL", inplace=True)
+                # [Patch v5.4.5] Avoid chained assignment warning when filling Trend_Zone
+                df_m1_merged["Trend_Zone"] = df_m1_merged["Trend_Zone"].fillna("NEUTRAL")
 
             logging.info("(Processing) กำลังคำนวณ M1 Entry Signals...");
             base_signal_cfg = ENTRY_CONFIG_PER_FOLD.get(0, {})

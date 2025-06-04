@@ -29,6 +29,7 @@ FUNCTIONS_INFO = [
 
 
 
+
     ("src/main.py", "parse_arguments", 1820),
     ("src/main.py", "setup_output_directory", 1825),
     ("src/main.py", "load_features_from_file", 1830),
@@ -36,6 +37,7 @@ FUNCTIONS_INFO = [
     ("src/main.py", "convert_to_float32", 1840),
     ("src/main.py", "run_initial_backtest", 1845),
     ("src/main.py", "save_final_data", 1850),
+
 
 
 

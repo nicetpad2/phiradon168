@@ -1,0 +1,20 @@
+[
+  "RSI",
+  "MACD_hist_smooth",
+  "ATR_14",
+  "ADX",
+  "Gain_Z",
+  "Volatility_Index",
+  "Candle_Ratio",
+  "Wick_Ratio",
+  "Candle_Speed",
+  "Gain_Z_lag1",
+  "Gain_Z_lag3",
+  "Gain_Z_lag5",
+  "Candle_Speed_lag1",
+  "Candle_Speed_lag3",
+  "Candle_Speed_lag5",
+  "cluster",
+  "spike_score",
+  "Pattern_Label"
+]
