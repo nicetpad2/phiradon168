@@ -19,6 +19,12 @@ python profile_backtest.py XAUUSD_M1.csv --rows 1000 --console_level WARNING
 - `src/` โค้ดหลักของระบบ
 - `tuning/` โมดูลสำหรับการหา Hyperparameter
 - `logs/` ไฟล์บันทึกผลการรันและ QA ต่าง ๆ
+## การใช้งานสคริปต์
+- `python ProjectP.py` เตรียมข้อมูลและเรียก pipeline หลัก
+- `python tuning/hyperparameter_sweep.py` ทดสอบค่า hyperparameter
+- `python main.py --stage backtest` รัน backtest ตามค่าใน `config/pipeline.yaml`
+- `python profile_backtest.py <CSV>` ตรวจสอบ bottleneck
+
 
 ## Flowchart
 ```mermaid

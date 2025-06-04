@@ -6,9 +6,41 @@
    ```bash
    pip install -r requirements.txt
    ```
+### Dependencies
+- Python 3.9+
+- pandas>=2.2.2
+- numpy>=2.0
+- scikit-learn>=1.6.1
+- catboost>=1.2.8
+
 2. หากต้องการให้โปรแกรมติดตั้งไลบรารีอัตโนมัติเมื่อไม่พบ ให้ตั้งค่า `AUTO_INSTALL_LIBS=True` ใน `src/config.py`.
     ค่าเริ่มต้นคือ `True` ช่วยให้ระบบติดตั้งไลบรารีที่ขาดหายได้อัตโนมัติ แต่หากต้องการปิดการติดตั้งเองให้เปลี่ยนเป็น `False`
     และหาก `AUTO_INSTALL_LIBS=False` แล้วไม่พบไลบรารีสำคัญ (CatBoost, Optuna, SHAP)
+## โครงสร้างโฟลเดอร์
+- `src/` โค้ดหลักและโมดูลต่าง ๆ
+- `config/` ไฟล์ตั้งค่าระบบ (`pipeline.yaml`)
+- `tuning/` สคริปต์ค้นหา Hyperparameter
+- `tests/` ชุดทดสอบอัตโนมัติ
+- `docs/` เอกสารประกอบ
+- `logs/` ผลการรันและบันทึกต่าง ๆ
+
+## การใช้งานสคริปต์หลัก
+- `python ProjectP.py` เตรียมข้อมูลพื้นฐานและรันขั้นตอนหลัก
+- `python tuning/hyperparameter_sweep.py` รันฝึกโมเดลหลายค่าพารามิเตอร์
+- `python threshold_optimization.py` หา threshold ที่ดีที่สุดด้วย Optuna
+- `python main.py --stage backtest` รัน backtest พร้อม config ใน `config/pipeline.yaml`
+- `python main.py --stage all` ทำ Walk-Forward Validation ทั้งชุด
+- `python profile_backtest.py <CSV>` วิเคราะห์คอขวดประสิทธิภาพ
+## การตั้งค่า config.yaml
+ไฟล์ `config/pipeline.yaml` ใช้กำหนดค่าพื้นฐานของ pipeline เช่นระดับ log และโฟลเดอร์โมเดล
+ตัวอย่างค่าเริ่มต้น:
+```yaml
+log_level: INFO
+model_dir: models
+threshold_file: threshold_wfv_optuna_results.csv
+```
+
+
 
 ### การปรับค่า Drift Threshold
 หากต้องการปรับเกณฑ์การแจ้งเตือน Drift สำหรับฟีเจอร์ เช่น ADX
@@ -67,6 +99,11 @@ python run_tests.py
   `load_data_cached()` เพื่อบันทึกผลลัพธ์ในรูปแบบ Parquet/Feather
   และสามารถบันทึก DataFrame ที่สร้างฟีเจอร์แล้วเป็นไฟล์ HDF5 ผ่าน
   `save_features_hdf5()` เพื่อให้โหลดซ้ำได้เร็วขึ้น
+## การรันบน Colab และ VPS
+ระบบจะตรวจสอบโดยอัตโนมัติว่ารันบน Google Colab หรือไม่ผ่านฟังก์ชัน `is_colab()` ใน `src/config.py`
+- หากเป็น Colab จะทำการ mount Google Drive และติดตั้งฟอนต์ให้เอง สามารถรัน `python ProjectP.py` หรือ `python main.py --stage all` ได้ทันที
+- หากรันบน VPS ไม่จำเป็นต้อง mount Drive และสามารถกำหนดเส้นทางด้วยตัวแปร `FILE_BASE_OVERRIDE` เพื่อชี้ไปยังโฟลเดอร์ข้อมูล
+
 
 ## ภาพรวมกระบวนการทำงาน
 เพื่อให้เห็นขั้นตอนหลักของระบบได้ชัดเจนยิ่งขึ้น สามารถอ้างอิงแผนภาพ
