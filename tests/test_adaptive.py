@@ -14,6 +14,7 @@ from src.adaptive import (
     compute_dynamic_lot,
     calculate_atr,
     atr_position_size,
+    compute_trailing_atr_stop,
 )
 import src.features as features
 
@@ -84,3 +85,17 @@ def test_calculate_atr_and_position_size(monkeypatch):
 
     lot, sl = atr_position_size(1000, atr_val, risk_pct=0.01, atr_mult=1.5, pip_value=0.1)
     assert lot > 0.0 and sl == atr_val * 1.5
+
+
+def test_compute_trailing_atr_stop_buy():
+    new_sl = compute_trailing_atr_stop(10.0, 11.2, 1.0, 'BUY', 9.5)
+    assert new_sl == 10.0
+    new_sl2 = compute_trailing_atr_stop(10.0, 12.5, 1.0, 'BUY', 10.0)
+    assert new_sl2 > 10.0
+
+
+def test_compute_trailing_atr_stop_sell():
+    new_sl = compute_trailing_atr_stop(10.0, 8.8, 1.0, 'SELL', 10.5)
+    assert new_sl == 10.0
+    new_sl2 = compute_trailing_atr_stop(10.0, 7.5, 1.0, 'SELL', 10.0)
+    assert new_sl2 < 10.0

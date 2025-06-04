@@ -22,6 +22,11 @@
 - New/Updated unit tests added for adaptive module
 
 - QA: pytest -q passed
+### 2025-06-04
+- [Patch v5.5.8] Implement trailing ATR stop and partial TP defaults
+- New/Updated unit tests added for adaptive module
+- QA: pytest -q passed
+
 
 ### 2025-08-14
 - [Patch v5.5.7] Implement volume spike filter

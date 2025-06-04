@@ -675,7 +675,8 @@ logging.debug(f"Entry Config Per Fold (First Fold Example): {ENTRY_CONFIG_PER_FO
 logging.debug("Setting Order Management System (OMS) Configuration...")
 ENABLE_PARTIAL_TP = True        # Enable/disable partial take profit logic
 PARTIAL_TP_LEVELS = [           # Define partial TP levels
-    {"r_multiple": 0.8, "close_pct": 0.5}, # Close 50% at 0.8R
+    {"r_multiple": 0.25, "close_pct": 0.5},  # Close 50% at 0.5 ATR
+    {"r_multiple": 0.5, "close_pct": 0.5},   # Close remaining at 1 ATR
 ]
 PARTIAL_TP_MOVE_SL_TO_ENTRY = True # Move SL to entry after first partial TP?
 ENABLE_KILL_SWITCH = True       # Enable/disable kill switch mechanism
