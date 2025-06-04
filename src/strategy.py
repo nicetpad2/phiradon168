@@ -1090,7 +1090,12 @@ DEFAULT_ADAPTIVE_TSL_HIGH_VOL_STEP_R = 1.0
 DEFAULT_ADAPTIVE_TSL_LOW_VOL_STEP_R = 0.3
 DEFAULT_ADAPTIVE_TSL_START_ATR_MULT = 1.5
 DEFAULT_ENABLE_SPIKE_GUARD = True
-DEFAULT_MIN_SIGNAL_SCORE_ENTRY = 1.0  # [Patch v5.3.9]
+DEFAULT_MIN_SIGNAL_SCORE_ENTRY = 2.0
+DEFAULT_ADAPTIVE_SIGNAL_SCORE_WINDOW = 1000
+DEFAULT_ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.7
+DEFAULT_MIN_SIGNAL_SCORE_ENTRY_MIN = 0.5
+DEFAULT_MIN_SIGNAL_SCORE_ENTRY_MAX = 3.0
+DEFAULT_USE_ADAPTIVE_SIGNAL_SCORE = True
 DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES = 4
 DEFAULT_RECOVERY_MODE_LOT_MULTIPLIER = 0.5
 DEFAULT_MIN_LOT_SIZE = 0.01
@@ -1146,6 +1151,11 @@ ADAPTIVE_TSL_LOW_VOL_STEP_R = safe_get_global('ADAPTIVE_TSL_LOW_VOL_STEP_R', DEF
 ADAPTIVE_TSL_START_ATR_MULT = safe_get_global('ADAPTIVE_TSL_START_ATR_MULT', DEFAULT_ADAPTIVE_TSL_START_ATR_MULT)
 ENABLE_SPIKE_GUARD = safe_get_global('ENABLE_SPIKE_GUARD', DEFAULT_ENABLE_SPIKE_GUARD)
 MIN_SIGNAL_SCORE_ENTRY = safe_get_global('MIN_SIGNAL_SCORE_ENTRY', DEFAULT_MIN_SIGNAL_SCORE_ENTRY)
+ADAPTIVE_SIGNAL_SCORE_WINDOW = safe_get_global('ADAPTIVE_SIGNAL_SCORE_WINDOW', DEFAULT_ADAPTIVE_SIGNAL_SCORE_WINDOW)
+ADAPTIVE_SIGNAL_SCORE_QUANTILE = safe_get_global('ADAPTIVE_SIGNAL_SCORE_QUANTILE', DEFAULT_ADAPTIVE_SIGNAL_SCORE_QUANTILE)
+MIN_SIGNAL_SCORE_ENTRY_MIN = safe_get_global('MIN_SIGNAL_SCORE_ENTRY_MIN', DEFAULT_MIN_SIGNAL_SCORE_ENTRY_MIN)
+MIN_SIGNAL_SCORE_ENTRY_MAX = safe_get_global('MIN_SIGNAL_SCORE_ENTRY_MAX', DEFAULT_MIN_SIGNAL_SCORE_ENTRY_MAX)
+USE_ADAPTIVE_SIGNAL_SCORE = safe_get_global('USE_ADAPTIVE_SIGNAL_SCORE', DEFAULT_USE_ADAPTIVE_SIGNAL_SCORE)
 RECOVERY_MODE_CONSECUTIVE_LOSSES = safe_get_global('RECOVERY_MODE_CONSECUTIVE_LOSSES', DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES)
 RECOVERY_MODE_LOT_MULTIPLIER = safe_get_global('RECOVERY_MODE_LOT_MULTIPLIER', DEFAULT_RECOVERY_MODE_LOT_MULTIPLIER)
 MIN_LOT_SIZE = safe_get_global('MIN_LOT_SIZE', DEFAULT_MIN_LOT_SIZE)
@@ -1243,6 +1253,19 @@ def get_adaptive_tsl_step(current_atr, avg_atr, default_step=None):
             return default_step
     except Exception:
         return default_step
+
+# [Patch v5.3.9] Adaptive Signal Score helper
+def get_dynamic_signal_score_entry(df, window=1000, quantile=0.7, min_val=0.5, max_val=3.0):
+    """Return quantile-based signal score threshold with clamp."""
+    if df is None or 'Signal_Score' not in df.columns or len(df) == 0:
+        return min_val
+    scores = df['Signal_Score'].dropna().astype(float)
+    recent_scores = scores.iloc[-window:]
+    if recent_scores.empty:
+        return min_val
+    val = recent_scores.quantile(quantile)
+    val = max(min_val, min(val, max_val))
+    return float(val)
 
 # <<< [Patch] MODIFIED v4.8.8 (Patch 11): Renamed and simplified to only handle TSL >>>
 def update_tsl_only(order, current_high, current_low, current_atr, avg_atr, atr_multiplier=1.5):
@@ -1980,7 +2003,19 @@ def run_backtest_simulation_v34(
             df_sim.loc[current_index, f"Trade_Reason{label_suffix}"] = trade_reason if final_m1_signal != "NONE" else "NONE"
             df_sim.loc[current_index, f"Session{label_suffix}"] = session_tag
             df_sim.loc[current_index, f"Trade_Tag{label_suffix}"] = current_trade_tag
-            entry_allowed, block_reason_entry = is_entry_allowed(row, session_tag, consecutive_losses); open_new_order = False; is_reentry_trade = False; is_forced_entry = False
+            if USE_ADAPTIVE_SIGNAL_SCORE:
+                recent_df = df_sim.iloc[max(0, current_bar_index - ADAPTIVE_SIGNAL_SCORE_WINDOW):current_bar_index]
+                current_thresh = get_dynamic_signal_score_entry(
+                    recent_df,
+                    ADAPTIVE_SIGNAL_SCORE_WINDOW,
+                    ADAPTIVE_SIGNAL_SCORE_QUANTILE,
+                    MIN_SIGNAL_SCORE_ENTRY_MIN,
+                    MIN_SIGNAL_SCORE_ENTRY_MAX,
+                )
+                logging.info(f"[Adaptive] Current Signal_Score threshold: {current_thresh:.2f}")
+            else:
+                current_thresh = MIN_SIGNAL_SCORE_ENTRY
+            entry_allowed, block_reason_entry = is_entry_allowed(row, session_tag, consecutive_losses, signal_score_threshold=current_thresh); open_new_order = False; is_reentry_trade = False; is_forced_entry = False
             if entry_allowed:
                 if (side == "BUY" and final_m1_signal == "BUY") or (side == "SELL" and final_m1_signal == "SELL"):
                     open_new_order = True; logging.debug(f"   Standard Entry Signal detected for {side} at {now}.")
