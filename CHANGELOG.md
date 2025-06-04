@@ -464,7 +464,9 @@
 - New/Updated unit tests added for src.config and tests
 - QA: pytest -q passed (219 tests)
 
+
 ### 2025-08-04
 - [Patch v5.4.0] Add adaptive risk and SL/TP utilities
 - New/Updated unit tests added for src.adaptive
 - QA: pytest -q passed (219 tests)
+
