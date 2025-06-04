@@ -8,7 +8,7 @@
 # ==============================================================================
 # === START OF PART 3/12 ===
 # ==============================================================================
-# === PART 3: Helper Functions (Setup, Utils, Font, Config) (v4.8.8 - Patch 26.10 Applied) ===
+# === PART 3: Helper Functions (Setup, Utils, Font, Config) (v4.8.8 - Patch 26.11 Applied) ===
 # ==============================================================================
 # <<< MODIFIED v4.7.9: Implemented logging, added docstrings/comments, improved font setup robustness >>>
 # <<< MODIFIED v4.7.9 (Post-Error): Corrected simple_converter for np.inf, then updated to 'Infinity' string with improved docstring >>>
@@ -25,7 +25,7 @@
 # <<< MODIFIED v4.8.8 (Patch 26.5.1): Applied final [PATCH A] for safe_set_datetime from user prompt. >>>
 # <<< MODIFIED v4.8.8 (Patch 26.7): Applied fix for FutureWarning in safe_set_datetime by ensuring column dtype is datetime64[ns] before assignment. >>>
 # <<< MODIFIED v4.8.8 (Patch 26.8): Applied model_diagnostics_unit recommendation to safe_set_datetime for robust dtype handling. >>>
-# <<< MODIFIED v4.8.8 (Patch 26.10): Further refined safe_set_datetime to more aggressively ensure column dtype is datetime64[ns] before assignment. >>>
+# <<< MODIFIED v4.8.8 (Patch 26.11): Further refined safe_set_datetime to more aggressively ensure column dtype is datetime64[ns] before assignment. >>>
 import logging
 import os
 import sys
@@ -352,35 +352,34 @@ def load_app_config(config_path="config_main.json"):  # pragma: no cover
         return {}
 
 # --- Datetime Setting Helper (Corrected for FutureWarning) ---
-# <<< [Patch] MODIFIED v4.8.8 (Patch 26.10): Applied model_diagnostics_unit recommendation with refined dtype handling. >>>
+# <<< [Patch] MODIFIED v4.8.8 (Patch 26.11): Applied model_diagnostics_unit recommendation with refined dtype handling. >>>
 def safe_set_datetime(df, idx, col, val):
     """
     Safely assigns datetime value to DataFrame, ensuring column dtype is datetime64[ns].
-    [PATCH 26.10] Applied: Ensures column dtype is datetime64[ns] before assignment
+    [PATCH 26.11] Applied: Ensures column dtype is datetime64[ns] before assignment
     by initializing or converting the entire column if necessary.
     """
     try:
         # Convert the input value to a pandas Timestamp or NaT
         dt_value = pd.to_datetime(val, errors='coerce')
+        if isinstance(dt_value, pd.Timestamp) and dt_value.tz is not None:
+            dt_value = dt_value.tz_convert("UTC").tz_localize(None)
 
         # Ensure the column exists and has the correct dtype BEFORE assignment
         if col not in df.columns:
-            logging.debug(f"   [Patch 26.10] safe_set_datetime: Column '{col}' not found. Creating with dtype 'datetime64[ns]'.")
+            logging.debug(f"   [Patch 26.11] safe_set_datetime: Column '{col}' not found. Creating with dtype 'datetime64[ns]'.")
             # Initialize the entire column with NaT and correct dtype
             # This helps prevent the FutureWarning when assigning the first Timestamp/NaT
             df[col] = pd.Series(dtype='datetime64[ns]', index=df.index)
         elif df[col].dtype != 'datetime64[ns]':
-            logging.debug(f"   [Patch 26.10] safe_set_datetime: Column '{col}' has dtype '{df[col].dtype}'. Forcing conversion to 'datetime64[ns]'.")
+            logging.debug(f"   [Patch 26.11] safe_set_datetime: Column '{col}' has dtype '{df[col].dtype}'. Forcing conversion to 'datetime64[ns]'.")
             try:
-                # Attempt to convert the existing column to datetime64[ns]
-                # This is important if the column was, e.g., object or float due to prior NaNs
-                # Using pd.to_datetime on the series first handles mixed types better before astype
                 current_col_values = pd.to_datetime(df[col], errors='coerce')
+                if hasattr(df[col].dtype, 'tz') and df[col].dtype.tz is not None:
+                    current_col_values = current_col_values.dt.tz_convert("UTC").dt.tz_localize(None)
                 df[col] = current_col_values.astype('datetime64[ns]')
             except Exception as e_conv_col:
-                logging.warning(f"   [Patch 26.10] safe_set_datetime: Force conversion of column '{col}' to datetime64[ns] failed ({e_conv_col}). Re-creating column with NaT.")
-                # If conversion fails (e.g., mixed types that can't be coerced easily),
-                # re-create the column with the correct dtype. This might lose existing data in the column if it was incompatible.
+                logging.warning(f"   [Patch 26.11] safe_set_datetime: Force conversion of column '{col}' to datetime64[ns] failed ({e_conv_col}). Re-creating column with NaT.")
                 df[col] = pd.Series(dtype='datetime64[ns]', index=df.index)
 
         # Now assign the value (which is already a Timestamp or NaT)
@@ -388,7 +387,7 @@ def safe_set_datetime(df, idx, col, val):
             # dt_value is already pd.Timestamp or pd.NaT
             # df[col] should now have dtype datetime64[ns]
             df.loc[idx, col] = dt_value
-            logging.debug(f"   [Patch 26.10] safe_set_datetime: Assigned '{dt_value}' (type: {type(dt_value)}) to '{col}' at index {idx}. Column dtype after assign: {df[col].dtype}")
+            logging.debug(f"   [Patch 26.11] safe_set_datetime: Assigned '{dt_value}' (type: {type(dt_value)}) to '{col}' at index {idx}. Column dtype after assign: {df[col].dtype}")
         else:
             logging.warning(f"   safe_set_datetime: Index '{idx}' not found in DataFrame. Cannot set value for column '{col}'.")
 
@@ -405,9 +404,9 @@ def safe_set_datetime(df, idx, col, val):
                 logging.warning(f"   safe_set_datetime: Index '{idx}' not found during fallback NaT assignment for column '{col}'.")
         except Exception as e_fallback:
             logging.error(f"   (Error) safe_set_datetime: Failed to assign NaT as fallback for '{col}' at index {idx}: {e_fallback}")
-# <<< End of [Patch] MODIFIED v4.8.8 (Patch 26.10) >>>
+# <<< End of [Patch] MODIFIED v4.8.8 (Patch 26.11) >>>
 
-logging.info("Part 3: Helper Functions Loaded (v4.8.8 Patch 26.10 Applied).")
+logging.info("Part 3: Helper Functions Loaded (v4.8.8 Patch 26.11 Applied).")
 # ==============================================================================
 # === END OF PART 3/12 ===
 # ==============================================================================

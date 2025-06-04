@@ -1135,8 +1135,10 @@ DEFAULT_ENABLE_PARTIAL_TP = True
 DEFAULT_PARTIAL_TP_LEVELS = [{"r_multiple": 0.8, "close_pct": 0.5}]
 DEFAULT_PARTIAL_TP_MOVE_SL_TO_ENTRY = True
 DEFAULT_ENABLE_KILL_SWITCH = True
-DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.25
-DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 7
+DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.30
+DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 10
+DEFAULT_KILL_SWITCH_WARNING_MAX_DD_THRESHOLD = 0.25
+DEFAULT_KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD = 7
 DEFAULT_FUND_PROFILES = {"NORMAL": {"risk": 0.01, "mm_mode": "balanced"}}
 DEFAULT_FUND_NAME = "NORMAL"
 DEFAULT_USE_META_CLASSIFIER = True
@@ -1197,6 +1199,8 @@ PARTIAL_TP_MOVE_SL_TO_ENTRY = safe_get_global('PARTIAL_TP_MOVE_SL_TO_ENTRY', DEF
 ENABLE_KILL_SWITCH = safe_get_global('ENABLE_KILL_SWITCH', DEFAULT_ENABLE_KILL_SWITCH)
 KILL_SWITCH_MAX_DD_THRESHOLD = safe_get_global('KILL_SWITCH_MAX_DD_THRESHOLD', DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD)
 KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = safe_get_global('KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD', DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD)
+KILL_SWITCH_WARNING_MAX_DD_THRESHOLD = safe_get_global('KILL_SWITCH_WARNING_MAX_DD_THRESHOLD', DEFAULT_KILL_SWITCH_WARNING_MAX_DD_THRESHOLD)
+KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD = safe_get_global('KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD', DEFAULT_KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD)
 FUND_PROFILES = safe_get_global('FUND_PROFILES', DEFAULT_FUND_PROFILES)
 DEFAULT_FUND_NAME = safe_get_global('DEFAULT_FUND_NAME', DEFAULT_FUND_NAME)
 USE_META_CLASSIFIER = safe_get_global('USE_META_CLASSIFIER', DEFAULT_USE_META_CLASSIFIER)
@@ -2139,7 +2143,10 @@ def run_backtest_simulation_v34(
                         df_sim.loc[current_index, f"Active_Model{label_suffix}"] = f"ErrorFallback_{selected_model_key}"
                         df_sim.loc[current_index, f"Model_Confidence{label_suffix}"] = np.nan
                     if active_l1_model and active_l1_features:
-                        missing_ml_features = [f for f in active_l1_features if f not in row.index]
+                        # [Patch v5.1.1] Fix feature check for namedtuple rows
+                        missing_ml_features = [
+                            f for f in active_l1_features if f not in row._fields
+                        ]
                         if missing_ml_features: logging.error(f"      (Error) ML Filter ({selected_model_key}): Missing features {missing_ml_features} in row data. Skipping filter."); can_open_order = False; block_reason = f"ML1_FEAT_MISS_{selected_model_key.upper()}"
                         else:
                             try:
@@ -2203,9 +2210,24 @@ def run_backtest_simulation_v34(
             df_sim.loc[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = max_drawdown_pct; df_sim.loc[current_index, f"Equity_Realistic{label_suffix}"] = equity; df_sim.loc[current_index, f"Active_Order_Count{label_suffix}"] = len(next_active_orders); equity_history[current_index] = equity
 
             if enable_kill_switch and not kill_switch_activated:
-                logging.debug(f"   Checking Kill Switch: DD={current_dd_final*100:.2f}% (Thresh={KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%), Losses={consecutive_losses} (Thresh={kill_switch_consecutive_losses_config})")
-                if current_dd_final > KILL_SWITCH_MAX_DD_THRESHOLD: logging.warning(f"[Patch] Kill Switch triggered due to drawdown."); logging.critical(f"     (CRITICAL) KILL SWITCH ACTIVATED (Max DD): {label} at {now}. Drawdown {current_dd_final*100:.2f}% > {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%. Stopping simulation loop."); kill_switch_activated = True; kill_switch_trigger_time = now; break
-                elif consecutive_losses >= kill_switch_consecutive_losses_config: logging.warning(f"[Patch] Kill Switch triggered due to consecutive losses."); logging.critical(f"     (CRITICAL) KILL SWITCH ACTIVATED (Consecutive Losses): {label} at {now}. Losses: {consecutive_losses} >= {kill_switch_consecutive_losses_config}. Stopping simulation loop."); kill_switch_activated = True; kill_switch_trigger_time = now; break
+                logging.debug(f"   Checking Kill Switch: DD={current_dd_final*100:.2f}% (Warn>{KILL_SWITCH_WARNING_MAX_DD_THRESHOLD*100:.0f}%, Kill>{KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%), Losses={consecutive_losses} (Warn>{KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD}, Kill>{kill_switch_consecutive_losses_config})")
+                if current_dd_final > KILL_SWITCH_MAX_DD_THRESHOLD:
+                    logging.warning("[Patch] Kill Switch triggered due to drawdown.")
+                    logging.critical(f"(CRITICAL) KILL SWITCH ACTIVATED (Max DD): {label} at {now}. Drawdown {current_dd_final*100:.2f}% > {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%. Stopping simulation loop.")
+                    kill_switch_activated = True
+                    kill_switch_trigger_time = now
+                    break
+                elif consecutive_losses >= kill_switch_consecutive_losses_config:
+                    logging.warning("[Patch] Kill Switch triggered due to consecutive losses.")
+                    logging.critical(f"     (CRITICAL) KILL SWITCH ACTIVATED (Consecutive Losses): {label} at {now}. Losses: {consecutive_losses} >= {kill_switch_consecutive_losses_config}. Stopping simulation loop.")
+                    kill_switch_activated = True
+                    kill_switch_trigger_time = now
+                    break
+                else:
+                    if current_dd_final > KILL_SWITCH_WARNING_MAX_DD_THRESHOLD:
+                        logging.warning(f"(Warning) Drawdown {current_dd_final*100:.2f}% ยังไม่ถึง threshold {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%")
+                    if consecutive_losses >= KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD:
+                        logging.warning(f"(Warning) Consecutive losses = {consecutive_losses}, ยังไม่ถึง threshold สำหรับ Kill Switch.")
 
             previous_risk_mode = current_risk_mode
             if consecutive_losses >= recovery_mode_consecutive_losses_config:
@@ -2394,8 +2416,8 @@ DEFAULT_ENABLE_PARTIAL_TP = True
 DEFAULT_PARTIAL_TP_LEVELS = []
 DEFAULT_PARTIAL_TP_MOVE_SL_TO_ENTRY = True
 DEFAULT_ENABLE_KILL_SWITCH = True
-DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.25
-DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 7
+DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.30
+DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 10
 DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES = 4
 DEFAULT_min_equity_threshold_pct = 0.70
 DEFAULT_DYNAMIC_GAINZ_DRIFT_THRESHOLD = 0.10

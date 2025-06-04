@@ -1,3 +1,8 @@
+### 2025-08-09
+- [Patch v5.5.2] Adjust kill switch thresholds and add warnings
+- New/Updated unit tests added for src.strategy and main
+- QA: pytest -q passed (259 tests)
+
 ### 2025-08-08
 - [Patch v5.4.5] Update features_main.json with default features
 - QA: pytest -q (partial)
@@ -561,7 +566,10 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (258 tests)
 
 
+
 ### 2025-06-06
 - [Patch v5.5.2] Handle missing entry index with nearest lookup
 - New/Updated unit tests added for strategy helper
 - QA: pytest -q passed
+
+
