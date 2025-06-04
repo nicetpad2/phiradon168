@@ -1,3 +1,8 @@
+### 2025-08-26
+- [Patch v5.5.16] Improve indicator NaN handling and RSI duplicate processing
+- Updated unit tests for function_registry
+- QA: pytest -q passed (323 tests)
+
 ### 2025-08-25
 
 - [Patch v5.5.15] Improve data_loader timezone handling and add data quality checks
