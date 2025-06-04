@@ -1,4 +1,7 @@
 #
+### 2025-08-30
+- [Patch v5.6.3] Reduce log spam for out-of-session timestamps
+- QA: pytest -q passed (347 tests)
 ### 2025-08-29
 - [Patch v5.6.2] Remove PyTables dependency for feature persistence
 - Fix FutureWarning in check_data_quality
