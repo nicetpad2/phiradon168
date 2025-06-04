@@ -5,7 +5,7 @@ from __future__ import annotations
 import pandas as pd
 import re
 from datetime import datetime
-from typing import Iterable
+
 
 
 LOG_OPEN_RE = re.compile(r"Open New Order.*?at (?P<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{2}:\d{2})")
@@ -13,6 +13,7 @@ LOG_CLOSE_RE = re.compile(
     r"Order Closing: Time=(?P<close>[^,]+), Final Reason=(?P<reason>[^,]+), ExitPrice=(?P<exit>[\d.]+), EntryTime=(?P<entry>[^,]+)"
 )
 LOG_PNL_RE = re.compile(r"PnL\(Net USD\)=(?P<pnl>-?[\d.]+)")
+LOG_ALERT_RE = re.compile(r"^(?P<level>WARNING|ERROR|CRITICAL):[^:]*:(?P<msg>.*)$")
 
 
 def parse_trade_logs(log_path: str) -> pd.DataFrame:
@@ -117,12 +118,34 @@ def calculate_drawdown_stats(df: pd.DataFrame) -> dict[str, float]:
     }
 
 
-def compile_log_summary(df: pd.DataFrame) -> dict[str, object]:
-    """Return aggregate statistics for a parsed trade log."""
-    return {
+def parse_alerts(log_path: str) -> pd.DataFrame:
+    """[Patch] Extract warning/error/critical messages from a log file."""
+    entries = []
+    with open(log_path, "r", encoding="utf-8") as f:
+        for line in f:
+            m = LOG_ALERT_RE.match(line.strip())
+            if m:
+                entries.append({"level": m.group("level"), "message": m.group("msg").strip()})
+    return pd.DataFrame(entries)
+
+
+def calculate_alert_summary(log_path: str) -> pd.Series:
+    """Return counts of WARNING/ERROR/CRITICAL messages."""
+    df = parse_alerts(log_path)
+    if df.empty:
+        return pd.Series(dtype=int)
+    return df["level"].value_counts()
+
+
+def compile_log_summary(df: pd.DataFrame, log_path: str | None = None) -> dict[str, object]:
+    """Return aggregate statistics for a parsed trade log and alert counts."""
+    summary = {
         "hourly": calculate_hourly_summary(df),
         "reasons": calculate_reason_summary(df),
         "duration": calculate_duration_stats(df),
         "pnl": calculate_drawdown_stats(df),
     }
+    if log_path:
+        summary["alerts"] = calculate_alert_summary(log_path)
+    return summary
 
