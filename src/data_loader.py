@@ -877,7 +877,11 @@ def prepare_datetime_index(df):
 # [Patch v5.4.4] Ensure correct file name and existence
 def validate_m1_data_path(file_path):
     """Validate that the M1 data path points to an expected file."""
-    allowed = {"XAUUSD_M1.csv", "final_data_m1_v32_walkforward.csv.gz"}
+    allowed = {
+        "XAUUSD_M1.csv",
+        "final_data_m1_v32_walkforward.csv.gz",
+        "final_data_m1_v32_walkforward_prep_data_NORMAL.csv.gz",
+    }
     if not isinstance(file_path, str) or not file_path:
         logging.error("(Error) Invalid file path for M1 data.")
         return False
@@ -912,4 +916,38 @@ def write_test_file(path):
     with open(path, "w", encoding="utf-8") as f:
         f.write("test")
     return path
+
+
+# [Patch v5.4.5] Robust loader for final M1 data
+def load_final_m1_data(path, trade_log_df=None):
+    """Load prepared M1 dataset with validation and timezone alignment."""
+    if not validate_m1_data_path(path):
+        return None
+    df = safe_load_csv_auto(path)
+    if df is None or df.empty:
+        logging.error("(Error) Failed to load M1 data or file is empty.")
+        return None
+    required = ["Open", "High", "Low", "Close"]
+    missing = [c for c in required if c not in df.columns]
+    if missing:
+        logging.error(f"(Error) M1 Data missing columns: {missing}")
+        return None
+    df.index = pd.to_datetime(df.index, errors="coerce")
+    df = df[df.index.notna()]
+    if df.empty or not isinstance(df.index, pd.DatetimeIndex):
+        logging.error("(Error) Invalid datetime index for M1 data.")
+        return None
+    log_tz = None
+    if trade_log_df is not None:
+        if "datetime" in trade_log_df.columns and isinstance(trade_log_df["datetime"].dtype, pd.DatetimeTZDtype):
+            log_tz = trade_log_df["datetime"].dt.tz
+        elif isinstance(trade_log_df.index, pd.DatetimeIndex):
+            log_tz = trade_log_df.index.tz
+    log_tz = log_tz or "UTC"
+    if df.index.tz is None:
+        df.index = df.index.tz_localize(log_tz)
+    else:
+        df.index = df.index.tz_convert(log_tz)
+    df["datetime"] = df.index
+    return df
 
