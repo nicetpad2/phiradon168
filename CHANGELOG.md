@@ -1,3 +1,8 @@
+### 2025-06-04
+- [Patch v5.5.7] Add log analysis utilities and risk management helper
+- New/Updated unit tests added for tests.test_log_analysis
+
+- QA: pytest -q passed (280 tests)
 
 ### 2025-08-12
 - [Patch v5.5.6] Force COMPACT_LOG in tests, add summary
