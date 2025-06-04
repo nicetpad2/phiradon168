@@ -28,25 +28,25 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/main.py", "parse_arguments", 1818),
-    ("src/main.py", "setup_output_directory", 1823),
-    ("src/main.py", "load_features_from_file", 1828),
-    ("src/main.py", "drop_nan_rows", 1833),
-    ("src/main.py", "convert_to_float32", 1838),
-    ("src/main.py", "run_initial_backtest", 1843),
-    ("src/main.py", "save_final_data", 1848),
+    ("src/main.py", "parse_arguments", 1829),
+    ("src/main.py", "setup_output_directory", 1834),
+    ("src/main.py", "load_features_from_file", 1839),
+    ("src/main.py", "drop_nan_rows", 1844),
+    ("src/main.py", "convert_to_float32", 1849),
+    ("src/main.py", "run_initial_backtest", 1854),
+    ("src/main.py", "save_final_data", 1859),
 
 
 
 
 
-    ("src/strategy.py", "run_backtest_simulation_v34", 1704),
-    ("src/strategy.py", "initialize_time_series_split", 3964),
-    ("src/strategy.py", "calculate_forced_entry_logic", 3967),
-    ("src/strategy.py", "apply_kill_switch", 3970),
-    ("src/strategy.py", "log_trade", 3973),
-    ("src/strategy.py", "calculate_metrics", 2740),
-    ("src/strategy.py", "aggregate_fold_results", 3976),
+    ("src/strategy.py", "run_backtest_simulation_v34", 1672),
+    ("src/strategy.py", "initialize_time_series_split", 3936),
+    ("src/strategy.py", "calculate_forced_entry_logic", 3939),
+    ("src/strategy.py", "apply_kill_switch", 3942),
+    ("src/strategy.py", "log_trade", 3945),
+    ("src/strategy.py", "calculate_metrics", 2707),
+    ("src/strategy.py", "aggregate_fold_results", 3948),
     ("ProjectP.py", "custom_helper_function", 20),
 ]
 

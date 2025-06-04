@@ -40,6 +40,7 @@ except Exception:  # pragma: no cover - fallback when numba unavailable
 from src.data_loader import safe_set_datetime
 from src.data_loader import safe_load_csv_auto  # [Patch v5.1.6] Ensure CSV loader is imported
 from src.data_loader import simple_converter
+from src.data_loader import load_final_m1_data  # [Patch v5.4.5] Loader with validation
 
 # [Patch v4.8.9] Import safe_get_global using unconditional absolute import
 from src.data_loader import safe_get_global
@@ -342,41 +343,12 @@ def train_and_export_meta_model(
         return None, []
 
     try:
-        m1_df = safe_load_csv_auto(m1_data_path)
-        if m1_df is None: raise ValueError("safe_load_csv_auto returned None for M1 data.")
-        if m1_df.empty:
-            logging.error("   (Error) M1 Data file is empty. Cannot proceed with training.")
+        m1_df = load_final_m1_data(m1_data_path, trade_log_df)
+        if m1_df is None:
             return None, []
-        required_m1_features = ["Open", "High", "Low", "Close", "ATR_14"]
-        missing_m1_feats = [f for f in required_m1_features if f not in m1_df.columns]
-        if missing_m1_feats:
-            logging.error(f"(Error) M1 Data is missing required features: {missing_m1_feats}. Cannot proceed with training.")
-            return None, []
-
-        logging.info("   กำลังเตรียม Index ของ M1 Data...")
-        m1_df.index = pd.to_datetime(m1_df.index, errors='coerce')
-        rows_before_drop = len(m1_df)
-        m1_df = m1_df[m1_df.index.notna()]
-        if len(m1_df) < rows_before_drop:
-            logging.warning(f"   ลบ {rows_before_drop - len(m1_df)} แถวที่มี Index เป็น NaT ใน M1 Data.")
-
-        if not isinstance(m1_df.index, pd.DatetimeIndex):
-            logging.error("   (Error) ไม่สามารถแปลง M1 index เป็น DatetimeIndex.")
-            return None, []
-        if m1_df.empty:
-            logging.error("   (Error) M1 DataFrame ว่างเปล่าหลังแปลง/ล้าง Index.")
-            return None, []
-        if not m1_df.index.is_monotonic_increasing:
-            logging.info("      Sorting M1 DataFrame index...")
-            m1_df = m1_df.sort_index()
-        if m1_df.index.has_duplicates:
-            dup_count = m1_df.index.duplicated().sum()
-            logging.warning(f"   (Warning) พบ Index ซ้ำ {dup_count} รายการใน M1 Data. กำลังลบรายการซ้ำ (เก็บรายการแรก)...")
-            m1_df = m1_df[~m1_df.index.duplicated(keep='first')]
-        # [Patch v5.1.6] Ensure M1 DataFrame has 'datetime' column for merge
-        m1_df['datetime'] = m1_df.index
-
-        logging.info(f"   โหลดและเตรียม M1 สำเร็จ ({len(m1_df)} แถว). จำนวน Features เริ่มต้น: {len(m1_df.columns)}")
+        logging.info(
+            f"   โหลดและเตรียม M1 สำเร็จ ({len(m1_df)} แถว). จำนวน Features เริ่มต้น: {len(m1_df.columns)}"
+        )
     except Exception as e:
         logging.error(f"(Error) ไม่สามารถโหลดหรือเตรียม M1 data: {e}", exc_info=True)
         return None, []
