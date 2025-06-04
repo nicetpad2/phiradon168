@@ -1,17 +1,9 @@
-# === CORE DEPENDENCIES ===
-
 pandas==2.2.2
 numpy==2.0.2
 scikit-learn==1.6.1
-matplotlib==3.8.4
-seaborn==0.13.2
-requests==2.31.0
-tqdm==4.66.4
-scipy==1.13.0
+catboost==1.2.8
+ta==0.11.0
+optuna>=3.0.0      # ถ้าใช้ Hyperparameter Tuning
+shap>=0.41.0       # ถ้าใช้ SHAP
+psutil>=5.9.0
 
-# === ML & FEATURE LIBRARIES ===
-catboost>=1.1.1
-ta>=0.11.0
-
-# === OPTIONAL (KEEP FOR REFERENCE) ===
-# shap  – ปล่อยให้ dynamic ติดตั้งใน runtime หาก AUTO_INSTALL_LIBS=True
