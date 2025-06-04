@@ -1,7 +1,7 @@
 ### 2025-08-25
 
-- [Patch v5.5.15] Improve data_loader timezone handling and add data quality checks
-- New/Updated unit tests added for data_loader
+- [Patch v5.5.15] Add caching utilities for DataFrame loading
+- New/Updated unit tests added for tests.test_data_cache, tests.test_features_hdf5
 
 - QA: pytest -q passed
 
