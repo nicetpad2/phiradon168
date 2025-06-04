@@ -6,8 +6,8 @@ FUNCTIONS_INFO = [
     ("src/config.py", "log_library_version", 88),
     ("src/config.py", "_ensure_ta_installed", 133),
     ("src/config.py", "is_colab", 356),
-    ("src/config.py", "print_gpu_utilization", 437),
-    ("src/config.py", "show_system_status", 489),
+    ("src/config.py", "print_gpu_utilization", 444),
+    ("src/config.py", "show_system_status", 496),
     ("src/data_loader.py", "inspect_file_exists", 825),
     ("src/data_loader.py", "read_csv_with_date_parse", 830),
     ("src/data_loader.py", "check_nan_percent", 837),
@@ -40,12 +40,12 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/strategy.py", "run_backtest_simulation_v34", 1695),
+    ("src/strategy.py", "run_backtest_simulation_v34", 1704),
     ("src/strategy.py", "initialize_time_series_split", 3964),
     ("src/strategy.py", "calculate_forced_entry_logic", 3967),
     ("src/strategy.py", "apply_kill_switch", 3970),
     ("src/strategy.py", "log_trade", 3973),
-    ("src/strategy.py", "calculate_metrics", 2731),
+    ("src/strategy.py", "calculate_metrics", 2740),
     ("src/strategy.py", "aggregate_fold_results", 3976),
     ("ProjectP.py", "custom_helper_function", 20),
 ]
