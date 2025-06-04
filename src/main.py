@@ -1424,11 +1424,15 @@ if __name__ == "__main__":
     start_time_script = time.time()
     logger.info(f"(Starting) Script Gold Trading AI v4.8.4...")
 
-    selected_run_mode = 'FULL_PIPELINE'
-    # selected_run_mode = 'PREPARE_TRAIN_DATA'
-    # selected_run_mode = 'TRAIN_MODEL_ONLY'
-    # selected_run_mode = 'FULL_RUN'
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--stage', choices=['preprocess', 'backtest', 'report'], default='full')
+    args = parser.parse_args()
+    stage_map = {
+        'preprocess': 'PREPARE_TRAIN_DATA',
+        'backtest': 'FULL_RUN',
+        'report': 'REPORT',
+    }
+    selected_run_mode = stage_map.get(args.stage, 'FULL_PIPELINE')
     logger.info(f"(Starting) กำลังเริ่มการทำงานหลัก (main) ในโหมด: {selected_run_mode}...")
     final_run_suffix = None
     # <<< MODIFIED v4.8.2: Ensured this try...except...finally block is correctly structured >>>
@@ -1864,12 +1868,6 @@ if False:
 #
 #
 #
-#
-#
-#
-#
-#
-#
 # padding end
 
 # ---------------------------------------------------------------------------
@@ -1908,6 +1906,40 @@ def run_initial_backtest():
 def save_final_data(df, path):
     """Stubbed data saver."""
     df.to_csv(path)
+
+
+# [Patch v5.5.9] Pipeline helper for discrete stages
+def run_pipeline_stage(stage: str):
+    """Run a specific pipeline stage."""
+    if stage == 'preprocess':
+        df = load_data(DATA_FILE_PATH_M1, "M1")
+        df = engineer_m1_features(df)
+        out_path = os.path.join(OUTPUT_DIR, "preprocessed.parquet")
+        df.to_parquet(out_path)
+        del df
+        gc.collect()
+        logger.info(f"[Pipeline] Preprocess complete -> {out_path}")
+        return out_path
+    if stage == 'backtest':
+        data_path = os.path.join(OUTPUT_DIR, "preprocessed.parquet")
+        if os.path.exists(data_path):
+            df = pd.read_parquet(data_path)
+        else:
+            df = load_data(DATA_FILE_PATH_M1, "M1")
+        run_backtest_simulation_v34(df, label="WFV", initial_capital_segment=INITIAL_CAPITAL)
+        logger.info("[Pipeline] Backtest completed")
+        return None
+    if stage == 'report':
+        metrics_path = os.path.join(OUTPUT_DIR, "metrics_summary.csv")
+        if os.path.exists(metrics_path):
+            df = pd.read_csv(metrics_path)
+            plot_equity_curve([], "Equity", INITIAL_CAPITAL, OUTPUT_DIR, "report")
+            logger.info("[Pipeline] Report generated")
+        else:
+            logger.warning("[Pipeline] No metrics to report")
+        return None
+    logger.error(f"Unknown stage: {stage}")
+    return None
 
 logging.info("Reached End of Part 12 (End of Script Marker).")
 # === END OF PART 12/12 ===
