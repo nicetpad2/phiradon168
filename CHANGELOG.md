@@ -491,3 +491,8 @@
 - [Patch v5.4.2] Fix FUND_PROFILES defaults and auto-train fallback
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (225 tests)
+
+### 2025-08-06
+- [Patch v5.4.3] Filter sweep kwargs to avoid TypeError
+- New/Updated unit tests added for hyperparameter sweep filtering
+- QA: pytest -q passed (236 tests)

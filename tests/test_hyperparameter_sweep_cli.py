@@ -39,3 +39,21 @@ def test_run_sweep_basic(tmp_path, monkeypatch):
     assert df.loc[0, 'depth'] == 6
     assert df.loc[0, 'seed'] == 1
 
+
+def test_run_sweep_filters_unknown_params(tmp_path, monkeypatch):
+    def dummy_train_func(output_dir, learning_rate=0.01):
+        return {
+            'model_path': {'model': str(tmp_path / 'm.joblib')},
+            'features': ['f'],
+            'metrics': {'accuracy': 1.0},
+        }
+
+    monkeypatch.setattr(hs, 'real_train_func', dummy_train_func)
+    grid = {'learning_rate': [0.1], 'depth': [6]}
+    hs.run_sweep(str(tmp_path), grid, seed=1, resume=False)
+    df = pd.read_csv(tmp_path / 'summary.csv')
+    assert df.loc[0, 'learning_rate'] == 0.1
+    assert df.loc[0, 'depth'] == 6
+    assert df.loc[0, 'seed'] == 1
+
+
