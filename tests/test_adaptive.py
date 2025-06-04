@@ -14,9 +14,29 @@ def test_adaptive_sl_tp_high_vol():
     assert sl > 2.0 and tp > 1.8
 
 
+def test_adaptive_sl_tp_invalid_and_low_vol():
+    # invalid input triggers fallback
+    assert adaptive_sl_tp('x', 'y') == (2.0, 1.8)
+    # low volatility adjusts downwards
+    sl, tp = adaptive_sl_tp(0.5, 1.0)
+    assert sl < 2.0 and tp < 1.8
+    # zero ATR average falls back to base values
+    assert adaptive_sl_tp(1.0, 0.0) == (2.0, 1.8)
+    # mid ratio returns base values
+    assert adaptive_sl_tp(1.0, 1.0) == (2.0, 1.8)
+
+
 def test_adaptive_risk_reduce():
     risk = adaptive_risk(80, 100, base_risk=0.01, dd_threshold=0.1)
     assert risk < 0.01
+
+
+def test_adaptive_risk_edge_cases():
+    assert adaptive_risk('x', 100) == 0.01
+    assert adaptive_risk(100, 0) == 0.01
+    risk = adaptive_risk(50, 100, base_risk=0.01, dd_threshold=0.1)
+    assert risk < 0.01
+    assert adaptive_risk(120, 100, base_risk=0.01, dd_threshold=0.1) == 0.01
 
 
 def test_log_best_params(tmp_path):

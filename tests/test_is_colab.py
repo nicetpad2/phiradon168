@@ -22,7 +22,7 @@ def _import_config(monkeypatch):
 
 def test_is_colab_false(monkeypatch):
     if 'google.colab' in sys.modules:
-        monkeypatch.delitem(sys.modules, 'google.colab', raising=False)
+        monkeypatch.delitem(sys.modules, 'google.colab', raising=False)  # pragma: no cover - optional cleanup
     monkeypatch.delenv('COLAB_RELEASE_TAG', raising=False)
     monkeypatch.delenv('COLAB_GPU', raising=False)
     config = _import_config(monkeypatch)

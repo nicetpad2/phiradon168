@@ -2,7 +2,7 @@ import os
 import importlib
 
 # Re-import src.main to ensure new directory function executed
-if 'src.main' in importlib.sys.modules:
+if 'src.main' in importlib.sys.modules:  # pragma: no cover - import cleanup
     del importlib.sys.modules['src.main']
 
 import src.main as main

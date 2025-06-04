@@ -17,7 +17,7 @@ def _import_config(monkeypatch):
 
 
 def test_install_shap_sets_flags(monkeypatch):
-    if 'shap' in sys.modules:
+    if 'shap' in sys.modules:  # pragma: no cover - optional cleanup
         monkeypatch.delitem(sys.modules, 'shap', raising=False)
     config = _import_config(monkeypatch)
     dummy_shap = types.ModuleType('shap')

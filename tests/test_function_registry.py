@@ -61,4 +61,4 @@ def test_function_exists(path, func_name, expected_lineno):
                 abs(node.lineno - expected_lineno) <= 5
             ), f"Line mismatch for {func_name}: {node.lineno} (expected {expected_lineno})"
             return
-    assert False, f"{func_name} not found in {path}"
+    assert False, f"{func_name} not found in {path}"  # pragma: no cover - ensured by dataset

@@ -51,7 +51,7 @@ def detect_low_variance_features(df: pd.DataFrame, feature_list: List[str], thre
     return low_var
 
 
-def main(sample_rows: int = 5000):
+def main(sample_rows: int = 5000):  # pragma: no cover - CLI helper
     """Run feature distribution analysis on a sample of the M1 dataset."""
     data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "XAUUSD_M1.csv")
     df = pd.read_csv(data_path, nrows=sample_rows)
@@ -68,6 +68,6 @@ def main(sample_rows: int = 5000):
     return stats, low_var
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - CLI entry
     logging.basicConfig(level=logging.INFO)
     main()
