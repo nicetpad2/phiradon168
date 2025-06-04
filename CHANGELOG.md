@@ -560,3 +560,8 @@ QA: pytest -q passed (219 tests)
 
 - QA: pytest -q passed (258 tests)
 
+### 2025-06-06
+- [Patch v5.5.2] Handle timezone-aware datetimes in safe_set_datetime
+- New/Updated unit tests added for data_loader
+- QA: pytest -q passed (260 tests)
+
