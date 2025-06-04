@@ -25,7 +25,7 @@ def test_train_model_only_auto_prepares(monkeypatch, tmp_path):
         return '_prep'
 
     monkeypatch.setattr(main, 'prepare_train_data', dummy_prepare)
-    monkeypatch.setattr(main, 'safe_load_csv_auto', lambda p: pd.read_csv(p))
+    monkeypatch.setattr(main, 'safe_load_csv_auto', lambda p, **k: pd.read_csv(p))
     monkeypatch.setattr(main, 'train_and_export_meta_model', lambda **k: ({'main': 'm.pkl'}, ['X']))
     monkeypatch.setattr(main, 'ENABLE_OPTUNA_TUNING', False, raising=False)
     monkeypatch.setattr(main, 'USE_GPU_ACCELERATION', False, raising=False)

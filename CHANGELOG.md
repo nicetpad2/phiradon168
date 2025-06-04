@@ -1,3 +1,6 @@
+### 2025-08-08
+- [Patch v5.4.5] Update features_main.json with default features
+- QA: pytest -q (partial)
 ### 2025-07-02
 
 [Patch v5.0.24] Improve soft cooldown logic
@@ -512,9 +515,11 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (236 tests)
 
+
 ### 2025-08-08
 
 - [Patch v5.4.5] Resolve pandas and sklearn warnings
 - New/Updated unit tests added for src.main and src.training
 - QA: pytest -q passed (247 tests)
+
 

@@ -267,7 +267,8 @@ def setup_fonts(output_dir=None):  # pragma: no cover
 
 # --- Data Loading Helper ---
 # [Patch v5.0.2] Exclude safe_load_csv_auto from coverage
-def safe_load_csv_auto(file_path):  # pragma: no cover
+def safe_load_csv_auto(file_path, row_limit=None):  # pragma: no cover
+    # [Patch v5.4.5] Support row-limited loading to reduce memory usage
     """
     Loads CSV or .csv.gz file using pandas, automatically handling gzip compression.
 
@@ -279,6 +280,8 @@ def safe_load_csv_auto(file_path):  # pragma: no cover
                               is empty, or None if loading fails.
     """
     read_csv_kwargs = {"index_col": 0, "parse_dates": False, "low_memory": False}
+    if row_limit is not None and isinstance(row_limit, int) and row_limit > 0:
+        read_csv_kwargs["nrows"] = row_limit
     logging.info(f"      (safe_load) Attempting to load: {os.path.basename(file_path)}")
 
     if not isinstance(file_path, str) or not file_path:

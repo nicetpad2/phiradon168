@@ -40,6 +40,7 @@ def test_optional_models_warning(monkeypatch, tmp_path, caplog):
 
     caplog.set_level(logging.WARNING)
     main.main(run_mode='FULL_RUN')
-    assert "ไม่พบไฟล์ Model 'spike'" in caplog.text
-    assert "ไม่พบไฟล์ Model 'cluster'" in caplog.text
+    assert "Missing model file for 'spike'" in caplog.text
+    assert "Missing model file for 'cluster'" in caplog.text
+    assert "Triggering Auto-Training for Missing Models" in caplog.text
     assert "ไม่พบไฟล์ Model 'main'" not in caplog.text

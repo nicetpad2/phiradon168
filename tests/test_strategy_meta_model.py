@@ -34,7 +34,7 @@ def test_train_and_export_meta_model(tmp_path, monkeypatch):
     m1_path = tmp_path / 'm1.csv'
     m1.to_csv(m1_path)
     monkeypatch.setattr(strategy, 'USE_GPU_ACCELERATION', False, raising=False)
-    monkeypatch.setattr(strategy, 'safe_load_csv_auto', lambda p: pd.read_csv(p, index_col=0), raising=False)
+    monkeypatch.setattr(strategy, 'safe_load_csv_auto', lambda p, **k: pd.read_csv(p, index_col=0), raising=False)
     monkeypatch.setattr(strategy, 'CatBoostClassifier', DummyCat)
     monkeypatch.setattr(strategy, 'Pool', DummyPool)
     monkeypatch.setattr(strategy, 'joblib_dump', lambda obj, path: open(path, 'wb').write(b'dummy'))
