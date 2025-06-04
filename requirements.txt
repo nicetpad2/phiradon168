@@ -1,7 +1,5 @@
 # === CORE DEPENDENCIES ===
-torch==2.6.0+cu124
-torchvision==0.21.0+cu124
-torchaudio==2.6.0+cu124
+
 pandas==2.2.2
 numpy==2.0.2
 scikit-learn==1.6.1
