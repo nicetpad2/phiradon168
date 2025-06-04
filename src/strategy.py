@@ -619,9 +619,13 @@ def train_and_export_meta_model(
             if potential_lag_features:
                 logging.info(f"         Lag Features ที่มีให้พิจารณา: {potential_lag_features}")
                 try:
-                    prelim_fi = prelim_model.get_feature_importance()
+                    prelim_fi_raw = prelim_model.get_feature_importance()
+                    if isinstance(prelim_fi_raw, (list, np.ndarray)):
+                        prelim_fi = dict(zip(prelim_model.feature_names_, prelim_fi_raw))
+                    else:
+                        prelim_fi = prelim_fi_raw
                     significant_lags = []
-                    total_fi = sum(prelim_fi.values())
+                    total_fi = sum(prelim_fi.values()) if isinstance(prelim_fi, dict) else np.sum(prelim_fi_raw)
                     fi_threshold_abs = 0.1
                     if total_fi > 1e-9:
                         fi_threshold_norm = 0.001
@@ -641,7 +645,7 @@ def train_and_export_meta_model(
                             selected_features.extend(added_lags)
                     else:
                         logging.info("         ไม่มี Lag Features ที่มีความสำคัญเบื้องต้นตามเกณฑ์.")
-                    del prelim_fi, significant_lags
+                    del prelim_fi_raw, prelim_fi, significant_lags
                 except Exception as e_lag_fi:
                     logging.warning(f"         (Warning) ไม่สามารถประเมินความสำคัญ Lag Features: {e_lag_fi}")
             else:

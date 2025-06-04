@@ -62,7 +62,7 @@ from src.strategy import (
     train_and_export_meta_model,
     DriftObserver,
 )
-from src.utils import export_trade_log
+from src.utils import export_trade_log, download_model_if_missing
 import pandas as pd
 import numpy as np
 import shutil # For file moving in pipeline mode
@@ -441,8 +441,10 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
         model_path = os.path.join(output_dir, model_file)
         feature_path = os.path.join(output_dir, feature_file)
         if not (os.path.exists(model_path) and os.path.exists(feature_path)):
-            missing_models.append(key)
-            logging.warning(f"Missing model file for '{key}' ({model_file}).")
+            download_model_if_missing(model_path, f"URL_MODEL_{key.upper()}")
+            if not os.path.exists(model_path) or not os.path.exists(feature_path):
+                missing_models.append(key)
+                logging.warning(f"Missing model file for '{key}' ({model_file}).")
 
     if not missing_models:
         logging.info("   (Success) Model files and feature lists already exist.")

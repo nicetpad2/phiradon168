@@ -381,7 +381,10 @@ def is_colab():
         return False
 
 FILE_BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if is_colab():
+FILE_BASE_OVERRIDE = os.getenv("FILE_BASE_OVERRIDE")
+if FILE_BASE_OVERRIDE and os.path.isdir(FILE_BASE_OVERRIDE):
+    FILE_BASE = FILE_BASE_OVERRIDE
+elif is_colab():
     from google.colab import drive
     logging.info("(Info) รันบน Google Colab – กำลัง mount Google Drive...")
     try:
@@ -392,6 +395,8 @@ if is_colab():
         logging.warning(
             f"(Warning) ล้มเหลวในการ mount Drive: {e_drive} -- ดำเนินการต่อโดยใช้ Local Path แทน"
         )
+        if FILE_BASE_OVERRIDE and os.path.isdir(FILE_BASE_OVERRIDE):
+            FILE_BASE = FILE_BASE_OVERRIDE
 else:
     logging.info(
         "(Info) ไม่ใช่ Colab – สมมติรันบน VPS และโฟลเดอร์ Google Drive ถูกซิงก์ไว้เรียบร้อยแล้ว"
@@ -633,7 +638,13 @@ M15_TREND_EMA_SLOW = 200        # Slow EMA period for M15 Trend Filter
 M15_TREND_RSI_PERIOD = 14       # RSI period for M15 Trend Filter
 M15_TREND_RSI_UP = 52           # RSI threshold for M15 uptrend
 M15_TREND_RSI_DOWN = 48         # RSI threshold for M15 downtrend
-SESSION_TIMES_UTC = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)} # Session times in UTC
+
+session_env = os.getenv("SESSION_TIMES_UTC")
+try:
+    SESSION_TIMES_UTC = json.loads(session_env) if session_env else {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
+except Exception:
+    logging.warning("(Warning) SESSION_TIMES_UTC env var invalid. Using default.")
+    SESSION_TIMES_UTC = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)}
 logging.debug(f"Session Times (UTC): {SESSION_TIMES_UTC}")
 
 # --- Signal Toggle Configuration ---
