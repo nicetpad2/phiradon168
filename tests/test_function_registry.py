@@ -8,6 +8,7 @@ FUNCTIONS_INFO = [
     ("src/config.py", "is_colab", 362),
     ("src/config.py", "print_gpu_utilization", 458),
     ("src/config.py", "show_system_status", 510),
+
     ("src/data_loader.py", "inspect_file_exists", 909),
     ("src/data_loader.py", "read_csv_with_date_parse", 914),
     ("src/data_loader.py", "check_nan_percent", 921),
@@ -18,6 +19,7 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "load_raw_data_m1", 979),
     ("src/data_loader.py", "load_raw_data_m15", 990),
     ("src/data_loader.py", "write_test_file", 995),
+
     ("src/features.py", "calculate_trend_zone", 1328),
     ("src/features.py", "tag_price_structure_patterns", 301),
     ("src/features.py", "create_session_column", 1335),
@@ -58,13 +60,13 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/strategy.py", "run_backtest_simulation_v34", 1827),
-    ("src/strategy.py", "initialize_time_series_split", 4246),
-    ("src/strategy.py", "calculate_forced_entry_logic", 4249),
-    ("src/strategy.py", "apply_kill_switch", 4252),
-    ("src/strategy.py", "log_trade", 4255),
-    ("src/strategy.py", "calculate_metrics", 2995),
-    ("src/strategy.py", "aggregate_fold_results", 4258),
+    ("src/strategy.py", "run_backtest_simulation_v34", 1836),
+    ("src/strategy.py", "initialize_time_series_split", 4255),
+    ("src/strategy.py", "calculate_forced_entry_logic", 4258),
+    ("src/strategy.py", "apply_kill_switch", 4261),
+    ("src/strategy.py", "log_trade", 4264),
+    ("src/strategy.py", "calculate_metrics", 3004),
+    ("src/strategy.py", "aggregate_fold_results", 4267),
 
 
 

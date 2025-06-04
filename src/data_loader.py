@@ -366,16 +366,39 @@ def load_app_config(config_path="config_main.json"):  # pragma: no cover
 
 # --- Datetime Setting Helper (Corrected for FutureWarning) ---
 # <<< [Patch] MODIFIED v4.8.8 (Patch 26.11): Applied model_diagnostics_unit recommendation with refined dtype handling. >>>
-def safe_set_datetime(df, idx, col, val):
+def safe_set_datetime(df, idx, col, val, naive_tz=None):
     """
     Safely assigns datetime value to DataFrame, ensuring column dtype is datetime64[ns].
     [PATCH 26.11] Applied: Ensures column dtype is datetime64[ns] before assignment
     by initializing or converting the entire column if necessary.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Target DataFrame
+    idx : index label
+        Row index for assignment
+    col : str
+        Column name
+    val : any
+        Value to convert to datetime
+    naive_tz : str, optional
+        Assume this timezone when ``val`` has no timezone info. If None, uses
+        ``DEFAULT_NAIVE_TZ`` from config or 'UTC'.
     """
     try:
         # Convert the input value to a pandas Timestamp or NaT
         dt_value = pd.to_datetime(val, errors='coerce')
-        if isinstance(dt_value, pd.Timestamp) and dt_value.tz is not None:
+        if isinstance(dt_value, pd.Timestamp):
+            if dt_value.tz is None:
+                tz_use = naive_tz or safe_get_global("DEFAULT_NAIVE_TZ", "UTC")
+                try:
+                    dt_value = dt_value.tz_localize(tz_use)
+                except Exception:
+                    logging.warning(
+                        f"   safe_set_datetime: Failed to localize with '{tz_use}', assuming UTC"
+                    )
+                    dt_value = dt_value.tz_localize("UTC")
             dt_value = dt_value.tz_convert("UTC").tz_localize(None)
 
         # Ensure the column exists and has the correct dtype BEFORE assignment
@@ -467,7 +490,8 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
         nan_threshold (float): Maximum acceptable proportion of NaN values in price columns.
                                Defaults to 0.05 (5%).
         dtypes (dict, optional): Dictionary specifying data types for columns during loading.
-                                 Defaults to None (pandas infers types).
+                                 Defaults to ``DEFAULT_DTYPE_MAP`` from config
+                                 if not provided.
 
     Returns:
         pd.DataFrame: The loaded and initially validated DataFrame.
@@ -476,6 +500,10 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
         SystemExit: If critical errors occur (e.g., file not found, essential columns missing).
     """
     logging.info(f"(Loading) กำลังโหลดข้อมูล {timeframe_str} จาก: {file_path}")
+
+    if dtypes is None:
+        dtypes = safe_get_global("DEFAULT_DTYPE_MAP", None)
+
     if not os.path.exists(file_path):
         logging.critical(f"(Error) ไม่พบไฟล์: {file_path}")
         # [Patch] Provide dummy data when file is missing for offline execution
@@ -769,6 +797,9 @@ def prepare_datetime(df_pd, timeframe_str=""):  # pragma: no cover
     Prepares the DatetimeIndex for the DataFrame, handling Buddhist Era conversion
     and NaT values. Sets the prepared datetime as the DataFrame index.
 
+    เรียก :func:`safe_set_datetime` เพื่อจัดการ timezone และ dtype ก่อน
+    แล้วจึงเรียกฟังก์ชันนี้เพื่อเตรียม Datetime index ให้ถูกต้อง
+
     Args:
         df_pd (pd.DataFrame): Input DataFrame with 'Date' and 'Timestamp' columns.
         timeframe_str (str): Identifier for the timeframe (e.g., "M15", "M1") for logging.
@@ -1030,5 +1061,31 @@ def load_final_m1_data(path, trade_log_df=None):
     else:
         df.index = df.index.tz_convert(log_tz)
     df["datetime"] = df.index
+    return df
+
+
+def check_data_quality(df, dropna=True, fillna_method=None, subset_dupes=None):
+    """ตรวจสอบคุณภาพข้อมูลเบื้องต้นและจัดการ NaN/Duplicates ตามต้องการ."""
+    if df is None or df.empty:
+        return df
+
+    nan_report = df.isna().mean()
+    for col, pct in nan_report.items():
+        if pct > 0:
+            logging.warning(f"   (Warning) คอลัมน์ '{col}' มี NaN {pct:.1%}")
+
+    if fillna_method:
+        df.fillna(method=fillna_method, inplace=True)
+    elif dropna:
+        df.dropna(inplace=True)
+
+    if subset_dupes is None:
+        subset_dupes = ["Datetime"] if "Datetime" in df.columns else None
+    if subset_dupes is not None:
+        dupes = df.duplicated(subset=subset_dupes)
+        if dupes.any():
+            logging.warning(f"   (Warning) พบ {dupes.sum()} duplicates")
+            df.drop_duplicates(subset=subset_dupes, keep="first", inplace=True)
+
     return df
 

@@ -18,12 +18,19 @@
   - Validate that Codex/AI Studio outputs match the intended diff/patch  
 
 ### Code_Runner_QA
-- **Main Role:** Execution Testing & QA  
+- **Main Role:** Execution Testing & QA
 - **Key Responsibilities:**
   - Run all Python scripts, coordinate `pytest` execution, collect and report test results
   - Set up `sys.path`, environment variables, and mocks for Colab/CI
   - Check build logs for errors or warnings, bundle artifacts for AI Studio or QA review
-  - Validate that no tests fail before any Pull Request is merged  
+  - Validate that no tests fail before any Pull Request is merged
+
+### Pipeline_Manager
+- **Main Role:** Pipeline Orchestration
+- **Key Responsibilities:**
+  - Manage CLI pipeline stages and configuration loading
+  - Detect GPU availability and adjust runtime logging
+  - Raise `PipelineError` when stages fail
 
 ### GoldSurvivor_RnD
 - **Main Role:** Strategy Analysis  

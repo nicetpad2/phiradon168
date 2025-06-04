@@ -1,12 +1,19 @@
 ### 2025-08-25
+
 - [Patch v5.5.15] Add caching utilities for DataFrame loading
 - New/Updated unit tests added for tests.test_data_cache, tests.test_features_hdf5
+
 - QA: pytest -q passed
 
 ### 2025-08-24
 - [Patch v5.5.14] Refactor ProjectP CLI and add logging config
 - New/Updated unit tests added for tests.test_projectp_cli
 - QA: pytest -q passed (310 tests)
+
+### 2025-08-25
+- [Patch v5.5.15] Improve walk-forward validation utilities
+- New/Updated unit tests added for tests.test_wfv_utils
+- QA: pytest -q passed
 
 ### 2025-08-23
 - [Patch v5.5.13] Optimize DataFrame writes in backtest

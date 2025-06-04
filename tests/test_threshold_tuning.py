@@ -25,9 +25,11 @@ class DummyPool:
 def test_find_best_threshold():
     proba = np.array([0.1, 0.4, 0.6, 0.8])
     y = np.array([0, 0, 1, 1])
-    t, s = find_best_threshold(proba, y)
-    assert t == pytest.approx(0.4)
-    assert s == pytest.approx(1.0)
+    res = find_best_threshold(proba, y)
+    assert res["best_threshold"] == pytest.approx(0.4)
+    assert res["best_f1"] == pytest.approx(1.0)
+    assert res["precision"] == pytest.approx(1.0)
+    assert res["recall"] == pytest.approx(1.0)
 
 
 def test_threshold_tuning_called(tmp_path, monkeypatch):
@@ -48,7 +50,12 @@ def test_threshold_tuning_called(tmp_path, monkeypatch):
     called = {}
     def fake_find(proba, y):
         called['hit'] = True
-        return 0.5, 0.5
+        return {
+            "best_threshold": 0.5,
+            "best_f1": 0.5,
+            "precision": 0.5,
+            "recall": 0.5,
+        }
 
     monkeypatch.setattr(strategy, 'find_best_threshold', fake_find)
     monkeypatch.setattr(strategy, 'USE_GPU_ACCELERATION', False, raising=False)
