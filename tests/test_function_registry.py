@@ -9,16 +9,19 @@ FUNCTIONS_INFO = [
     ("src/config.py", "print_gpu_utilization", 458),
     ("src/config.py", "show_system_status", 510),
 
-    ("src/data_loader.py", "inspect_file_exists", 838),
-    ("src/data_loader.py", "read_csv_with_date_parse", 843),
-    ("src/data_loader.py", "check_nan_percent", 850),
-    ("src/data_loader.py", "check_duplicates", 857),
-    ("src/data_loader.py", "check_price_jumps", 864),
-    ("src/data_loader.py", "convert_thai_years", 872),
-    ("src/data_loader.py", "prepare_datetime_index", 879),
-    ("src/data_loader.py", "load_raw_data_m1", 908),
-    ("src/data_loader.py", "load_raw_data_m15", 919),
-    ("src/data_loader.py", "write_test_file", 924),
+
+    ("src/data_loader.py", "inspect_file_exists", 940),
+    ("src/data_loader.py", "read_csv_with_date_parse", 945),
+    ("src/data_loader.py", "check_nan_percent", 952),
+    ("src/data_loader.py", "check_duplicates", 959),
+    ("src/data_loader.py", "check_price_jumps", 966),
+    ("src/data_loader.py", "convert_thai_years", 974),
+    ("src/data_loader.py", "prepare_datetime_index", 981),
+    ("src/data_loader.py", "load_raw_data_m1", 1010),
+    ("src/data_loader.py", "load_raw_data_m15", 1021),
+    ("src/data_loader.py", "write_test_file", 1026),
+
+
     ("src/features.py", "calculate_trend_zone", 1328),
     ("src/features.py", "tag_price_structure_patterns", 301),
     ("src/features.py", "create_session_column", 1335),
@@ -61,12 +64,12 @@ FUNCTIONS_INFO = [
 
 
     ("src/strategy.py", "run_backtest_simulation_v34", 1836),
-    ("src/strategy.py", "initialize_time_series_split", 4255),
-    ("src/strategy.py", "calculate_forced_entry_logic", 4258),
-    ("src/strategy.py", "apply_kill_switch", 4261),
-    ("src/strategy.py", "log_trade", 4264),
+    ("src/strategy.py", "initialize_time_series_split", 4256),
+    ("src/strategy.py", "calculate_forced_entry_logic", 4259),
+    ("src/strategy.py", "apply_kill_switch", 4262),
+    ("src/strategy.py", "log_trade", 4265),
     ("src/strategy.py", "calculate_metrics", 3004),
-    ("src/strategy.py", "aggregate_fold_results", 4267),
+    ("src/strategy.py", "aggregate_fold_results", 4268),
 
 
 

@@ -1,4 +1,10 @@
 
+### 2025-08-27
+- [Patch v5.5.17] Refactor signal functions into `strategy` package
+- New/Updated unit tests added for tests.test_strategy_submodules
+- QA: pytest -q passed
+
+
 ### 2025-08-26
 - [Patch v5.6.0] Refactor font setup and CSV loader
 - New/Updated unit tests added for data_loader

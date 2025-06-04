@@ -7,6 +7,8 @@ FILES = [
     'src/features.py',
     'src/cooldown_utils.py',
     'src/strategy.py',
+    'strategy/entry_rules.py',
+    'strategy/exit_rules.py',
     'src/main.py',
 ]
 
