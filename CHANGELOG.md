@@ -11,6 +11,11 @@
 - New/Updated unit tests added for data_loader
 - QA: pytest -q passed (325 tests)
 
+### 2025-08-28
+- [Patch v5.6.1] Improve get_env_float handling
+- New/Updated unit tests added for env_utils and registry
+- QA: pytest -q passed (333 tests)
+
 
 ### 2025-08-25
 

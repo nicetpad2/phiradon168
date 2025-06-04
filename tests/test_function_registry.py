@@ -10,16 +10,16 @@ FUNCTIONS_INFO = [
     ("src/config.py", "show_system_status", 510),
 
 
-    ("src/data_loader.py", "inspect_file_exists", 940),
-    ("src/data_loader.py", "read_csv_with_date_parse", 945),
-    ("src/data_loader.py", "check_nan_percent", 952),
-    ("src/data_loader.py", "check_duplicates", 959),
-    ("src/data_loader.py", "check_price_jumps", 966),
-    ("src/data_loader.py", "convert_thai_years", 974),
-    ("src/data_loader.py", "prepare_datetime_index", 981),
-    ("src/data_loader.py", "load_raw_data_m1", 1010),
-    ("src/data_loader.py", "load_raw_data_m15", 1021),
-    ("src/data_loader.py", "write_test_file", 1026),
+    ("src/data_loader.py", "inspect_file_exists", 906),
+    ("src/data_loader.py", "read_csv_with_date_parse", 911),
+    ("src/data_loader.py", "check_nan_percent", 918),
+    ("src/data_loader.py", "check_duplicates", 925),
+    ("src/data_loader.py", "check_price_jumps", 932),
+    ("src/data_loader.py", "convert_thai_years", 940),
+    ("src/data_loader.py", "prepare_datetime_index", 947),
+    ("src/data_loader.py", "load_raw_data_m1", 976),
+    ("src/data_loader.py", "load_raw_data_m15", 987),
+    ("src/data_loader.py", "write_test_file", 992),
 
     ("src/features.py", "calculate_trend_zone", 1337),
     ("src/features.py", "tag_price_structure_patterns", 310),
@@ -37,13 +37,13 @@ FUNCTIONS_INFO = [
 
 # [Patch v5.5.3] Updated expected line numbers
 
-    ("src/main.py", "parse_arguments", 1874),
-    ("src/main.py", "setup_output_directory", 1879),
-    ("src/main.py", "load_features_from_file", 1884),
-    ("src/main.py", "drop_nan_rows", 1889),
-    ("src/main.py", "convert_to_float32", 1894),
-    ("src/main.py", "run_initial_backtest", 1899),
-    ("src/main.py", "save_final_data", 1904),
+    ("src/main.py", "parse_arguments", 1876),
+    ("src/main.py", "setup_output_directory", 1881),
+    ("src/main.py", "load_features_from_file", 1886),
+    ("src/main.py", "drop_nan_rows", 1891),
+    ("src/main.py", "convert_to_float32", 1896),
+    ("src/main.py", "run_initial_backtest", 1901),
+    ("src/main.py", "save_final_data", 1906),
 
 
 
@@ -51,13 +51,13 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/main.py", "parse_arguments", 1874),
-    ("src/main.py", "setup_output_directory", 1879),
-    ("src/main.py", "load_features_from_file", 1884),
-    ("src/main.py", "drop_nan_rows", 1889),
-    ("src/main.py", "convert_to_float32", 1894),
-    ("src/main.py", "run_initial_backtest", 1899),
-    ("src/main.py", "save_final_data", 1904),
+    ("src/main.py", "parse_arguments", 1876),
+    ("src/main.py", "setup_output_directory", 1881),
+    ("src/main.py", "load_features_from_file", 1886),
+    ("src/main.py", "drop_nan_rows", 1891),
+    ("src/main.py", "convert_to_float32", 1896),
+    ("src/main.py", "run_initial_backtest", 1901),
+    ("src/main.py", "save_final_data", 1906),
 
 
 
