@@ -30,7 +30,7 @@ FUNCTIONS_INFO = [
 
 
 
-# [Patch v5.5.1] Updated expected line numbers
+# [Patch v5.5.3] Updated expected line numbers
     ("src/main.py", "parse_arguments", 1867),
     ("src/main.py", "setup_output_directory", 1872),
     ("src/main.py", "load_features_from_file", 1877),
@@ -46,13 +46,13 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/strategy.py", "run_backtest_simulation_v34", 1710),
-    ("src/strategy.py", "initialize_time_series_split", 4045),
-    ("src/strategy.py", "calculate_forced_entry_logic", 4048),
-    ("src/strategy.py", "apply_kill_switch", 4051),
-    ("src/strategy.py", "log_trade", 4054),
-    ("src/strategy.py", "calculate_metrics", 2784),
-    ("src/strategy.py", "aggregate_fold_results", 4057),
+    ("src/strategy.py", "run_backtest_simulation_v34", 1714),
+    ("src/strategy.py", "initialize_time_series_split", 4043),
+    ("src/strategy.py", "calculate_forced_entry_logic", 4046),
+    ("src/strategy.py", "apply_kill_switch", 4049),
+    ("src/strategy.py", "log_trade", 4052),
+    ("src/strategy.py", "calculate_metrics", 2782),
+    ("src/strategy.py", "aggregate_fold_results", 4055),
 
 
     ("ProjectP.py", "custom_helper_function", 20),
