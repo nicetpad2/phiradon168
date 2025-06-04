@@ -628,6 +628,10 @@ M15_TREND_RSI_DOWN = 48         # RSI threshold for M15 downtrend
 SESSION_TIMES_UTC = {"Asia": (0, 8), "London": (7, 16), "NY": (13, 21)} # Session times in UTC
 logging.debug(f"Session Times (UTC): {SESSION_TIMES_UTC}")
 
+# --- Signal Toggle Configuration ---
+USE_MACD_SIGNALS = True  # Enable MACD conditions in simple signal functions
+USE_RSI_SIGNALS = True   # Enable RSI conditions in simple signal functions
+
 # --- Fold-Specific Configuration ---
 # Allows overriding parameters for specific walk-forward folds
 logging.debug("Setting Fold-Specific Configuration...")
