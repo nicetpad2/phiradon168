@@ -56,7 +56,10 @@ LOG_FILENAME = f'gold_ai_v{__version__}_qa.log'
 
 # ตั้งค่า Logger กลางเพื่อให้โมดูลอื่น ๆ ใช้งานร่วมกัน
 logger = logging.getLogger('NiceGold')
-logger.setLevel(logging.INFO)
+# [Patch v5.3.9] ปรับระดับ logger ผ่านตัวแปรสภาพแวดล้อม LOG_LEVEL
+_log_level_name = os.environ.get('LOG_LEVEL', 'INFO').upper()
+_log_level = getattr(logging, _log_level_name, logging.INFO)
+logger.setLevel(_log_level)
 formatter = logging.Formatter(
     '[%(asctime)s][%(levelname)s][%(process)d][%(filename)s:%(lineno)d] - %(message)s'
 )
@@ -73,7 +76,7 @@ logger.addHandler(sh)
 logger.propagate = True  # [Patch v5.3.8] Propagate to root for testing
 atexit.register(logging.shutdown)
 root_logger = logging.getLogger()
-root_logger.setLevel(logging.INFO)
+root_logger.setLevel(_log_level)
 logger.info(f"--- (Start) Gold AI v{__version__} ---")
 logger.info("--- กำลังโหลดไลบรารีและตรวจสอบ Dependencies ---")
 
