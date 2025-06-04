@@ -1,7 +1,9 @@
 import os
 import logging
-from typing import List, Dict
+from datetime import datetime
+from typing import List, Dict, Optional
 
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -10,19 +12,41 @@ from src import features as feat
 logger = logging.getLogger(__name__)
 
 
-def analyze_feature_distribution(df: pd.DataFrame, feature_list: List[str], output_dir: str = "logs/feature_analysis") -> Dict[str, Dict[str, float]]:
-    """Generate basic statistics and plots for given features."""
+def analyze_feature_distribution(
+    df: pd.DataFrame,
+    feature_list: List[str],
+    output_dir: str = "logs/feature_analysis",
+) -> Optional[Dict[str, Dict[str, float]]]:
+    """Calculate summary statistics and histogram data for a list of features.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame ที่ใช้วิเคราะห์ฟีเจอร์
+    feature_list : List[str]
+        รายชื่อคอลัมน์ที่จะวิเคราะห์
+    output_dir : str, optional
+        โฟลเดอร์สำหรับบันทึกรูปภาพ
+
+    Returns
+    -------
+    Optional[Dict[str, Dict[str, float]]]
+        ค่าเฉลี่ย ค่ามัธยฐาน ส่วนเบี่ยงเบนมาตรฐาน และข้อมูล histogram ต่อฟีเจอร์
+    """
     os.makedirs(output_dir, exist_ok=True)
     stats: Dict[str, Dict[str, float]] = {}
     for feature in feature_list:
         if feature not in df.columns:
-            logger.warning("Feature %s not found", feature)
-            continue
+            logger.error("Feature %s not found in DataFrame", feature)
+            return None
         series = pd.to_numeric(df[feature], errors="coerce")
+        counts, bins = np.histogram(series.dropna(), bins=50)
         stats[feature] = {
             "mean": float(series.mean()),
             "median": float(series.median()),
             "std": float(series.std()),
+            "hist_bins": bins.tolist(),
+            "hist_counts": counts.tolist(),
         }
         plt.figure()
         series.plot.hist(bins=50)
@@ -39,11 +63,31 @@ def analyze_feature_distribution(df: pd.DataFrame, feature_list: List[str], outp
     return stats
 
 
-def detect_low_variance_features(df: pd.DataFrame, feature_list: List[str], threshold: float = 1e-6) -> List[str]:
-    """Return features with near-zero variance or only one unique value."""
+def detect_low_variance_features(
+    df: pd.DataFrame,
+    feature_list: List[str],
+    threshold: float = 1e-6,
+) -> List[str]:
+    """Identify features with near-zero variance.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame ที่ใช้ตรวจสอบ
+    feature_list : List[str]
+        รายชื่อคอลัมน์ที่จะตรวจสอบ
+    threshold : float, optional
+        ค่า std ต่ำสุดที่ยอมรับได้
+
+    Returns
+    -------
+    List[str]
+        รายชื่อฟีเจอร์ที่มี variance ต่ำหรือมีค่าเดียว
+    """
     low_var = []
     for feature in feature_list:
         if feature not in df.columns:
+            logger.error("Feature %s not found in DataFrame", feature)
             continue
         series = pd.to_numeric(df[feature], errors="coerce")
         if series.nunique(dropna=False) <= 1 or series.std() <= threshold:
@@ -56,9 +100,24 @@ def select_top_pnl_features(
     target_col: str = "pnl_usd_net",
     n: int = 10,
 ) -> List[str]:
-    """เลือกฟีเจอร์ที่สัมพันธ์กับกำไรมากที่สุดตามค่า Correlation"""
+    """Return top features most correlated with target PnL.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame ที่ใช้คำนวณ correlation
+    target_col : str, optional
+        ชื่อคอลัมน์กำไรขาดทุน
+    n : int, optional
+        จำนวนฟีเจอร์ที่ต้องการ
+
+    Returns
+    -------
+    List[str]
+        รายชื่อฟีเจอร์ที่มีความสัมพันธ์สูงสุดกับ target
+    """
     if target_col not in df.columns:
-        logger.warning("Target column %s not found", target_col)
+        logger.error("Target column %s not found in DataFrame", target_col)
         return []
     numeric_df = df.select_dtypes(include=[float, int])
     if target_col not in numeric_df.columns:
@@ -68,21 +127,64 @@ def select_top_pnl_features(
     return corr.head(n).index.tolist()
 
 
+def calculate_correlation_matrix(
+    df: pd.DataFrame,
+    feature_list: List[str],
+    output_dir: str = "logs/feature_analysis",
+) -> Optional[pd.DataFrame]:
+    """คำนวณ correlation matrix สำหรับฟีเจอร์ที่ระบุ
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame ที่ใช้คำนวณ
+    feature_list : List[str]
+        รายชื่อคอลัมน์ที่จะคำนวณ
+    output_dir : str, optional
+        โฟลเดอร์สำหรับบันทึกผลลัพธ์
+
+    Returns
+    -------
+    Optional[pd.DataFrame]
+        DataFrame correlation matrix หรือ None หากมีคอลัมน์หาย
+    """
+    missing = [f for f in feature_list if f not in df.columns]
+    if missing:
+        logger.error("Features %s not found in DataFrame", missing)
+        return None
+    numeric_df = df[feature_list].apply(pd.to_numeric, errors="coerce")
+    corr_matrix = numeric_df.corr()
+    os.makedirs(output_dir, exist_ok=True)
+    corr_path = os.path.join(output_dir, "correlation_matrix.csv")
+    corr_matrix.to_csv(corr_path)
+    return corr_matrix
+
+
 def main(sample_rows: int = 5000):  # pragma: no cover - CLI helper
-    """Run feature distribution analysis on a sample of the M1 dataset."""
+    """Run feature distribution analysis on a sample of the M1 dataset.
+
+    Returns
+    -------
+    Tuple[Dict[str, Dict[str, float]], List[str], pd.DataFrame]
+        สถิติฟีเจอร์, รายชื่อฟีเจอร์ variance ต่ำ และ correlation matrix
+    """
     data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "XAUUSD_M1.csv")
     df = pd.read_csv(data_path, nrows=sample_rows)
     df.index = pd.to_datetime(df["Date"].astype(str) + " " + df["Timestamp"], errors="coerce")
     df_feat = feat.engineer_m1_features(df)
 
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_dir = os.path.join("reports", "feature_analysis", timestamp_str)
+
     features_to_analyze = ["spike_score", "cluster", "RSI", "MACD_line", "ATR_14_Rolling_Avg"]
-    stats = analyze_feature_distribution(df_feat, features_to_analyze)
+    stats = analyze_feature_distribution(df_feat, features_to_analyze, output_dir=output_dir)
     low_var = detect_low_variance_features(df_feat, features_to_analyze)
+    corr = calculate_correlation_matrix(df_feat, features_to_analyze, output_dir=output_dir)
 
     logger.info("Feature statistics: %s", stats)
     logger.info("Low variance features: %s", low_var)
 
-    return stats, low_var
+    return stats, low_var, corr
 
 
 if __name__ == "__main__":  # pragma: no cover - CLI entry
