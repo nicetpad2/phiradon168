@@ -9,6 +9,10 @@
 - New/Updated unit tests added for tests.test_projectp_cli
 - QA: pytest -q passed
 
+### 2025-06-04
+- [Patch v5.5.11] Fix pandas fillna FutureWarning and multiprocessing warning
+- QA: pytest -q passed (308 tests)
+
 
 ### 2025-08-20
 
