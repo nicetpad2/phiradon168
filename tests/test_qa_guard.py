@@ -22,7 +22,7 @@ def test_trade_log_created_even_if_empty(monkeypatch, tmp_path):
     monkeypatch.setattr(main, 'select_model_for_trade', lambda *a, **k: None, raising=False)
     monkeypatch.setattr(main, 'load_features_for_model', lambda *a, **k: [], raising=False)
     class CatBoostClassifier:
-        def predict_proba(self, X):
+        def predict_proba(self, X):  # pragma: no cover - simple stub
             return [0]
 
     monkeypatch.setattr(main, 'load', lambda *a, **k: CatBoostClassifier(), raising=False)

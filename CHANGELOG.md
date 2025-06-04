@@ -470,3 +470,8 @@
 - New/Updated unit tests added for src.adaptive
 - QA: pytest -q passed (219 tests)
 
+### 2025-08-05
+- [Patch v5.4.1] Improve coverage to 100%
+- New/Updated unit tests added for src.adaptive, feature_analysis, sessions
+- QA: pytest -q passed (224 tests)
+

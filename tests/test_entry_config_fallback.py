@@ -18,7 +18,7 @@ def test_entry_config_import_error(monkeypatch):
     real_import = builtins.__import__
 
     def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
-        if name == 'src.config':
+        if name == 'src.config':  # pragma: no cover - error branch
             raise ImportError('mock fail')
         return real_import(name, globals, locals, fromlist, level)
 

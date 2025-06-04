@@ -2,7 +2,7 @@
 
 try:
     from src.config import logger
-except Exception:
+except Exception:  # pragma: no cover - fallback only during missing config
     import logging
     logger = logging.getLogger(__name__)
 

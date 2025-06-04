@@ -24,3 +24,9 @@ def test_get_session_tag_overlap():
 
 def test_get_session_tag_nat():
     assert get_session_tag(pd.NaT) == 'N/A'
+
+
+def test_get_session_tag_string_and_cross_midnight():
+    ts = '2024-01-01 23:00'
+    custom = {'Night': (22, 2)}
+    assert get_session_tag(ts, custom) == 'Night'
