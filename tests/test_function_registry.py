@@ -15,9 +15,9 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "check_price_jumps", 851),
     ("src/data_loader.py", "convert_thai_years", 859),
     ("src/data_loader.py", "prepare_datetime_index", 866),
-    ("src/data_loader.py", "load_raw_data_m1", 873),
-    ("src/data_loader.py", "load_raw_data_m15", 878),
-    ("src/data_loader.py", "write_test_file", 883),
+    ("src/data_loader.py", "load_raw_data_m1", 891),
+    ("src/data_loader.py", "load_raw_data_m15", 902),
+    ("src/data_loader.py", "write_test_file", 907),
     ("src/features.py", "calculate_trend_zone", 1225),
     ("src/features.py", "tag_price_structure_patterns", 234),
     ("src/features.py", "create_session_column", 1232),
@@ -35,7 +35,6 @@ FUNCTIONS_INFO = [
     ("src/main.py", "convert_to_float32", 1835),
     ("src/main.py", "run_initial_backtest", 1840),
     ("src/main.py", "save_final_data", 1845),
-
 
 
 

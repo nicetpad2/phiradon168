@@ -506,8 +506,9 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (236 tests)
 
 
-### 2025-06-04
-- [Patch v5.4.4] Ensure trade log files always generated
-- New/Updated unit tests added for src.main
+### 2025-08-07
+- [Patch v5.4.4] Validate M1 data path before loading
+- New/Updated unit tests added for src.data_loader
+
 - QA: pytest -q passed (236 tests)
 
