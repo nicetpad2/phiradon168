@@ -75,7 +75,7 @@ from sklearn.metrics import (
     classification_report,
 )  # [Patch] นำเข้า metric ที่ขาดหายไป
 from src.evaluation import find_best_threshold
-from src.adaptive import compute_dynamic_lot
+from src.adaptive import compute_dynamic_lot, atr_position_size
 import gc # For memory management
 import os
 import itertools
@@ -2224,14 +2224,15 @@ def run_backtest_simulation_v34(
                             else:
                                 logging.debug(f"         [Patch] Using ATR-Based SL/TP. Fold SL Multiplier: {fold_sl_multiplier_base:.2f}, ATR Entry: {atr_entry:.5f}"); sl_delta_price = atr_entry * fold_sl_multiplier_base; sl_price = entry_price - sl_delta_price if side == "BUY" else entry_price + sl_delta_price; tp1_delta = sl_delta_price * 1.0; tp1_price = entry_price + tp1_delta if side == "BUY" else entry_price - tp1_delta; tp2_r = dynamic_tp2_multiplier(current_atr, current_avg_atr, base=base_tp_multiplier_config); tp2_delta = sl_delta_price * tp2_r; tp2_price = entry_price + tp2_delta if side == "BUY" else entry_price - tp2_delta
                             logging.debug(f"         Calculated SL={sl_price:.5f}, TP1={tp1_price:.5f}, TP2={tp2_price:.5f} (SL Delta Price={sl_delta_price:.5f})")
-                            mm_mode = fund_profile.get('mm_mode', 'balanced')
                             risk_pct = fund_profile.get('risk', DEFAULT_RISK_PER_TRADE)
-                            base_lot = calculate_lot_by_fund_mode(
-                                mm_mode,
-                                risk_pct,
+                            base_lot, _ = atr_position_size(
                                 current_equity_check,
                                 atr_entry,
-                                sl_delta_price,
+                                risk_pct=risk_pct,
+                                atr_mult=fold_sl_multiplier_base,
+                                pip_value=POINT_VALUE,
+                                min_lot=MIN_LOT_SIZE,
+                                max_lot=MAX_LOT_SIZE,
                             )
                             base_lot = compute_dynamic_lot(base_lot, current_dd_check)
                             boosted_lot = adjust_lot_tp2_boost(trade_history_list, base_lot)
