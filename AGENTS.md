@@ -215,3 +215,4 @@
 - New modular code in ./src (config, data_loader, features, strategy, main).
 - Added pipeline orchestrator `main.py` and simple `threshold_optimization.py` script.
 - `gold ai 3_5.py` now imports `src.main.main` after refactor to modular code.
+- Added new `strategy` package for entry and exit rules.
