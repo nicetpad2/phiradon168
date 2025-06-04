@@ -1128,6 +1128,8 @@ DEFAULT_COMMISSION_PER_001_LOT = 0.10
 DEFAULT_SPREAD_POINTS = 2.0
 DEFAULT_MIN_SLIPPAGE_POINTS = -5.0
 DEFAULT_MAX_SLIPPAGE_POINTS = -1.0
+DEFAULT_OMS_MARGIN_PIPS = 20.0
+DEFAULT_OMS_MAX_DISTANCE_PIPS = 1000.0
 DEFAULT_MAX_DRAWDOWN_THRESHOLD = 0.30
 DEFAULT_ENABLE_FORCED_ENTRY = True
 DEFAULT_FORCED_ENTRY_BAR_THRESHOLD = 100
@@ -1190,6 +1192,8 @@ COMMISSION_PER_001_LOT = safe_get_global('COMMISSION_PER_001_LOT', DEFAULT_COMMI
 SPREAD_POINTS = safe_get_global('SPREAD_POINTS', DEFAULT_SPREAD_POINTS)
 MIN_SLIPPAGE_POINTS = safe_get_global('MIN_SLIPPAGE_POINTS', DEFAULT_MIN_SLIPPAGE_POINTS)
 MAX_SLIPPAGE_POINTS = safe_get_global('MAX_SLIPPAGE_POINTS', DEFAULT_MAX_SLIPPAGE_POINTS)
+OMS_MARGIN_PIPS = safe_get_global('OMS_MARGIN_PIPS', DEFAULT_OMS_MARGIN_PIPS)
+OMS_MAX_DISTANCE_PIPS = safe_get_global('OMS_MAX_DISTANCE_PIPS', DEFAULT_OMS_MAX_DISTANCE_PIPS)
 MAX_DRAWDOWN_THRESHOLD = safe_get_global('MAX_DRAWDOWN_THRESHOLD', DEFAULT_MAX_DRAWDOWN_THRESHOLD)
 ENABLE_FORCED_ENTRY = safe_get_global('ENABLE_FORCED_ENTRY', DEFAULT_ENABLE_FORCED_ENTRY)
 FORCED_ENTRY_BAR_THRESHOLD = safe_get_global('FORCED_ENTRY_BAR_THRESHOLD', DEFAULT_FORCED_ENTRY_BAR_THRESHOLD)
@@ -1360,6 +1364,60 @@ def update_trailing_tp2(order, atr, multiplier):
         else:
             logging.warning(f"   (Warning) Cannot set TP2 for order {order.get('entry_time')}: Invalid input values (entry={entry}, atr={atr_val}, mult={multiplier_val}).")
     return order
+
+
+# [Patch v5.5.8] OMS_Guardian helpers
+def adjust_sl_tp_oms(entry_price, sl_price, tp_price, atr, side,
+                     margin_pips, max_pips):
+    """Validate SL/TP distance and auto-adjust if outside allowed range."""
+    if any(pd.isna(v) for v in [entry_price, sl_price, tp_price, atr]):
+        return sl_price, tp_price
+
+    sl_dist = abs(entry_price - sl_price) * 10.0
+    tp_dist = abs(tp_price - entry_price) * 10.0
+
+    if sl_dist < margin_pips:
+        adj = atr if pd.notna(atr) and atr > 1e-9 else margin_pips / 10.0
+        sl_price = entry_price - adj if side == "BUY" else entry_price + adj
+        logging.info(f"[OMS_Guardian] Adjust SL to margin level: {sl_price:.5f}")
+
+    if sl_dist > max_pips:
+        sl_price = entry_price - atr if side == "BUY" else entry_price + atr
+        logging.info(f"[OMS_Guardian] SL distance too wide. Adjusted to {sl_price:.5f}")
+
+    if tp_dist > max_pips:
+        tp_price = entry_price + atr if side == "BUY" else entry_price - atr
+        logging.info(f"[OMS_Guardian] TP distance too wide. Adjusted to {tp_price:.5f}")
+
+    return sl_price, tp_price
+
+
+def update_breakeven_half_tp(order, current_high, current_low, now, entry_buffer=0.0001):
+    """Move SL to breakeven when price moves halfway to TP1."""
+    if order.get("be_triggered", False):
+        return order, False
+
+    side = order.get("side")
+    entry = pd.to_numeric(order.get("entry_price"), errors="coerce")
+    tp1 = pd.to_numeric(order.get("tp1_price"), errors="coerce")
+    sl = pd.to_numeric(order.get("sl_price"), errors="coerce")
+
+    if any(pd.isna(v) for v in [side, entry, tp1, sl]):
+        return order, False
+
+    trigger = entry + 0.5 * (tp1 - entry) if side == "BUY" else entry - 0.5 * (entry - tp1)
+    hit = (side == "BUY" and current_high >= trigger) or (side == "SELL" and current_low <= trigger)
+
+    if hit:
+        new_sl = entry + entry_buffer if side == "BUY" else entry - entry_buffer
+        if not math.isclose(sl, new_sl, rel_tol=1e-9, abs_tol=1e-9):
+            order["sl_price"] = new_sl
+            order["be_triggered"] = True
+            order["be_triggered_time"] = now
+            logging.info(f"Move to Breakeven at price {new_sl:.5f}")
+            return order, True
+
+    return order, False
 
 
 def spike_guard_london(row, session, consecutive_losses):
@@ -1656,6 +1714,12 @@ def _update_open_order_state(order, current_high, current_low, current_atr, avg_
     current_sl_price_in_order = pd.to_numeric(order.get("sl_price"), errors='coerce')
     atr_at_entry = pd.to_numeric(order.get("atr_at_entry"), errors='coerce')
     entry_time_log = order.get('entry_time', 'N/A') # For logging
+
+    # [Patch v5.5.8] Breakeven logic when price moves half way to TP1
+    order, be_half = update_breakeven_half_tp(order, current_high, current_low, now)
+    if be_half:
+        be_sl_counter += 1
+        be_triggered_this_bar = True
 
     if not order.get("be_triggered", False):
         dynamic_be_r_threshold = base_be_r_thresh
@@ -2244,7 +2308,19 @@ def run_backtest_simulation_v34(
                                 f"         Calculated Lot: Base={base_lot:.2f}, Boosted={boosted_lot:.2f}, Final={final_lot:.2f} (RiskMode Applied={risk_mode_applied})"
                             )
                             if final_lot >= MIN_LOT_SIZE:
-                                entry_time = now; total_ib_lot_accumulator += final_lot; current_atr_num_ttp2 = pd.to_numeric(current_atr, errors='coerce'); enable_ttp2 = pd.notna(current_atr_num_ttp2) and current_atr_num_ttp2 > 4.0
+                                entry_time = now
+                                total_ib_lot_accumulator += final_lot
+                                current_atr_num_ttp2 = pd.to_numeric(current_atr, errors='coerce')
+                                enable_ttp2 = pd.notna(current_atr_num_ttp2) and current_atr_num_ttp2 > 4.0
+                                sl_price, tp2_price = adjust_sl_tp_oms(
+                                    entry_price,
+                                    sl_price,
+                                    tp2_price,
+                                    atr_entry,
+                                    side,
+                                    OMS_MARGIN_PIPS,
+                                    OMS_MAX_DISTANCE_PIPS,
+                                )
                                 new_order = {"entry_idx": current_index, "entry_time": entry_time, "entry_price": entry_price, "original_lot": final_lot, "lot": final_lot, "original_sl_price": sl_price, "sl_price": sl_price, "tp_price": tp2_price, "tp1_price": tp1_price, "entry_bar_count": current_bar_index, "side": side, "m15_trend_zone": m15_trend, "trade_tag": current_trade_tag, "signal_score": signal_score if pd.notna(signal_score) else np.nan, "trade_reason": trade_reason if not is_forced_entry else f"FORCED_{trade_reason}", "session": session_tag, "pattern_label_entry": pattern_label, "be_triggered": False, "be_triggered_time": pd.NaT, "is_reentry": is_reentry_trade, "is_forced_entry": is_forced_entry, "meta_proba_tp": meta_proba_tp_for_log, "meta2_proba_tp": meta2_proba_tp_for_log, "partial_tp_processed_levels": set(), "atr_at_entry": atr_entry, "equity_before_open": current_equity_check, "entry_gain_z": current_gain_z if pd.notna(current_gain_z) else np.nan, "entry_macd_smooth": current_macd_smooth if pd.notna(current_macd_smooth) else np.nan, "entry_candle_ratio": getattr(row, "Candle_Ratio", np.nan), "entry_adx": getattr(row, "ADX", np.nan), "entry_volatility_index": current_vol_index if pd.notna(current_vol_index) else np.nan, "peak_since_tp1": np.nan, "trough_since_tp1": np.nan, "risk_mode_at_entry": risk_mode_applied, "use_trailing_for_tp2": enable_ttp2, "trailing_start_price": tp1_price if enable_ttp2 else np.nan, "trailing_step_r": ADAPTIVE_TSL_DEFAULT_STEP_R if enable_ttp2 else np.nan, "peak_since_ttp2_activation": np.nan, "trough_since_ttp2_activation": np.nan, "active_model_at_entry": selected_model_key, "model_confidence_at_entry": model_confidence, "tsl_activated": False, "peak_since_tsl_activation": np.nan, "trough_since_tsl_activation": np.nan}
                                 next_active_orders.append(new_order); logging.info(f"         +++ ORDER OPENED: Side={side}, Lot={final_lot:.2f}, Entry={entry_price:.5f}, SL={sl_price:.5f}, TP={tp2_price:.5f}")
                                 df_sim.loc[current_index, f"Order_Opened{label_suffix}"] = True; df_sim.loc[current_index, f"Lot_Size{label_suffix}"] = final_lot; df_sim.loc[current_index, f"Entry_Price_Actual{label_suffix}"] = entry_price; df_sim.loc[current_index, f"SL_Price_Actual{label_suffix}"] = sl_price; df_sim.loc[current_index, f"TP_Price_Actual{label_suffix}"] = tp2_price; df_sim.loc[current_index, f"ATR_At_Entry{label_suffix}"] = atr_entry; df_sim.loc[current_index, f"Equity_Before_Open{label_suffix}"] = current_equity_check; df_sim.loc[current_index, f"Is_Reentry{label_suffix}"] = is_reentry_trade; df_sim.loc[current_index, f"Forced_Entry{label_suffix}"] = is_forced_entry; df_sim.loc[current_index, f"Meta_Proba_TP{label_suffix}"] = meta_proba_tp_for_log; df_sim.loc[current_index, f"Meta2_Proba_TP{label_suffix}"] = meta2_proba_tp_for_log; df_sim.loc[current_index, f"Entry_Gain_Z{label_suffix}"] = current_gain_z if pd.notna(current_gain_z) else np.nan; df_sim.loc[current_index, f"Entry_MACD_Smooth{label_suffix}"] = current_macd_smooth if pd.notna(current_macd_smooth) else np.nan; df_sim.loc[current_index, f"Entry_Candle_Ratio{label_suffix}"] = getattr(row, "Candle_Ratio", np.nan); df_sim.loc[current_index, f"Entry_ADX{label_suffix}"] = getattr(row, "ADX", np.nan); df_sim.loc[current_index, f"Entry_Volatility_Index{label_suffix}"] = current_vol_index if pd.notna(current_vol_index) else np.nan; df_sim.loc[current_index, f"Active_Model{label_suffix}"] = selected_model_key; df_sim.loc[current_index, f"Model_Confidence{label_suffix}"] = model_confidence
@@ -2321,7 +2397,10 @@ def run_backtest_simulation_v34(
             logging.debug(
                 f"   End of Bar {current_bar_index}. Active orders for next bar: {len(active_orders)}"
             )
+            prev_cd = cd_state.cooldown_bars_remaining
             cd_state.cooldown_bars_remaining = step_soft_cooldown(cd_state.cooldown_bars_remaining)
+            if prev_cd > 0 and cd_state.cooldown_bars_remaining == 0:
+                logging.info(f"[OMS_Guardian] Soft cooldown ended at {now}. Entry checks resumed.")
             current_bar_index += 1
     # <<< [Patch C - Unified] End of try-except for main loop >>>
     except Exception as e_loop:

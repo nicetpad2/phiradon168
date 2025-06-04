@@ -1,3 +1,8 @@
+### 2025-08-20
+- [Patch v5.5.8] Improve OMS Guardian with breakeven and SL/TP validation
+- New/Updated unit tests added for oms guardian helpers
+- QA: pytest -q passed (292 tests)
+
 
 ### 2025-08-13
 
