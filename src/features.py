@@ -1288,3 +1288,17 @@ def calculate_ml_features(df):
     """Stubbed ML feature calculator."""
     return df
 
+
+# [Patch v5.5.7] Add simple volume spike detector
+def is_volume_spike(current_vol, avg_vol, multiplier=1.5):
+    """Return True if current volume exceeds multiplier * average volume."""
+    try:
+        cur = float(current_vol)
+        avg = float(avg_vol)
+    except Exception:
+        logging.debug("Volume Spike: invalid input values")
+        return False
+    if np.isnan(cur) or np.isnan(avg) or avg <= 0:
+        return False
+    return cur > avg * multiplier
+

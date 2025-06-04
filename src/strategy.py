@@ -64,6 +64,7 @@ from src.features import (
     check_feature_noise_shap,  # [Patch] เพิ่มการ import เพื่อตรวจสอบ SHAP noise
     rsi,
     macd,
+    is_volume_spike,
 )  # [Patch] นำเข้า Dynamic Feature Selection & Overfitting Helpers
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
@@ -1832,6 +1833,7 @@ def run_backtest_simulation_v34(
     label_suffix = f"_{label}"; logging.debug(f"Preparing DataFrame for simulation run: {label}")
     result_cols = ["Lot_Size", "Order_Opened", "Order_Closed_Time", "PnL_Realized_USD", "Commission_USD", "Spread_Cost_USD", "Slippage_USD", "Equity_Realistic", "Active_Order_Count", "Max_Drawdown_At_Point", "Exit_Reason_Actual", "Exit_Price_Actual", "PnL_Points_Actual", "M15_Trend_Zone", "M1_Entry_Signal", "Signal_Score", "Trade_Reason", "Session", "BE_Triggered_Time", "Is_Reentry", "Meta_Proba_TP", "Meta2_Proba_TP", "Forced_Entry", "Entry_Price_Actual", "SL_Price_Actual", "TP_Price_Actual", "ATR_At_Entry", "Equity_Before_Open", "Entry_Gain_Z", "Entry_MACD_Smooth", "Entry_Candle_Ratio", "Entry_ADX", "Entry_Volatility_Index", "Trade_Tag", "Risk_Mode", "Active_Model", "Model_Confidence"]
     df_sim = df_m1_segment_pd.copy()
+    volume_ma20 = df_sim['Volume'].rolling(20).mean() if 'Volume' in df_sim.columns else None
     for col_base in result_cols:
         col_name = f"{col_base}{label_suffix}"
         if col_name not in df_sim.columns:
@@ -2080,14 +2082,26 @@ def run_backtest_simulation_v34(
                     last_logged_signal_thresh = current_thresh
             else:
                 current_thresh = MIN_SIGNAL_SCORE_ENTRY
-            entry_allowed, block_reason_entry = is_entry_allowed(
-                row,
-                session_tag,
-                consecutive_losses,
-                side,
-                m15_trend,
-                signal_score_threshold=current_thresh,
-            );
+            volume_ok = True
+            block_reason_entry = "N/A"
+            if volume_ma20 is not None:
+                current_vol = pd.to_numeric(getattr(row, "Volume", np.nan), errors="coerce")
+                avg_vol = volume_ma20.iloc[current_bar_index]
+                volume_ok = is_volume_spike(current_vol, avg_vol)
+                if not volume_ok:
+                    logging.debug("      Entry blocked by Volume filter.")
+                    block_reason_entry = "LOW_VOLUME"
+            if volume_ok:
+                entry_allowed, block_reason_entry = is_entry_allowed(
+                    row,
+                    session_tag,
+                    consecutive_losses,
+                    side,
+                    m15_trend,
+                    signal_score_threshold=current_thresh,
+                )
+            else:
+                entry_allowed = False
             open_new_order = False; is_reentry_trade = False; is_forced_entry = False
             if entry_allowed:
                 if (side == "BUY" and final_m1_signal == "BUY") or (side == "SELL" and final_m1_signal == "SELL"):
