@@ -77,11 +77,15 @@ def real_train_func(
         feature_names = [f"f{i}" for i in range(X.shape[1])]
 
     df_X = pd.DataFrame(X, columns=feature_names)
+    # [Patch v5.4.5] Use stratified split when possible to avoid ROC AUC warnings
+    unique, counts = np.unique(y, return_counts=True)
+    stratify_arg = y if (len(unique) > 1 and counts.min() >= 2) else None
     X_train, X_test, y_train, y_test = train_test_split(
         df_X,
         y,
         test_size=0.25,
         random_state=seed,
+        stratify=stratify_arg,
     )
 
     if CatBoostClassifier:
@@ -104,7 +108,11 @@ def real_train_func(
         y_pred = model.predict(X_test)  # pragma: no cover - sklearn deterministic
 
     acc = accuracy_score(y_test, y_pred)
-    auc = roc_auc_score(y_test, y_prob)
+    # [Patch v5.4.5] Avoid UndefinedMetricWarning when only one class present
+    if len(np.unique(y_test)) > 1:
+        auc = roc_auc_score(y_test, y_prob)
+    else:
+        auc = float('nan')
 
     param_suffix = f"_l2{l2_leaf_reg}" if l2_leaf_reg is not None else ""
     model_filename = f"model_lr{learning_rate}_depth{depth}{param_suffix}"

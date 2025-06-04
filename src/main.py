@@ -833,7 +833,8 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             initial_trend_nan = df_m1_merged["Trend_Zone"].isna().sum();
             if initial_trend_nan > 0:
                 logging.debug(f"   Filling {initial_trend_nan} NaN values in Trend_Zone with 'NEUTRAL'.")
-                df_m1_merged["Trend_Zone"].fillna("NEUTRAL", inplace=True)
+                # [Patch v5.4.5] Avoid chained assignment warning when filling Trend_Zone
+                df_m1_merged["Trend_Zone"] = df_m1_merged["Trend_Zone"].fillna("NEUTRAL")
 
             logging.info("(Processing) กำลังคำนวณ M1 Entry Signals...");
             base_signal_cfg = ENTRY_CONFIG_PER_FOLD.get(0, {})
