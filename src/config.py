@@ -591,6 +591,15 @@ FUND_PROFILES = {
 }
 DEFAULT_FUND_NAME = "NORMAL"
 IB_COMMISSION_PER_LOT = 7.0
+
+from dataclasses import dataclass
+
+@dataclass
+class DefaultConfig:
+    OUTPUT_DIR: str = DEFAULT_LOG_DIR
+    DATA_FILE_PATH_M1: str = DEFAULT_CSV_PATH_M1
+    DATA_FILE_PATH_M15: str = DEFAULT_CSV_PATH_M15
+    DEFAULT_RISK_PER_TRADE: float = FUND_PROFILES.get(DEFAULT_FUND_NAME, {}).get("risk", 0.01)
 logging.info(f"Multi-Fund Mode: {MULTI_FUND_MODE}")
 if MULTI_FUND_MODE:
     logging.info(f"Fund Profiles: {list(FUND_PROFILES.keys())}")
