@@ -88,7 +88,9 @@ except NameError: SESSION_TIMES_UTC = {"Asia": (0, 8), "London": (7, 16), "NY": 
 # --- Indicator Calculation Functions ---
 def ema(series, period):
     if not isinstance(series, pd.Series): logging.error(f"EMA Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
-    if series.empty: logging.debug("EMA: Input series is empty, returning empty series."); return pd.Series(dtype='float32')
+    if series.empty:
+        logging.debug("EMA: Input series is empty, returning NaN-aligned series.")
+        return pd.Series(np.nan, index=series.index, dtype='float32')
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
     if series_numeric.empty: logging.warning("EMA: Series contains only NaN/Inf values or is empty after cleaning."); return pd.Series(np.nan, index=series.index, dtype='float32')
     try:
@@ -99,7 +101,9 @@ def ema(series, period):
 
 def sma(series, period):
     if not isinstance(series, pd.Series): logging.error(f"SMA Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
-    if series.empty: logging.debug("SMA: Input series is empty, returning empty series."); return pd.Series(dtype='float32')
+    if series.empty:
+        logging.debug("SMA: Input series is empty, returning NaN-aligned series.")
+        return pd.Series(np.nan, index=series.index, dtype='float32')
     if not isinstance(period, int) or period <= 0: logging.error(f"SMA calculation failed: Invalid period ({period})."); return pd.Series(np.nan, index=series.index, dtype='float32')  # pragma: no cover
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).fillna(0)
     if series_numeric.isnull().all(): logging.warning("SMA: Series contains only NaN values after numeric conversion and fill."); return pd.Series(np.nan, index=series.index, dtype='float32')  # pragma: no cover
@@ -121,7 +125,9 @@ def sma(series, period):
 def rsi(series, period=14):
     if not isinstance(series, pd.Series): logging.error(f"RSI Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
     # [Patch v4.8.12] Use module-level cache for RSIIndicator
-    if series.empty: logging.debug("RSI: Input series is empty, returning empty series."); return pd.Series(dtype='float32')
+    if series.empty:
+        logging.debug("RSI: Input series is empty, returning NaN-aligned series.")
+        return pd.Series(np.nan, index=series.index, dtype='float32')
     if 'ta' not in globals() or ta is None: logging.error("   (Error) RSI calculation failed: 'ta' library not loaded."); return pd.Series(np.nan, index=series.index, dtype='float32')  # pragma: no cover
     # Convert to numeric and drop NaN/inf values
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
@@ -130,9 +136,9 @@ def rsi(series, period=14):
             f"   (Warning) RSI calculation skipped: Not enough valid data points ({len(series_numeric)} < {period})."
         )
         return pd.Series(np.nan, index=series.index, dtype='float32')
-    # [Patch v5.1.10] Drop duplicate timestamps to avoid reindex errors
+    # [Patch v5.5.16] Consolidate duplicate timestamps using last occurrence
     if series_numeric.index.duplicated().any():
-        series_numeric = series_numeric[~series_numeric.index.duplicated(keep='first')]
+        series_numeric = series_numeric.groupby(series_numeric.index).last()
     try:
         cache_key = period
         if cache_key not in _rsi_cache:
@@ -280,7 +286,9 @@ def detect_macd_divergence(prices: pd.Series, macd_hist: pd.Series, lookback: in
 
 def rolling_zscore(series, window, min_periods=None):
     if not isinstance(series, pd.Series): logging.error(f"Rolling Z-Score Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
-    if series.empty: logging.debug("Rolling Z-Score: Input series empty, returning empty series."); return pd.Series(dtype='float32')
+    if series.empty:
+        logging.debug("Rolling Z-Score: Input series empty, returning NaN-aligned series.")
+        return pd.Series(np.nan, index=series.index, dtype='float32')
     if len(series) < 2: logging.debug("Rolling Z-Score: Input series too short (< 2), returning zeros."); return pd.Series(0.0, index=series.index, dtype='float32')
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).fillna(0)
     if series_numeric.isnull().all(): logging.warning("Rolling Z-Score: Series contains only NaN values after numeric conversion and fill, returning zeros."); return pd.Series(0.0, index=series.index, dtype='float32')
@@ -1366,4 +1374,25 @@ def is_volume_spike(current_vol, avg_vol, multiplier=1.5):
     if np.isnan(cur) or np.isnan(avg) or avg <= 0:
         return False
     return cur > avg * multiplier
+
+
+# [Patch v5.5.15] HDF5 helpers for large feature sets
+def save_features_hdf5(df, path):
+    """Save a DataFrame to an HDF5 file."""
+    try:
+        df.to_hdf(path, key="data", mode="w")
+        logging.info(f"(Features) Saved features to {path}")
+    except Exception as e:
+        logging.error(f"(Features) Failed to save features to {path}: {e}", exc_info=True)
+
+
+def load_features_hdf5(path):
+    """Load a DataFrame from an HDF5 file."""
+    try:
+        df = pd.read_hdf(path, key="data")
+        logging.info(f"(Features) Loaded features from {path}")
+        return df
+    except Exception as e:
+        logging.error(f"(Features) Failed to load features from {path}: {e}", exc_info=True)
+        return None
 
