@@ -19,6 +19,13 @@ from typing import Dict, List
 from src.cooldown_utils import (
     is_soft_cooldown_triggered,
     step_soft_cooldown,
+    CooldownState,
+    update_losses,
+    update_drawdown,
+    should_enter_cooldown,
+    enter_cooldown,
+    should_warn_drawdown,
+    should_warn_losses,
 )
 from itertools import product
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
@@ -1139,8 +1146,8 @@ DEFAULT_ENABLE_PARTIAL_TP = True
 DEFAULT_PARTIAL_TP_LEVELS = [{"r_multiple": 0.8, "close_pct": 0.5}]
 DEFAULT_PARTIAL_TP_MOVE_SL_TO_ENTRY = True
 DEFAULT_ENABLE_KILL_SWITCH = True
-DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.30
-DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 10
+DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.15
+DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 5
 DEFAULT_KILL_SWITCH_WARNING_MAX_DD_THRESHOLD = 0.25
 DEFAULT_KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD = 7
 DEFAULT_FUND_PROFILES = {"NORMAL": {"risk": 0.01, "mm_mode": "balanced"}}
@@ -1765,7 +1772,7 @@ def run_backtest_simulation_v34(
     last_trade_cooldown_end_time = defaultdict(lambda: min_ts); last_tp_time = defaultdict(lambda: min_ts)
     bars_since_last_trade = 0; kill_switch_activated = initial_kill_switch_state; consecutive_losses = initial_consecutive_losses
     forced_entry_consecutive_losses = 0; forced_entry_temporarily_disabled = False; last_n_full_trade_pnls = []
-    soft_cooldown_bars_remaining = 0
+    cd_state = CooldownState()
     SOFT_COOLDOWN_LOOKBACK = 10
     # [Patch v5.0.18] Increase loss threshold to reduce trade blocking
     SOFT_COOLDOWN_LOSS_COUNT = 6
@@ -1980,10 +1987,18 @@ def run_backtest_simulation_v34(
                         if not close_reason.startswith("Partial TP"):
                             trade_log_entry_base = {"period": label, "side": order_side, "entry_idx": order.get("entry_idx"), "entry_time": order.get("entry_time"), "entry_price": entry_price, "close_time": close_timestamp, "exit_price": exit_price, "exit_reason": close_reason, "lot": lot_size, "original_sl_price": order.get("original_sl_price", np.nan), "final_sl_price": order.get("sl_price"), "tp_price": order.get("tp_price", np.nan), "pnl_points_gross": pnl_points, "pnl_points_net_spread": pnl_points_net_spread, "pnl_usd_gross": raw_pnl_usd, "commission_usd": commission_usd, "spread_cost_usd": spread_cost_usd, "slippage_usd": slippage_usd, "pnl_usd_net": net_pnl_usd, "equity_before": equity_at_start_of_bar, "equity_after": equity_at_start_of_bar + current_equity_change_this_bar, "M15_Trend_Zone": order.get("m15_trend_zone", "N/A"), "Signal_Score": order.get("signal_score", np.nan), "Trade_Reason": order.get("trade_reason", "N/A"), "Session": order.get("session", "N/A"), "BE_Triggered_Time": order.get("be_triggered_time", pd.NaT), "Pattern_Label_Entry": order.get("pattern_label_entry", "N/A"), "Is_Reentry": order.get("is_reentry", False), "Is_Forced_Entry": order.get("is_forced_entry", False), "Meta_Proba_TP": order.get("meta_proba_tp", np.nan), "Meta2_Proba_TP": order.get("meta2_proba_tp", np.nan), "is_partial_tp": False, "partial_tp_level": len(order.get("partial_tp_processed_levels", set())), "atr_at_entry": atr_at_entry_log, "equity_before_open": equity_before_open_log, "entry_gain_z": entry_gain_z_log, "entry_macd_smooth": entry_macd_smooth_log, "entry_candle_ratio": entry_candle_ratio_log, "entry_adx": entry_adx_log, "entry_volatility_index": entry_volatility_index_log, "trade_tag": order_trade_tag, "risk_mode_at_entry": risk_mode_at_entry_log, "active_model_at_entry": active_model_at_entry, "model_confidence_at_entry": model_confidence_at_entry}
                             trade_log.append(trade_log_entry_base); trade_history_list.append(close_reason)
-                        if net_pnl_usd < 0: consecutive_losses += 1; logging.debug(f"      Loss recorded. Consecutive losses: {consecutive_losses}")
+                        if net_pnl_usd < 0:
+                            consecutive_losses += 1
+                            logging.debug(f"      Loss recorded. Consecutive losses: {consecutive_losses}")
+                            loss_pct = abs(net_pnl_usd) / max(equity_at_start_of_bar, 1e-9)
+                            if loss_pct >= 0.01:
+                                cd_state.cooldown_bars_remaining = enter_cooldown(cd_state, SOFT_COOLDOWN_LOOKBACK)
+                                logging.info("      (Soft Cooldown) Entered due to >1% loss")
+                            update_losses(cd_state, net_pnl_usd)
                         elif net_pnl_usd >= 0:
                             if consecutive_losses > 0: logging.debug(f"      Win/BE recorded. Resetting consecutive losses from {consecutive_losses} to 0.")
                             consecutive_losses = 0
+                            update_losses(cd_state, net_pnl_usd)
                         last_n_full_trade_pnls.append(net_pnl_usd)
                         if len(last_n_full_trade_pnls) > SOFT_COOLDOWN_LOOKBACK: last_n_full_trade_pnls.pop(0)
                         if order.get("is_forced_entry", False):
@@ -2111,21 +2126,21 @@ def run_backtest_simulation_v34(
                             can_open_order = False
                             block_reason = f"POS_MACD_SELL (MACD={current_macd_smooth:.3f})"
                 if can_open_order:
-                    # [Patch v5.x.x] Disable Soft Cooldown logic during testing
-                    pass
-                    # if soft_cooldown_bars_remaining > 0:
-                    #     can_open_order = False
-                    #     block_reason = f"SOFT_COOLDOWN_ACTIVE({soft_cooldown_bars_remaining})"
-                    # else:
-                    #     cooldown_triggered, recent_losses_count = is_soft_cooldown_triggered(
-                    #         last_n_full_trade_pnls, SOFT_COOLDOWN_LOOKBACK, SOFT_COOLDOWN_LOSS_COUNT
-                    #     )
-                    #     if cooldown_triggered:
-                    #         soft_cooldown_bars_remaining = SOFT_COOLDOWN_LOOKBACK
-                    #         can_open_order = False
-                    #         block_reason = (
-                    #             f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T ({recent_losses_count} losses)"
-                    #         )
+                    if cd_state.cooldown_bars_remaining > 0:
+                        can_open_order = False
+                        block_reason = f"SOFT_COOLDOWN_ACTIVE({cd_state.cooldown_bars_remaining})"
+                    else:
+                        cooldown_triggered, recent_losses_count = is_soft_cooldown_triggered(
+                            last_n_full_trade_pnls,
+                            SOFT_COOLDOWN_LOOKBACK,
+                            SOFT_COOLDOWN_LOSS_COUNT,
+                        )
+                        if cooldown_triggered:
+                            cd_state.cooldown_bars_remaining = SOFT_COOLDOWN_LOOKBACK
+                            can_open_order = False
+                            block_reason = (
+                                f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T ({recent_losses_count} losses)"
+                            )
                 if block_reason: logging.debug(f"      Block Reason: {block_reason}")
                 active_l1_model = None; active_l1_features = None; selected_model_key = "N/A"; model_confidence = np.nan; meta_proba_tp_for_log = np.nan
                 if can_open_order and USE_META_CLASSIFIER and callable(model_switcher_func):
@@ -2212,28 +2227,45 @@ def run_backtest_simulation_v34(
                 if not remaining_indices.empty: logging.info(f"      Marking remaining {len(remaining_indices)} bars with 0 equity due to Margin Call."); df_sim.loc[remaining_indices, f"Equity_Realistic{label_suffix}"] = 0.0; df_sim.loc[remaining_indices, f"Max_Drawdown_At_Point{label_suffix}"] = 1.0; df_sim.loc[remaining_indices, f"Active_Order_Count{label_suffix}"] = 0
                 break
 
-            peak_equity = max(peak_equity, equity); current_dd_final = (peak_equity - equity) / peak_equity if peak_equity > 1e-9 else 0.0; max_drawdown_pct = max(max_drawdown_pct, current_dd_final); logging.debug(f"   Drawdown: Current={current_dd_final*100:.2f}%, Max={max_drawdown_pct*100:.2f}%")
-            df_sim.loc[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = max_drawdown_pct; df_sim.loc[current_index, f"Equity_Realistic{label_suffix}"] = equity; df_sim.loc[current_index, f"Active_Order_Count{label_suffix}"] = len(next_active_orders); equity_history[current_index] = equity
+            peak_equity = max(peak_equity, equity)
+            current_dd_final = (peak_equity - equity) / peak_equity if peak_equity > 1e-9 else 0.0
+            max_drawdown_pct = max(max_drawdown_pct, current_dd_final)
+            logging.debug(f"   Drawdown: Current={current_dd_final*100:.2f}%, Max={max_drawdown_pct*100:.2f}%")
+            update_drawdown(cd_state, current_dd_final)
+            df_sim.loc[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = max_drawdown_pct
+            df_sim.loc[current_index, f"Equity_Realistic{label_suffix}"] = equity
+            df_sim.loc[current_index, f"Active_Order_Count{label_suffix}"] = len(next_active_orders)
+            equity_history[current_index] = equity
 
             if enable_kill_switch and not kill_switch_activated:
-                logging.debug(f"   Checking Kill Switch: DD={current_dd_final*100:.2f}% (Warn>{KILL_SWITCH_WARNING_MAX_DD_THRESHOLD*100:.0f}%, Kill>{KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%), Losses={consecutive_losses} (Warn>{KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD}, Kill>{kill_switch_consecutive_losses_config})")
+                logging.debug(
+                    f"   Checking Kill Switch: DD={current_dd_final*100:.2f}% (Warn>{KILL_SWITCH_WARNING_MAX_DD_THRESHOLD*100:.0f}%, Kill>{KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%), Losses={consecutive_losses} (Warn>{KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD}, Kill>{kill_switch_consecutive_losses_config})"
+                )
                 if current_dd_final > KILL_SWITCH_MAX_DD_THRESHOLD:
                     logging.warning("[Patch] Kill Switch triggered due to drawdown.")
-                    logging.critical(f"(CRITICAL) KILL SWITCH ACTIVATED (Max DD): {label} at {now}. Drawdown {current_dd_final*100:.2f}% > {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%. Stopping simulation loop.")
+                    logging.critical(
+                        f"(CRITICAL) KILL SWITCH ACTIVATED (Max DD): {label} at {now}. Drawdown {current_dd_final*100:.2f}% > {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%. Stopping simulation loop."
+                    )
                     kill_switch_activated = True
                     kill_switch_trigger_time = now
                     break
                 elif consecutive_losses >= kill_switch_consecutive_losses_config:
                     logging.warning("[Patch] Kill Switch triggered due to consecutive losses.")
-                    logging.critical(f"     (CRITICAL) KILL SWITCH ACTIVATED (Consecutive Losses): {label} at {now}. Losses: {consecutive_losses} >= {kill_switch_consecutive_losses_config}. Stopping simulation loop.")
+                    logging.critical(
+                        f"     (CRITICAL) KILL SWITCH ACTIVATED (Consecutive Losses): {label} at {now}. Losses: {consecutive_losses} >= {kill_switch_consecutive_losses_config}. Stopping simulation loop."
+                    )
                     kill_switch_activated = True
                     kill_switch_trigger_time = now
                     break
                 else:
-                    if current_dd_final > KILL_SWITCH_WARNING_MAX_DD_THRESHOLD:
-                        logging.warning(f"(Warning) Drawdown {current_dd_final*100:.2f}% ยังไม่ถึง threshold {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%")
-                    if consecutive_losses >= KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD:
-                        logging.warning(f"(Warning) Consecutive losses = {consecutive_losses}, ยังไม่ถึง threshold สำหรับ Kill Switch.")
+                    if should_warn_drawdown(cd_state, KILL_SWITCH_WARNING_MAX_DD_THRESHOLD):
+                        logging.warning(
+                            f"(Warning) Drawdown {current_dd_final*100:.2f}% ยังไม่ถึง threshold {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%"
+                        )
+                    if should_warn_losses(cd_state, KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD):
+                        logging.warning(
+                            f"(Warning) Consecutive losses = {consecutive_losses}, ยังไม่ถึง threshold สำหรับ Kill Switch."
+                        )
 
             previous_risk_mode = current_risk_mode
             if consecutive_losses >= recovery_mode_consecutive_losses_config:
@@ -2248,7 +2280,7 @@ def run_backtest_simulation_v34(
             logging.debug(
                 f"   End of Bar {current_bar_index}. Active orders for next bar: {len(active_orders)}"
             )
-            soft_cooldown_bars_remaining = step_soft_cooldown(soft_cooldown_bars_remaining)
+            cd_state.cooldown_bars_remaining = step_soft_cooldown(cd_state.cooldown_bars_remaining)
             current_bar_index += 1
     # <<< [Patch C - Unified] End of try-except for main loop >>>
     except Exception as e_loop:
@@ -2423,8 +2455,8 @@ DEFAULT_ENABLE_PARTIAL_TP = True
 DEFAULT_PARTIAL_TP_LEVELS = []
 DEFAULT_PARTIAL_TP_MOVE_SL_TO_ENTRY = True
 DEFAULT_ENABLE_KILL_SWITCH = True
-DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.30
-DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 10
+DEFAULT_KILL_SWITCH_MAX_DD_THRESHOLD = 0.15
+DEFAULT_KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 5
 DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES = 4
 DEFAULT_min_equity_threshold_pct = 0.70
 DEFAULT_DYNAMIC_GAINZ_DRIFT_THRESHOLD = 0.10
