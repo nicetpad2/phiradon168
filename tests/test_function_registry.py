@@ -30,14 +30,14 @@ FUNCTIONS_INFO = [
 
 
 
-# [Patch v5.4.7] Updated expected line numbers
-    ("src/main.py", "parse_arguments", 1851),
-    ("src/main.py", "setup_output_directory", 1856),
-    ("src/main.py", "load_features_from_file", 1861),
-    ("src/main.py", "drop_nan_rows", 1866),
-    ("src/main.py", "convert_to_float32", 1871),
-    ("src/main.py", "run_initial_backtest", 1876),
-    ("src/main.py", "save_final_data", 1881),
+# [Patch v5.5.1] Updated expected line numbers
+    ("src/main.py", "parse_arguments", 1857),
+    ("src/main.py", "setup_output_directory", 1862),
+    ("src/main.py", "load_features_from_file", 1867),
+    ("src/main.py", "drop_nan_rows", 1872),
+    ("src/main.py", "convert_to_float32", 1877),
+    ("src/main.py", "run_initial_backtest", 1882),
+    ("src/main.py", "save_final_data", 1887),
 
 
 
