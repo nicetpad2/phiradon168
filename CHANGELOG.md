@@ -1,6 +1,8 @@
 ### 2025-08-25
-- [Patch v5.5.15] Add pipeline config and GPU detection utilities
-- New/Updated unit tests added for tests.test_hardware_utils, tests.test_pipeline_config, tests.test_pipeline_error
+
+- [Patch v5.5.15] Improve data_loader timezone handling and add data quality checks
+- New/Updated unit tests added for data_loader
+
 - QA: pytest -q passed
 
 ### 2025-08-24

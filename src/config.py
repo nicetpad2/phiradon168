@@ -568,6 +568,18 @@ pattern_label_map = {
 }
 logging.debug(f"Pattern Label Map: {pattern_label_map}")
 
+# Default timezone used when localizing naive datetime values
+DEFAULT_NAIVE_TZ = "UTC"
+
+# Default data types for CSV loading to reduce memory usage
+DEFAULT_DTYPE_MAP = {
+    "Open": "float32",
+    "High": "float32",
+    "Low": "float32",
+    "Close": "float32",
+    "Volume": "int32",
+}
+
 # --- Multi-Fund & IB Config ---
 MULTI_FUND_MODE = True
 FUND_PROFILES = {
