@@ -67,7 +67,9 @@ from src.utils import (
     export_trade_log,
     download_model_if_missing,
     download_feature_list_if_missing,
+    get_env_float,
 )
+from sklearn.model_selection import TimeSeriesSplit  # [Patch v5.5.4] Needed for equity plot fold boundaries
 import pandas as pd
 import numpy as np
 import shutil # For file moving in pipeline mode
@@ -1316,6 +1318,8 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                             logging.error(f"   (Error) Failed to export QA trade log: {e_exp}", exc_info=True)
 
                     try:
+                        # [Patch v5.5.4] Initialize TimeSeriesSplit for equity curve boundaries
+                        tscv = TimeSeriesSplit(n_splits=N_WALK_FORWARD_SPLITS)
                         fold_boundaries = [df_m1_final.index.min()] + [df_m1_final.iloc[test_index].index.max() for _, test_index in tscv.split(df_m1_final)]
                         eq_buy_hist_fund_plot_dict = all_funds_equity_histories[fund_name].get(f"Fold0_BUY_{fund_name}", {})
                         eq_sell_hist_fund_plot_dict = all_funds_equity_histories[fund_name].get(f"Fold0_SELL_{fund_name}", {})

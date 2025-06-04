@@ -28,6 +28,7 @@ from src.config import (
     USE_MACD_SIGNALS,
     USE_RSI_SIGNALS,
 )
+from src.utils.env_utils import get_env_float
 
 # อ่านเวอร์ชันจากไฟล์ VERSION
 VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
