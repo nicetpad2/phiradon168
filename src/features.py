@@ -213,6 +213,55 @@ def macd(series, window_slow=26, window_fast=12, window_sign=9):
         return (macd_line_final, macd_signal_final, macd_diff_final)
     except Exception as e: logging.error(f"   (Error) MACD calculation error: {e}.", exc_info=True); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
 
+def detect_macd_divergence(prices: pd.Series, macd_hist: pd.Series, lookback: int = 20) -> str:
+    """ตรวจจับภาวะ Divergence อย่างง่ายระหว่างราคากับ MACD histogram
+
+    Parameters
+    ----------
+    prices : pd.Series
+        ราคาปิด
+    macd_hist : pd.Series
+        ค่า MACD histogram
+    lookback : int, optional
+        จำนวนแท่งย้อนหลังที่ใช้พิจารณา, ค่าเริ่มต้น 20
+
+    Returns
+    -------
+    str
+        "bull" หากพบ Bullish Divergence, "bear" หากพบ Bearish Divergence, ไม่เช่นนั้นคืน "none"
+    """
+
+    if not isinstance(prices, pd.Series) or not isinstance(macd_hist, pd.Series):
+        logging.error("detect_macd_divergence: inputs must be pandas Series")
+        raise TypeError("Inputs must be pandas Series")
+
+    if prices.empty or macd_hist.empty:
+        return "none"
+
+    p = pd.to_numeric(prices, errors="coerce").fillna(method="ffill").fillna(method="bfill")
+    m = pd.to_numeric(macd_hist, errors="coerce").fillna(method="ffill").fillna(method="bfill")
+
+    look = max(3, min(len(p), lookback))
+    p_sub = p.iloc[-look:]
+    m_sub = m.reindex(p_sub.index)
+
+    lows = p_sub[(p_sub.shift(1) > p_sub) & (p_sub.shift(-1) > p_sub)]
+    highs = p_sub[(p_sub.shift(1) < p_sub) & (p_sub.shift(-1) < p_sub)]
+
+    if len(lows) >= 2:
+        pl1, pl2 = lows.iloc[-2], lows.iloc[-1]
+        ml1, ml2 = m_sub.loc[lows.index[-2]], m_sub.loc[lows.index[-1]]
+        if pl2 < pl1 and ml2 > ml1:
+            return "bull"
+
+    if len(highs) >= 2:
+        ph1, ph2 = highs.iloc[-2], highs.iloc[-1]
+        mh1, mh2 = m_sub.loc[highs.index[-2]], m_sub.loc[highs.index[-1]]
+        if ph2 > ph1 and mh2 < mh1:
+            return "bear"
+
+    return "none"
+
 def rolling_zscore(series, window, min_periods=None):
     if not isinstance(series, pd.Series): logging.error(f"Rolling Z-Score Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
     if series.empty: logging.debug("Rolling Z-Score: Input series empty, returning empty series."); return pd.Series(dtype='float32')

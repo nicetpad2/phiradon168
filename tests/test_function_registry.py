@@ -18,12 +18,12 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "load_raw_data_m1", 898),
     ("src/data_loader.py", "load_raw_data_m15", 909),
     ("src/data_loader.py", "write_test_file", 914),
-    ("src/features.py", "calculate_trend_zone", 1264),
-    ("src/features.py", "tag_price_structure_patterns", 234),
-    ("src/features.py", "create_session_column", 1271),
-    ("src/features.py", "fill_missing_feature_values", 1277),
-    ("src/features.py", "load_feature_config", 1282),
-    ("src/features.py", "calculate_ml_features", 1287),
+    ("src/features.py", "calculate_trend_zone", 1313),
+    ("src/features.py", "tag_price_structure_patterns", 286),
+    ("src/features.py", "create_session_column", 1320),
+    ("src/features.py", "fill_missing_feature_values", 1326),
+    ("src/features.py", "load_feature_config", 1331),
+    ("src/features.py", "calculate_ml_features", 1336),
 
 
 
@@ -56,14 +56,13 @@ FUNCTIONS_INFO = [
 
 
 
-
-    ("src/strategy.py", "run_backtest_simulation_v34", 1726),
-    ("src/strategy.py", "initialize_time_series_split", 4110),
-    ("src/strategy.py", "calculate_forced_entry_logic", 4113),
-    ("src/strategy.py", "apply_kill_switch", 4116),
-    ("src/strategy.py", "log_trade", 4119),
-    ("src/strategy.py", "calculate_metrics", 2849),
-    ("src/strategy.py", "aggregate_fold_results", 4122),
+    ("src/strategy.py", "run_backtest_simulation_v34", 1741),
+    ("src/strategy.py", "initialize_time_series_split", 4134),
+    ("src/strategy.py", "calculate_forced_entry_logic", 4137),
+    ("src/strategy.py", "apply_kill_switch", 4140),
+    ("src/strategy.py", "log_trade", 4143),
+    ("src/strategy.py", "calculate_metrics", 2871),
+    ("src/strategy.py", "aggregate_fold_results", 4146),
 
 
 
