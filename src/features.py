@@ -1376,10 +1376,15 @@ def is_volume_spike(current_vol, avg_vol, multiplier=1.5):
     return cur > avg * multiplier
 
 
-# [Patch v5.5.15] HDF5 helpers for large feature sets
+# [Patch v5.6.2] HDF5 helpers fallback to pickle when PyTables missing
 def save_features_hdf5(df, path):
-    """Save a DataFrame to an HDF5 file."""
+    """Save a DataFrame to an HDF5 file or pickle if PyTables is unavailable."""
     try:
+        import importlib.util
+        if importlib.util.find_spec("tables") is None:
+            df.to_pickle(path)
+            logging.warning("(Warning) PyTables not installed, saved as pickle")
+            return
         df.to_hdf(path, key="data", mode="w")
         logging.info(f"(Features) Saved features to {path}")
     except Exception as e:
@@ -1387,8 +1392,13 @@ def save_features_hdf5(df, path):
 
 
 def load_features_hdf5(path):
-    """Load a DataFrame from an HDF5 file."""
+    """Load a DataFrame from an HDF5 file or pickle as a fallback."""
     try:
+        import importlib.util
+        if importlib.util.find_spec("tables") is None:
+            df = pd.read_pickle(path)
+            logging.warning("(Warning) PyTables not installed, loaded from pickle")
+            return df
         df = pd.read_hdf(path, key="data")
         logging.info(f"(Features) Loaded features from {path}")
         return df

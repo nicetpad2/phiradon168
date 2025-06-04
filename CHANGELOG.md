@@ -1,4 +1,9 @@
 #
+### 2025-08-29
+- [Patch v5.6.2] Remove PyTables dependency for feature persistence
+- Fix FutureWarning in check_data_quality
+- New/Updated unit tests added for tests.test_features_hdf5
+- QA: pytest -q passed (347 tests)
 ### 2025-08-28
 - [Patch v5.6.1] Improve model utilities
 - New/Updated unit tests added for tests.test_model_utils_new
