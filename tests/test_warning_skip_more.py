@@ -54,8 +54,8 @@ def test_get_session_tag_outside_sessions_returns_na(caplog):
     ts = pd.Timestamp('2024-01-01 21:00', tz='UTC')
     with caplog.at_level(logging.WARNING):
         tag = features.get_session_tag(ts)
-    assert tag == 'N/A'
-    assert any('out of all session ranges' in msg for msg in caplog.messages)
+    assert tag == 'NY'
+    assert not any('out of all session ranges' in msg for msg in caplog.messages)
 
 
 def test_engineer_m1_features_with_lag_config_adds_columns():

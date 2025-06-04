@@ -65,29 +65,33 @@ def get_session_tag(
         ts_utc = timestamp.tz_convert('UTC')
         sessions = []
         if session_tz_map:
+            # ถ้ามี timezone map เจาะจงแต่ละ session
             for name, (tz_name, start, end) in session_tz_map.items():
                 hour = ts_utc.tz_convert(tz_name).hour
                 if start <= end:
-                    if start <= hour < end:
+                    # แก้ boundary: ให้รวม end ด้วย (<=) แทน < end
+                    if start <= hour <= end:
                         sessions.append(name)
                 else:
-                    if hour >= start or hour < end:
+                    # wrap-around session เช่น Asia (22 -> 8)
+                    # เปลี่ยน < end เป็น <= end เพื่อรวมชั่วโมง end ด้วย
+                    if hour >= start or hour <= end:
                         sessions.append(name)
         else:
             hour = ts_utc.hour
             for name, (start, end) in session_times_utc_local.items():
                 if start <= end:
-                    if start <= hour < end:
+                    if start <= hour <= end:
                         sessions.append(name)
                 else:
-                    if hour >= start or hour < end:
+                    if hour >= start or hour <= end:
                         sessions.append(name)
         if not sessions:
             hour_key = ts_utc.floor('h')
+            # ลดการ spam warning: ถ้า warn_once=True ให้เตือนแค่ครั้งเดียวสำหรับค่าชั่วโมงนั้น
             if not warn_once or hour_key not in _WARNED_OUT_OF_RANGE:
-                logger.warning(
-                    f"Timestamp {timestamp} is out of all session ranges"
-                )
+                # (1) **ถ้าต้องการปิด warning* ให้ comment บรรทัดต่อไปนี้ออก***
+                logger.warning(f"Timestamp {timestamp} is out of all session ranges")
                 if warn_once:
                     _WARNED_OUT_OF_RANGE.add(hour_key)
             return "N/A"
