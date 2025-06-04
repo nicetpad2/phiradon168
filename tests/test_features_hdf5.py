@@ -1,9 +1,6 @@
-import importlib.util
 import pandas as pd
 import pytest
 from src.features import save_features_hdf5, load_features_hdf5
-
-pytest.importorskip("tables")
 
 
 def test_features_hdf5_roundtrip(tmp_path):

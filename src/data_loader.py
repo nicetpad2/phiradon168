@@ -1041,7 +1041,13 @@ def check_data_quality(df, dropna=True, fillna_method=None, subset_dupes=None):
             logging.warning(f"   (Warning) คอลัมน์ '{col}' มี NaN {pct:.1%}")
 
     if fillna_method:
-        df.fillna(method=fillna_method, inplace=True)
+        # [Patch v5.6.2] Replace deprecated fillna(method=...) usage
+        if fillna_method.lower() == "ffill":
+            df.ffill(inplace=True)
+        elif fillna_method.lower() == "bfill":
+            df.bfill(inplace=True)
+        else:
+            df.fillna(method=fillna_method, inplace=True)
     elif dropna:
         df.dropna(inplace=True)
 
