@@ -463,3 +463,8 @@
 - [Patch v5.3.8] Improve logger propagation and refine is_colab detection
 - New/Updated unit tests added for src.config and tests
 - QA: pytest -q passed (219 tests)
+
+### 2025-06-04
+- [Patch v5.3.9] Adaptive signal score entry threshold with rolling quantile
+- New/Updated unit tests added for src.strategy and tests.test_adaptive_signal_threshold
+- QA: pytest -q passed (224 tests)
