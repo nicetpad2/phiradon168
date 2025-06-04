@@ -147,6 +147,12 @@
 
 ---
 
+### Log_Analysis_Helper
+- **Main Role:** Trade Log Analysis
+- **Key Responsibilities:**
+  - Parse raw trade logs and compute hourly win rates
+  - Provide utilities for risk sizing and TSL statistics
+
 ## 📌 Process & Collaboration Guidelines
 
 1. **Branch & Commit Naming**  
