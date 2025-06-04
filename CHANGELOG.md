@@ -12,6 +12,11 @@
 - QA: pytest -q passed
 
 ### 2025-08-14
+- [Patch v5.5.7] Implement volume spike filter
+- New/Updated unit tests added for volume spike and registry
+- QA: pytest -q passed
+
+### 2025-08-14
 - [Patch v5.5.7] Add MACD divergence detection and filter for buy signals
 - New/Updated unit tests added for features and strategy signals
 - QA: pytest -q passed
