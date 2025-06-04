@@ -12,6 +12,8 @@ def parse_args(args=None):
         choices=["preprocess", "sweep", "threshold", "backtest", "report", "all"],
         default="all",
     )
+    parser.add_argument("--profile", action="store_true", help="Profile backtest stage")
+    parser.add_argument("--output-file", default="backtest_profile.prof", help="Profiling output file")
     return parser.parse_args(args)
 
 
@@ -65,6 +67,11 @@ def run_all():
 def main(args=None):
     parsed = parse_args(args)
     stage = parsed.stage
+    if parsed.profile and stage == "backtest":
+        import profile_backtest
+
+        profile_backtest.run_profile(run_backtest, parsed.output_file)
+        return
     if stage == "preprocess":
         run_preprocess()
     elif stage == "sweep":

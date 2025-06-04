@@ -120,13 +120,18 @@ def test_profile_cli_output_file(tmp_path, monkeypatch):
 
     monkeypatch.setattr(profile_backtest, 'run_backtest_simulation_v34', lambda *a, **k: None)
 
-    out = tmp_path / 'stats.txt'
-    monkeypatch.setattr(sys, 'argv', ['profile_backtest.py', str(m1), '--rows', '2', '--limit', '5', '--output', str(out)])
+    out_txt = tmp_path / 'stats.txt'
+    out_prof = tmp_path / 'run.prof'
+    monkeypatch.setattr(sys, 'argv', [
+        'profile_backtest.py', str(m1), '--rows', '2', '--limit', '5',
+        '--output', str(out_txt), '--output-file', str(out_prof)
+    ])
 
     profile_backtest.profile_from_cli()
 
-    assert out.is_file()
-    text = out.read_text()
+    assert out_txt.is_file()
+    assert out_prof.is_file()
+    text = out_txt.read_text()
     assert 'ncalls' in text
 
 
@@ -202,16 +207,22 @@ def test_profile_cli_fund_and_train(monkeypatch, tmp_path):
     monkeypatch.setattr(profile_backtest, 'real_train_func', dummy_train)
 
     out = tmp_path / 'stats.txt'
+    prof = tmp_path / 'cli.prof'
     train_dir = tmp_path / 'models'
     monkeypatch.setattr(
         sys,
         'argv',
-        ['profile_backtest.py', str(m1), '--rows', '2', '--limit', '5', '--output', str(out), '--fund', 'SPIKE', '--train', '--train-output', str(train_dir)],
+        [
+            'profile_backtest.py', str(m1), '--rows', '2', '--limit', '5',
+            '--output', str(out), '--output-file', str(prof), '--fund', 'SPIKE',
+            '--train', '--train-output', str(train_dir)
+        ],
     )
 
     profile_backtest.profile_from_cli()
 
     assert out.is_file()
+    assert prof.is_file()
     assert called['out'] == str(train_dir)
 
 
@@ -221,7 +232,10 @@ def test_cli_console_level(monkeypatch, tmp_path):
     m1 = tmp_path / 'mini_M1.csv'
     df.to_csv(m1, index=False)
     monkeypatch.setattr(profile_backtest, 'run_backtest_simulation_v34', lambda *a, **k: None)
-    monkeypatch.setattr(sys, 'argv', ['profile_backtest.py', str(m1), '--rows', '2', '--console_level', 'WARNING'])
+    monkeypatch.setattr(sys, 'argv', [
+        'profile_backtest.py', str(m1), '--rows', '2', '--console_level', 'WARNING',
+        '--output-file', str(tmp_path / 'console.prof')
+    ])
     profile_backtest.profile_from_cli()
     for h in logging.getLogger().handlers:
         if isinstance(h, logging.StreamHandler):
