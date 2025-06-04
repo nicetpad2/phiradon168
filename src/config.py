@@ -58,6 +58,9 @@ LOG_FILENAME = f'gold_ai_v{__version__}_qa.log'
 
 # ตั้งค่า Logger กลางเพื่อให้โมดูลอื่น ๆ ใช้งานร่วมกัน
 logger = logging.getLogger('NiceGold')
+# [Patch v5.5.6] Force COMPACT_LOG when running under pytest
+if os.environ.get('PYTEST_CURRENT_TEST'):
+    os.environ['COMPACT_LOG'] = '1'
 # [Patch v5.4.1] รองรับโหมด COMPACT_LOG เพื่อลดข้อความที่แสดงบนหน้าจอ
 _compact_log = os.environ.get('COMPACT_LOG', '0') == '1'
 _log_level_name = 'WARNING' if _compact_log else os.environ.get('LOG_LEVEL', 'INFO').upper()

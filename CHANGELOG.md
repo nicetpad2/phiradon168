@@ -1,4 +1,9 @@
 
+### 2025-08-12
+- [Patch v5.5.6] Force COMPACT_LOG in tests, add summary
+- New/Updated unit tests added for tests.conftest
+- QA: pytest -q passed (277 tests)
+
 ### 2025-08-11
 - [Patch v5.5.4] Fix SHAP lag feature evaluation dataset
 - QA: pytest -q passed (265 tests)

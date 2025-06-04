@@ -1,5 +1,10 @@
+import os
+import logging
 import pytest
 import pandas as pd
+
+os.environ.setdefault("COMPACT_LOG", "1")
+logging.getLogger().setLevel(logging.WARNING)
 
 @pytest.fixture
 def simple_m1_df():
@@ -14,3 +19,12 @@ def simple_m1_df():
     df = pd.DataFrame(data)
     df.set_index('Datetime', inplace=True)
     return df
+
+
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    passed = len(terminalreporter.stats.get('passed', []))
+    failed = len(terminalreporter.stats.get('failed', []))
+    warnings_count = len(terminalreporter.stats.get('warnings', []))
+    terminalreporter.write_line(
+        f"[SUMMARY] Passed:{passed} Failed:{failed} Warnings:{warnings_count}"
+    )
