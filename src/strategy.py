@@ -1897,9 +1897,9 @@ def run_backtest_simulation_v34(
     bars_since_last_trade = 0; kill_switch_activated = initial_kill_switch_state; consecutive_losses = initial_consecutive_losses
     forced_entry_consecutive_losses = 0; forced_entry_temporarily_disabled = False; last_n_full_trade_pnls = []
     cd_state = CooldownState()
-    SOFT_COOLDOWN_LOOKBACK = 10
-    # [Patch v5.0.18] Increase loss threshold to reduce trade blocking
-    SOFT_COOLDOWN_LOSS_COUNT = 6
+    SOFT_COOLDOWN_LOOKBACK = 15
+    # [Patch v5.6.5] Relax soft cooldown by looking back further
+    SOFT_COOLDOWN_LOSS_COUNT = 8
     # [Patch v5.0.18] MACD entry thresholds to allow mild counter-trend trades
     MACD_NEG_THRESHOLD_BUY = -0.05
     MACD_POS_THRESHOLD_SELL = 0.05
@@ -2286,7 +2286,9 @@ def run_backtest_simulation_v34(
                             SOFT_COOLDOWN_LOSS_COUNT,
                         )
                         if cooldown_triggered:
-                            cd_state.cooldown_bars_remaining = SOFT_COOLDOWN_LOOKBACK
+                            cd_state.cooldown_bars_remaining = enter_cooldown(
+                                cd_state, SOFT_COOLDOWN_LOOKBACK
+                            )
                             can_open_order = False
                             block_reason = (
                                 f"SOFT_COOLDOWN_{SOFT_COOLDOWN_LOSS_COUNT}L{SOFT_COOLDOWN_LOOKBACK}T ({recent_losses_count} losses)"

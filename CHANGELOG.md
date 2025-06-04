@@ -1,9 +1,9 @@
 ### 2025-09-02
 
-- [Patch v5.6.5] Add momentum and wave pattern feature helpers
-- New/Updated unit tests added for tests.test_features_more
+- [Patch v5.6.5] Relax soft cooldown conditions and shorten cooldown duration
+- New/Updated unit tests added for cooldown_utils and strategy
+- QA: pytest -q passed (351 tests)
 
-- QA: pytest -q passed
 
 ### 2025-09-01
 - [Patch v5.6.4] Fix boundary logic for session tagging and reduce duplicate warnings
