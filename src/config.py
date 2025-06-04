@@ -743,6 +743,10 @@ SIGNIFICANCE_LEVEL = 0.05       # (Not directly used, kept for potential analysi
 M1_FEATURES_FOR_DRIFT = []      # Will be populated in clean_m1_data (Part 5)
 MAX_NAT_RATIO_THRESHOLD = 0.05  # Max allowed NaT ratio after datetime parsing
 
+# Drift override thresholds
+RSI_DRIFT_OVERRIDE_THRESHOLD = 0.65  # Threshold to ignore RSI scoring when drift is high
+ATR_DRIFT_OVERRIDE_THRESHOLD = 0.25  # Threshold to enable gain-based exit on high ATR drift
+
 # --- Dynamic Adjustment Configuration ---
 logging.debug("Setting Dynamic Adjustment Configuration...")
 DYNAMIC_GAINZ_DRIFT_THRESHOLD = 0.10 # Wasserstein threshold on Gain_Z to trigger adjustment

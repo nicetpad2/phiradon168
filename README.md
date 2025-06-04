@@ -33,6 +33,11 @@ COMPACT_LOG=1 python ProjectP.py
 ค่าดังกล่าวจะปรับระดับ log เป็น `WARNING` อัตโนมัติ ทำให้เห็นเฉพาะ
 ข้อความสำคัญและผลลัพธ์สรุปท้ายรัน
 
+## การปรับค่า Drift Override
+สามารถกำหนดระดับ Drift ที่จะปิดการใช้คะแนน RSI ได้ที่ตัวแปร
+`RSI_DRIFT_OVERRIDE_THRESHOLD` ในไฟล์ `src/config.py` (ค่าเริ่มต้น 0.65)
+หาก Drift ของ RSI สูงเกินค่านี้ ระบบจะไม่ใช้เงื่อนไข RSI ในการคำนวณสัญญาณ
+
 ## หมายเหตุการใช้งาน
 * ฟังก์ชัน `safe_set_datetime` ภายใน `data_loader.py` ช่วยแก้ปัญหา
   `FutureWarning` เมื่อต้องตั้งค่า datetime ใน DataFrame

@@ -2426,6 +2426,8 @@ DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES = 4
 DEFAULT_min_equity_threshold_pct = 0.70
 DEFAULT_DYNAMIC_GAINZ_DRIFT_THRESHOLD = 0.10
 DEFAULT_DYNAMIC_GAINZ_ADJUSTMENT = 0.1
+DEFAULT_RSI_DRIFT_OVERRIDE_THRESHOLD = 0.65
+DEFAULT_ATR_DRIFT_OVERRIDE_THRESHOLD = 0.25
 
 try:
     DRIFT_WASSERSTEIN_THRESHOLD
@@ -2503,6 +2505,14 @@ try:
     DYNAMIC_GAINZ_ADJUSTMENT
 except NameError:
     DYNAMIC_GAINZ_ADJUSTMENT = DEFAULT_DYNAMIC_GAINZ_ADJUSTMENT
+try:
+    RSI_DRIFT_OVERRIDE_THRESHOLD
+except NameError:
+    RSI_DRIFT_OVERRIDE_THRESHOLD = DEFAULT_RSI_DRIFT_OVERRIDE_THRESHOLD
+try:
+    ATR_DRIFT_OVERRIDE_THRESHOLD
+except NameError:
+    ATR_DRIFT_OVERRIDE_THRESHOLD = DEFAULT_ATR_DRIFT_OVERRIDE_THRESHOLD
 
 # --- Drift Observer Class ---
 class DriftObserver:
@@ -3545,8 +3555,8 @@ def run_all_folds_with_threshold(
             if not isinstance(rsi_drift_score, (int, float, np.number)) or pd.isna(rsi_drift_score): rsi_drift_score = 0.0
             if not isinstance(atr_drift_score, (int, float, np.number)) or pd.isna(atr_drift_score): atr_drift_score = 0.0
 
-            rsi_drift_override_threshold = 0.3
-            atr_drift_override_threshold = 0.25
+            rsi_drift_override_threshold = RSI_DRIFT_OVERRIDE_THRESHOLD
+            atr_drift_override_threshold = ATR_DRIFT_OVERRIDE_THRESHOLD
 
             current_cfg['ignore_rsi_scoring'] = False
             current_cfg['use_gain_based_exit'] = False

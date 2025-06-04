@@ -584,8 +584,10 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed
 
 ### 2025-06-07
-- [Patch v5.6.0] Download feature lists when missing
-- New/Updated unit tests added for ensure_model_files_exist
+
+- [Patch v5.5.4] Add configurable RSI drift override threshold
+- New/Updated unit tests added for config and registry
+
 - QA: pytest -q passed (266 tests)
 
 
