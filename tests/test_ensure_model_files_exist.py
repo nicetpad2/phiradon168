@@ -74,3 +74,20 @@ def test_placeholder_when_data_missing(tmp_path, monkeypatch):
     assert (out_dir / 'features_spike.json').exists()
     assert (out_dir / 'meta_classifier_cluster.pkl').exists()
     assert (out_dir / 'features_cluster.json').exists()
+
+
+def test_download_feature_lists(tmp_path, monkeypatch):
+    out_dir = tmp_path / 'out'
+    out_dir.mkdir()
+
+    feature_src = tmp_path / 'src_features.json'
+    feature_src.write_text('[]')
+
+    monkeypatch.setenv('URL_FEATURES_SPIKE', f'file://{feature_src}')
+    monkeypatch.setenv('URL_FEATURES_CLUSTER', f'file://{feature_src}')
+    monkeypatch.setattr(main, 'train_and_export_meta_model', lambda **k: ({}, []))
+
+    main.ensure_model_files_exist(str(out_dir), 'log_missing', 'm1_missing')
+
+    assert (out_dir / 'features_spike.json').exists()
+    assert (out_dir / 'features_cluster.json').exists()
