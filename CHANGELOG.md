@@ -1,3 +1,8 @@
+### 2025-08-20
+- [Patch v5.5.8] Add walk-forward grid search utilities
+- New/Updated unit tests added for src.wfv
+- QA: pytest -q passed
+
 
 ### 2025-08-13
 
