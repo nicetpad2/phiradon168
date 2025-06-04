@@ -1,3 +1,8 @@
+### 2025-07-01
+- [Patch v5.3.10] Handle optional models as warnings
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (219 tests)
+
 ### 2025-06-30
 - [Patch v5.0.23] Fix GPU logging and optuna sweep fallback
 - New/Updated unit tests added for ProjectP and hyperparameter sweep
