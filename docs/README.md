@@ -24,6 +24,7 @@ python profile_backtest.py XAUUSD_M1.csv --rows 1000 --console_level WARNING
 - `python tuning/hyperparameter_sweep.py` ทดสอบค่า hyperparameter
 - `python main.py --stage backtest` รัน backtest ตามค่าใน `config/pipeline.yaml`
 - `python profile_backtest.py <CSV>` ตรวจสอบ bottleneck
+- ระบบมีตัวกรองความผันผวน (Volatility Filter) ไม่เปิดออร์เดอร์หากค่า `Volatility_Index` ต่ำกว่า 1.0
 
 
 ## Flowchart

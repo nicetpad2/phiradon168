@@ -10,6 +10,11 @@
 - New/Updated unit tests added for tests.test_sessions_utils
 - QA: pytest -q passed
 
+### 2025-06-04
+- [Patch v5.6.5] Add volatility filter to entry logic
+- New/Updated unit tests added for tests.test_namedtuple_row and tests.test_volatility_filter
+- QA: pytest -q passed
+
 ### 2025-08-31
 
 - [Patch v5.6.4] Extend Asia session to 22-8 and update tests
