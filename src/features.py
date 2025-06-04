@@ -1406,3 +1406,71 @@ def load_features_hdf5(path):
         logging.error(f"(Features) Failed to load features from {path}: {e}", exc_info=True)
         return None
 
+# --- Advanced Feature Utilities -------------------------------------------------
+# [Patch v5.6.5] Add momentum, cumulative delta, and wave pattern helpers
+
+def add_momentum_features(df, windows=(5, 10, 15, 20)):
+    """Add ROC and RSI momentum features for the given rolling windows."""
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be DataFrame")
+    if not {'Close', 'Open'}.issubset(df.columns):
+        logging.warning("    (Warning) Missing 'Close' or 'Open' columns for momentum features.")
+        return df
+
+    df_out = df.copy()
+    close = pd.to_numeric(df_out['Close'], errors='coerce')
+    for w in windows:
+        if not isinstance(w, int) or w <= 0:
+            continue
+        roc = close.pct_change(periods=w) * 100
+        df_out[f'ROC_{w}'] = roc.astype('float32')
+        df_out[f'RSI_{w}'] = rsi(close, period=w)
+    return df_out
+
+
+def calculate_cumulative_delta_price(df, window=10):
+    """Return rolling sum of Close-Open over the given window."""
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be DataFrame")
+    if not {'Close', 'Open'}.issubset(df.columns):
+        logging.warning("    (Warning) Missing 'Close' or 'Open' columns for cumulative delta.")
+        return pd.Series(np.zeros(len(df)), index=df.index, dtype='float32')
+    delta = pd.to_numeric(df['Close'], errors='coerce') - pd.to_numeric(df['Open'], errors='coerce')
+    cum_delta = delta.rolling(window=window, min_periods=1).sum()
+    return cum_delta.astype('float32')
+
+
+def merge_wave_pattern_labels(df, log_path):
+    """Merge Wave_Marker_Unit pattern labels onto df as 'Wave_Pattern'."""
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be DataFrame")
+    df_out = df.copy()
+    if not os.path.exists(log_path):
+        logging.warning(f"   (Warning) Wave_Marker log not found: {log_path}")
+        df_out['Wave_Pattern'] = 'Unknown'
+        df_out['Wave_Pattern'] = df_out['Wave_Pattern'].astype('category')
+        return df_out
+    try:
+        pattern_df = pd.read_csv(log_path)
+        pattern_df['datetime'] = pd.to_datetime(pattern_df['datetime'], errors='coerce')
+        pattern_df = pattern_df.dropna(subset=['datetime', 'pattern_label']).sort_values('datetime')
+    except Exception as e:
+        logging.error(f"   (Error) Failed to load pattern log: {e}", exc_info=True)
+        df_out['Wave_Pattern'] = 'Unknown'
+        df_out['Wave_Pattern'] = df_out['Wave_Pattern'].astype('category')
+        return df_out
+
+    if not isinstance(df_out.index, pd.DatetimeIndex):
+        df_out.index = pd.to_datetime(df_out.index, errors='coerce')
+
+    merged = pd.merge_asof(
+        df_out.sort_index(),
+        pattern_df.rename(columns={'datetime': 'index'}).sort_values('index'),
+        left_index=True,
+        right_on='index',
+        direction='backward'
+    )
+    df_out['Wave_Pattern'] = merged['pattern_label'].fillna('Unknown').astype('category')
+    return df_out
+
+
