@@ -307,6 +307,44 @@ def calculate_m15_trend_zone(df_m15):
             _m15_trend_cache[cache_key] = result_df
         return result_df
 
+# [Patch v5.5.6] Helper to evaluate higher timeframe trend using SMA crossover
+def get_mtf_sma_trend(df_m15, fast=50, slow=200, rsi_period=14, rsi_upper=70, rsi_lower=30):
+    """Return trend direction ('UP', 'DOWN', 'NEUTRAL') for M15 data.
+
+    Parameters
+    ----------
+    df_m15 : pandas.DataFrame
+        M15 OHLC data with at least a 'Close' column.
+    fast : int, optional
+        Fast SMA period. Default 50.
+    slow : int, optional
+        Slow SMA period. Default 200.
+    rsi_period : int, optional
+        RSI period. Default 14.
+    rsi_upper : float, optional
+        Upper RSI filter for uptrend. Default 70.
+    rsi_lower : float, optional
+        Lower RSI filter for downtrend. Default 30.
+    """
+    if not isinstance(df_m15, pd.DataFrame) or df_m15.empty or "Close" not in df_m15.columns:
+        return "NEUTRAL"
+    close = pd.to_numeric(df_m15["Close"], errors="coerce")
+    fast_ma = sma(close, fast)
+    slow_ma = sma(close, slow)
+    rsi_series = rsi(close, period=rsi_period)
+    if fast_ma.empty or slow_ma.empty or rsi_series.empty:
+        return "NEUTRAL"
+    last_fast = fast_ma.iloc[-1]
+    last_slow = slow_ma.iloc[-1]
+    last_rsi = rsi_series.iloc[-1]
+    if pd.isna(last_fast) or pd.isna(last_slow) or pd.isna(last_rsi):
+        return "NEUTRAL"
+    if last_fast > last_slow and last_rsi < rsi_upper:
+        return "UP"
+    if last_fast < last_slow and last_rsi > rsi_lower:
+        return "DOWN"
+    return "NEUTRAL"
+
 # [Patch v5.0.2] Exclude heavy engineering logic from coverage
 def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_features_config=None):  # pragma: no cover
     logging.info("[QA] Start M1 Feature Engineering")
