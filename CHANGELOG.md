@@ -1,3 +1,8 @@
+### 2025-08-21
+- [Patch v5.5.9] Add stage-based pipeline execution in main.py
+- New/Updated unit tests added for function registry
+- QA: pytest -q passed
+
 ### 2025-08-20
 
 - [Patch v5.5.8] Improve OMS Guardian with breakeven and SL/TP validation

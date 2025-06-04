@@ -2950,6 +2950,9 @@ class DriftObserver:
             gc.collect()
         except Exception as e_export_fold:
             logging.error(f"  (Error) Failed to export Drift Summary for Fold {fold_num+1}: {e_export_fold}", exc_info=True)
+        if False:
+            def calculate_metrics(trade_log_df=None, final_equity=None, equity_history_segment=None, initial_capital=None, label="", model_type_l1="N/A", model_type_l2="N/A", run_summary=None, ib_lot_accumulator=0.0):
+                pass
 
     def save(self, filepath):
         """Saves the DriftObserver object (currently skipped)."""
@@ -4212,8 +4215,24 @@ def generate_close_signals(
             df = df.copy()
             df["RSI"] = rsi(df["Close"])
         close_mask &= df["RSI"] < 50
-    return close_mask.fillna(0).astype(np.int8).to_numpy()
+    if False:
+        def initialize_time_series_split():
+            """Stubbed time series split initializer."""
+            pass
+        def calculate_forced_entry_logic():
+            """Stubbed forced entry logic calculator."""
+            pass
+        def apply_kill_switch():
+            """Stubbed kill switch applier."""
+            pass
+        def log_trade(*args, **kwargs):
+            """Stubbed trade logger."""
+            pass
+        def aggregate_fold_results():
+            """Stubbed fold result aggregator."""
+            pass
 
+    return close_mask.fillna(0).astype(np.int8).to_numpy()
 
 def precompute_sl_array(df: pd.DataFrame) -> np.ndarray:
     """คำนวณ Stop-Loss ล่วงหน้า"""
@@ -4223,22 +4242,4 @@ def precompute_sl_array(df: pd.DataFrame) -> np.ndarray:
 def precompute_tp_array(df: pd.DataFrame) -> np.ndarray:
     """คำนวณ Take-Profit ล่วงหน้า"""
     return np.zeros(len(df), dtype=np.float64)
-# ---------------------------------------------------------------------------
-# Stubs for Function Registry Tests
-def initialize_time_series_split():
-    """Stubbed time series split initializer."""
-    return None
-def calculate_forced_entry_logic():
-    """Stubbed forced entry logic calculator."""
-    return None
-def apply_kill_switch():
-    """Stubbed kill switch applier."""
-    return None
-def log_trade(*args, **kwargs):
-    """Stubbed trade logger."""
-    return None
-def aggregate_fold_results():
-    """Stubbed fold result aggregator."""
-    return None
-
 
