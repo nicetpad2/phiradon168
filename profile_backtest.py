@@ -11,6 +11,7 @@ import pstats
 import sys
 import pandas as pd
 import logging
+from multiprocessing import Pool
 
 from src.strategy import run_backtest_simulation_v34
 from src.data_loader import safe_load_csv_auto
@@ -19,6 +20,20 @@ from src.config import FUND_PROFILES, DEFAULT_FUND_NAME  # [Patch v5.3.0]
 from src.training import real_train_func  # [Patch v5.3.0]
 
 logger = logging.getLogger(__name__)
+
+
+def calculate_features_for_fold(params):
+    """Helper for multiprocessing Pool to calculate features."""
+    symbol, df = params
+    logger.info("Calculating features for %s", symbol)
+    return engineer_m1_features(df)
+
+
+def run_parallel_feature_engineering(list_of_fold_params, processes=4):
+    """Run feature engineering in parallel using multiprocessing Pool."""
+    with Pool(processes=processes) as pool:
+        results = pool.map(calculate_features_for_fold, list_of_fold_params)
+    return results
 
 
 def get_fund_profile(name: str | None) -> dict:

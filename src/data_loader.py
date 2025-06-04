@@ -267,8 +267,9 @@ def setup_fonts(output_dir=None):  # pragma: no cover
 
 # --- Data Loading Helper ---
 # [Patch v5.0.2] Exclude safe_load_csv_auto from coverage
-def safe_load_csv_auto(file_path, row_limit=None):  # pragma: no cover
+def safe_load_csv_auto(file_path, row_limit=None, chunk_size=None):  # pragma: no cover
     # [Patch v5.4.5] Support row-limited loading to reduce memory usage
+    # [Patch] Allow chunked reading for large files
     """
     Loads CSV or .csv.gz file using pandas, automatically handling gzip compression.
 
@@ -282,6 +283,8 @@ def safe_load_csv_auto(file_path, row_limit=None):  # pragma: no cover
     read_csv_kwargs = {"index_col": 0, "parse_dates": False, "low_memory": False}
     if row_limit is not None and isinstance(row_limit, int) and row_limit > 0:
         read_csv_kwargs["nrows"] = row_limit
+    if chunk_size is not None and isinstance(chunk_size, int) and chunk_size > 0 and row_limit is None:
+        read_csv_kwargs["chunksize"] = chunk_size
     logging.info(f"      (safe_load) Attempting to load: {os.path.basename(file_path)}")
 
     if not isinstance(file_path, str) or not file_path:
@@ -295,9 +298,19 @@ def safe_load_csv_auto(file_path, row_limit=None):  # pragma: no cover
         if file_path.lower().endswith(".gz"):
             logging.debug("         -> Detected .gz extension, using gzip.")
             with gzip.open(file_path, 'rt', encoding='utf-8') as f:
+                if "chunksize" in read_csv_kwargs:
+                    chunks = []
+                    for chunk in pd.read_csv(f, **read_csv_kwargs):
+                        chunks.append(chunk)
+                    return pd.concat(chunks, ignore_index=False)
                 return pd.read_csv(f, **read_csv_kwargs)
         else:
             logging.debug("         -> No .gz extension, using standard pd.read_csv.")
+            if "chunksize" in read_csv_kwargs:
+                chunks = []
+                for chunk in pd.read_csv(file_path, **read_csv_kwargs):
+                    chunks.append(chunk)
+                return pd.concat(chunks, ignore_index=False)
             return pd.read_csv(file_path, **read_csv_kwargs)
     except pd.errors.EmptyDataError:
         logging.warning(f"         (Warning) File is empty: {file_path}")
