@@ -1965,6 +1965,11 @@ def run_backtest_simulation_v34(
         iterator = tqdm(iterator_obj, total=df_sim.shape[0], desc=f"  Sim ({label}, {side})", leave=False, mininterval=2.0)
     else:
         iterator = iterator_obj
+    # [Patch v5.5.7] Preallocate result arrays to reduce per-bar DataFrame writes
+    num_bars = len(df_sim)
+    equity_realistic_arr = np.full(num_bars, np.nan, dtype=float)
+    drawdown_arr = np.full(num_bars, np.nan, dtype=float)
+    active_count_arr = np.zeros(num_bars, dtype=int)
     run_summary = {}
 
     try:
@@ -1994,9 +1999,9 @@ def run_backtest_simulation_v34(
                 logging.debug(
                     f"   Skipping bar {current_index} due to missing/invalid price data."
                 )
-                df_sim.at[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = max_drawdown_pct
-                df_sim.at[current_index, f"Equity_Realistic{label_suffix}"] = equity
-                df_sim.at[current_index, f"Active_Order_Count{label_suffix}"] = len(active_orders)
+                drawdown_arr[current_bar_index] = max_drawdown_pct
+                equity_realistic_arr[current_bar_index] = equity
+                active_count_arr[current_bar_index] = len(active_orders)
                 equity_history[current_index] = equity
                 current_bar_index += 1
                 continue
@@ -2389,9 +2394,18 @@ def run_backtest_simulation_v34(
                     logging.warning(f"      Force closing {len(active_orders)} orders due to Margin Call at {now}.")
                     for mc_order in active_orders: trade_log_entry_mc = {"period": label, "side": mc_order.get("side"), "entry_idx": mc_order.get("entry_idx"), "entry_time": mc_order.get("entry_time"), "entry_price": mc_order.get("entry_price"), "close_time": now, "exit_price": current_close, "exit_reason": "MARGIN_CALL", "lot": mc_order.get("lot", 0.0), "pnl_usd_net": 0.0, "is_partial_tp": False, "partial_tp_level": len(mc_order.get("partial_tp_processed_levels", set())), "risk_mode_at_entry": mc_order.get("risk_mode_at_entry", "N/A"), "active_model_at_entry": mc_order.get("active_model_at_entry", "N/A")}; trade_log.append(trade_log_entry_mc)
                     active_orders.clear()
-                next_active_orders.clear(); df_sim.at[current_index, f"Equity_Realistic{label_suffix}"] = 0.0; df_sim.at[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = 1.0; df_sim.at[current_index, f"Active_Order_Count{label_suffix}"] = 0; equity_history[current_index] = 0.0
+                next_active_orders.clear()
+                equity_realistic_arr[current_bar_index] = 0.0
+                drawdown_arr[current_bar_index] = 1.0
+                active_count_arr[current_bar_index] = 0
+                equity_history[current_index] = 0.0
                 remaining_indices = df_sim.index[df_sim.index > current_index]
-                if not remaining_indices.empty: logging.info(f"      Marking remaining {len(remaining_indices)} bars with 0 equity due to Margin Call."); df_sim.loc[remaining_indices, f"Equity_Realistic{label_suffix}"] = 0.0; df_sim.loc[remaining_indices, f"Max_Drawdown_At_Point{label_suffix}"] = 1.0; df_sim.loc[remaining_indices, f"Active_Order_Count{label_suffix}"] = 0
+                if not remaining_indices.empty:
+                    logging.info(f"      Marking remaining {len(remaining_indices)} bars with 0 equity due to Margin Call.")
+                    start_idx = current_bar_index + 1
+                    equity_realistic_arr[start_idx:] = 0.0
+                    drawdown_arr[start_idx:] = 1.0
+                    active_count_arr[start_idx:] = 0
                 break
 
             peak_equity = max(peak_equity, equity)
@@ -2399,9 +2413,9 @@ def run_backtest_simulation_v34(
             max_drawdown_pct = max(max_drawdown_pct, current_dd_final)
             logging.debug(f"   Drawdown: Current={current_dd_final*100:.2f}%, Max={max_drawdown_pct*100:.2f}%")
             update_drawdown(cd_state, current_dd_final)
-            df_sim.at[current_index, f"Max_Drawdown_At_Point{label_suffix}"] = max_drawdown_pct
-            df_sim.at[current_index, f"Equity_Realistic{label_suffix}"] = equity
-            df_sim.at[current_index, f"Active_Order_Count{label_suffix}"] = len(next_active_orders)
+            drawdown_arr[current_bar_index] = max_drawdown_pct
+            equity_realistic_arr[current_bar_index] = equity
+            active_count_arr[current_bar_index] = len(next_active_orders)
             equity_history[current_index] = equity
 
             if enable_kill_switch and not kill_switch_activated:
@@ -2509,7 +2523,15 @@ def run_backtest_simulation_v34(
         if end_time not in equity_history: equity_history[end_time] = equity
         if not df_sim.empty:
             last_valid_idx = df_sim.index[-1]
-            if last_valid_idx in df_sim.index: df_sim.loc[last_valid_idx, f"Equity_Realistic{label_suffix}"] = equity; df_sim.loc[last_valid_idx, f"Active_Order_Count{label_suffix}"] = 0
+            if last_valid_idx in df_sim.index:
+                final_pos = df_sim.index.get_loc(last_valid_idx)
+                equity_realistic_arr[final_pos] = equity
+                active_count_arr[final_pos] = 0
+
+    # [Patch v5.5.7] Write preallocated arrays back to DataFrame
+    df_sim[f"Equity_Realistic{label_suffix}"] = equity_realistic_arr
+    df_sim[f"Max_Drawdown_At_Point{label_suffix}"] = drawdown_arr
+    df_sim[f"Active_Order_Count{label_suffix}"] = active_count_arr
 
     trade_log_df_segment = pd.DataFrame(trade_log)
     logging.info(f"Created trade log DataFrame for {label} with {len(trade_log_df_segment)} entries.")
