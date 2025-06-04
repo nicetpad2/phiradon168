@@ -4,7 +4,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.utils.trade_logger import export_trade_log
+from src.utils.trade_logger import export_trade_log, aggregate_trade_logs
 
 
 def test_export_trade_log_creates_file(tmp_path):
@@ -26,3 +26,18 @@ def test_export_trade_log_empty_creates_audit(tmp_path):
     assert log_file.exists()
     assert qa_file.exists()
     assert qa_file.read_text() == "[QA] No trade. Output file generated as EMPTY.\n"
+
+
+def test_aggregate_trade_logs(tmp_path):
+    dir1 = tmp_path / 'f1'
+    dir2 = tmp_path / 'f2'
+    df1 = pd.DataFrame({'a': [1]})
+    df2 = pd.DataFrame({'a': [2]})
+    export_trade_log(df1, str(dir1), 'BUY')
+    export_trade_log(df2, str(dir2), 'BUY')
+    out_file = tmp_path / 'combined' / 'trade_log_BUY.csv'
+    aggregate_trade_logs([str(dir1), str(dir2)], str(out_file), 'BUY')
+    combined = pd.read_csv(out_file)
+    assert len(combined) == 2
+    qa_log = out_file.parent / 'trade_log_BUY_qa.log'
+    assert qa_log.exists()

@@ -26,3 +26,25 @@ def export_trade_log(trades, output_dir, label):
         qa_path = os.path.join(output_dir, f"{label}_trade_qa.log")
         with open(qa_path, "w", encoding="utf-8") as f:
             f.write("[QA] No trade. Output file generated as EMPTY.\n")
+
+
+def aggregate_trade_logs(fold_dirs, output_file, label):
+    """[Patch v5.4.4] Combine trade logs from multiple folds into one file."""
+    dfs = []
+    for directory in fold_dirs:
+        path = os.path.join(directory, f"trade_log_{label}.csv")
+        if os.path.exists(path):
+            df = pd.read_csv(path)
+            if not df.empty:
+                dfs.append(df)
+    combined = pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    combined.to_csv(output_file, index=False)
+    logger.info(
+        f"[QA] Aggregated trade logs saved to {output_file} with {len(combined)} rows."
+    )
+    qa_path = os.path.splitext(output_file)[0] + "_qa.log"
+    with open(qa_path, "w", encoding="utf-8") as f:
+        f.write(
+            f"Aggregated {len(combined)} rows from {len(fold_dirs)} folds into {output_file}\n"
+        )

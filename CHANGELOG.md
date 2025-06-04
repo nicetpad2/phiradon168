@@ -503,3 +503,8 @@
 - New/Updated unit tests added for hyperparameter sweep filtering
 - QA: pytest -q passed (236 tests)
 
+### 2025-08-07
+- [Patch v5.4.4] Aggregate trade logs across folds
+- New/Updated unit tests added for trade logger aggregation
+- QA: pytest -q passed (238 tests)
+
