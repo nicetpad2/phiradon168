@@ -1,6 +1,8 @@
-### 2025-08-10
-- [Patch v5.5.3] Update expected line numbers for stub functions
-- New/Updated unit tests added for tests.test_function_registry
+
+### 2025-08-11
+- [Patch v5.5.4] Move NaN/Inf QA check after cleaning
+- Updated unit tests to expect no warning
+
 - QA: pytest -q passed (265 tests)
 
 ### 2025-08-09

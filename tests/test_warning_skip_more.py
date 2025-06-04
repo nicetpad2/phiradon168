@@ -90,5 +90,6 @@ def test_engineer_m1_features_nan_inf_warning(caplog):
     with caplog.at_level(logging.INFO):
         result = features.engineer_m1_features(df)
     assert not result.empty
-    assert any('[QA WARNING] NaN/Inf detected in engineered features' in msg for msg in caplog.messages)
+    # [Patch v5.5.4] QA warning should no longer appear after automatic cleaning
+    assert all('[QA WARNING] NaN/Inf detected in engineered features' not in msg for msg in caplog.messages)
     assert any('[QA] M1 Feature Engineering Completed' in msg for msg in caplog.messages)
