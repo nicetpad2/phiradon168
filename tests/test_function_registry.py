@@ -44,13 +44,13 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/strategy.py", "run_backtest_simulation_v34", 1680),
-    ("src/strategy.py", "initialize_time_series_split", 3985),
-    ("src/strategy.py", "calculate_forced_entry_logic", 3988),
-    ("src/strategy.py", "apply_kill_switch", 3991),
-    ("src/strategy.py", "log_trade", 3994),
-    ("src/strategy.py", "calculate_metrics", 2724),
-    ("src/strategy.py", "aggregate_fold_results", 3997),
+    ("src/strategy.py", "run_backtest_simulation_v34", 1686),
+    ("src/strategy.py", "initialize_time_series_split", 3991),
+    ("src/strategy.py", "calculate_forced_entry_logic", 3994),
+    ("src/strategy.py", "apply_kill_switch", 3997),
+    ("src/strategy.py", "log_trade", 4000),
+    ("src/strategy.py", "calculate_metrics", 2730),
+    ("src/strategy.py", "aggregate_fold_results", 4003),
     ("ProjectP.py", "custom_helper_function", 20),
 ]
 
