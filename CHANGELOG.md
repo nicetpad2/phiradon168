@@ -1,7 +1,9 @@
 ### 2025-08-20
+
 - [Patch v5.5.8] Improve OMS Guardian with breakeven and SL/TP validation
 - New/Updated unit tests added for oms guardian helpers
 - QA: pytest -q passed (292 tests)
+
 
 
 ### 2025-08-13
@@ -14,6 +16,11 @@
 - [Patch v5.5.7] Add dynamic lot sizing via drawdown
 - New/Updated unit tests added for adaptive module
 
+- QA: pytest -q passed
+
+### 2025-08-14
+- [Patch v5.5.7] Implement volume spike filter
+- New/Updated unit tests added for volume spike and registry
 - QA: pytest -q passed
 
 ### 2025-08-14
