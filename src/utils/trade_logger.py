@@ -7,7 +7,37 @@ except Exception:  # pragma: no cover - fallback only during missing config
     logger = logging.getLogger(__name__)
 
 import os
+from dataclasses import dataclass, asdict
+import logging
+from logging.handlers import RotatingFileHandler
 import pandas as pd
+
+
+@dataclass
+class Order:
+    """Simple order representation for logging."""
+
+    side: str
+    entry_price: float
+    sl_price: float
+    open_time: pd.Timestamp
+
+    def as_dict(self) -> dict:
+        """Return dictionary form for DataFrame conversion."""
+        return asdict(self)
+
+
+def setup_trade_logger(log_file: str, max_bytes: int = 1_000_000, backup_count: int = 5) -> logging.Logger:
+    """[Patch v5.6.1] Setup rotating logger for trade logs."""
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    handler = RotatingFileHandler(log_file, maxBytes=max_bytes, backupCount=backup_count, encoding="utf-8")
+    formatter = logging.Formatter("%(asctime)s %(levelname)s:%(message)s")
+    handler.setFormatter(formatter)
+    trade_logger = logging.getLogger("trade_logger")
+    if not any(isinstance(h, RotatingFileHandler) and h.baseFilename == handler.baseFilename for h in trade_logger.handlers):
+        trade_logger.addHandler(handler)
+    trade_logger.setLevel(logging.INFO)
+    return trade_logger
 
 
 def export_trade_log(trades, output_dir, label, fund_name=None):
@@ -54,3 +84,37 @@ def aggregate_trade_logs(fold_dirs, output_file, label):
         f.write(
             f"Aggregated {len(combined)} rows from {len(fold_dirs)} folds into {output_file}\n"
         )
+
+
+def _ensure_ts(ts: pd.Timestamp) -> pd.Timestamp:
+    """Return timezone-aware timestamp in UTC."""
+    if ts.tzinfo is None:
+        ts = ts.tz_localize("UTC")
+    return ts.tz_convert("UTC")
+
+
+def log_open_order(order: Order, trade_log: logging.Logger = logger) -> None:
+    """Log order opening info using dataclass attributes."""
+    ts = _ensure_ts(order.open_time)
+    trade_log.info(
+        f"Order Opened: Side={order.side}, Entry={order.entry_price}, SL={order.sl_price}, Time={ts.isoformat()}"
+    )
+
+
+def log_close_order(
+    order: Order,
+    exit_price: float,
+    reason: str,
+    close_time: pd.Timestamp,
+    trade_log: logging.Logger = logger,
+) -> None:
+    """Log order closing info with appropriate level."""
+    ts_close = _ensure_ts(close_time)
+    ts_entry = _ensure_ts(order.open_time)
+    msg = (
+        f"Order Closing: Time={ts_close.isoformat()}, Reason={reason}, ExitPrice={exit_price}, EntryTime={ts_entry.isoformat()}"
+    )
+    if "SL" in reason.upper() or "STOP LOSS" in reason.upper():
+        trade_log.warning(msg)
+    else:
+        trade_log.info(msg)

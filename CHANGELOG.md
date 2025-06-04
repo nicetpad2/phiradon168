@@ -1,4 +1,9 @@
 
+### 2025-08-28
+- [Patch v5.6.1] Add dataclass-based order logging with rotating file support
+- New/Updated unit tests added for tests.test_trade_logger
+- QA: pytest -q passed (325 tests)
+
 ### 2025-08-26
 - [Patch v5.6.0] Refactor font setup and CSV loader
 - New/Updated unit tests added for data_loader
