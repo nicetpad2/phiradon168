@@ -41,3 +41,21 @@ def test_tag_price_structure_patterns():
     res = features.tag_price_structure_patterns(df)
     assert 'Pattern_Label' in res.columns
     assert "Breakout" in res["Pattern_Label"].cat.categories
+
+
+def test_detect_macd_divergence_bull():
+    prices = pd.Series([5, 4, 6, 3, 5], dtype="float32")
+    macd_hist = pd.Series([-0.5, -0.6, -0.2, -0.3, -0.1], dtype="float32")
+    assert features.detect_macd_divergence(prices, macd_hist) == "bull"
+
+
+def test_detect_macd_divergence_none():
+    prices = pd.Series([1, 2, 3, 4], dtype="float32")
+    macd_hist = pd.Series([0.1, 0.2, 0.1, 0.2], dtype="float32")
+    assert features.detect_macd_divergence(prices, macd_hist) == "none"
+
+
+def test_detect_macd_divergence_bear():
+    prices = pd.Series([3, 4, 2, 5, 3], dtype="float32")
+    macd_hist = pd.Series([0.5, 0.4, 0.6, 0.3, 0.2], dtype="float32")
+    assert features.detect_macd_divergence(prices, macd_hist) == "bear"

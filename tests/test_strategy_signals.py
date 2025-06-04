@@ -19,7 +19,7 @@ def test_generate_open_signals_toggle_off():
 def test_generate_open_signals_with_indicators():
     df = pd.DataFrame({"Close": [1.0, 1.2, 1.3], "MACD_hist": [0.2, 0.1, -0.1], "RSI": [60, 55, 40]})
     signals = strategy.generate_open_signals(df, use_macd=True, use_rsi=True)
-    assert signals.tolist() == [0, 1, 0]
+    assert signals.tolist() == [0, 0, 0]
 
 
 def test_generate_close_signals_toggle_off():

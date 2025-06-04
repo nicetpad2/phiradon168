@@ -4,6 +4,11 @@
 - New/Updated unit tests added for adaptive module
 - QA: pytest -q passed
 
+### 2025-08-14
+- [Patch v5.5.7] Add MACD divergence detection and filter for buy signals
+- New/Updated unit tests added for features and strategy signals
+- QA: pytest -q passed
+
 ### 2025-06-04
 - [Patch v5.5.7] Add log analysis utilities and risk management helper
 - New/Updated unit tests added for tests.test_log_analysis

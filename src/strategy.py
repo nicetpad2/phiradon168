@@ -64,6 +64,7 @@ from src.features import (
     check_feature_noise_shap,  # [Patch] เพิ่มการ import เพื่อตรวจสอบ SHAP noise
     rsi,
     macd,
+    detect_macd_divergence,
 )  # [Patch] นำเข้า Dynamic Feature Selection & Overfitting Helpers
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
@@ -4089,6 +4090,8 @@ def generate_open_signals(
             df = df.copy()
             df["MACD_hist"] = macd_hist
         open_mask &= df["MACD_hist"] > 0
+        if detect_macd_divergence(df["Close"], df["MACD_hist"]) != "bull":
+            open_mask[:] = False
     if use_rsi:
         if "RSI" not in df.columns:
             df = df.copy()
