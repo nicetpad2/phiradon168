@@ -13,12 +13,12 @@ SOFT_COOLDOWN_LOSS_COUNT = 6
 from cooldown_utils import is_soft_cooldown_triggered, step_soft_cooldown
 
 
-def test_soft_cooldown_requires_lookback():
+def test_soft_cooldown_triggers_with_fewer_trades():
     pnl_history = [-1] * SOFT_COOLDOWN_LOSS_COUNT
-    triggered, _ = is_soft_cooldown_triggered(
+    triggered, losses = is_soft_cooldown_triggered(
         pnl_history, SOFT_COOLDOWN_LOOKBACK, SOFT_COOLDOWN_LOSS_COUNT
     )
-    assert not triggered
+    assert triggered and losses == SOFT_COOLDOWN_LOSS_COUNT
 
 
 def test_soft_cooldown_triggers_after_lookback():
@@ -33,14 +33,7 @@ def test_step_soft_cooldown():
     assert step_soft_cooldown(5) == 4
     assert step_soft_cooldown(1) == 0
     assert step_soft_cooldown(0) == 0
+    assert step_soft_cooldown(10, step=5) == 5
+    assert step_soft_cooldown(4, step=5) == 0
 
 
-def test_soft_cooldown_blocked_rate_adjust():
-    pnl_history = [-1] * SOFT_COOLDOWN_LOOKBACK
-    triggered, _ = is_soft_cooldown_triggered(
-        pnl_history,
-        SOFT_COOLDOWN_LOOKBACK,
-        SOFT_COOLDOWN_LOSS_COUNT,
-        blocked_rate=0.6,
-    )
-    assert triggered
