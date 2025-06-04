@@ -185,7 +185,9 @@ except ImportError:
             )
             optuna = None
     else:
-        logging.error("ไลบรารี 'optuna' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
+        logging.warning(
+            "ไลบรารี 'optuna' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False -- ข้ามการปรับแต่ง"
+        )
         optuna = None
 # pragma: cover
 
@@ -239,7 +241,9 @@ except ImportError:
             Pool = None
             catboost = None
     else:
-        logging.error("ไลบรารี 'catboost' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
+        logging.warning(
+            "ไลบรารี 'catboost' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False -- ข้ามขั้นตอน CatBoost"
+        )
         CatBoostClassifier = None
         Pool = None
         catboost = None
@@ -299,7 +303,9 @@ except ImportError:
             )
         shap = None
     else:
-        logging.error("ไลบรารี 'shap' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
+        logging.warning(
+            "ไลบรารี 'shap' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False -- ข้ามการคำนวณ SHAP"
+        )
         shap = None
 # pragma: cover
 

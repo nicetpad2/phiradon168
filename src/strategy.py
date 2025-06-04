@@ -1695,11 +1695,7 @@ def _update_open_order_state(order, current_high, current_low, current_atr, avg_
     tp_price_val_after = order.get('tp_price')
     tp_after_str = f"{tp_price_val_after:.5f}" if pd.notna(tp_price_val_after) else "NaN"
     logging.debug(f"            Order {entry_time_log} after update_trailing_tp2. TP after={tp_after_str}")
-
     return order, be_triggered_this_bar, tsl_updated_this_bar, be_sl_counter, tsl_counter
-
-
-# --- Backtesting Simulation Engine ---
 # <<< [Patch] MODIFIED v4.8.8 (Patch 26.5.1): Applied [PATCH C - Unified] for error handling and logging fix. >>>
 def run_backtest_simulation_v34(
     df_m1_segment_pd,
@@ -2734,7 +2730,6 @@ class DriftObserver:
         logging.info(f"   (Info) Skipping load of DriftObserver object from {filepath} (v3.6.8 Reduce Files).")
         self.results = {}
         return False
-
 
 # --- Performance Metrics Calculation ---
 def calculate_metrics(trade_log_df, final_equity, equity_history_segment, initial_capital=None, label="", model_type_l1="N/A", model_type_l2="N/A", run_summary=None, ib_lot_accumulator=0.0):

@@ -870,8 +870,32 @@ def prepare_datetime_index(df):
     return df
 
 
+# --- M1 Data Path Validator ---
+# [Patch v5.4.4] Ensure correct file name and existence
+def validate_m1_data_path(file_path):
+    """Validate that the M1 data path points to an expected file."""
+    allowed = {"XAUUSD_M1.csv", "final_data_m1_v32_walkforward.csv.gz"}
+    if not isinstance(file_path, str) or not file_path:
+        logging.error("(Error) Invalid file path for M1 data.")
+        return False
+    fname = os.path.basename(file_path)
+    if fname not in allowed:
+        logging.error(f"(Error) Unexpected M1 data file '{fname}'. Expected one of {allowed}.")
+        return False
+    if not os.path.exists(file_path):
+        logging.error(f"(Error) File not found: {file_path}")
+        return False
+    return True
+
+
 def load_raw_data_m1(path):
-    """Stubbed loader for raw M1 data."""
+    """Load raw M1 data after validating the file path.
+
+    After loading, ``engineer_m1_features`` from :mod:`features` is typically
+    called to compute indicators.
+    """
+    if not validate_m1_data_path(path):
+        return None
     return safe_load_csv_auto(path)
 
 
