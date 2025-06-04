@@ -2,6 +2,11 @@
 - [Patch v5.5.13] Optimize DataFrame writes in backtest
 - QA: pytest -q passed (309 tests)
 
+### 2025-08-24
+- [Patch v5.5.14] Improve threshold optimization CLI
+- New/Updated unit tests added for tests.test_threshold_optimization
+- QA: pytest -q passed
+
 
 ### 2025-08-22
 - [Patch v5.5.12] Add alert summary utilities in log_analysis
