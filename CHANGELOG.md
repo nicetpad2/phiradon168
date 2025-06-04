@@ -532,6 +532,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_function_registry
 - QA: pytest -q passed (258 tests)
 ### 2025-06-04
-- [Patch v5.4.8] Persist default SESSION_TIMES_UTC to suppress repeated warnings
-- New/Updated unit tests added for utils.sessions
+
+- [Patch v5.4.8] Suppress duplicate adaptive signal threshold logs
+- New/Updated unit tests added for tests.test_function_registry
+
 - QA: pytest -q passed (258 tests)
