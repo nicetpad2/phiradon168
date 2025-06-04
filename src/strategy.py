@@ -77,7 +77,7 @@ from sklearn.metrics import (
     classification_report,
 )  # [Patch] นำเข้า metric ที่ขาดหายไป
 from src.evaluation import find_best_threshold
-from src.adaptive import compute_dynamic_lot, atr_position_size
+from src.adaptive import compute_dynamic_lot, atr_position_size, compute_trailing_atr_stop
 import gc # For memory management
 import os
 import itertools
@@ -1772,6 +1772,26 @@ def _update_open_order_state(order, current_high, current_low, current_atr, avg_
             new_sl_price_after_tsl_val = pd.to_numeric(order.get("sl_price"), errors='coerce')
             sl_after_tsl_text = f"{new_sl_price_after_tsl_val:.5f}" if pd.notna(new_sl_price_after_tsl_val) else "NaN"
             logging.debug(f"            Order {entry_time_log} after update_tsl_only. SL after={sl_after_tsl_text}")
+
+            # Trailing ATR stop-loss update
+            new_sl_atr = compute_trailing_atr_stop(
+                entry_price,
+                current_high if order_side == "BUY" else current_low,
+                current_atr,
+                order_side,
+                order.get("sl_price"),
+            )
+            new_sl_val = pd.to_numeric(new_sl_atr, errors="coerce")
+            current_sl_val = pd.to_numeric(order.get("sl_price"), errors="coerce")
+            if pd.notna(new_sl_val) and pd.notna(current_sl_val):
+                if (order_side == "BUY" and new_sl_val > current_sl_val) or (
+                    order_side == "SELL" and new_sl_val < current_sl_val
+                ):
+                    logging.info(
+                        f"         [ATR SL] Updating SL from {current_sl_val:.5f} to {new_sl_val:.5f} for order {entry_time_log}"
+                    )
+                    order["sl_price"] = new_sl_val
+                    tsl_updated_this_bar = True
     else:
         logging.debug(f"            Skipping TSL checks for order {entry_time_log} because BE was triggered in this bar.")
 
