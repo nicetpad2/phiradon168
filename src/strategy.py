@@ -22,6 +22,7 @@ from src.cooldown_utils import (
 )
 from itertools import product
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
+from src.utils import get_env_float
 from src.config import (
     print_gpu_utilization,  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
     USE_MACD_SIGNALS,
@@ -2407,7 +2408,8 @@ import gc # For memory management
 
 # Ensure global configurations are accessible if run independently
 # Define defaults if globals are not found
-DEFAULT_DRIFT_WASSERSTEIN_THRESHOLD = 0.1
+# [Patch v5.5.4] Environment override for drift threshold
+DEFAULT_DRIFT_WASSERSTEIN_THRESHOLD = get_env_float("DRIFT_WASSERSTEIN_THRESHOLD", 0.1)
 DEFAULT_DRIFT_TTEST_ALPHA = 0.05
 DEFAULT_INITIAL_CAPITAL = 100.0
 DEFAULT_IB_COMMISSION_PER_LOT = 7.0
