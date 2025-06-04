@@ -30,27 +30,27 @@ FUNCTIONS_INFO = [
 
 
 
-# [Patch v5.4.7] Updated expected line numbers
-    ("src/main.py", "parse_arguments", 1851),
-    ("src/main.py", "setup_output_directory", 1856),
-    ("src/main.py", "load_features_from_file", 1861),
-    ("src/main.py", "drop_nan_rows", 1866),
-    ("src/main.py", "convert_to_float32", 1871),
-    ("src/main.py", "run_initial_backtest", 1876),
-    ("src/main.py", "save_final_data", 1881),
+# [Patch v5.5.1] Updated expected line numbers
+    ("src/main.py", "parse_arguments", 1857),
+    ("src/main.py", "setup_output_directory", 1862),
+    ("src/main.py", "load_features_from_file", 1867),
+    ("src/main.py", "drop_nan_rows", 1872),
+    ("src/main.py", "convert_to_float32", 1877),
+    ("src/main.py", "run_initial_backtest", 1882),
+    ("src/main.py", "save_final_data", 1887),
 
 
 
 
 
 
-    ("src/strategy.py", "run_backtest_simulation_v34", 1680),
-    ("src/strategy.py", "initialize_time_series_split", 3985),
-    ("src/strategy.py", "calculate_forced_entry_logic", 3988),
-    ("src/strategy.py", "apply_kill_switch", 3991),
-    ("src/strategy.py", "log_trade", 3994),
-    ("src/strategy.py", "calculate_metrics", 2724),
-    ("src/strategy.py", "aggregate_fold_results", 3997),
+    ("src/strategy.py", "run_backtest_simulation_v34", 1686),
+    ("src/strategy.py", "initialize_time_series_split", 3991),
+    ("src/strategy.py", "calculate_forced_entry_logic", 3994),
+    ("src/strategy.py", "apply_kill_switch", 3997),
+    ("src/strategy.py", "log_trade", 4000),
+    ("src/strategy.py", "calculate_metrics", 2730),
+    ("src/strategy.py", "aggregate_fold_results", 4003),
     ("ProjectP.py", "custom_helper_function", 20),
 ]
 

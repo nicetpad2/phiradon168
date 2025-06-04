@@ -1158,6 +1158,9 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             funds_to_run = {DEFAULT_FUND_NAME: default_profile}
             logging.info(f"\n(Single Fund Mode) กำลังรันสำหรับ Fund Profile: {DEFAULT_FUND_NAME}")
 
+        # [Patch v5.5.1] Import model switcher after models and features are loaded
+        from src.features import select_model_for_trade
+
         for fund_name, fund_profile_config in funds_to_run.items():
             fund_profile_config['name'] = fund_name
             logging.info("\n" + "=" * 20 + f" STARTING FUND: {fund_name} (MM Mode: {fund_profile_config.get('mm_mode', 'N/A')}) " + "=" * 20)
