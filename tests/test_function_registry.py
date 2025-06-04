@@ -10,24 +10,24 @@ FUNCTIONS_INFO = [
     ("src/config.py", "show_system_status", 510),
 
 
-    ("src/data_loader.py", "inspect_file_exists", 940),
-    ("src/data_loader.py", "read_csv_with_date_parse", 945),
-    ("src/data_loader.py", "check_nan_percent", 952),
-    ("src/data_loader.py", "check_duplicates", 959),
-    ("src/data_loader.py", "check_price_jumps", 966),
-    ("src/data_loader.py", "convert_thai_years", 974),
-    ("src/data_loader.py", "prepare_datetime_index", 981),
-    ("src/data_loader.py", "load_raw_data_m1", 1010),
-    ("src/data_loader.py", "load_raw_data_m15", 1021),
-    ("src/data_loader.py", "write_test_file", 1026),
+    ("src/data_loader.py", "inspect_file_exists", 906),
+    ("src/data_loader.py", "read_csv_with_date_parse", 911),
+    ("src/data_loader.py", "check_nan_percent", 918),
+    ("src/data_loader.py", "check_duplicates", 925),
+    ("src/data_loader.py", "check_price_jumps", 932),
+    ("src/data_loader.py", "convert_thai_years", 940),
+    ("src/data_loader.py", "prepare_datetime_index", 947),
+    ("src/data_loader.py", "load_raw_data_m1", 976),
+    ("src/data_loader.py", "load_raw_data_m15", 987),
+    ("src/data_loader.py", "write_test_file", 992),
 
 
-    ("src/features.py", "calculate_trend_zone", 1328),
-    ("src/features.py", "tag_price_structure_patterns", 301),
-    ("src/features.py", "create_session_column", 1335),
-    ("src/features.py", "fill_missing_feature_values", 1341),
-    ("src/features.py", "load_feature_config", 1346),
-    ("src/features.py", "calculate_ml_features", 1351),
+    ("src/features.py", "calculate_trend_zone", 1337),
+    ("src/features.py", "tag_price_structure_patterns", 310),
+    ("src/features.py", "create_session_column", 1344),
+    ("src/features.py", "fill_missing_feature_values", 1350),
+    ("src/features.py", "load_feature_config", 1355),
+    ("src/features.py", "calculate_ml_features", 1360),
 
 
 
