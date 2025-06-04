@@ -1,3 +1,8 @@
+#
+### 2025-08-13
+- [Patch v5.5.7] Add dynamic lot sizing via drawdown
+- New/Updated unit tests added for adaptive module
+- QA: pytest -q passed
 
 ### 2025-08-12
 - [Patch v5.5.6] Force COMPACT_LOG in tests, add summary

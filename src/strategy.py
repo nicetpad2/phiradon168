@@ -68,6 +68,7 @@ from sklearn.metrics import (
     classification_report,
 )  # [Patch] นำเข้า metric ที่ขาดหายไป
 from src.evaluation import find_best_threshold
+from src.adaptive import compute_dynamic_lot
 import gc # For memory management
 import os
 import itertools
@@ -2186,7 +2187,23 @@ def run_backtest_simulation_v34(
                             else:
                                 logging.debug(f"         [Patch] Using ATR-Based SL/TP. Fold SL Multiplier: {fold_sl_multiplier_base:.2f}, ATR Entry: {atr_entry:.5f}"); sl_delta_price = atr_entry * fold_sl_multiplier_base; sl_price = entry_price - sl_delta_price if side == "BUY" else entry_price + sl_delta_price; tp1_delta = sl_delta_price * 1.0; tp1_price = entry_price + tp1_delta if side == "BUY" else entry_price - tp1_delta; tp2_r = dynamic_tp2_multiplier(current_atr, current_avg_atr, base=base_tp_multiplier_config); tp2_delta = sl_delta_price * tp2_r; tp2_price = entry_price + tp2_delta if side == "BUY" else entry_price - tp2_delta
                             logging.debug(f"         Calculated SL={sl_price:.5f}, TP1={tp1_price:.5f}, TP2={tp2_price:.5f} (SL Delta Price={sl_delta_price:.5f})")
-                            mm_mode = fund_profile.get('mm_mode', 'balanced'); risk_pct = fund_profile.get('risk', DEFAULT_RISK_PER_TRADE); base_lot = calculate_lot_by_fund_mode(mm_mode, risk_pct, current_equity_check, atr_entry, sl_delta_price); boosted_lot = adjust_lot_tp2_boost(trade_history_list, base_lot); final_lot, risk_mode_applied = adjust_lot_recovery_mode(boosted_lot, consecutive_losses); logging.debug(f"         Calculated Lot: Base={base_lot:.2f}, Boosted={boosted_lot:.2f}, Final={final_lot:.2f} (RiskMode Applied={risk_mode_applied})")
+                            mm_mode = fund_profile.get('mm_mode', 'balanced')
+                            risk_pct = fund_profile.get('risk', DEFAULT_RISK_PER_TRADE)
+                            base_lot = calculate_lot_by_fund_mode(
+                                mm_mode,
+                                risk_pct,
+                                current_equity_check,
+                                atr_entry,
+                                sl_delta_price,
+                            )
+                            base_lot = compute_dynamic_lot(base_lot, current_dd_check)
+                            boosted_lot = adjust_lot_tp2_boost(trade_history_list, base_lot)
+                            final_lot, risk_mode_applied = adjust_lot_recovery_mode(
+                                boosted_lot, consecutive_losses
+                            )
+                            logging.debug(
+                                f"         Calculated Lot: Base={base_lot:.2f}, Boosted={boosted_lot:.2f}, Final={final_lot:.2f} (RiskMode Applied={risk_mode_applied})"
+                            )
                             if final_lot >= MIN_LOT_SIZE:
                                 entry_time = now; total_ib_lot_accumulator += final_lot; current_atr_num_ttp2 = pd.to_numeric(current_atr, errors='coerce'); enable_ttp2 = pd.notna(current_atr_num_ttp2) and current_atr_num_ttp2 > 4.0
                                 new_order = {"entry_idx": current_index, "entry_time": entry_time, "entry_price": entry_price, "original_lot": final_lot, "lot": final_lot, "original_sl_price": sl_price, "sl_price": sl_price, "tp_price": tp2_price, "tp1_price": tp1_price, "entry_bar_count": current_bar_index, "side": side, "m15_trend_zone": m15_trend, "trade_tag": current_trade_tag, "signal_score": signal_score if pd.notna(signal_score) else np.nan, "trade_reason": trade_reason if not is_forced_entry else f"FORCED_{trade_reason}", "session": session_tag, "pattern_label_entry": pattern_label, "be_triggered": False, "be_triggered_time": pd.NaT, "is_reentry": is_reentry_trade, "is_forced_entry": is_forced_entry, "meta_proba_tp": meta_proba_tp_for_log, "meta2_proba_tp": meta2_proba_tp_for_log, "partial_tp_processed_levels": set(), "atr_at_entry": atr_entry, "equity_before_open": current_equity_check, "entry_gain_z": current_gain_z if pd.notna(current_gain_z) else np.nan, "entry_macd_smooth": current_macd_smooth if pd.notna(current_macd_smooth) else np.nan, "entry_candle_ratio": getattr(row, "Candle_Ratio", np.nan), "entry_adx": getattr(row, "ADX", np.nan), "entry_volatility_index": current_vol_index if pd.notna(current_vol_index) else np.nan, "peak_since_tp1": np.nan, "trough_since_tp1": np.nan, "risk_mode_at_entry": risk_mode_applied, "use_trailing_for_tp2": enable_ttp2, "trailing_start_price": tp1_price if enable_ttp2 else np.nan, "trailing_step_r": ADAPTIVE_TSL_DEFAULT_STEP_R if enable_ttp2 else np.nan, "peak_since_ttp2_activation": np.nan, "trough_since_ttp2_activation": np.nan, "active_model_at_entry": selected_model_key, "model_confidence_at_entry": model_confidence, "tsl_activated": False, "peak_since_tsl_activation": np.nan, "trough_since_tsl_activation": np.nan}
