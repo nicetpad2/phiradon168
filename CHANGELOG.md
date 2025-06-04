@@ -548,3 +548,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.5.0] Improve config fallbacks and model file handling
 - New/Updated unit tests added for existing suites
 - QA: pytest -q passed (258 tests)
+
+### 2025-06-04
+- [Patch v5.4.7] Tune MetaClassifier threshold
+- New/Updated unit tests added for evaluation and strategy
+- QA: pytest -q passed (260 tests)
