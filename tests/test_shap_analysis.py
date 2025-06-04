@@ -72,7 +72,7 @@ def test_check_price_jumps_detects():
 
 
 def test_load_raw_data_m1_returns_dataframe(tmp_path):
-    csv = tmp_path / 'd.csv'
+    csv = tmp_path / 'XAUUSD_M1.csv'
     pd.DataFrame({'A': [1]}).to_csv(csv)
     df = dl.load_raw_data_m1(str(csv))
     assert isinstance(df, pd.DataFrame)

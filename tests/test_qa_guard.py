@@ -41,3 +41,5 @@ def test_trade_log_created_even_if_empty(monkeypatch, tmp_path):
     assert log_gz.exists() or log_csv.exists()
     qa_log = out_dir / '.qa.log'
     assert qa_log.exists()
+    # New check for simplified trade log generated via export_trade_log
+    assert (out_dir / 'trade_log_NORMAL.csv').exists()

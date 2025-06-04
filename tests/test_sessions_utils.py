@@ -30,3 +30,14 @@ def test_get_session_tag_string_and_cross_midnight():
     ts = '2024-01-01 23:00'
     custom = {'Night': (22, 2)}
     assert get_session_tag(ts, custom) == 'Night'
+
+
+def test_get_session_tag_dst_adjustment():
+    ts = pd.Timestamp('2024-01-01 07:30', tz='UTC')
+    tz_map = {
+        'Asia': ('UTC', 0, 8),
+        'London': ('Europe/London', 8, 17),
+        'NY': ('America/New_York', 8, 17),
+    }
+    assert get_session_tag(ts, session_tz_map=tz_map) == 'Asia'
+# DST aware test

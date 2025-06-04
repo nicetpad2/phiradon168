@@ -54,3 +54,23 @@ def test_setup_output_directory_creates(tmp_path):
     base = tmp_path
     result = dl.setup_output_directory(str(base), 'out')
     assert os.path.isdir(result)
+
+
+def test_validate_m1_data_path_ok(tmp_path):
+    p = tmp_path / 'XAUUSD_M1.csv'
+    p.write_text('a,b\n1,2', encoding='utf-8')
+    assert dl.validate_m1_data_path(str(p)) is True
+
+
+def test_validate_m1_data_path_wrong_name(tmp_path, caplog):
+    p = tmp_path / 'bad.csv'
+    p.write_text('a,b\n1,2', encoding='utf-8')
+    with caplog.at_level('ERROR'):
+        assert not dl.validate_m1_data_path(str(p))
+    assert 'Unexpected M1 data file' in caplog.text
+
+
+def test_load_raw_data_m1_bad_path(tmp_path):
+    p = tmp_path / 'wrong.csv'
+    pd.DataFrame({'A': [1]}).to_csv(p)
+    assert dl.load_raw_data_m1(str(p)) is None

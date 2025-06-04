@@ -3,35 +3,31 @@
 from typing import List
 
 
-def is_soft_cooldown_triggered(
-    pnls: List[float],
-    lookback: int = 10,
-    loss_count: int = 3,
-    blocked_rate: float = 0.0,
-):
-    """Return True if losses exceed threshold within lookback.
+def is_soft_cooldown_triggered(pnls: List[float], lookback: int = 10, loss_count: int = 3):
+    """[Patch v5.0.24] Determine if soft cooldown should activate.
 
-    If `blocked_rate` > 0.5, reduce `loss_count` and `lookback` to make cooldown
-    easier to trigger.
+    If fewer than ``lookback`` trades exist, all available PnLs are considered.
+    This ensures early trades can still trigger the cooldown.
     """
-    if blocked_rate > 0.5:
-        loss_count = max(1, loss_count - 1)
-        lookback = max(5, lookback - 2)
-    if len(pnls) < lookback:
+
+    if not pnls:
         return False, 0
-    recent_losses = sum(1 for p in pnls[-lookback:] if p < 0)
+
+    effective_lookback = min(len(pnls), lookback)
+    recent_losses = sum(1 for p in pnls[-effective_lookback:] if p < 0)
     return recent_losses >= loss_count, recent_losses
 
 
-def step_soft_cooldown(remaining_bars: int) -> int:
-    """[Patch v5.0.20] Decrease soft cooldown bar counter.
+def step_soft_cooldown(remaining_bars: int, step: int = 1) -> int:
+    """[Patch v5.0.24] Decrease soft cooldown bar counter.
 
     Args:
         remaining_bars (int): Current remaining cooldown bars.
+        step (int): Number of bars to decrement per call.
 
     Returns:
         int: Updated remaining bars (never below zero).
     """
     if remaining_bars > 0:
-        return remaining_bars - 1
+        return max(0, remaining_bars - step)
     return 0
