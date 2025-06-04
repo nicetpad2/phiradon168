@@ -3,6 +3,11 @@
 - New/Updated unit tests added for src.strategy and main
 - QA: pytest -q passed (259 tests)
 
+### 2025-08-10
+- [Patch v5.5.3] Fix ML feature lookup for namedtuple rows
+- Updated unit tests with new line numbers for function registry
+- QA: pytest -q passed (265 tests)
+
 ### 2025-08-08
 - [Patch v5.4.5] Update features_main.json with default features
 - QA: pytest -q (partial)

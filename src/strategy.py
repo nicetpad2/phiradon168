@@ -2150,7 +2150,9 @@ def run_backtest_simulation_v34(
                         if missing_ml_features: logging.error(f"      (Error) ML Filter ({selected_model_key}): Missing features {missing_ml_features} in row data. Skipping filter."); can_open_order = False; block_reason = f"ML1_FEAT_MISS_{selected_model_key.upper()}"
                         else:
                             try:
-                                X_ml = pd.DataFrame([row[active_l1_features]]); numeric_cols_ml = X_ml.select_dtypes(include=np.number).columns
+                                # [Patch v5.5.3] Retrieve features from namedtuple row using getattr
+                                row_data = {f: getattr(row, f) for f in active_l1_features}
+                                X_ml = pd.DataFrame([row_data]); numeric_cols_ml = X_ml.select_dtypes(include=np.number).columns
                                 if X_ml[numeric_cols_ml].isin([np.inf, -np.inf]).any().any(): X_ml[numeric_cols_ml] = X_ml[numeric_cols_ml].replace([np.inf, -np.inf], 0)
                                 if X_ml[numeric_cols_ml].isnull().any().any(): X_ml[numeric_cols_ml] = X_ml[numeric_cols_ml].fillna(0)
                                 cat_cols_ml = X_ml.select_dtypes(exclude=np.number).columns
