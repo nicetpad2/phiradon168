@@ -18,6 +18,7 @@ import ta # Assumes 'ta' is imported and available (checked in Part 1)
 from sklearn.cluster import KMeans # For context column calculation
 from sklearn.preprocessing import StandardScaler # For context column calculation
 import gc # For memory management
+from src.utils.gc_utils import maybe_collect
 from functools import lru_cache
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
 
@@ -92,7 +93,7 @@ def ema(series, period):
     if series_numeric.empty: logging.warning("EMA: Series contains only NaN/Inf values or is empty after cleaning."); return pd.Series(np.nan, index=series.index, dtype='float32')
     try:
         ema_calculated = series_numeric.ewm(span=period, adjust=False, min_periods=max(1, period)).mean()
-        ema_result = ema_calculated.reindex(series.index); del series_numeric, ema_calculated; gc.collect()
+        ema_result = ema_calculated.reindex(series.index); del series_numeric, ema_calculated; maybe_collect()
         return ema_result.astype('float32')
     except Exception as e: logging.error(f"EMA calculation failed for period {period}: {e}", exc_info=True); return pd.Series(np.nan, index=series.index, dtype='float32')  # pragma: no cover
 
@@ -111,7 +112,7 @@ def sma(series, period):
         sma_result = series_numeric.rolling(window=period, min_periods=min_p).mean()
         sma_final = sma_result.reindex(series.index).astype('float32')
         _sma_cache[cache_key] = sma_final
-        del series_numeric, sma_result; gc.collect()
+        del series_numeric, sma_result; maybe_collect()
         return sma_final
     except Exception as e:
         logging.error(f"SMA calculation failed for period {period}: {e}", exc_info=True)
@@ -142,7 +143,7 @@ def rsi(series, period=14):
         # Reindex to original index with forward-fill
         rsi_final = rsi_series.reindex(series.index, method='ffill').astype('float32')
         del series_numeric, rsi_series
-        gc.collect()
+        maybe_collect()
         return rsi_final
     except Exception as e:
         logging.error(f"   (Error) RSI calculation error for period {period}: {e}.", exc_info=True)
@@ -192,10 +193,10 @@ def atr(df_in, period=14):
             logging.error(f"   (Error) Pandas EWM ATR calculation failed: {e_pd_atr}", exc_info=True)  # pragma: no cover
             df_result = df_in.copy(); df_result[atr_col_name] = np.nan; df_result[atr_shifted_col_name] = np.nan
             df_result[atr_col_name] = df_result[atr_col_name].astype('float32'); df_result[atr_shifted_col_name] = df_result[atr_shifted_col_name].astype('float32')
-            del df_temp; gc.collect(); return df_result
+            del df_temp; maybe_collect(); return df_result
     df_result = df_in.copy(); df_result[atr_col_name] = atr_series.reindex(df_in.index).astype('float32')
     df_result[atr_shifted_col_name] = atr_series.shift(1).reindex(df_in.index).astype('float32')
-    del df_temp, atr_series; gc.collect(); return df_result
+    del df_temp, atr_series; maybe_collect(); return df_result
 
 
 @lru_cache(maxsize=None)
@@ -224,7 +225,7 @@ def macd(series, window_slow=26, window_fast=12, window_sign=9):
         macd_line_final = macd_indicator.macd().reindex(series.index).ffill().astype('float32')
         macd_signal_final = macd_indicator.macd_signal().reindex(series.index).ffill().astype('float32')
         macd_diff_final = macd_indicator.macd_diff().reindex(series.index).ffill().astype('float32')
-        del series_numeric, macd_indicator; gc.collect()
+        del series_numeric, macd_indicator; maybe_collect()
         return (macd_line_final, macd_signal_final, macd_diff_final)
     except Exception as e: logging.error(f"   (Error) MACD calculation error: {e}.", exc_info=True); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
 
@@ -294,7 +295,7 @@ def rolling_zscore(series, window, min_periods=None):
         z_filled = z.fillna(0.0);
         if np.isinf(z_filled).any(): z_filled.replace([np.inf, -np.inf], 0.0, inplace=True)
         z_final = z_filled.reindex(series.index).fillna(0.0)
-        del series_numeric, rolling_mean, rolling_std, rolling_std_safe, z, z_filled; gc.collect()
+        del series_numeric, rolling_mean, rolling_std, rolling_std_safe, z, z_filled; maybe_collect()
         return z_final.astype('float32')
     except Exception as e: logging.error(f"Rolling Z-Score calculation failed for window {window}: {e}", exc_info=True); return pd.Series(0.0, index=series.index, dtype='float32')
 
@@ -325,7 +326,7 @@ def tag_price_structure_patterns(df):
     df_patterns.loc[choppy_cond & (df_patterns["Pattern_Label"] == "Normal"), "Pattern_Label"] = "Choppy"
     logging.info(f"      Pattern Label Distribution:\n{df_patterns['Pattern_Label'].value_counts(normalize=True).round(3).to_string()}")
     df["Pattern_Label"] = df_patterns["Pattern_Label"].astype('category')
-    del df_patterns, prev_high, prev_low, prev_gain, prev_body, prev_macd_hist, breakout_cond, reversal_cond, inside_bar_cond, strong_trend_cond, choppy_cond; gc.collect()
+    del df_patterns, prev_high, prev_low, prev_gain, prev_body, prev_macd_hist, breakout_cond, reversal_cond, inside_bar_cond, strong_trend_cond, choppy_cond; maybe_collect()
     return df
 
 def calculate_m15_trend_zone(df_m15):
@@ -360,7 +361,7 @@ def calculate_m15_trend_zone(df_m15):
         df["Trend_Zone"] = "NEUTRAL"; df.loc[is_up, "Trend_Zone"] = "UP"; df.loc[is_down, "Trend_Zone"] = "DOWN"
         if not df.empty: logging.info(f"   การกระจาย M15 Trend Zone:\n{df['Trend_Zone'].value_counts(normalize=True).round(3).to_string()}")
         result_df = df[["Trend_Zone"]].reindex(df_m15.index).fillna("NEUTRAL"); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category')
-        del df, is_up, is_down; gc.collect();
+        del df, is_up, is_down; maybe_collect();
         if cache_key is not None:
             _m15_trend_cache[cache_key] = result_df
         return result_df
