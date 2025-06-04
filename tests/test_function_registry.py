@@ -9,6 +9,7 @@ FUNCTIONS_INFO = [
     ("src/config.py", "print_gpu_utilization", 458),
     ("src/config.py", "show_system_status", 510),
 
+
     ("src/data_loader.py", "inspect_file_exists", 906),
     ("src/data_loader.py", "read_csv_with_date_parse", 911),
     ("src/data_loader.py", "check_nan_percent", 918),
@@ -19,6 +20,7 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "load_raw_data_m1", 976),
     ("src/data_loader.py", "load_raw_data_m15", 987),
     ("src/data_loader.py", "write_test_file", 992),
+
     ("src/features.py", "calculate_trend_zone", 1337),
     ("src/features.py", "tag_price_structure_patterns", 310),
     ("src/features.py", "create_session_column", 1344),
@@ -32,15 +34,16 @@ FUNCTIONS_INFO = [
 
 
 
+
 # [Patch v5.5.3] Updated expected line numbers
 
-    ("src/main.py", "parse_arguments", 1874),
-    ("src/main.py", "setup_output_directory", 1879),
-    ("src/main.py", "load_features_from_file", 1884),
-    ("src/main.py", "drop_nan_rows", 1889),
-    ("src/main.py", "convert_to_float32", 1894),
-    ("src/main.py", "run_initial_backtest", 1899),
-    ("src/main.py", "save_final_data", 1904),
+    ("src/main.py", "parse_arguments", 1876),
+    ("src/main.py", "setup_output_directory", 1881),
+    ("src/main.py", "load_features_from_file", 1886),
+    ("src/main.py", "drop_nan_rows", 1891),
+    ("src/main.py", "convert_to_float32", 1896),
+    ("src/main.py", "run_initial_backtest", 1901),
+    ("src/main.py", "save_final_data", 1906),
 
 
 
@@ -48,25 +51,25 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/main.py", "parse_arguments", 1874),
-    ("src/main.py", "setup_output_directory", 1879),
-    ("src/main.py", "load_features_from_file", 1884),
-    ("src/main.py", "drop_nan_rows", 1889),
-    ("src/main.py", "convert_to_float32", 1894),
-    ("src/main.py", "run_initial_backtest", 1899),
-    ("src/main.py", "save_final_data", 1904),
+    ("src/main.py", "parse_arguments", 1876),
+    ("src/main.py", "setup_output_directory", 1881),
+    ("src/main.py", "load_features_from_file", 1886),
+    ("src/main.py", "drop_nan_rows", 1891),
+    ("src/main.py", "convert_to_float32", 1896),
+    ("src/main.py", "run_initial_backtest", 1901),
+    ("src/main.py", "save_final_data", 1906),
 
 
 
 
 
     ("src/strategy.py", "run_backtest_simulation_v34", 1836),
-    ("src/strategy.py", "initialize_time_series_split", 4255),
-    ("src/strategy.py", "calculate_forced_entry_logic", 4258),
-    ("src/strategy.py", "apply_kill_switch", 4261),
-    ("src/strategy.py", "log_trade", 4264),
+    ("src/strategy.py", "initialize_time_series_split", 4256),
+    ("src/strategy.py", "calculate_forced_entry_logic", 4259),
+    ("src/strategy.py", "apply_kill_switch", 4262),
+    ("src/strategy.py", "log_trade", 4265),
     ("src/strategy.py", "calculate_metrics", 3004),
-    ("src/strategy.py", "aggregate_fold_results", 4267),
+    ("src/strategy.py", "aggregate_fold_results", 4268),
 
 
 

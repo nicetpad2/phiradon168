@@ -1,6 +1,8 @@
 import os
 import logging
 
+logger = logging.getLogger(__name__)
+
 # [Patch v5.5.4] Utility to read float from environment
 
 def get_env_float(key: str, default: float) -> float:
@@ -18,11 +20,17 @@ def get_env_float(key: str, default: float) -> float:
     float
         Parsed float or ``default``.
     """
-    value = os.getenv(key)
-    if value is None:
-        return default
+    if not isinstance(key, str):
+        raise TypeError("key must be a string")
+
+    raw_value = os.getenv(key)
     try:
-        return float(value)
-    except (ValueError, TypeError):
-        logging.warning(f"(Warning) Environment variable {key} is not a valid float: {value}")
+        return float(raw_value)
+    except TypeError:
+        logger.info(f"{key} not set, using default {default}")
+        return default
+    except ValueError:
+        logger.error(
+            f"Environment variable {key} cannot be parsed as float: {raw_value}"
+        )
         return default
