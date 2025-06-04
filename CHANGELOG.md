@@ -1,12 +1,14 @@
 ### 2025-07-02
-- [Patch v5.4.3] real_train_func supports real data
-- New/Updated unit tests added for src.training
-- QA: pytest -q passed (236 tests)
+
+[Patch v5.0.24] Improve soft cooldown logic
+New/Updated unit tests added for cooldown_utils
+QA: pytest -q passed (225 tests)
+
 
 ### 2025-07-01
-- [Patch v5.3.10] Handle optional models as warnings
-- New/Updated unit tests added for src.main
-- QA: pytest -q passed (219 tests)
+[Patch v5.3.10] Handle optional models as warnings
+New/Updated unit tests added for src.main
+QA: pytest -q passed (219 tests)
 
 ### 2025-06-30
 - [Patch v5.0.23] Fix GPU logging and optuna sweep fallback
@@ -503,8 +505,10 @@
 - New/Updated unit tests added for hyperparameter sweep filtering
 - QA: pytest -q passed (236 tests)
 
+
 ### 2025-08-07
 - [Patch v5.4.4] Validate M1 data path before loading
 - New/Updated unit tests added for src.data_loader
+
 - QA: pytest -q passed (236 tests)
 
