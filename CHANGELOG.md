@@ -4,6 +4,11 @@
 - New/Updated unit tests added for tests.test_threshold_optimization, tests.test_main_pipeline_cli
 - QA: pytest -q passed
 
+### 2025-08-21
+- [Patch v5.5.10] Extend ProjectP CLI with sweep and threshold modes
+- New/Updated unit tests added for tests.test_projectp_cli
+- QA: pytest -q passed
+
 
 ### 2025-08-20
 
