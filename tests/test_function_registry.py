@@ -35,15 +35,16 @@ FUNCTIONS_INFO = [
 
 
 
+
 # [Patch v5.5.3] Updated expected line numbers
 
-    ("src/main.py", "parse_arguments", 1874),
-    ("src/main.py", "setup_output_directory", 1879),
-    ("src/main.py", "load_features_from_file", 1884),
-    ("src/main.py", "drop_nan_rows", 1889),
-    ("src/main.py", "convert_to_float32", 1894),
-    ("src/main.py", "run_initial_backtest", 1899),
-    ("src/main.py", "save_final_data", 1904),
+    ("src/main.py", "parse_arguments", 1876),
+    ("src/main.py", "setup_output_directory", 1881),
+    ("src/main.py", "load_features_from_file", 1886),
+    ("src/main.py", "drop_nan_rows", 1891),
+    ("src/main.py", "convert_to_float32", 1896),
+    ("src/main.py", "run_initial_backtest", 1901),
+    ("src/main.py", "save_final_data", 1906),
 
 
 
@@ -51,13 +52,13 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/main.py", "parse_arguments", 1874),
-    ("src/main.py", "setup_output_directory", 1879),
-    ("src/main.py", "load_features_from_file", 1884),
-    ("src/main.py", "drop_nan_rows", 1889),
-    ("src/main.py", "convert_to_float32", 1894),
-    ("src/main.py", "run_initial_backtest", 1899),
-    ("src/main.py", "save_final_data", 1904),
+    ("src/main.py", "parse_arguments", 1876),
+    ("src/main.py", "setup_output_directory", 1881),
+    ("src/main.py", "load_features_from_file", 1886),
+    ("src/main.py", "drop_nan_rows", 1891),
+    ("src/main.py", "convert_to_float32", 1896),
+    ("src/main.py", "run_initial_backtest", 1901),
+    ("src/main.py", "save_final_data", 1906),
 
 
 
