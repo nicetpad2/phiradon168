@@ -4,10 +4,9 @@ import os
 import numpy as np
 import pandas as pd
 from joblib import dump
-from src.config import logger, USE_GPU_ACCELERATION, optuna
+from src.config import logger, USE_GPU_ACCELERATION
 from src.utils.model_utils import evaluate_model
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.linear_model import LogisticRegression
@@ -39,6 +38,7 @@ def real_train_func(
     output_dir: str,
     learning_rate: float = 0.01,
     depth: int = 6,
+    iterations: int = 100,
     l2_leaf_reg: int | float | None = None,
     seed: int = 42,
     trade_log_path: str | None = None,
@@ -70,13 +70,7 @@ def real_train_func(
         y = (y_raw > 0).astype(int).to_numpy()
         feature_names = feature_cols
     else:
-        X, y = make_classification(
-            n_samples=200,
-            n_features=5,
-            n_informative=3,
-            random_state=seed,
-        )
-        feature_names = [f"f{i}" for i in range(X.shape[1])]
+        raise FileNotFoundError("ต้องส่งไฟล์ trade log จริงมา")
 
     df_X = pd.DataFrame(X, columns=feature_names)
     # [Patch v5.4.5] Use stratified split when possible to avoid ROC AUC warnings
@@ -92,10 +86,12 @@ def real_train_func(
 
     if CatBoostClassifier:
         cat_params = {
-            "iterations": 100,
+            "iterations": iterations,
             "learning_rate": learning_rate,
             "depth": depth,
             "verbose": False,
+            "task_type": "GPU" if USE_GPU_ACCELERATION else "CPU",
+            "random_seed": seed,
         }
         if l2_leaf_reg is not None:
             cat_params["l2_leaf_reg"] = l2_leaf_reg  # pragma: no cover - catboost parameter
@@ -135,7 +131,9 @@ def optuna_sweep(
     output_path: str = "output_default/meta_classifier_optuna.pkl",
 ) -> dict:
     """ปรับ Hyperparameter ด้วย Optuna และบันทึกโมเดล"""
-    if optuna is None:
+    from src.config import optuna as _optuna
+
+    if _optuna is None:
         logger.error("optuna not available")
         return {}
 
@@ -154,7 +152,7 @@ def optuna_sweep(
         acc, auc = evaluate_model(model, X_test, y_test)
         return auc if not np.isnan(auc) else acc
 
-    study = optuna.create_study(direction="maximize")
+    study = _optuna.create_study(direction="maximize")
     study.optimize(objective, n_trials=n_trials)
     best_params = study.best_params
     best_model = RandomForestClassifier(**best_params)
