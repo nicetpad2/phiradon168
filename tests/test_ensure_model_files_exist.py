@@ -21,6 +21,10 @@ def test_no_action_when_files_exist(tmp_path, monkeypatch):
     out_dir.mkdir()
     (out_dir / 'meta_classifier.pkl').write_text('x')
     (out_dir / 'features_main.json').write_text('[]')
+    (out_dir / 'meta_classifier_spike.pkl').write_text('x')
+    (out_dir / 'features_spike.json').write_text('[]')
+    (out_dir / 'meta_classifier_cluster.pkl').write_text('x')
+    (out_dir / 'features_cluster.json').write_text('[]')
 
     called = {'train': False}
     monkeypatch.setattr(main, 'train_and_export_meta_model', lambda **k: ({'main': str(out_dir / 'meta_classifier.pkl')}, []))
@@ -41,18 +45,24 @@ def test_auto_train_when_missing(tmp_path, monkeypatch):
 
     called = {}
 
-    def dummy_train(**kwargs):
-        called['trained'] = True
-        (out_dir / 'meta_classifier.pkl').write_text('x')
-        (out_dir / 'features_main.json').write_text('[]')
-        return {'main': str(out_dir / 'meta_classifier.pkl')}, []
+    def dummy_train(model_purpose='main', **kwargs):
+        called.setdefault('trained', []).append(model_purpose)
+        (out_dir / f'meta_classifier_{model_purpose}.pkl').write_text('x')
+        (out_dir / f'features_{model_purpose}.json').write_text('[]')
+        return {model_purpose: str(out_dir / f'meta_classifier_{model_purpose}.pkl')}, []
 
     monkeypatch.setattr(main, 'train_and_export_meta_model', dummy_train)
 
     main.ensure_model_files_exist(str(out_dir), str(log_path)[:-4], str(m1_path)[:-4])
-    assert called.get('trained')
+    assert 'main' in called.get('trained', [])
+    assert 'spike' in called.get('trained', [])
+    assert 'cluster' in called.get('trained', [])
     assert (out_dir / 'meta_classifier.pkl').exists()
     assert (out_dir / 'features_main.json').exists()
+    assert (out_dir / 'meta_classifier_spike.pkl').exists()
+    assert (out_dir / 'features_spike.json').exists()
+    assert (out_dir / 'meta_classifier_cluster.pkl').exists()
+    assert (out_dir / 'features_cluster.json').exists()
 
 
 def test_placeholder_when_data_missing(tmp_path, monkeypatch):
@@ -60,3 +70,7 @@ def test_placeholder_when_data_missing(tmp_path, monkeypatch):
     main.ensure_model_files_exist(str(out_dir), 'log_missing', 'm1_missing')
     assert (out_dir / 'meta_classifier.pkl').exists()
     assert (out_dir / 'features_main.json').exists()
+    assert (out_dir / 'meta_classifier_spike.pkl').exists()
+    assert (out_dir / 'features_spike.json').exists()
+    assert (out_dir / 'meta_classifier_cluster.pkl').exists()
+    assert (out_dir / 'features_cluster.json').exists()

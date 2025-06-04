@@ -512,3 +512,9 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (236 tests)
 
+
+### 2025-08-08
+- [Patch v5.4.5] Auto-train spike and cluster models when missing
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (236 tests)
+
