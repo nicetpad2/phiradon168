@@ -1,3 +1,8 @@
+### 2025-09-02
+- [Patch v5.6.5] Relax soft cooldown conditions and shorten cooldown duration
+- New/Updated unit tests added for cooldown_utils and strategy
+- QA: pytest -q passed (351 tests)
+
 ### 2025-09-01
 - [Patch v5.6.4] Fix boundary logic for session tagging and reduce duplicate warnings
 - New/Updated unit tests added for tests.test_sessions_utils

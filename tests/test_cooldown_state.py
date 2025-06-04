@@ -31,7 +31,7 @@ def test_debounced_warnings():
 def test_enter_cooldown():
     state = CooldownState()
     enter_cooldown(state, 5)
-    assert state.cooldown_bars_remaining == 5
+    assert state.cooldown_bars_remaining == 3
 
 
 def test_update_losses_invalid():

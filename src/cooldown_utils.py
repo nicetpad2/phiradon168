@@ -151,11 +151,12 @@ def should_enter_cooldown(state: CooldownState, loss_thresh: int, dd_thresh: flo
 
 
 def enter_cooldown(state: CooldownState, lookback: int) -> int:
-    """[Patch] Begin a soft cooldown period."""
+    """[Patch v5.6.5] Begin a soft cooldown period with shorter duration."""
 
     if not isinstance(lookback, int):
         raise TypeError("lookback must be int")
-    state.cooldown_bars_remaining = lookback
+    # Apply only 60 % of the lookback for recovery agility
+    state.cooldown_bars_remaining = max(1, int(lookback * 0.6))
     return state.cooldown_bars_remaining
 
 
