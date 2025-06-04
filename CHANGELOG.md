@@ -1,5 +1,10 @@
 
 ### 2025-08-13
+- [Patch v5.5.7] Add ATR-based position sizing
+- New/Updated unit tests added for src.adaptive
+- QA: pytest -q passed (278 tests)
+
+### 2025-08-13
 - [Patch v5.5.7] Add dynamic lot sizing via drawdown
 - New/Updated unit tests added for adaptive module
 - QA: pytest -q passed
