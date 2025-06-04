@@ -22,7 +22,11 @@ from src.cooldown_utils import (
 )
 from itertools import product
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
-from src.config import print_gpu_utilization  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
+from src.config import (
+    print_gpu_utilization,  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
+    USE_MACD_SIGNALS,
+    USE_RSI_SIGNALS,
+)
 
 # อ่านเวอร์ชันจากไฟล์ VERSION
 VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
@@ -48,6 +52,8 @@ from src.features import (
     check_model_overfit,
     analyze_feature_importance_shap,
     check_feature_noise_shap,  # [Patch] เพิ่มการ import เพื่อตรวจสอบ SHAP noise
+    rsi,
+    macd,
 )  # [Patch] นำเข้า Dynamic Feature Selection & Overfitting Helpers
 import traceback
 from joblib import dump as joblib_dump # Use joblib dump directly
@@ -283,7 +289,8 @@ def train_and_export_meta_model(
     elif trade_log_path and isinstance(trade_log_path, str):
         logging.info(f"   กำลังโหลด Trade Log (Default Path): {trade_log_path}")
         try:
-            trade_log_df = safe_load_csv_auto(trade_log_path)
+            # [Patch v5.4.5] Limit loaded rows to manage memory for large logs
+            trade_log_df = safe_load_csv_auto(trade_log_path, row_limit=sample_size)
             if trade_log_df is None:
                 raise ValueError("safe_load_csv_auto returned None for trade log.")
             if trade_log_df.empty:
@@ -342,7 +349,8 @@ def train_and_export_meta_model(
         return None, []
 
     try:
-        m1_df = safe_load_csv_auto(m1_data_path)
+        # [Patch v5.4.5] Limit loaded rows to manage memory for large datasets
+        m1_df = safe_load_csv_auto(m1_data_path, row_limit=sample_size)
         if m1_df is None: raise ValueError("safe_load_csv_auto returned None for M1 data.")
         if m1_df.empty:
             logging.error("   (Error) M1 Data file is empty. Cannot proceed with training.")
@@ -3941,14 +3949,46 @@ def run_optuna_catboost_sweep(
     return study.best_value, study.best_params
 
 
-def generate_open_signals(df: pd.DataFrame) -> np.ndarray:
-    """สร้างสัญญาณเปิด order"""
-    return (df["Close"] > df["Close"].shift(1)).fillna(0).astype(np.int8).to_numpy()
+def generate_open_signals(
+    df: pd.DataFrame,
+    use_macd: bool = USE_MACD_SIGNALS,
+    use_rsi: bool = USE_RSI_SIGNALS,
+) -> np.ndarray:
+    """สร้างสัญญาณเปิด order พร้อมตัวเลือกเปิด/ปิด MACD และ RSI"""
+    open_mask = df["Close"] > df["Close"].shift(1)
+    if use_macd:
+        if "MACD_hist" not in df.columns:
+            _, _, macd_hist = macd(df["Close"])
+            df = df.copy()
+            df["MACD_hist"] = macd_hist
+        open_mask &= df["MACD_hist"] > 0
+    if use_rsi:
+        if "RSI" not in df.columns:
+            df = df.copy()
+            df["RSI"] = rsi(df["Close"])
+        open_mask &= df["RSI"] > 50
+    return open_mask.fillna(0).astype(np.int8).to_numpy()
 
 
-def generate_close_signals(df: pd.DataFrame) -> np.ndarray:
-    """สร้างสัญญาณปิด order"""
-    return (df["Close"] < df["Close"].shift(1)).fillna(0).astype(np.int8).to_numpy()
+def generate_close_signals(
+    df: pd.DataFrame,
+    use_macd: bool = USE_MACD_SIGNALS,
+    use_rsi: bool = USE_RSI_SIGNALS,
+) -> np.ndarray:
+    """สร้างสัญญาณปิด order พร้อมตัวเลือกเปิด/ปิด MACD และ RSI"""
+    close_mask = df["Close"] < df["Close"].shift(1)
+    if use_macd:
+        if "MACD_hist" not in df.columns:
+            _, _, macd_hist = macd(df["Close"])
+            df = df.copy()
+            df["MACD_hist"] = macd_hist
+        close_mask &= df["MACD_hist"] < 0
+    if use_rsi:
+        if "RSI" not in df.columns:
+            df = df.copy()
+            df["RSI"] = rsi(df["Close"])
+        close_mask &= df["RSI"] < 50
+    return close_mask.fillna(0).astype(np.int8).to_numpy()
 
 
 def precompute_sl_array(df: pd.DataFrame) -> np.ndarray:
