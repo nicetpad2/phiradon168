@@ -31,13 +31,13 @@ FUNCTIONS_INFO = [
 
 
 # [Patch v5.5.3] Updated expected line numbers
-    ("src/main.py", "parse_arguments", 1867),
-    ("src/main.py", "setup_output_directory", 1872),
-    ("src/main.py", "load_features_from_file", 1877),
-    ("src/main.py", "drop_nan_rows", 1882),
-    ("src/main.py", "convert_to_float32", 1887),
-    ("src/main.py", "run_initial_backtest", 1892),
-    ("src/main.py", "save_final_data", 1897),
+    ("src/main.py", "parse_arguments", 1875),
+    ("src/main.py", "setup_output_directory", 1880),
+    ("src/main.py", "load_features_from_file", 1885),
+    ("src/main.py", "drop_nan_rows", 1890),
+    ("src/main.py", "convert_to_float32", 1895),
+    ("src/main.py", "run_initial_backtest", 1900),
+    ("src/main.py", "save_final_data", 1905),
 
 
 
