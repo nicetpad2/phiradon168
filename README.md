@@ -91,6 +91,8 @@ from src.log_analysis import (
     calculate_drawdown_stats,
     parse_alerts,
     calculate_alert_summary,
+    export_summary_to_csv,
+    plot_summary,
 )
 
 logs_df = parse_trade_logs('logs')
@@ -100,5 +102,9 @@ reason_stats = calculate_reason_summary(logs_df)
 duration = calculate_duration_stats(logs_df)
 drawdown = calculate_drawdown_stats(logs_df)
 alerts = calculate_alert_summary('logs')
+export_summary_to_csv(summary.reset_index(), 'summary.csv.gz')
+fig = plot_summary(summary)
+fig.savefig('summary.png')
 ```
 ฟังก์ชัน `calculate_position_size` ยังช่วยคำนวณขนาดลอตที่เหมาะสมตามทุนและระยะ SL
+
