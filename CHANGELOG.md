@@ -610,4 +610,9 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.5.5] Persist default SESSION_TIMES_UTC in utils.sessions
 - QA: pytest -q passed
 
+### 2025-06-09
+- [Patch v5.5.6] Add M15 multi-timeframe trend filter for order entry
+- New/Updated unit tests added for strategy and features
+- QA: pytest -q passed
+
 

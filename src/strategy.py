@@ -1402,7 +1402,17 @@ def spike_guard_london(row, session, consecutive_losses):
     logging.debug("      (Spike Guard) Passed all checks.")
     return True
 
-def is_entry_allowed(row, session, consecutive_losses, signal_score_threshold=None):
+# [Patch v5.5.6] Multi-timeframe trend confirmation
+def is_mtf_trend_confirmed(m15_trend, side):
+    """Validate entry direction using M15 trend zone."""
+    trend = str(m15_trend).upper() if isinstance(m15_trend, str) else "NEUTRAL"
+    if side == "BUY" and trend != "UP":
+        return False
+    if side == "SELL" and trend != "DOWN":
+        return False
+    return True
+
+def is_entry_allowed(row, session, consecutive_losses, side, m15_trend=None, signal_score_threshold=None):
     """Checks if entry is allowed based on filters with debug logging."""
     if signal_score_threshold is None:
         global MIN_SIGNAL_SCORE_ENTRY
@@ -1411,6 +1421,10 @@ def is_entry_allowed(row, session, consecutive_losses, signal_score_threshold=No
     if not spike_guard_london(row, session, consecutive_losses):
         logging.debug("      Entry blocked by Spike Guard.")
         return False, "SPIKE_GUARD_LONDON"
+
+    if not is_mtf_trend_confirmed(m15_trend, side):
+        logging.debug("      Entry blocked by M15 Trend filter.")
+        return False, f"M15_TREND_{str(m15_trend).upper()}"
 
     signal_score = pd.to_numeric(getattr(row, "Signal_Score", np.nan), errors='coerce')
     if pd.isna(signal_score):
@@ -2050,7 +2064,15 @@ def run_backtest_simulation_v34(
                     last_logged_signal_thresh = current_thresh
             else:
                 current_thresh = MIN_SIGNAL_SCORE_ENTRY
-            entry_allowed, block_reason_entry = is_entry_allowed(row, session_tag, consecutive_losses, signal_score_threshold=current_thresh); open_new_order = False; is_reentry_trade = False; is_forced_entry = False
+            entry_allowed, block_reason_entry = is_entry_allowed(
+                row,
+                session_tag,
+                consecutive_losses,
+                side,
+                m15_trend,
+                signal_score_threshold=current_thresh,
+            );
+            open_new_order = False; is_reentry_trade = False; is_forced_entry = False
             if entry_allowed:
                 if (side == "BUY" and final_m1_signal == "BUY") or (side == "SELL" and final_m1_signal == "SELL"):
                     open_new_order = True; logging.debug(f"   Standard Entry Signal detected for {side} at {now}.")

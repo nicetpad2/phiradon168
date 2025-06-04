@@ -91,6 +91,13 @@ def test_calculate_m15_trend_zone_cache(caplog):
     pd.testing.assert_frame_equal(first, second)
 
 
+def test_get_mtf_sma_trend():
+    idx = pd.date_range('2024-01-01', periods=3, freq='15min')
+    df = pd.DataFrame({'Close': [1.0, 2.0, 3.0]}, index=idx)
+    trend = features.get_mtf_sma_trend(df, fast=1, slow=2, rsi_period=1, rsi_upper=70, rsi_lower=30)
+    assert trend in {'UP', 'DOWN', 'NEUTRAL'}
+
+
 def test_calculate_m1_entry_signals():
     df = pd.DataFrame(
         {
