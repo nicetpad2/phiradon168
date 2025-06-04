@@ -1,3 +1,8 @@
+### 2025-08-25
+- [Patch v5.5.15] Improve data_loader timezone handling and add data quality checks
+- New/Updated unit tests added for data_loader
+- QA: pytest -q passed
+
 ### 2025-08-24
 - [Patch v5.5.14] Refactor ProjectP CLI and add logging config
 - New/Updated unit tests added for tests.test_projectp_cli

@@ -35,6 +35,12 @@ def test_safe_set_datetime_handles_timezone():
     assert df.loc[0, 'Date'] == pd.Timestamp('2024-01-02')
 
 
+def test_safe_set_datetime_naive_tz():
+    df = pd.DataFrame(index=[0])
+    dl.safe_set_datetime(df, 0, 'Date', '2024-01-02 07:00:00', naive_tz='Asia/Bangkok')
+    assert df.loc[0, 'Date'] == pd.Timestamp('2024-01-02 00:00:00')
+
+
 def test_rsi_returns_nan_when_ta_missing(monkeypatch):
     series = pd.Series([1, 2, 3], dtype='float32')
     monkeypatch.setattr(dl, 'ta', None, raising=False)
