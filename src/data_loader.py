@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-# <<< เพิ่ม Encoding declaration สำหรับอักษรไทย (ควรอยู่บรรทัดแรกหรือสองของไฟล์) >>>
-
-# ==============================================================================
-# -*- coding: utf-8 -*-
-# <<< เพิ่ม Encoding declaration สำหรับอักษรไทย (ควรอยู่บรรทัดแรกหรือสองของไฟล์) >>>
+# <<< เพิ่ม Encoding declaration สำหรับอักษรไทย (ควรอยู่บรรทัดแรกสุด) >>>
 
 # ==============================================================================
 # === START OF PART 3/12 ===
@@ -58,6 +54,8 @@ def simple_converter(o):  # pragma: no cover
         return float(o)
     if isinstance(o, pd.Timestamp):
         return o.isoformat()
+    if isinstance(o, pd.Timedelta):
+        return str(o)
     if isinstance(o, np.bool_):
         return bool(o)
     if pd.isna(o):
@@ -185,86 +183,51 @@ def set_thai_font(font_name="Loma"):  # pragma: no cover
         logging.warning(f"   (Warning) Could not find any suitable Thai fonts ({preferred_fonts}) using findfont.")
         return False
 
-# [Patch v5.0.2] Exclude setup_fonts from coverage
+# [Patch v5.6.0] Split font installation and configuration helpers
+def install_thai_fonts_colab():  # pragma: no cover
+    """Install Thai fonts when running on Google Colab."""
+    try:
+        subprocess.run(["sudo", "apt-get", "update", "-qq"], check=False, capture_output=True, text=True, timeout=120)
+        subprocess.run(["sudo", "apt-get", "install", "-y", "-qq", "fonts-thai-tlwg"], check=False, capture_output=True, text=True, timeout=180)
+        subprocess.run(["fc-cache", "-fv"], check=False, capture_output=True, text=True, timeout=120)
+        return True
+    except Exception as e:
+        logging.error(f"      (Error) Failed to install Thai fonts: {e}")
+        return False
+
+
+def configure_matplotlib_fonts(font_name="TH Sarabun New"):  # pragma: no cover
+    """Configure Matplotlib to use a given Thai font."""
+    return set_thai_font(font_name)
+
+
 def setup_fonts(output_dir=None):  # pragma: no cover
-    """
-    Sets up Thai fonts for Matplotlib plots.
-    Attempts to find preferred fonts, installs 'fonts-thai-tlwg' on Colab if needed.
-    """
+    """Sets up Thai fonts for Matplotlib plots."""
     logging.info("\n(Processing) Setting up Thai font for plots...")
     font_set_successfully = False
-    preferred_font_name = "TH Sarabun New" # Prioritize this font
-
+    preferred_font_name = "TH Sarabun New"
     try:
         ipython = get_ipython()
         in_colab = ipython is not None and 'google.colab' in str(ipython)
-
-        logging.info("   Attempting to set font directly using findfont...")
-        font_set_successfully = set_thai_font(preferred_font_name)
-
+        font_set_successfully = configure_matplotlib_fonts(preferred_font_name)
         if not font_set_successfully and in_colab:
             logging.info("\n   Preferred font not found. Attempting installation via apt-get (Colab)...")
-            try:
-                logging.info("      Installing Thai fonts (fonts-thai-tlwg)... This might take a moment.")
-                # Update package list quietly
-                apt_update_process = subprocess.run(
-                    ["apt-get", "update", "-qq"],
-                    check=False, capture_output=True, text=True, timeout=120 # Added timeout
-                )
-                if apt_update_process.returncode != 0:
-                    logging.warning(f"      (Warning) apt-get update failed (Code: {apt_update_process.returncode}): {apt_update_process.stderr[:200]}...")
-
-                # Install Thai fonts quietly
-                apt_install_process = subprocess.run(
-                    ["apt-get", "install", "-y", "-qq", "fonts-thai-tlwg"],
-                    check=False, capture_output=True, text=True, timeout=180 # Added timeout
-                )
-
-                if apt_install_process.returncode == 0:
-                    logging.info("      (Success) apt-get install fonts-thai-tlwg potentially completed.")
-                    logging.info("      Rebuilding Matplotlib font cache...")
-                    try:
-                        fm._load_fontmanager(try_read_cache=False) # Force rebuild
-                        logging.info("      Font cache rebuilt. Attempting to set font again...")
-                        font_set_successfully = set_thai_font(preferred_font_name)
-                        if not font_set_successfully: # Try another common one if preferred still not found
-                            font_set_successfully = set_thai_font("Loma")
-
-                        if font_set_successfully:
-                            logging.info("      (Success) Thai font set after installation and cache rebuild.")
-                        else:
-                            logging.warning("      (Warning) Thai font still not set after installation. A manual Colab Runtime Restart might be needed.")
-                            logging.warning("      *****************************************************")
-                            logging.warning("      *** Please RESTART RUNTIME now for Matplotlib     ***")
-                            logging.warning("      *** to recognize the new fonts if plots fail.     ***")
-                            logging.warning("      *** (เมนู Runtime -> Restart runtime...)         ***")
-                            logging.warning("      *****************************************************")
-                    except Exception as e_cache:
-                        logging.error(f"      (Error) Failed to rebuild font cache or set font after install: {e_cache}", exc_info=True)
-                else:
-                    logging.warning(f"      (Warning) apt-get install failed (Code: {apt_install_process.returncode}): {apt_install_process.stderr[:200]}...")
-            except subprocess.TimeoutExpired:
-                logging.error("      (Error) Timeout during apt-get font installation.")
-            except Exception as e_generic_install: # Catch any other installation errors
-                logging.error(f"      (Error) General error during font installation attempt: {e_generic_install}", exc_info=True)
-
-        # If still not set, try other fallbacks
+            if install_thai_fonts_colab():
+                fm._load_fontmanager(try_read_cache=False)
+                font_set_successfully = configure_matplotlib_fonts(preferred_font_name) or configure_matplotlib_fonts("Loma")
         if not font_set_successfully:
-            fallback_fonts = ["Loma", "Garuda", "Norasi", "Kinnari", "Waree", "THSarabunNew"] # Ensure THSarabunNew is tried again if initial fails
+            fallback_fonts = ["Loma", "Garuda", "Norasi", "Kinnari", "Waree", "THSarabunNew"]
             logging.info(f"\n   Trying fallbacks ({', '.join(fallback_fonts)})...")
             for fb_font in fallback_fonts:
-                if set_thai_font(fb_font):
+                if configure_matplotlib_fonts(fb_font):
                     font_set_successfully = True
                     break
-
         if not font_set_successfully:
             logging.critical("\n   (CRITICAL WARNING) Could not set any preferred Thai font. Plots WILL NOT render Thai characters correctly.")
         else:
             logging.info("\n   (Info) Font setup process complete.")
-
     except Exception as e:
         logging.error(f"   (Error) Critical error during font setup: {e}", exc_info=True)
-
 # --- Data Loading Helper ---
 # [Patch v5.0.2] Exclude safe_load_csv_auto from coverage
 def safe_load_csv_auto(file_path, row_limit=None, chunk_size=None):  # pragma: no cover
@@ -281,15 +244,18 @@ def safe_load_csv_auto(file_path, row_limit=None, chunk_size=None):  # pragma: n
                               is empty, or None if loading fails.
     """
     read_csv_kwargs = {"index_col": 0, "parse_dates": False, "low_memory": False}
-    if row_limit is not None and isinstance(row_limit, int) and row_limit > 0:
-        read_csv_kwargs["nrows"] = row_limit
-    if chunk_size is not None and isinstance(chunk_size, int) and chunk_size > 0 and row_limit is None:
+    if chunk_size is not None and isinstance(chunk_size, int) and chunk_size > 0:
+        if row_limit is not None:
+            logging.info(
+                "         (Info) chunk_size provided with row_limit; chunk_size overrides row_limit"
+            )
         read_csv_kwargs["chunksize"] = chunk_size
+    elif row_limit is not None and isinstance(row_limit, int) and row_limit > 0:
+        read_csv_kwargs["nrows"] = row_limit
     logging.info(f"      (safe_load) Attempting to load: {os.path.basename(file_path)}")
 
     if not isinstance(file_path, str) or not file_path:
-        logging.error("         (Error) Invalid file path provided to safe_load_csv_auto.")
-        return None
+        raise TypeError("file_path must be a string")
     if not os.path.exists(file_path):
         logging.error(f"         (Error) File not found: {file_path}")
         return None
@@ -313,7 +279,7 @@ def safe_load_csv_auto(file_path, row_limit=None, chunk_size=None):  # pragma: n
                 return pd.concat(chunks, ignore_index=False)
             return pd.read_csv(file_path, **read_csv_kwargs)
     except pd.errors.EmptyDataError:
-        logging.warning(f"         (Warning) File is empty: {file_path}")
+        logging.info(f"         (Info) File is empty: {file_path}")
         return pd.DataFrame()
     except Exception as e:
         logging.error(f"         (Error) Failed to load file '{os.path.basename(file_path)}': {e}", exc_info=True)

@@ -60,6 +60,11 @@ def test_simple_converter_edge_cases():
     assert dl.simple_converter(Dummy()) == "dummy"
 
 
+def test_simple_converter_timedelta():
+    td = pd.Timedelta("1 days")
+    assert dl.simple_converter(td) == "1 days 00:00:00"
+
+
 def test_safe_get_global_returns_default():
     assert dl.safe_get_global('NON_EXISTENT_VAR', 123) == 123
 
