@@ -1141,14 +1141,17 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
         }
 
         model_keys = []
+        # [Patch v5.3.10] Handle missing optional models gracefully
         for key, path in model_paths.items():
             if os.path.exists(path):
                 model_keys.append(key)
             else:
-                logging.error(f"  (Error) ไม่พบไฟล์ Model '{key}' ({os.path.basename(path)}).")
                 if key == 'main':
+                    logging.error(f"  (Error) ไม่พบไฟล์ Model '{key}' ({os.path.basename(path)}).")
                     logging.critical("   (CRITICAL) Main model file is missing. Cannot proceed with FULL_RUN.")
                     return None
+                else:
+                    logging.warning(f"  (Warning) ไม่พบไฟล์ Model '{key}' ({os.path.basename(path)}). ข้ามการโหลด.")
 
         for model_key in model_keys:
             model_path = model_paths[model_key]
@@ -1174,14 +1177,20 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
 
             logging.info(f"(Loading) พยายามโหลด Features สำหรับ '{model_key}'...")
             features_list = load_features_for_model(model_key, OUTPUT_DIR)
+            # [Patch v5.3.10] Treat missing optional feature files as warnings
             if features_list is None:
-                logging.error(f"  (Error) ไม่สามารถโหลด Features สำหรับ Model '{model_key}'.")
-                if loaded_model is not None:
-                    logging.warning(f"      (Invalidating) Model '{model_key}' ถูกปิดใช้งานเนื่องจากโหลด Features ไม่สำเร็จ.")
-                    loaded_model = None
                 if model_key == 'main':
+                    logging.error(f"  (Error) ไม่สามารถโหลด Features สำหรับ Model '{model_key}'.")
+                    if loaded_model is not None:
+                        logging.warning(f"      (Invalidating) Model '{model_key}' ถูกปิดใช้งานเนื่องจากโหลด Features ไม่สำเร็จ.")
+                        loaded_model = None
                     logging.critical("   (CRITICAL) Failed to load features for main model. Cannot proceed.")
                     return None
+                else:
+                    logging.warning(f"  (Warning) ไม่สามารถโหลด Features สำหรับ Model '{model_key}'. ข้าม model.")
+                    if loaded_model is not None:
+                        logging.warning(f"      (Invalidating) Model '{model_key}' ถูกปิดใช้งานเนื่องจากโหลด Features ไม่สำเร็จ.")
+                        loaded_model = None
             else:
                 logging.info(f"  (Success) โหลด Features ({len(features_list)}) สำหรับ Model '{model_key}' สำเร็จ.")
 
@@ -1562,6 +1571,10 @@ if __name__ == "__main__":
 
         logger.info(f"   เวลาดำเนินการทั้งหมด: {total_duration:.2f} วินาที ({total_duration/60:.2f} นาที).")
         logger.info("--- End of Script ---")
+        # [Patch v5.4.1] สรุปผลแบบย่อสำหรับโหมด COMPACT_LOG
+        logger.warning(
+            f"[SUMMARY] Runtime: {total_duration:.2f}s | Output: {output_dir_final_path or 'N/A'}"
+        )
 
 # === END OF PART 10/12 ===
 # === START OF PART 11/12 ===

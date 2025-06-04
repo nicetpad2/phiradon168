@@ -56,8 +56,9 @@ LOG_FILENAME = f'gold_ai_v{__version__}_qa.log'
 
 # ตั้งค่า Logger กลางเพื่อให้โมดูลอื่น ๆ ใช้งานร่วมกัน
 logger = logging.getLogger('NiceGold')
-# [Patch v5.3.9] ปรับระดับ logger ผ่านตัวแปรสภาพแวดล้อม LOG_LEVEL
-_log_level_name = os.environ.get('LOG_LEVEL', 'INFO').upper()
+# [Patch v5.4.1] รองรับโหมด COMPACT_LOG เพื่อลดข้อความที่แสดงบนหน้าจอ
+_compact_log = os.environ.get('COMPACT_LOG', '0') == '1'
+_log_level_name = 'WARNING' if _compact_log else os.environ.get('LOG_LEVEL', 'INFO').upper()
 _log_level = getattr(logging, _log_level_name, logging.INFO)
 logger.setLevel(_log_level)
 formatter = logging.Formatter(
@@ -593,7 +594,13 @@ MAX_SLIPPAGE_POINTS = -1.0      # Maximum slippage in points (negative means bet
 
 # --- Entry/Exit Logic Parameters ---
 logging.debug("Setting Entry/Exit Logic Parameters...")
-MIN_SIGNAL_SCORE_ENTRY = 1.0    # [Patch v5.3.9] Lower threshold to allow testing
+MIN_SIGNAL_SCORE_ENTRY = 2.0    # Minimum signal score required to open an order
+# [Patch v5.3.9] Adaptive threshold settings
+ADAPTIVE_SIGNAL_SCORE_WINDOW = 1000   # Bars used for quantile calculation
+ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.7  # Quantile for threshold (e.g., 70th)
+MIN_SIGNAL_SCORE_ENTRY_MIN = 0.5      # Clamp lower bound
+MIN_SIGNAL_SCORE_ENTRY_MAX = 3.0      # Clamp upper bound
+USE_ADAPTIVE_SIGNAL_SCORE = True
 BASE_TP_MULTIPLIER = 1.8        # Base R-multiple for TP2 (before dynamic adjustment)
 BASE_BE_SL_R_THRESHOLD = 1.0    # Base R-multiple threshold to move SL to Breakeven
 ADAPTIVE_TSL_START_ATR_MULT = 1.5 # ATR multiplier from entry price to start Trailing Stop Loss
