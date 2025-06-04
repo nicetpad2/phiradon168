@@ -737,7 +737,9 @@ PATTERN_CHOPPY_CANDLE_RATIO = 0.3 # Min candle ratio for 'Choppy' pattern
 PATTERN_CHOPPY_WICK_RATIO = 0.6 # Max wick ratio for 'Choppy' pattern
 
 # --- Drift & Data Quality Configuration ---
+
 logging.debug("Setting Drift & Data Quality Configuration...")
+
 # [Patch v5.5.4] Allow override via environment variable
 DRIFT_WASSERSTEIN_THRESHOLD = get_env_float("DRIFT_WASSERSTEIN_THRESHOLD", 0.1)
 DRIFT_TTEST_ALPHA = 0.05        # Alpha level for T-test drift detection

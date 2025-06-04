@@ -13,6 +13,7 @@ import logging
 import os
 import sys
 import json
+from src.utils import get_env_float
 if 'pytest' in sys.modules:
     cfg = sys.modules.get('src.config')
     if cfg is not None and getattr(cfg, '__file__', None) is None and hasattr(cfg, 'ENTRY_CONFIG_PER_FOLD'):
