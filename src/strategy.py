@@ -95,7 +95,7 @@ DEFAULT_META_CLASSIFIER_PATH = "meta_classifier.pkl"
 DEFAULT_SPIKE_MODEL_PATH = "meta_classifier_spike.pkl"
 DEFAULT_CLUSTER_MODEL_PATH = "meta_classifier_cluster.pkl"
 DEFAULT_MODEL_TO_LINK = "catboost"
-DEFAULT_ENABLE_OPTUNA_TUNING = False
+DEFAULT_ENABLE_OPTUNA_TUNING = True
 DEFAULT_OPTUNA_N_TRIALS = 50
 DEFAULT_OPTUNA_CV_SPLITS = 5
 DEFAULT_OPTUNA_METRIC = "AUC"
@@ -388,14 +388,18 @@ def train_and_export_meta_model(
     logging.info("   กำลังรวม Trade Log กับ M1 Features (merge_asof)...")
     try:
         if not pd.api.types.is_datetime64_any_dtype(trade_log_df["datetime"]):
-            trade_log_df["datetime"] = pd.to_datetime(trade_log_df["datetime"], errors='coerce')
-            trade_log_df.dropna(subset=["datetime"], inplace=True)
+            trade_log_df["datetime"] = pd.to_datetime(trade_log_df["datetime"], errors='coerce', utc=True)
+        else:
+            trade_log_df["datetime"] = pd.to_datetime(trade_log_df["datetime"], utc=True)
+        trade_log_df.dropna(subset=["datetime"], inplace=True)
         if trade_log_df.empty:
             logging.error("(Error) ไม่มี Trades ที่มี datetime ถูกต้องหลังการแปลง (ก่อน Merge).")
             return None, []
         if not pd.api.types.is_datetime64_any_dtype(m1_df["datetime"]):
-            m1_df["datetime"] = pd.to_datetime(m1_df["datetime"], errors='coerce')
-            m1_df.dropna(subset=["datetime"], inplace=True)
+            m1_df["datetime"] = pd.to_datetime(m1_df["datetime"], errors='coerce', utc=True)
+        else:
+            m1_df["datetime"] = pd.to_datetime(m1_df["datetime"], utc=True)
+        m1_df.dropna(subset=["datetime"], inplace=True)
         if trade_log_df.empty or m1_df.empty:
             logging.error("(Error) DataFrame ว่างหลังการเตรียม datetime สำหรับ merge.")
             return None, []
@@ -3795,6 +3799,38 @@ def run_all_folds_with_threshold(
 
 logging.info("Part 9: Walk-Forward Orchestration & Analysis Functions Loaded.")
 # === END OF PART 9/12 ===
+
+def summarize_wfv_results(all_fold_metrics):
+    """สรุปผล Walk-Forward เป็น DataFrame"""
+    def _find_metric(d, keyword):
+        for k, v in d.items():
+            if keyword in k:
+                return v
+        return 0
+
+    records = []
+    for i, fm in enumerate(all_fold_metrics):
+        buy = fm.get("buy", {})
+        sell = fm.get("sell", {})
+        pnl = _find_metric(buy, "Total Net Profit") + _find_metric(sell, "Total Net Profit")
+        win = (_find_metric(buy, "Win Rate") + _find_metric(sell, "Win Rate")) / 2.0
+        dd = max(_find_metric(buy, "Max Drawdown"), _find_metric(sell, "Max Drawdown"))
+        records.append({"fold_no": i + 1, "PnL_total": pnl, "Win_Rate": win, "Max_Drawdown": dd})
+    return pd.DataFrame(records)
+
+def summarize_wfv_results(all_fold_metrics):
+    """สรุปผล Walk-Forward เป็น DataFrame"""
+    records = []
+    for i, fm in enumerate(all_fold_metrics):
+        buy = fm.get("buy", {})
+        sell = fm.get("sell", {})
+        pnl = buy.get(f"Fold {i+1} Buy (", 0)  # placeholder
+        win = buy.get(f"Fold {i+1} Buy (", 0)
+        dd_buy = buy.get(f"Fold {i+1} Buy (", 0)
+        dd_sell = sell.get(f"Fold {i+1} Sell (", 0)
+        max_dd = max(dd_buy, dd_sell)
+        records.append({"fold_no": i+1, "PnL_total": pnl, "Win_Rate": win, "Max_Drawdown": max_dd})
+    return pd.DataFrame(records)
 
 # ------------------------------------------------------------------------------
 # === Simple Numba Backtest Helpers ===

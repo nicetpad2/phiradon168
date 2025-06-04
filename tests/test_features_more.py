@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 import pytest
+import logging
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
@@ -78,6 +79,16 @@ def test_clean_m1_data_basic():
     assert not np.isinf(cleaned['Candle_Body']).any()
     assert 'Pattern_Label' in feats and 'session' in feats
     assert cleaned['Pattern_Label'].dtype.name == 'category'
+
+
+def test_calculate_m15_trend_zone_cache(caplog):
+    idx = pd.date_range('2024-01-01', periods=2, freq='15min')
+    df = pd.DataFrame({'Close': [1.0, 1.1]}, index=idx)
+    with caplog.at_level(logging.INFO):
+        first = features.calculate_m15_trend_zone(df)
+        second = features.calculate_m15_trend_zone(df)
+    assert 'cache' in ''.join(caplog.messages).lower()
+    pd.testing.assert_frame_equal(first, second)
 
 
 def test_calculate_m1_entry_signals():

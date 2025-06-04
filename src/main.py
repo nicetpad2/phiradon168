@@ -87,7 +87,7 @@ DEFAULT_SPIKE_MODEL_PATH = "meta_classifier_spike.pkl"
 DEFAULT_CLUSTER_MODEL_PATH = "meta_classifier_cluster.pkl"
 DEFAULT_FUND_NAME = CFG_DEFAULT_FUND_NAME if 'CFG_DEFAULT_FUND_NAME' in globals() else "NORMAL"
 DEFAULT_MODEL_TO_LINK = "catboost"
-DEFAULT_ENABLE_OPTUNA_TUNING = False
+DEFAULT_ENABLE_OPTUNA_TUNING = True
 DEFAULT_SAMPLE_SIZE = 60000
 DEFAULT_FEATURES_TO_DROP = None
 DEFAULT_MULTI_FUND_MODE = CFG_MULTI_FUND_MODE if 'CFG_MULTI_FUND_MODE' in globals() else True
@@ -946,8 +946,16 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                 sys.exit("ออก: M1 ว่างเปล่าหลัง clean_m1_data.")
 
             logging.info("(Processing) กำลังรวม M15 Trend Zone...");
-            if not isinstance(df_m1_cleaned.index, pd.DatetimeIndex): df_m1_cleaned.index = pd.to_datetime(df_m1_cleaned.index, errors='coerce'); df_m1_cleaned = df_m1_cleaned[df_m1_cleaned.index.notna()]
-            if not isinstance(df_m15_trend.index, pd.DatetimeIndex): df_m15_trend.index = pd.to_datetime(df_m15_trend.index, errors='coerce'); df_m15_trend = df_m15_trend[df_m15_trend.index.notna()]
+            if not isinstance(df_m1_cleaned.index, pd.DatetimeIndex):
+                df_m1_cleaned.index = pd.to_datetime(df_m1_cleaned.index, errors='coerce', utc=True)
+            else:
+                df_m1_cleaned.index = pd.to_datetime(df_m1_cleaned.index, utc=True)
+            df_m1_cleaned = df_m1_cleaned[df_m1_cleaned.index.notna()]
+            if not isinstance(df_m15_trend.index, pd.DatetimeIndex):
+                df_m15_trend.index = pd.to_datetime(df_m15_trend.index, errors='coerce', utc=True)
+            else:
+                df_m15_trend.index = pd.to_datetime(df_m15_trend.index, utc=True)
+            df_m15_trend = df_m15_trend[df_m15_trend.index.notna()]
             df_m1_cleaned = df_m1_cleaned.sort_index(); df_m15_trend = df_m15_trend.sort_index()
             df_m1_merged = pd.merge_asof(df_m1_cleaned, df_m15_trend[["Trend_Zone"]], left_index=True, right_index=True, direction="backward", tolerance=pd.Timedelta(minutes=TIMEFRAME_MINUTES_M15 * 2))
             initial_trend_nan = df_m1_merged["Trend_Zone"].isna().sum();

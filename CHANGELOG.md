@@ -492,10 +492,8 @@
 - New/Updated unit tests added for src.main
 - QA: pytest -q passed (225 tests)
 
-### 2025-06-04
-
-- [Patch v5.4.3] Improve auto-train logging and cooldown logic
-- New/Updated unit tests added for src.cooldown_utils, src.main, src.strategy
-- QA: pytest -q passed (236 tests)
-
+### 2025-09-01
+- [Patch v5.4.3] Timezone alignment, caching, CLI log level
+- New/Updated unit tests added for features and profile_backtest
+- QA: pytest -q passed (237 tests)
 
