@@ -1737,6 +1737,8 @@ def run_backtest_simulation_v34(
     kill_switch_trigger_time = pd.NaT
     current_risk_mode = "normal"; trade_history_list = []
     error_in_loop = False
+    # [Patch] Track last logged threshold to avoid spam
+    last_logged_signal_thresh = None
 
     if not isinstance(df_m1_segment_pd, pd.DataFrame): logging.error(f"   (Error) Invalid input: df_m1_segment_pd is not a DataFrame for {label}."); run_summary_error = {"error_in_loop": True, "total_commission": 0, "total_spread": 0, "total_slippage": 0}; return pd.DataFrame(), pd.DataFrame(), initial_capital_segment, equity_history, 0.0, run_summary_error, blocked_order_log, "N/A", "N/A", initial_kill_switch_state, initial_consecutive_losses, 0.0
     if df_m1_segment_pd.empty: logging.warning(f"   (Warning) Input DataFrame is empty for {label}. Skipping simulation."); run_summary_error = {"error_in_loop": False, "total_commission": 0, "total_spread": 0, "total_slippage": 0}; return df_m1_segment_pd, pd.DataFrame(), initial_capital_segment, equity_history, 0.0, run_summary_error, blocked_order_log, "N/A", "N/A", initial_kill_switch_state, initial_consecutive_losses, 0.0
@@ -1997,7 +1999,14 @@ def run_backtest_simulation_v34(
                     MIN_SIGNAL_SCORE_ENTRY_MIN,
                     MIN_SIGNAL_SCORE_ENTRY_MAX,
                 )
-                logging.info(f"[Adaptive] Current Signal_Score threshold: {current_thresh:.2f}")
+                if (
+                    last_logged_signal_thresh is None
+                    or abs(current_thresh - last_logged_signal_thresh) > 1e-6
+                ):
+                    logging.info(
+                        f"[Adaptive] Current Signal_Score threshold: {current_thresh:.2f}"
+                    )
+                    last_logged_signal_thresh = current_thresh
             else:
                 current_thresh = MIN_SIGNAL_SCORE_ENTRY
             entry_allowed, block_reason_entry = is_entry_allowed(row, session_tag, consecutive_losses, signal_score_threshold=current_thresh); open_new_order = False; is_reentry_trade = False; is_forced_entry = False
