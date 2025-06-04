@@ -517,7 +517,9 @@ QA: pytest -q passed (219 tests)
 
 
 ### 2025-08-08
-- [Patch v5.4.5] Support row-limited CSV loading
-- New/Updated unit tests added for data loader and strategy
-- QA: pytest -q passed
+
+- [Patch v5.4.5] Auto-train spike and cluster models when missing
+- New/Updated unit tests added for src.main
+- QA: pytest -q passed (236 tests)
+
 
