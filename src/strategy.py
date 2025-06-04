@@ -3957,6 +3957,10 @@ def run_all_folds_with_threshold(
             + metrics_sell_fold.get(f"Fold {fold+1} Sell ({fund_name}) Win Rate (Full) (%)", 0.0)
         ) / 200.0
         fold_maxdd = max(dd_buy, dd_sell)
+        if fold_maxdd > 0.10:
+            logging.error(
+                f"[ALERT] Fold {fold+1} ({fund_name}) MaxDD {fold_maxdd:.2%} เกิน 10%"
+            )
         logging.warning(
             f"=============== Fold {fold+1}/{n_walk_forward_splits} ({fund_name}) ==============="
         )
