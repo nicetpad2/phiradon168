@@ -1,19 +1,25 @@
 """Utility functions for analyzing trade logs."""
+# [Patch v5.5.16] Enhanced regex patterns and added export/plot helpers
 
 from __future__ import annotations
 
 import pandas as pd
 import re
+import logging
 from datetime import datetime
+from pathlib import Path
 
 
 
-LOG_OPEN_RE = re.compile(r"Open New Order.*?at (?P<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{2}:\d{2})")
-LOG_CLOSE_RE = re.compile(
+# [Patch] Regex patterns kept as constants for easier maintenance
+ORDER_OPEN_PATTERN = re.compile(
+    r"Open New Order.*?at (?P<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{2}:\d{2})"
+)
+ORDER_CLOSE_PATTERN = re.compile(
     r"Order Closing: Time=(?P<close>[^,]+), Final Reason=(?P<reason>[^,]+), ExitPrice=(?P<exit>[\d.]+), EntryTime=(?P<entry>[^,]+)"
 )
-LOG_PNL_RE = re.compile(r"PnL\(Net USD\)=(?P<pnl>-?[\d.]+)")
-LOG_ALERT_RE = re.compile(r"^(?P<level>WARNING|ERROR|CRITICAL):[^:]*:(?P<msg>.*)$")
+PNL_PATTERN = re.compile(r"PnL\(Net USD\)=(?P<pnl>-?[\d.]+)")
+ALERT_PATTERN = re.compile(r"^(?P<level>WARNING|ERROR|CRITICAL):[^:]*:(?P<msg>.*)$")
 
 
 def parse_trade_logs(log_path: str) -> pd.DataFrame:
@@ -29,21 +35,31 @@ def parse_trade_logs(log_path: str) -> pd.DataFrame:
     pd.DataFrame
         DataFrame with columns EntryTime, CloseTime, Reason, PnL.
     """
+    path = Path(log_path)
+    if path.suffix not in {".txt", ".log"}:
+        logging.error("Invalid log file extension: %s", path.suffix)
+        raise ValueError(f"Invalid log file extension: {path.suffix}")
+    if not path.exists():
+        logging.error("Log file not found: %s", log_path)
+        raise FileNotFoundError(f"Log file not found: {log_path}")
+
     entries = []
-    with open(log_path, "r", encoding="utf-8") as f:
-        lines = f.readlines()
+    with open(path, "r", encoding="utf-8") as f:
+        line_buffer = []
+        for chunk in iter(lambda: f.readlines(100_000), []):
+            line_buffer.extend(chunk)
 
     i = 0
-    while i < len(lines):
-        line = lines[i]
-        m_close = LOG_CLOSE_RE.search(line)
+    while i < len(line_buffer):
+        line = line_buffer[i]
+        m_close = ORDER_CLOSE_PATTERN.search(line)
         if m_close:
             entry_time = datetime.fromisoformat(m_close.group("entry").strip())
             close_time = datetime.fromisoformat(m_close.group("close").strip())
             reason = m_close.group("reason").strip()
             pnl = None
-            if i + 1 < len(lines):
-                m_pnl = LOG_PNL_RE.search(lines[i + 1])
+            if i + 1 < len(line_buffer):
+                m_pnl = PNL_PATTERN.search(line_buffer[i + 1])
                 if m_pnl:
                     pnl = float(m_pnl.group("pnl"))
                     i += 1
@@ -123,7 +139,7 @@ def parse_alerts(log_path: str) -> pd.DataFrame:
     entries = []
     with open(log_path, "r", encoding="utf-8") as f:
         for line in f:
-            m = LOG_ALERT_RE.match(line.strip())
+            m = ALERT_PATTERN.match(line.strip())
             if m:
                 entries.append({"level": m.group("level"), "message": m.group("msg").strip()})
     return pd.DataFrame(entries)
@@ -148,4 +164,21 @@ def compile_log_summary(df: pd.DataFrame, log_path: str | None = None) -> dict[s
     if log_path:
         summary["alerts"] = calculate_alert_summary(log_path)
     return summary
+
+
+def export_summary_to_csv(df: pd.DataFrame, output_path: str, compress: bool = True) -> None:
+    """Export a DataFrame summary to CSV with optional gzip compression."""
+    compression = "gzip" if compress else None
+    df.to_csv(output_path, index=False, compression=compression)
+
+
+def plot_summary(df: pd.DataFrame):
+    """Return a matplotlib Figure of the hourly trade summary."""
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    df.plot(kind="bar", ax=ax)
+    ax.set_xlabel("hour")
+    ax.set_ylabel("value")
+    return fig
 
