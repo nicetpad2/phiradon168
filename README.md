@@ -20,3 +20,13 @@ python profile_backtest.py XAUUSD_M1.csv --rows 10000 --limit 30 --output profil
 ```bash
 python profile_backtest.py XAUUSD_M1.csv --fund AGGRESSIVE --train --train-output models
 ```
+
+## การลดข้อความ Log
+หากต้องการให้โปรแกรมแสดงเฉพาะคำเตือนและสรุปผลแบบย่อ สามารถตั้งค่า
+ตัวแปรสภาพแวดล้อม `COMPACT_LOG=1` ก่อนรัน `ProjectP.py` เช่น
+
+```bash
+COMPACT_LOG=1 python ProjectP.py
+```
+ค่าดังกล่าวจะปรับระดับ log เป็น `WARNING` อัตโนมัติ ทำให้เห็นเฉพาะ
+ข้อความสำคัญและผลลัพธ์สรุปท้ายรัน

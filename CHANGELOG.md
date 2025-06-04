@@ -470,3 +470,8 @@
 - New/Updated unit tests added for src.adaptive
 - QA: pytest -q passed (219 tests)
 
+### 2025-08-05
+- [Patch v5.4.1] เพิ่มตัวแปร `COMPACT_LOG` เพื่อลดการแสดงผล log
+- Updated README with usage instructions
+- QA: pytest -q passed (224 tests)
+

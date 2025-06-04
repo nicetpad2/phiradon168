@@ -1562,6 +1562,10 @@ if __name__ == "__main__":
 
         logger.info(f"   เวลาดำเนินการทั้งหมด: {total_duration:.2f} วินาที ({total_duration/60:.2f} นาที).")
         logger.info("--- End of Script ---")
+        # [Patch v5.4.1] สรุปผลแบบย่อสำหรับโหมด COMPACT_LOG
+        logger.warning(
+            f"[SUMMARY] Runtime: {total_duration:.2f}s | Output: {output_dir_final_path or 'N/A'}"
+        )
 
 # === END OF PART 10/12 ===
 # === START OF PART 11/12 ===
