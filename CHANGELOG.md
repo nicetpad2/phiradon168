@@ -3,9 +3,11 @@
 - [Patch v5.5.4] Fix SHAP lag feature evaluation dataset
 - QA: pytest -q passed (265 tests)
 
-### 2025-06-07
-- [Patch v5.5.4] Fix undefined TimeSeriesSplit variable in main
-- QA: pytest -q passed (265 tests)
+### 2025-08-11
+- [Patch v5.5.5] Add environment override for drift threshold
+- New/Updated unit tests added for tests.test_env_utils
+- QA: pytest -q passed (266 tests)
+
 
 ### 2025-08-10
 - [Patch v5.5.3] Update expected line numbers for stub functions

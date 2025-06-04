@@ -66,6 +66,7 @@ from src.utils import (
     export_trade_log,
     download_model_if_missing,
     download_feature_list_if_missing,
+    get_env_float,
 )
 from sklearn.model_selection import TimeSeriesSplit  # [Patch v5.5.4] Needed for equity plot fold boundaries
 import pandas as pd
@@ -102,7 +103,8 @@ DEFAULT_TRAIN_META_MODEL_BEFORE_RUN = True
 DEFAULT_META_CLASSIFIER_FEATURES = []
 DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES = 4
 DEFAULT_TIMEFRAME_MINUTES_M15 = 15
-DEFAULT_DRIFT_WASSERSTEIN_THRESHOLD = 0.1
+# [Patch v5.5.4] Environment override for drift threshold
+DEFAULT_DRIFT_WASSERSTEIN_THRESHOLD = get_env_float("DRIFT_WASSERSTEIN_THRESHOLD", 0.1)
 DEFAULT_DRIFT_TTEST_ALPHA = 0.05
 DEFAULT_INITIAL_CAPITAL = 100.0
 DEFAULT_N_WALK_FORWARD_SPLITS = 5

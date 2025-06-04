@@ -27,6 +27,7 @@ from src.config import (
     USE_MACD_SIGNALS,
     USE_RSI_SIGNALS,
 )
+from src.utils.env_utils import get_env_float
 
 # อ่านเวอร์ชันจากไฟล์ VERSION
 VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
@@ -2407,7 +2408,8 @@ import gc # For memory management
 
 # Ensure global configurations are accessible if run independently
 # Define defaults if globals are not found
-DEFAULT_DRIFT_WASSERSTEIN_THRESHOLD = 0.1
+# [Patch v5.5.4] Environment override for drift threshold
+DEFAULT_DRIFT_WASSERSTEIN_THRESHOLD = get_env_float("DRIFT_WASSERSTEIN_THRESHOLD", 0.1)
 DEFAULT_DRIFT_TTEST_ALPHA = 0.05
 DEFAULT_INITIAL_CAPITAL = 100.0
 DEFAULT_IB_COMMISSION_PER_LOT = 7.0
