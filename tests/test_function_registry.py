@@ -3,11 +3,11 @@ import os
 import pytest
 
 FUNCTIONS_INFO = [
-    ("src/config.py", "log_library_version", 87),
-    ("src/config.py", "_ensure_ta_installed", 132),
-    ("src/config.py", "is_colab", 361),
-    ("src/config.py", "print_gpu_utilization", 452),
-    ("src/config.py", "show_system_status", 504),
+    ("src/config.py", "log_library_version", 88),
+    ("src/config.py", "_ensure_ta_installed", 133),
+    ("src/config.py", "is_colab", 362),
+    ("src/config.py", "print_gpu_utilization", 458),
+    ("src/config.py", "show_system_status", 510),
     ("src/data_loader.py", "inspect_file_exists", 828),
     ("src/data_loader.py", "read_csv_with_date_parse", 833),
     ("src/data_loader.py", "check_nan_percent", 840),
@@ -30,14 +30,15 @@ FUNCTIONS_INFO = [
 
 
 
-# [Patch v5.4.7] Updated expected line numbers
-    ("src/main.py", "parse_arguments", 1851),
-    ("src/main.py", "setup_output_directory", 1856),
-    ("src/main.py", "load_features_from_file", 1861),
-    ("src/main.py", "drop_nan_rows", 1866),
-    ("src/main.py", "convert_to_float32", 1871),
-    ("src/main.py", "run_initial_backtest", 1876),
-    ("src/main.py", "save_final_data", 1881),
+# [Patch v5.5.1] Updated expected line numbers
+    ("src/main.py", "parse_arguments", 1857),
+    ("src/main.py", "setup_output_directory", 1862),
+    ("src/main.py", "load_features_from_file", 1867),
+    ("src/main.py", "drop_nan_rows", 1872),
+    ("src/main.py", "convert_to_float32", 1877),
+    ("src/main.py", "run_initial_backtest", 1882),
+    ("src/main.py", "save_final_data", 1887),
+
 
 
 
@@ -51,6 +52,7 @@ FUNCTIONS_INFO = [
     ("src/strategy.py", "log_trade", 4007),
     ("src/strategy.py", "calculate_metrics", 2737),
     ("src/strategy.py", "aggregate_fold_results", 4010),
+
     ("ProjectP.py", "custom_helper_function", 20),
 ]
 

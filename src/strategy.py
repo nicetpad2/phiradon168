@@ -621,23 +621,25 @@ def train_and_export_meta_model(
             if potential_lag_features:
                 logging.info(f"         Lag Features ที่มีให้พิจารณา: {potential_lag_features}")
                 try:
-                    prelim_fi_raw = prelim_model.get_feature_importance()
-                    if isinstance(prelim_fi_raw, (list, np.ndarray)):
-                        prelim_fi = dict(zip(prelim_model.feature_names_, prelim_fi_raw))
+                    # [Patch] Evaluate Lag Feature importance using SHAP on numpy array
+                    arr = X_select[potential_lag_features].to_numpy()
+                    explainer_lag = shap.TreeExplainer(prelim_model)
+                    shap_vals_lag = explainer_lag.shap_values(arr)
+                    shap_vals_pos = None
+                    if isinstance(shap_vals_lag, list) and len(shap_vals_lag) == 2:
+                        shap_vals_pos = shap_vals_lag[1]
+                    elif isinstance(shap_vals_lag, np.ndarray) and shap_vals_lag.ndim == 2:
+                        shap_vals_pos = shap_vals_lag
+                    elif isinstance(shap_vals_lag, np.ndarray) and shap_vals_lag.ndim == 3 and shap_vals_lag.shape[0] >= 2:
+                        shap_vals_pos = shap_vals_lag[1, :, :]
+                    if shap_vals_pos is not None:
+                        mean_abs_lag = np.abs(shap_vals_pos).mean(axis=0)
+                        lag_df = pd.DataFrame({'feature': potential_lag_features, 'mean_abs_shap': mean_abs_lag})
+                        total_shap = lag_df['mean_abs_shap'].sum()
+                        lag_df['norm_shap'] = lag_df['mean_abs_shap'] / total_shap if total_shap > 1e-9 else 0.0
+                        significant_lags = lag_df[lag_df['norm_shap'] >= shap_importance_threshold]['feature'].tolist()
                     else:
-                        prelim_fi = prelim_fi_raw
-                    significant_lags = []
-                    total_fi = sum(prelim_fi.values()) if isinstance(prelim_fi, dict) else np.sum(prelim_fi_raw)
-                    fi_threshold_abs = 0.1
-                    if total_fi > 1e-9:
-                        fi_threshold_norm = 0.001
-                        for lag_feat in potential_lag_features:
-                            if lag_feat in prelim_fi and (prelim_fi[lag_feat] / total_fi) > fi_threshold_norm:
-                                significant_lags.append(lag_feat)
-                    else:
-                        for lag_feat in potential_lag_features:
-                            if lag_feat in prelim_fi and prelim_fi[lag_feat] > fi_threshold_abs:
-                                significant_lags.append(lag_feat)
+                        significant_lags = []
 
                     if significant_lags:
                         logging.info(f"         Lag Features ที่มีความสำคัญเบื้องต้น: {significant_lags}")
@@ -647,9 +649,9 @@ def train_and_export_meta_model(
                             selected_features.extend(added_lags)
                     else:
                         logging.info("         ไม่มี Lag Features ที่มีความสำคัญเบื้องต้นตามเกณฑ์.")
-                    del prelim_fi_raw, prelim_fi, significant_lags
+                    del shap_vals_lag, shap_vals_pos, lag_df, mean_abs_lag, total_shap
                 except Exception as e_lag_fi:
-                    logging.warning(f"         (Warning) ไม่สามารถประเมินความสำคัญ Lag Features: {e_lag_fi}")
+                    logging.warning(f"Cannot evaluate Lag Features: {e_lag_fi}")
             else:
                 logging.info("         ไม่มี Lag Features ให้พิจารณา.")
 
