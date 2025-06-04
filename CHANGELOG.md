@@ -1,3 +1,8 @@
+### 2025-08-10
+- [Patch v5.5.3] Update expected line numbers for stub functions
+- New/Updated unit tests added for tests.test_function_registry
+- QA: pytest -q passed (265 tests)
+
 ### 2025-08-09
 - [Patch v5.5.2] Adjust kill switch thresholds and add warnings
 - New/Updated unit tests added for src.strategy and main
