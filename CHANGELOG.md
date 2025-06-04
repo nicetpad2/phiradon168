@@ -1,7 +1,9 @@
 
 ### 2025-08-13
-- [Patch v5.5.7] Add dynamic lot sizing via drawdown
-- New/Updated unit tests added for adaptive module
+- [Patch v5.5.8] Enhance log analysis with detailed metrics
+- New/Updated unit tests added for tests.test_log_analysis
+
+
 - QA: pytest -q passed
 
 ### 2025-06-04

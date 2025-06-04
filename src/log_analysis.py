@@ -83,3 +83,46 @@ def calculate_position_size(capital: float, risk_pct: float, stop_loss_pips: flo
     position_units = risk_amount / (stop_loss_pips * pip_value)
     return position_units / 100000  # standard lot size
 
+
+def calculate_reason_summary(df: pd.DataFrame) -> pd.Series:
+    """Return frequency count of close reasons."""
+    if df.empty or "Reason" not in df:
+        return pd.Series(dtype=int)
+    return df["Reason"].value_counts()
+
+
+def calculate_duration_stats(df: pd.DataFrame) -> dict[str, float]:
+    """Compute statistics about trade duration in minutes."""
+    if df.empty:
+        return {"mean": 0.0, "median": 0.0, "max": 0.0}
+    durations = (df["CloseTime"] - df["EntryTime"]).dt.total_seconds() / 60.0
+    return {
+        "mean": durations.mean(),
+        "median": durations.median(),
+        "max": durations.max(),
+    }
+
+
+def calculate_drawdown_stats(df: pd.DataFrame) -> dict[str, float]:
+    """Compute total PnL and maximum drawdown."""
+    if df.empty or "PnL" not in df:
+        return {"total_pnl": 0.0, "max_drawdown": 0.0}
+    cumulative = df["PnL"].fillna(0).cumsum()
+    equity = pd.concat([pd.Series([0.0]), cumulative], ignore_index=True)
+    running_max = equity.cummax()
+    drawdown = equity - running_max
+    return {
+        "total_pnl": df["PnL"].fillna(0).sum(),
+        "max_drawdown": drawdown.min(),
+    }
+
+
+def compile_log_summary(df: pd.DataFrame) -> dict[str, object]:
+    """Return aggregate statistics for a parsed trade log."""
+    return {
+        "hourly": calculate_hourly_summary(df),
+        "reasons": calculate_reason_summary(df),
+        "duration": calculate_duration_stats(df),
+        "pnl": calculate_drawdown_stats(df),
+    }
+
