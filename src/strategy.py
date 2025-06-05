@@ -3544,17 +3544,12 @@ def plot_equity_curve(equity_series_data, title, initial_capital, output_dir, fi
             else current_font_family
         )
         if isinstance(font_family_name, str):
-            if font_family_name.lower() in {
-                "sans-serif",
-                "serif",
-                "cursive",
-                "fantasy",
-                "monospace",
-            }:
+            # [Patch v5.7.8] Use concrete font when generic alias may cause parse errors
+            if font_family_name in {"sans-serif", "serif", "monospace", "cursive", "fantasy"}:
                 fallback_list = plt.rcParams.get(f"font.{font_family_name}", [])
-                font_family_name = fallback_list[0] if fallback_list else None
-            if font_family_name:
-                font_prop = fm.FontProperties(family=font_family_name)
+                if fallback_list:
+                    font_family_name = fallback_list[0]
+            font_prop = fm.FontProperties(family=font_family_name)
     except Exception as e_fontprop:
         logging.warning(
             f"   (Warning) Cannot get FontProperties for plot labels: {e_fontprop}"
