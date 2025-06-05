@@ -9,6 +9,10 @@ from src.utils.trade_logger import (
     log_close_order,
     setup_trade_logger,
 )
+from src.utils.trade_splitter import (
+    split_trade_log,
+    has_buy_sell,
+)
 from src.utils.model_utils import (
     download_model_if_missing,
     download_feature_list_if_missing,
@@ -27,6 +31,8 @@ __all__ = [
     "log_open_order",
     "log_close_order",
     "setup_trade_logger",
+    "split_trade_log",
+    "has_buy_sell",
     "download_model_if_missing",
     "get_env_float",
     "download_feature_list_if_missing",

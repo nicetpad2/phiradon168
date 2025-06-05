@@ -848,6 +848,11 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for convert_thai_datetime, print_qa_summary, qa_output_default
 - QA: pytest -q passed
 
+### 2025-06-12
+- [Patch v5.7.4] Add trade log splitter utility and side detection
+- New/Updated unit tests added for tests.test_trade_splitter
+- QA: pytest -q passed
+
 
 \n
 ### 2025-06-04
