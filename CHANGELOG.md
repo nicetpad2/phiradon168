@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests.test_projectp_cli
 - QA: pytest -q passed (370 tests)
 
+### 2025-10-08
+- [Patch v5.7.3] Suggest relaxing threshold when no trades logged
+- New/Updated unit tests added for tests.test_trade_logger
+- QA: pytest -q passed
+
 ### 2025-10-06
 
 - [Patch v5.6.8] Handle empty trade logs and lower default ML threshold

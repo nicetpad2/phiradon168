@@ -62,6 +62,18 @@ def export_trade_log(trades, output_dir, label, fund_name=None):
         qa_path = os.path.join(qa_dir, f"{label}_trade_qa.log")
         with open(qa_path, "w", encoding="utf-8") as f:
             f.write("[QA] No trade. Output file generated as EMPTY.\n")
+        suggest_threshold_relaxation(qa_dir, label)
+
+
+def suggest_threshold_relaxation(qa_dir: str, label: str) -> None:
+    """[Patch v5.7.3] Log suggestion to relax ML threshold if no trades found."""
+    os.makedirs(qa_dir, exist_ok=True)
+    suggestion_file = os.path.join(qa_dir, f"relax_threshold_{label}.log")
+    with open(suggestion_file, "w", encoding="utf-8") as f:
+        f.write(
+            "No trades generated. Consider relaxing ML_META_FILTER or entry\n"
+        )
+    logger.info(f"[QA] Threshold relaxation suggestion saved to {suggestion_file}")
 
 
 def aggregate_trade_logs(fold_dirs, output_file, label):
