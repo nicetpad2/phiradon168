@@ -19,6 +19,7 @@ from src.adaptive import (
     volatility_adjusted_lot_size,
     dynamic_risk_adjustment,
     check_portfolio_stop,
+    calculate_dynamic_sl_tp,
 )
 import src.features as features
 
@@ -136,3 +137,15 @@ def test_dynamic_risk_adjustment():
 def test_check_portfolio_stop():
     assert check_portfolio_stop(0.12)
     assert not check_portfolio_stop(0.05)
+
+
+def test_calculate_dynamic_sl_tp_cases():
+    sl, tp = calculate_dynamic_sl_tp(2.0, 0.35)
+    assert sl == 3.0 and tp == 9.0
+
+    sl2, tp2 = calculate_dynamic_sl_tp(0.5, 0.55)
+    assert sl2 == 2.0 and tp2 == 3.0
+
+    sl3, tp3 = calculate_dynamic_sl_tp(1.5, 0.45)
+    assert abs(sl3 - 2.25) < 1e-9
+    assert abs(tp3 - 4.5) < 1e-9

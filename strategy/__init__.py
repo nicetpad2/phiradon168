@@ -13,6 +13,7 @@ from .cooldown import (
 )
 from .metrics import calculate_metrics
 from .drift_observer import DriftObserver
+from .trend_filter import apply_trend_filter
 
 __all__ = [
     'generate_open_signals',
@@ -28,4 +29,5 @@ __all__ = [
     'should_warn_losses',
     'calculate_metrics',
     'DriftObserver',
+    'apply_trend_filter',
 ]
