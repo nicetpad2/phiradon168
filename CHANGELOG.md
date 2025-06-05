@@ -1,3 +1,8 @@
+### 2025-10-08
+- [Patch v5.7.3] Import plot_equity_curve and add stub function
+- New/Updated unit tests added for tests.test_plot_equity_curve_import and tests.test_stub_functions
+- QA: pytest -q passed (371 tests)
+
 ### 2025-10-07
 - [Patch v5.7.2] Fix sweep path to absolute for Colab execution
 - New/Updated unit tests added for tests.test_projectp_cli
