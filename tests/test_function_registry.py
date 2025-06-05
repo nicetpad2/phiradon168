@@ -69,7 +69,7 @@ FUNCTIONS_INFO = [
     ("src/strategy.py", "calculate_forced_entry_logic", 4333),
     ("src/strategy.py", "apply_kill_switch", 4336),
     ("src/strategy.py", "log_trade", 4339),
-    ("src/strategy.py", "calculate_metrics",  3068),
+    ("src/strategy.py", "calculate_metrics", 3068),
     ("src/strategy.py", "aggregate_fold_results", 4342),
 
 
