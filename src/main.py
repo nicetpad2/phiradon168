@@ -453,6 +453,7 @@ except NameError:
 def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path):
     """[Patch v5.4.5] Ensure all model and feature files exist or auto-train."""
     logging.info("\n--- (Auto-Train Check) Ensuring Model Files Exist ---")
+    skip_auto_train = os.getenv("SKIP_AUTO_TRAIN", "0") in {"1", "True", "true"}
 
     required = {
         'main': (META_CLASSIFIER_PATH, 'features_main.json'),
@@ -473,6 +474,14 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
 
     if not missing_models:
         logging.info("   (Success) Model files and feature lists already exist.")
+        return
+
+    if skip_auto_train:
+        logging.warning("   SKIP_AUTO_TRAIN enabled - creating placeholder model files.")
+        os.makedirs(output_dir, exist_ok=True)
+        for key in missing_models:
+            open(os.path.join(output_dir, required[key][0]), "a").close()
+            open(os.path.join(output_dir, required[key][1]), "a").close()
         return
 
     logging.warning(
@@ -1768,16 +1777,6 @@ import logging
 if False:
     pass
 # padding start
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
 #
 #
 #
