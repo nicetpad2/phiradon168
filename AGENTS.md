@@ -281,5 +281,6 @@
 - Added `money_management` module for ATR-based SL/TP and portfolio stop logic.
 - Added `wfv_monitor` module for KPI-driven Walk-Forward validation.
 - Added `tuning.joint_optuna` module for joint model + strategy optimization.
+- Added `config` package for environment-based directory paths.
 
 

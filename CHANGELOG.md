@@ -1,3 +1,8 @@
+### 2025-10-16
+- [Patch v5.8.3] Add Config class for directory setup
+- New/Updated unit tests added for tests.test_config_class
+- QA: pytest -q passed
+
 
 ## [v5.8.2] – 2025-10-15
 ### Fixed
