@@ -1,3 +1,10 @@
+
+### 2025-10-14
+- [Patch v5.8.1] Graceful TA fallbacks for RSI and MACD when library missing
+- New/Updated unit tests added for tests.test_warning_skip_more and tests.test_features_more
+- QA: pytest -q passed (407 tests)
+
+### 2025-10-13
 - [Patch v5.8.0] Joint Optuna model+strategy optimization
 - New/Updated unit tests added for tests.test_joint_optuna
 - QA: pytest -q passed (407 tests)
