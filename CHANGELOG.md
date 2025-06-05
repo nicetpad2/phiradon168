@@ -1,7 +1,8 @@
 ### 2025-10-09
-- [Patch v5.7.4] Vectorize adaptive signal score threshold calculation
-- New/Updated unit tests added for tests.test_function_registry
-- QA: pytest -q passed (378 tests)
+
+- [Patch v5.7.5] Fix default trade_log_path in hyperparameter sweep
+- New/Updated unit tests added for tests.test_hyperparameter_sweep_cli
+- QA: pytest -q failed (6 failed)
 
 ### 2025-10-08
 - [Patch v5.7.3] Validate auto-trained files and create placeholders
