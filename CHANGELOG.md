@@ -895,7 +895,8 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed
 
 ### 2025-06-06
-- [Patch v5.8.0] Add trend filter for M15 zone
-- New/Updated unit tests added for tests.test_trend_filter
+
+- [Patch v5.8.0] Add LightGBM multi-timeframe training
+- New/Updated unit tests added for tests.test_lightgbm_training
 - QA: pytest -q passed
 
