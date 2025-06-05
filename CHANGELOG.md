@@ -818,3 +818,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.6.4] Add dashboard module and alert when MDD exceeds 10%
 - New/Updated unit tests added for tests.test_dashboard
 - QA: pytest -q passed
+
+### 2025-06-05
+- [Patch v5.7.2] ML meta fallback & QA utilities
+- New/Updated unit tests added for tests.test_data_utils_new, tests.test_qa_tools
+- QA: pytest -q passed (373 tests)

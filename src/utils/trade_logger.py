@@ -57,7 +57,7 @@ def export_trade_log(trades, output_dir, label, fund_name=None):
         with open(os.path.join(qa_dir, f"qa_summary_{label}.log"), "w", encoding="utf-8") as f:
             f.write(f"Trade Log QA: {len(trades)} trades, saved {path}\n")
     else:
-        logger.warning(f"[QA] No trades in {label}. Creating empty trade log.")
+        logger.warning(f"[QA-WARNING] No trades in {label}. Creating empty trade log.")
         pd.DataFrame().to_csv(path, index=False)
         qa_path = os.path.join(qa_dir, f"{label}_trade_qa.log")
         with open(qa_path, "w", encoding="utf-8") as f:
