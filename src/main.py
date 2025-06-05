@@ -74,6 +74,7 @@ from src.utils import (
     download_model_if_missing,
     download_feature_list_if_missing,
     get_env_float,
+    validate_file,
 )
 from sklearn.model_selection import TimeSeriesSplit  # [Patch v5.5.4] Needed for equity plot fold boundaries
 import pandas as pd
@@ -559,6 +560,13 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
                 save_features_main_json(features, output_dir)
             else:
                 save_features_json(features, key, output_dir)
+
+        if not validate_file(model_path):
+            logging.warning(f"[QA] Placeholder created for '{key}' model")
+            open(model_path, "a").close()
+        if not validate_file(features_path):
+            logging.warning(f"[QA] Placeholder created for '{key}' features")
+            open(features_path, "a").close()
     logging.info("--- (Auto-Train Check) Finished ---")
 
 

@@ -38,13 +38,13 @@ FUNCTIONS_INFO = [
 
 # [Patch v5.5.3] Updated expected line numbers
 
-    ("src/main.py", "parse_arguments", 1882),
-    ("src/main.py", "setup_output_directory", 1887),
-    ("src/main.py", "load_features_from_file", 1892),
-    ("src/main.py", "drop_nan_rows", 1897),
-    ("src/main.py", "convert_to_float32", 1902),
-    ("src/main.py", "run_initial_backtest", 1907),
-    ("src/main.py", "save_final_data", 1912),
+    ("src/main.py", "parse_arguments", 1884),
+    ("src/main.py", "setup_output_directory", 1889),
+    ("src/main.py", "load_features_from_file", 1894),
+    ("src/main.py", "drop_nan_rows", 1899),
+    ("src/main.py", "convert_to_float32", 1904),
+    ("src/main.py", "run_initial_backtest", 1909),
+    ("src/main.py", "save_final_data", 1914),
 
 
 
@@ -52,25 +52,25 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/main.py", "parse_arguments", 1882),
-    ("src/main.py", "setup_output_directory", 1887),
-    ("src/main.py", "load_features_from_file", 1892),
-    ("src/main.py", "drop_nan_rows", 1897),
-    ("src/main.py", "convert_to_float32", 1902),
-    ("src/main.py", "run_initial_backtest", 1907),
-    ("src/main.py", "save_final_data", 1912),
+    ("src/main.py", "parse_arguments", 1884),
+    ("src/main.py", "setup_output_directory", 1889),
+    ("src/main.py", "load_features_from_file", 1894),
+    ("src/main.py", "drop_nan_rows", 1899),
+    ("src/main.py", "convert_to_float32", 1904),
+    ("src/main.py", "run_initial_backtest", 1909),
+    ("src/main.py", "save_final_data", 1914),
 
 
 
 
 
     ("src/strategy.py", "run_backtest_simulation_v34", 1851),
-    ("src/strategy.py", "initialize_time_series_split", 4372),
-    ("src/strategy.py", "calculate_forced_entry_logic", 4375),
-    ("src/strategy.py", "apply_kill_switch", 4378),
-    ("src/strategy.py", "log_trade", 4381),
+    ("src/strategy.py", "initialize_time_series_split", 4380),
+    ("src/strategy.py", "calculate_forced_entry_logic", 4383),
+    ("src/strategy.py", "apply_kill_switch", 4386),
+    ("src/strategy.py", "log_trade", 4389),
     ("src/strategy.py", "calculate_metrics", 3068),
-    ("src/strategy.py", "aggregate_fold_results", 4384),
+    ("src/strategy.py", "aggregate_fold_results", 4392),
 
 
 

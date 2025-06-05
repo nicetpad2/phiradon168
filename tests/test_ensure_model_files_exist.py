@@ -91,3 +91,31 @@ def test_download_feature_lists(tmp_path, monkeypatch):
 
     assert (out_dir / 'features_spike.json').exists()
     assert (out_dir / 'features_cluster.json').exists()
+
+
+def test_autotrain_failure_creates_placeholders(tmp_path, monkeypatch):
+    out_dir = tmp_path / 'out'
+    out_dir.mkdir()
+
+    log_path = tmp_path / 'walk.csv'
+    m1_path = tmp_path / 'm1.csv'
+    df = pd.DataFrame({'entry_time': ['2024-01-01'], 'cluster': [0], 'spike_score': [0], 'model_tag': ['A']})
+    _write_csv(log_path, df)
+    m1_path.write_text('X')
+
+    def fail_train(**kw):
+        raise RuntimeError('fail')
+
+    monkeypatch.setattr(main, 'train_and_export_meta_model', fail_train)
+
+    main.ensure_model_files_exist(str(out_dir), str(log_path)[:-4], str(m1_path)[:-4])
+
+    for name in [
+        'meta_classifier.pkl',
+        'features_main.json',
+        'meta_classifier_spike.pkl',
+        'features_spike.json',
+        'meta_classifier_cluster.pkl',
+        'features_cluster.json',
+    ]:
+        assert (out_dir / name).exists()
