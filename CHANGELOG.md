@@ -1,3 +1,8 @@
+- [Patch v5.8.0] Joint Optuna model+strategy optimization
+- New/Updated unit tests added for tests.test_joint_optuna
+- QA: pytest -q passed (407 tests)
+
+### 2025-10-13
 - [Patch v5.7.9] Add order flow & divergence features for ML filter
 - New/Updated unit tests added for tests.test_features_more
 - QA: pytest -q passed (401 tests)
@@ -897,3 +902,10 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.7.9] Enhance risk management with volatility lot sizing
 - New/Updated unit tests added for tests.test_adaptive, tests.test_trade_logger
 - QA: pytest -q passed
+
+### 2025-06-06
+
+- [Patch v5.8.0] Add KPI-driven walk-forward validation module
+- New/Updated unit tests added for tests.test_wfv_monitor
+- QA: pytest -q passed
+

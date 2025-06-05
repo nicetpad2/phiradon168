@@ -7,9 +7,14 @@ from joblib import dump
 from src.config import logger, USE_GPU_ACCELERATION
 from src.utils.model_utils import evaluate_model
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, TimeSeriesSplit
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.linear_model import LogisticRegression
+from src.utils import convert_thai_datetime
+try:
+    from lightgbm import LGBMClassifier
+except Exception:  # pragma: no cover - lightgbm optional
+    LGBMClassifier = None
 
 def save_model(model, output_dir: str, model_name: str) -> None:
     """[Patch v5.3.2] Save model or create QA log if model is None."""
@@ -159,3 +164,65 @@ def optuna_sweep(
     best_model.fit(X, y)
     save_model(best_model, os.path.dirname(output_path), os.path.splitext(os.path.basename(output_path))[0])
     return best_params
+
+
+def _time_series_cv_auc(model_cls, X: pd.DataFrame, y: pd.Series, n_splits: int = 5, random_state: int = 42) -> float:
+    """Return average AUC using TimeSeriesSplit."""
+    tscv = TimeSeriesSplit(n_splits=n_splits)
+    aucs: list[float] = []
+    for train_idx, test_idx in tscv.split(X):
+        X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+        y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+        if len(np.unique(y_train)) < 2 or len(np.unique(y_test)) < 2:
+            aucs.append(0.5)
+            continue
+        model = model_cls(random_state=random_state)
+        model.fit(X_train, y_train)
+        proba = model.predict_proba(X_test)[:, 1]
+        auc = roc_auc_score(y_test, proba)
+        aucs.append(auc)
+    return float(np.mean(aucs)) if aucs else float("nan")
+
+
+def train_lightgbm_mtf(m1_path: str, m15_path: str, output_dir: str, auc_threshold: float = 0.7) -> dict | None:
+    """Train LightGBM model using merged M1+M15 features."""
+    if LGBMClassifier is None:
+        logger.error("lightgbm not available")
+        return None
+
+    if not os.path.exists(m1_path) or not os.path.exists(m15_path):
+        logger.error("M1 or M15 data not found")
+        return None
+
+    df_m1 = pd.read_csv(m1_path)
+    df_m15 = pd.read_csv(m15_path)
+    df_m1 = convert_thai_datetime(df_m1, "timestamp")
+    df_m15 = convert_thai_datetime(df_m15, "timestamp")
+    df_m1.sort_values("timestamp", inplace=True)
+    df_m15.sort_values("timestamp", inplace=True)
+    df_m15["EMA_Fast"] = df_m15["Close"].ewm(span=50, adjust=False).mean()
+    df_m15["EMA_Slow"] = df_m15["Close"].ewm(span=200, adjust=False).mean()
+    df_m15["Trend_Up"] = (df_m15["EMA_Fast"] > df_m15["EMA_Slow"]).astype(int)
+    merged = pd.merge_asof(
+        df_m1,
+        df_m15[["timestamp", "Close", "Trend_Up"]].rename(columns={"Close": "M15_Close"}),
+        on="timestamp",
+        direction="backward",
+    ).dropna()
+    merged["target"] = (merged["Close"].shift(-1) > merged["Close"]).astype(int)
+    merged.dropna(inplace=True)
+    features = ["Open", "High", "Low", "Close", "Volume", "M15_Close", "Trend_Up"]
+    X = merged[features]
+    y = merged["target"]
+
+    avg_auc = _time_series_cv_auc(LGBMClassifier, X, y)
+    logger.info(f"[QA] LightGBM CV AUC={avg_auc:.4f}")
+    if avg_auc < auc_threshold:
+        logger.error("AUC below threshold %.2f", auc_threshold)
+        return None
+
+    final_model = LGBMClassifier(random_state=42)
+    final_model.fit(X, y)
+    save_model(final_model, output_dir, "lightgbm_mtf")
+    path = os.path.join(output_dir, "lightgbm_mtf.joblib")
+    return {"model_path": {"model": path}, "features": features, "metrics": {"auc": avg_auc}}
