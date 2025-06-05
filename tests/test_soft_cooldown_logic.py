@@ -55,3 +55,16 @@ def test_cooldown_manager_flow(caplog):
     assert not manager.in_cooldown
 
 
+def test_soft_cooldown_same_side():
+    pnls = [-1] * 8
+    sides = ["BUY"] * 8
+    triggered, losses = is_soft_cooldown_triggered(
+        pnls,
+        15,
+        8,
+        sides,
+        "BUY",
+    )
+    assert triggered and losses == 8
+
+
