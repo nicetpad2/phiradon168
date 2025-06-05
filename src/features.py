@@ -14,7 +14,11 @@ import logging
 import pandas as pd
 import numpy as np
 # from data_loader import some_helper  # switched to absolute import (Patch v4.8.9)
-import ta # Assumes 'ta' is imported and available (checked in Part 1)
+try:  # [Patch v5.8.0] Handle missing ta library gracefully
+    import ta
+except ImportError:  # pragma: no cover - environment may not have ta installed
+    ta = None
+    logging.warning("'ta' library not found. Technical indicators will return NaN.")
 from sklearn.cluster import KMeans # For context column calculation
 from sklearn.preprocessing import StandardScaler # For context column calculation
 import gc # For memory management
