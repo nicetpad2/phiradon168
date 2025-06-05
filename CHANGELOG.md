@@ -1,7 +1,9 @@
 
 ### 2025-10-16
+
 - [Patch v5.8.3] Update .coveragerc omit patterns
 - New/Updated unit tests added for none (config update)
+
 - QA: pytest -q passed (423 tests)
 
 ### 2025-10-15
