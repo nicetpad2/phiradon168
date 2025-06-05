@@ -905,7 +905,7 @@ QA: pytest -q passed (219 tests)
 
 ### 2025-06-06
 
-- [Patch v5.8.0] Add KPI-driven walk-forward validation module
-- New/Updated unit tests added for tests.test_wfv_monitor
-- QA: pytest -q passed
+- [Patch v5.8.0] Add AUC monitoring module and tests
+- New/Updated unit tests added for tests.test_monitor
+- QA: pytest -q passed (408 tests)
 

@@ -54,8 +54,9 @@
   - Detect overfitting, data leakage, and imbalanced classes in training folds
   - Monitor validation metrics (AUC, F1, recall/precision) over time
   - Audit fallback logic for ML failures; recommend retraining or hyperparameter updates
-  - Track model drift and notify when retraining is required  
+  - Track model drift and notify when retraining is required
   - Provide evaluation utility `evaluate_meta_classifier` in src.evaluation
+  - Record daily/weekly AUC metrics using `src.monitor`
 
 ### RL_Scalper_AI
 - **Main Role:** Self-Learning Scalper  
