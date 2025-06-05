@@ -901,7 +901,7 @@ QA: pytest -q passed (219 tests)
 
 ### 2025-06-06
 
-- [Patch v5.8.0] Add LightGBM multi-timeframe training
-- New/Updated unit tests added for tests.test_lightgbm_training
+- [Patch v5.8.0] Add KPI-driven walk-forward validation module
+- New/Updated unit tests added for tests.test_wfv_monitor
 - QA: pytest -q passed
 
