@@ -523,7 +523,7 @@ def train_and_export_meta_model(
             if prelim_model_params is None:
                 prelim_model_params = {
                     'loss_function': 'Logloss', 'eval_metric': 'AUC', 'random_seed': 42, 'verbose': 0,
-                    'iterations': 500, 'learning_rate': 0.05, 'depth': 6, 'l2_leaf_reg': 3,
+                    'iterations': 500, 'learning_rate': 0.05, 'depth': 8, 'l2_leaf_reg': 3,
                     'early_stopping_rounds': 50, 'auto_class_weights': 'Balanced',
                 }
                 logging.info("         (ใช้ Default Prelim Params)")
@@ -861,7 +861,7 @@ def train_and_export_meta_model(
             else:
                 logging.info("         Using Fixed Params (v4.7.1)...")
                 final_model_params_to_use = {
-                    'iterations': 3000, 'learning_rate': 0.01, 'depth': 4, 'l2_leaf_reg': 30,
+                    'iterations': 3000, 'learning_rate': 0.05, 'depth': 8, 'l2_leaf_reg': 3,
                     'eval_metric': "AUC", 'auto_class_weights': "Balanced", 'early_stopping_rounds': early_stopping_rounds,
                     'random_seed': 42, 'verbose': 100, 'loss_function': 'Logloss',
                 }
