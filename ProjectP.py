@@ -69,7 +69,10 @@ def run_sweep():
 
 def run_threshold():
     """รันการปรับค่า threshold."""
-    subprocess.run([sys.executable, "threshold_optimization.py"], check=True)
+    # [Patch v5.7.8] Resolve threshold script path relative to this file
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    threshold_path = os.path.join(script_dir, "threshold_optimization.py")
+    subprocess.run([sys.executable, threshold_path], check=True)
 
 
 def run_backtest():
