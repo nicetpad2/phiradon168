@@ -9,7 +9,11 @@ from src.utils.trade_logger import (
     log_close_order,
     setup_trade_logger,
 )
-from src.utils.model_utils import download_model_if_missing, download_feature_list_if_missing
+from src.utils.model_utils import (
+    download_model_if_missing,
+    download_feature_list_if_missing,
+    validate_file,
+)
 from src.utils.env_utils import get_env_float
 from src.utils.gc_utils import maybe_collect
 
@@ -24,6 +28,7 @@ __all__ = [
     "download_model_if_missing",
     "get_env_float",
     "download_feature_list_if_missing",
+    "validate_file",
     "get_env_float",
     "maybe_collect",
 ]

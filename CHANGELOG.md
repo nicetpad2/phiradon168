@@ -1,3 +1,8 @@
+### 2025-10-08
+- [Patch v5.7.3] Validate auto-trained files and create placeholders
+- New/Updated unit tests added for tests.test_ensure_model_files_exist and tests.test_function_registry
+- QA: pytest -q passed (371 tests)
+
 ### 2025-10-07
 - [Patch v5.7.2] Fix sweep path to absolute for Colab execution
 - New/Updated unit tests added for tests.test_projectp_cli
