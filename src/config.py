@@ -644,7 +644,7 @@ logging.debug("Setting Entry/Exit Logic Parameters...")
 MIN_SIGNAL_SCORE_ENTRY = 1.0    # Minimum signal score required to open an order
 # [Patch v5.3.9] Adaptive threshold settings
 ADAPTIVE_SIGNAL_SCORE_WINDOW = 1000   # Bars used for quantile calculation
-ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.7  # Quantile for threshold (e.g., 70th)
+ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.6  # Quantile for threshold (e.g., 60th)
 MIN_SIGNAL_SCORE_ENTRY_MIN = 0.5      # Clamp lower bound
 MIN_SIGNAL_SCORE_ENTRY_MAX = 3.0      # Clamp upper bound
 USE_ADAPTIVE_SIGNAL_SCORE = True
@@ -710,16 +710,18 @@ logging.info(f"Max Drawdown Threshold (Block New Orders): {MAX_DRAWDOWN_THRESHOL
 # --- Spike Guard & Recovery Mode Configuration ---
 logging.debug("Setting Spike Guard & Recovery Mode Configuration...")
 ENABLE_SPIKE_GUARD = True       # Enable/disable spike guard filter (mainly London session)
+ENABLE_SOFT_COOLDOWN = True     # Enable/disable soft cooldown logic
 RECOVERY_MODE_CONSECUTIVE_LOSSES = 4 # Consecutive losses to enter recovery mode
 RECOVERY_MODE_LOT_MULTIPLIER = 0.5 # Lot size multiplier during recovery mode
 logging.info(f"Spike Guard Enabled: {ENABLE_SPIKE_GUARD}")
+logging.info(f"Soft Cooldown Enabled: {ENABLE_SOFT_COOLDOWN}")
 logging.info(f"Recovery Mode Enabled: Losses >= {RECOVERY_MODE_CONSECUTIVE_LOSSES}, Lot Multiplier: {RECOVERY_MODE_LOT_MULTIPLIER}")
 
 # --- Re-Entry Configuration ---
 logging.debug("Setting Re-Entry Configuration...")
 USE_REENTRY = True              # Enable/disable re-entry logic
 REENTRY_COOLDOWN_BARS = 1       # Cooldown (in bars) after TP before allowing re-entry
-REENTRY_MIN_PROBA_THRESH = 0.5 # Minimum ML probability threshold for re-entry (uses META_MIN_PROBA_THRESH)
+REENTRY_MIN_PROBA_THRESH = 0.45 # Minimum ML probability threshold for re-entry (uses META_MIN_PROBA_THRESH)
 logging.info(f"Re-Entry Enabled: {USE_REENTRY} (Cooldown: {REENTRY_COOLDOWN_BARS} bars, Threshold: {REENTRY_MIN_PROBA_THRESH})")
 
 # --- Forced Entry Configuration ---

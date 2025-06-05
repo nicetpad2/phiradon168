@@ -8,3 +8,6 @@ def test_default_parameters():
     assert cfg.M15_TREND_RSI_DOWN == 49
     assert cfg.FORCED_ENTRY_MIN_GAIN_Z_ABS == 0.5
     assert set(["Normal", "Breakout", "StrongTrend", "Reversal", "InsideBar", "Choppy"]) == set(cfg.FORCED_ENTRY_ALLOWED_REGIMES)
+    assert cfg.ENABLE_SOFT_COOLDOWN is True
+    assert cfg.ADAPTIVE_SIGNAL_SCORE_QUANTILE == 0.6
+    assert cfg.REENTRY_MIN_PROBA_THRESH == 0.45

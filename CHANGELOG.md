@@ -1,3 +1,8 @@
+### 2025-10-05
+- [Patch v5.6.7] Add config toggle for soft cooldown and relax thresholds
+- New/Updated unit tests added for tests.test_config_defaults
+- QA: pytest -q passed (363 tests)
+
 ### 2025-09-02
 
 - [Patch v5.6.5] Relax soft cooldown conditions and shorten cooldown duration
