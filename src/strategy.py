@@ -4040,8 +4040,21 @@ def run_all_folds_with_threshold(
 
     # <<< MODIFIED v4.8.1: Handle cases where no trades were logged or no metrics generated >>>
     if not all_trade_logs:
-        logging.error(f"      [Runner {run_label}] (Error) No trades were logged in any fold (L1_Th={l1_thresh_display}). Cannot aggregate results.")
-        return None, None, pd.DataFrame(), pd.DataFrame(), {}, [], None, "N/A", "N/A", 0.0
+        debug_fake_trade = os.getenv("DEBUG_FAKE_TRADE", "0") == "1"
+        if debug_fake_trade:
+            logging.warning(
+                f"      [Runner {run_label}] (Debug) No trades logged; generating fake trade for aggregation."
+            )
+            fake_trade = pd.DataFrame(
+                [{"entry_time": pd.Timestamp.utcnow(), "exit_time": pd.Timestamp.utcnow(), "side": "DEBUG", "profit": 0.0}]
+            )
+            all_trade_logs.append(fake_trade)
+            all_fold_metrics.append({"buy": {}, "sell": {}, "debug_fake_trade": True})
+        else:
+            logging.error(
+                f"      [Runner {run_label}] (Error) No trades were logged in any fold (L1_Th={l1_thresh_display}). Cannot aggregate results."
+            )
+            return None, None, pd.DataFrame(), pd.DataFrame(), {}, [], None, "N/A", "N/A", 0.0
     if not all_fold_metrics:
         logging.error(f"      [Runner {run_label}] (Error) No metrics were generated from any fold (L1_Th={l1_thresh_display}). Cannot aggregate results.")
         return None, None, pd.DataFrame(), pd.DataFrame(), {}, [], None, "N/A", "N/A", 0.0
