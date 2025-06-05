@@ -1,3 +1,8 @@
+### 2025-10-07
+- [Patch v5.7.2] Fix sweep path to absolute for Colab execution
+- New/Updated unit tests added for tests.test_projectp_cli
+- QA: pytest -q passed (370 tests)
+
 ### 2025-10-06
 
 - [Patch v5.6.8] Handle empty trade logs and lower default ML threshold
