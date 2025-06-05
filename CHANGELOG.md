@@ -1,4 +1,10 @@
 
+### 2025-10-16
+- [Patch v1.1.0] Real training function using CatBoost fallback
+- [Patch v1.1.1] Training utilities for hyperparameter sweep
+- [Patch v5.5.17] Delegate signal generation to entry_rules & exit_rules
+- QA: pytest -q passed (423 tests)
+
 ### 2025-10-15
 - [Patch v5.8.2] Replace deprecated utcnow usage in monitor
 - New/Updated unit tests added for none (existing coverage)
