@@ -36,7 +36,7 @@ import gc # For memory management
 from src.utils.gc_utils import maybe_collect
 from functools import lru_cache
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
-from src.utils import get_env_float
+from src.utils import get_env_float, load_json_with_comments
 
 _rsi_cache = {}  # [Patch v4.8.12] Cache RSIIndicator per period
 _atr_cache = {}  # [Patch v4.8.12] Cache AverageTrueRange per period
@@ -1381,8 +1381,7 @@ def load_features_for_model(model_name, output_dir):  # pragma: no cover
                 return DEFAULT_META_CLASSIFIER_FEATURES
 
     try:
-        with open(features_file_path, 'r', encoding='utf-8') as f:
-            features = json.load(f)
+        features = load_json_with_comments(features_file_path)
         if isinstance(features, list) and all(isinstance(feat, str) for feat in features):
             logging.info(f"      (Success) Loaded {len(features)} features for model '{model_name}' from '{os.path.basename(features_file_path)}'.")
             return features

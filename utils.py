@@ -110,3 +110,4 @@ def get_resource_plan(debug: bool = False) -> Dict[str, object]:
             fh.write(json.dumps(plan, indent=2))
     return plan
 
+

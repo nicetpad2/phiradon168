@@ -30,7 +30,7 @@ from src.cooldown_utils import (
 )
 from itertools import product
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
-from src.utils import get_env_float
+from src.utils import get_env_float, load_json_with_comments
 from src.log_analysis import summarize_block_reasons  # [Patch v5.7.3]
 from src.config import (
     print_gpu_utilization,  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
@@ -419,8 +419,7 @@ def train_and_export_meta_model(
         # [Patch v5.1.6] Load feature list from features_main.json
         features_json_path = os.path.join(output_dir, "features_main.json")
         try:
-            with open(features_json_path, "r", encoding="utf-8") as f_feat:
-                feature_list = json.load(f_feat)
+            feature_list = load_json_with_comments(features_json_path)
         except Exception as e_feat:
             logging.warning(f"[Patch] ไม่สามารถโหลด features_main.json: {e_feat}. ใช้ META_CLASSIFIER_FEATURES แทน")
             feature_list = META_CLASSIFIER_FEATURES
