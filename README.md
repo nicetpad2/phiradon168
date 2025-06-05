@@ -87,6 +87,13 @@ python run_tests.py
 `RSI_DRIFT_OVERRIDE_THRESHOLD` ในไฟล์ `src/config.py` (ค่าเริ่มต้น 0.65)
 หาก Drift ของ RSI สูงเกินค่านี้ ระบบจะไม่ใช้เงื่อนไข RSI ในการคำนวณสัญญาณ
 
+## การจัดการ Drift และการ Re-training
+หากตรวจพบว่าฟีเจอร์บางรายการมีค่า Wasserstein distance สูงกว่า `0.15`
+ควรพิจารณา re-train โมเดลหรือปรับขั้นตอน normalize/standardize ของอินดิเคเตอร์
+เพื่อให้รองรับการกระจายตัวของข้อมูลที่เปลี่ยนไป
+กรณี Drift รุนแรงจนโมเดลเดิมใช้งานไม่ได้ อาจรวบรวมข้อมูลตลาดช่วงทดสอบ
+หรือสร้างข้อมูลเพิ่ม (Data Augmentation) เพื่อลดผลกระทบจาก Drift
+
 ## หมายเหตุการใช้งาน
 * ฟังก์ชัน `safe_set_datetime` ภายใน `data_loader.py` ช่วยแก้ปัญหา
   `FutureWarning` เมื่อต้องตั้งค่า datetime ใน DataFrame
