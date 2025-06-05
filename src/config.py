@@ -726,6 +726,15 @@ REENTRY_COOLDOWN_BARS = 1       # Cooldown (in bars) after TP before allowing re
 REENTRY_MIN_PROBA_THRESH = 0.45 # Minimum ML probability threshold for re-entry (uses META_MIN_PROBA_THRESH)
 logging.info(f"Re-Entry Enabled: {USE_REENTRY} (Cooldown: {REENTRY_COOLDOWN_BARS} bars, Threshold: {REENTRY_MIN_PROBA_THRESH})")
 
+# --- Meta Filter Configuration ---
+logging.debug("Setting Meta Filter Configuration...")
+META_FILTER_THRESHOLD = get_env_float("META_FILTER_THRESHOLD", 0.6)
+META_FILTER_RELAXED_THRESHOLD = get_env_float("META_FILTER_RELAXED_THRESHOLD", 0.5)
+META_FILTER_RELAX_BLOCKS = int(get_env_float("META_FILTER_RELAX_BLOCKS", 5))
+logging.info(
+    f"Meta Filter Threshold: {META_FILTER_THRESHOLD} (Relaxed: {META_FILTER_RELAXED_THRESHOLD}, Blocks: {META_FILTER_RELAX_BLOCKS})"
+)
+
 # --- Forced Entry Configuration ---
 logging.debug("Setting Forced Entry Configuration...")
 ENABLE_FORCED_ENTRY = True      # Enable/disable forced entry logic
