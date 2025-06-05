@@ -1118,6 +1118,7 @@ DEFAULT_ADAPTIVE_TSL_HIGH_VOL_STEP_R = 1.0
 DEFAULT_ADAPTIVE_TSL_LOW_VOL_STEP_R = 0.3
 DEFAULT_ADAPTIVE_TSL_START_ATR_MULT = 1.5
 DEFAULT_ENABLE_SPIKE_GUARD = True
+DEFAULT_ENABLE_SOFT_COOLDOWN = True
 DEFAULT_MIN_SIGNAL_SCORE_ENTRY = 1.0
 DEFAULT_ADAPTIVE_SIGNAL_SCORE_WINDOW = 1000
 DEFAULT_ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.7
@@ -1182,6 +1183,7 @@ ADAPTIVE_TSL_HIGH_VOL_STEP_R = safe_get_global('ADAPTIVE_TSL_HIGH_VOL_STEP_R', D
 ADAPTIVE_TSL_LOW_VOL_STEP_R = safe_get_global('ADAPTIVE_TSL_LOW_VOL_STEP_R', DEFAULT_ADAPTIVE_TSL_LOW_VOL_STEP_R)
 ADAPTIVE_TSL_START_ATR_MULT = safe_get_global('ADAPTIVE_TSL_START_ATR_MULT', DEFAULT_ADAPTIVE_TSL_START_ATR_MULT)
 ENABLE_SPIKE_GUARD = safe_get_global('ENABLE_SPIKE_GUARD', DEFAULT_ENABLE_SPIKE_GUARD)
+ENABLE_SOFT_COOLDOWN = safe_get_global('ENABLE_SOFT_COOLDOWN', DEFAULT_ENABLE_SOFT_COOLDOWN)
 MIN_SIGNAL_SCORE_ENTRY = safe_get_global('MIN_SIGNAL_SCORE_ENTRY', DEFAULT_MIN_SIGNAL_SCORE_ENTRY)
 ADAPTIVE_SIGNAL_SCORE_WINDOW = safe_get_global('ADAPTIVE_SIGNAL_SCORE_WINDOW', DEFAULT_ADAPTIVE_SIGNAL_SCORE_WINDOW)
 ADAPTIVE_SIGNAL_SCORE_QUANTILE = safe_get_global('ADAPTIVE_SIGNAL_SCORE_QUANTILE', DEFAULT_ADAPTIVE_SIGNAL_SCORE_QUANTILE)
@@ -2122,7 +2124,7 @@ def run_backtest_simulation_v34(
                             consecutive_losses += 1
                             logging.debug(f"      Loss recorded. Consecutive losses: {consecutive_losses}")
                             loss_pct = abs(net_pnl_usd) / max(equity_at_start_of_bar, 1e-9)
-                            if loss_pct >= 0.01:
+                            if loss_pct >= 0.01 and ENABLE_SOFT_COOLDOWN:
                                 cd_state.cooldown_bars_remaining = enter_cooldown(cd_state, SOFT_COOLDOWN_LOOKBACK)
                                 logging.info("      (Soft Cooldown) Entered due to >1% loss")
                             update_losses(cd_state, net_pnl_usd)
@@ -2279,7 +2281,7 @@ def run_backtest_simulation_v34(
                         elif side == "SELL" and current_macd_smooth > MACD_POS_THRESHOLD_SELL:
                             can_open_order = False
                             block_reason = f"POS_MACD_SELL (MACD={current_macd_smooth:.3f})"
-                if can_open_order:
+                if can_open_order and ENABLE_SOFT_COOLDOWN:
                     if cd_state.cooldown_bars_remaining > 0:
                         can_open_order = False
                         block_reason = f"SOFT_COOLDOWN_ACTIVE({cd_state.cooldown_bars_remaining})"
