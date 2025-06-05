@@ -641,10 +641,10 @@ OMS_MAX_DISTANCE_PIPS = 1000.0  # [Patch v5.5.8] Max allowed SL/TP distance
 
 # --- Entry/Exit Logic Parameters ---
 logging.debug("Setting Entry/Exit Logic Parameters...")
-MIN_SIGNAL_SCORE_ENTRY = 1.0    # Minimum signal score required to open an order
+MIN_SIGNAL_SCORE_ENTRY = 0.3    # [Patch v5.7.1] Lower default threshold
 # [Patch v5.3.9] Adaptive threshold settings
 ADAPTIVE_SIGNAL_SCORE_WINDOW = 1000   # Bars used for quantile calculation
-ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.6  # Quantile for threshold (e.g., 60th)
+ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.4  # [Patch v5.7.1] Lower quantile (40th)
 MIN_SIGNAL_SCORE_ENTRY_MIN = 0.5      # Clamp lower bound
 MIN_SIGNAL_SCORE_ENTRY_MAX = 3.0      # Clamp upper bound
 USE_ADAPTIVE_SIGNAL_SCORE = True

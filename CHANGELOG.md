@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests.test_config_defaults
 - QA: pytest -q passed (363 tests)
 
+### 2025-10-06
+- [Patch v5.7.1] Lower default signal score threshold and enable meta filter toggle
+- New/Updated unit tests added for tests.test_config_defaults
+- QA: pytest -q passed (363 tests)
+
 ### 2025-09-02
 
 - [Patch v5.6.5] Relax soft cooldown conditions and shorten cooldown duration
