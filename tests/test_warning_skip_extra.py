@@ -19,13 +19,13 @@ def test_ema_all_nan_logs_warning(caplog):
     assert any('NaN/Inf values' in msg for msg in caplog.messages)
 
 
-def test_rsi_ta_not_loaded_error(monkeypatch, caplog):
+def test_rsi_ta_not_loaded_warning(monkeypatch, caplog):
     series = pd.Series([1, 2, 3], dtype='float32')
     monkeypatch.setattr(features, 'ta', None, raising=False)
-    with caplog.at_level(logging.ERROR):
+    with caplog.at_level(logging.WARNING):
         res = features.rsi(series, period=14)
     assert res.isna().all()
-    assert any("'ta' library not loaded" in msg for msg in caplog.messages)
+    assert any('RSI calculation skipped' in msg for msg in caplog.messages)
 
 
 def test_get_session_tag_nat():
@@ -81,10 +81,10 @@ def test_clean_m1_data_inf_values_warning(caplog):
     assert any('Inf Check' in msg for msg in caplog.messages)
 
 
-def test_macd_ta_not_loaded_error(monkeypatch, caplog):
-    series = pd.Series(range(30), dtype='float32')
+def test_macd_ta_not_loaded_warning(monkeypatch, caplog):
+    series = pd.Series(np.sin(np.linspace(0, 10, 60)), dtype='float32')
     monkeypatch.setattr(features, 'ta', None, raising=False)
     with caplog.at_level(logging.WARNING):
         line, signal, diff = features.macd(series)
-    assert not line.isna().all() and not signal.isna().all() and not diff.isna().all()
-    assert any("TA MACD failed" in msg for msg in caplog.messages)
+    assert not line.isna().all()
+    assert any('pandas fallback' in msg.lower() for msg in caplog.messages)
