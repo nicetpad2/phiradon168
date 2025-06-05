@@ -16,10 +16,12 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "check_duplicates", 925),
     ("src/data_loader.py", "check_price_jumps", 932),
     ("src/data_loader.py", "convert_thai_years", 940),
-    ("src/data_loader.py", "prepare_datetime_index", 978),
-    ("src/data_loader.py", "load_raw_data_m1", 1007),
-    ("src/data_loader.py", "load_raw_data_m15", 1018),
-    ("src/data_loader.py", "write_test_file", 1023),
+    ("src/data_loader.py", "convert_thai_datetime", 949),
+    ("src/data_loader.py", "prepare_datetime_index", 977),
+    ("src/data_loader.py", "load_raw_data_m1", 1006),
+    ("src/data_loader.py", "load_raw_data_m15", 1017),
+    ("src/data_loader.py", "write_test_file", 1022),
+    ("src/data_loader.py", "validate_csv_data", 1030),
 
 
     ("src/features.py", "calculate_trend_zone", 1337),
@@ -38,13 +40,13 @@ FUNCTIONS_INFO = [
 
 # [Patch v5.5.3] Updated expected line numbers
 
-    ("src/main.py", "parse_arguments", 1884),
-    ("src/main.py", "setup_output_directory", 1889),
-    ("src/main.py", "load_features_from_file", 1894),
-    ("src/main.py", "drop_nan_rows", 1899),
-    ("src/main.py", "convert_to_float32", 1904),
-    ("src/main.py", "run_initial_backtest", 1909),
-    ("src/main.py", "save_final_data", 1914),
+    ("src/main.py", "parse_arguments", 1890),
+    ("src/main.py", "setup_output_directory", 1895),
+    ("src/main.py", "load_features_from_file", 1900),
+    ("src/main.py", "drop_nan_rows", 1905),
+    ("src/main.py", "convert_to_float32", 1910),
+    ("src/main.py", "run_initial_backtest", 1915),
+    ("src/main.py", "save_final_data", 1920),
 
 
 
@@ -52,13 +54,13 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/main.py", "parse_arguments", 1884),
-    ("src/main.py", "setup_output_directory", 1889),
-    ("src/main.py", "load_features_from_file", 1894),
-    ("src/main.py", "drop_nan_rows", 1899),
-    ("src/main.py", "convert_to_float32", 1904),
-    ("src/main.py", "run_initial_backtest", 1909),
-    ("src/main.py", "save_final_data", 1914),
+    ("src/main.py", "parse_arguments", 1890),
+    ("src/main.py", "setup_output_directory", 1895),
+    ("src/main.py", "load_features_from_file", 1900),
+    ("src/main.py", "drop_nan_rows", 1905),
+    ("src/main.py", "convert_to_float32", 1910),
+    ("src/main.py", "run_initial_backtest", 1915),
+    ("src/main.py", "save_final_data", 1920),
 
 
 

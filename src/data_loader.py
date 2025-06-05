@@ -946,33 +946,32 @@ def convert_thai_years(df, column):
     return df
 
 # [Patch v5.7.3] Convert Thai Buddhist year datetime string to pandas Timestamp
-def convert_thai_datetime(dt_str: str) -> pd.Timestamp:
-    """Convert Thai Buddhist calendar datetime to Gregorian.
+def convert_thai_datetime(series, tz="UTC", errors="raise"):
+    """Convert Thai date strings to timezone-aware ``datetime``.
 
-    Parameters
-    ----------
-    dt_str : str
-        Date or datetime string which may use Buddhist Era year.
-
-    Returns
-    -------
-    pd.Timestamp
-        Converted UTC timestamp or ``pd.NaT`` on failure.
+    Years greater than 2500 are assumed to be Buddhist Era and are
+    converted to Gregorian by subtracting 543. Invalid values raise
+    ``ValueError`` when ``errors='raise'`` otherwise return ``NaT``.
     """
-    try:
-        if not isinstance(dt_str, str):
-            raise ValueError("invalid input")
-        parts = dt_str.strip().split()
-        date_part = parts[0]
-        year, month, day = map(int, date_part.split("-"))
-        if year > 2500:
-            year -= 543
-        time_part = parts[1] if len(parts) > 1 else "00:00:00"
-        ts = pd.to_datetime(f"{year:04d}-{month:02d}-{day:02d} {time_part}", errors="coerce")
-        return ts.tz_localize("UTC") if ts.tzinfo is None else ts.tz_convert("UTC")
-    except Exception as e:
-        logger.warning(f"[QA-WARNING] convert_thai_datetime failed for '{dt_str}': {e}")
-        return pd.NaT
+    is_series = isinstance(series, pd.Series)
+    if not is_series and not isinstance(series, str):
+        raise TypeError("series must be a pandas Series or str")
+
+    def _parse(value):
+        try:
+            dt = datetime.datetime.fromisoformat(str(value))
+        except Exception:
+            if errors == "raise":
+                raise ValueError(f"Cannot parse datetime: {value}")
+            return pd.NaT
+        if dt.year > 2500:
+            dt = dt.replace(year=dt.year - 543)
+        ts = pd.Timestamp(dt)
+        return ts.tz_localize(tz) if ts.tzinfo is None else ts.tz_convert(tz)
+
+    if is_series:
+        return series.apply(_parse)
+    return _parse(series)
 
 
 def prepare_datetime_index(df):
@@ -1025,6 +1024,31 @@ def write_test_file(path):
     with open(path, "w", encoding="utf-8") as f:
         f.write("test")
     return path
+
+
+# [Patch v5.7.3] Validate DataFrame for required columns and non-emptiness
+def validate_csv_data(df, required_cols=None):
+    """Ensure ``df`` is non-empty and contains required columns.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Loaded DataFrame to validate.
+    required_cols : list of str, optional
+        Columns that must be present. If ``None`` no check is performed.
+
+    Returns
+    -------
+    pd.DataFrame
+        The validated DataFrame.
+    """
+    if df is None or df.empty:
+        raise ValueError("CSV data is empty")
+    if required_cols:
+        missing = [c for c in required_cols if c not in df.columns]
+        if missing:
+            raise KeyError(f"Missing columns: {missing}")
+    return df
 
 
 # [Patch v5.4.5] Robust loader for final M1 data
