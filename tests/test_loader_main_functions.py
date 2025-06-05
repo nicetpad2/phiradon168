@@ -49,7 +49,7 @@ def test_convert_thai_datetime_valid():
 
 
 def test_convert_thai_datetime_invalid():
-    ts = dl.convert_thai_datetime('notadate')
+    ts = dl.convert_thai_datetime('notadate', errors='coerce')
     assert pd.isna(ts)
 
 

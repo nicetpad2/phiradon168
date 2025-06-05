@@ -1,7 +1,7 @@
 ### 2025-10-08
 
-- [Patch v5.7.3] Improve utility helpers and add resource debugging
-- New/Updated unit tests added for tests.test_new_utils
+- [Patch v5.7.3] Improve data validation utilities and resource planning
+- New/Updated unit tests added for tests.test_thai_utils and tests.test_function_registry
 - QA: pytest -q passed (373 tests)
 
 
