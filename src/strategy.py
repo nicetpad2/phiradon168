@@ -2716,6 +2716,7 @@ import numpy as np
 import math
 import json
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm  # [Patch v5.7.7] Required for FontProperties
 from matplotlib.ticker import FuncFormatter
 from scipy.stats import ttest_ind, wasserstein_distance # For DriftObserver
 from sklearn.model_selection import TimeSeriesSplit # For Walk-Forward
