@@ -218,3 +218,4 @@
 - `gold ai 3_5.py` now imports `src.main.main` after refactor to modular code.
 - Added new `strategy` package for entry and exit rules.
 - Added `order_manager` module for order placement logic.
+- Added `money_management` module for ATR-based SL/TP and portfolio stop logic.
