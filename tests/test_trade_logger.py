@@ -13,6 +13,7 @@ from src.utils.trade_logger import (
     log_close_order,
     setup_trade_logger,
     print_qa_summary,
+    save_trade_snapshot,
 )
 
 
@@ -100,3 +101,12 @@ def test_print_qa_summary_missing(tmp_path, caplog):
         text = print_qa_summary(str(tmp_path))
     assert text == ''
     assert '[QA-WARNING]' in caplog.text
+
+
+def test_save_trade_snapshot(tmp_path):
+    out = tmp_path / 'snap.csv'
+    data = {'time': '2025-01-01', 'price': 1.0, 'atr': 0.2, 'result': 5}
+    save_trade_snapshot(data, str(out))
+    assert out.exists()
+    df = pd.read_csv(out)
+    assert df.iloc[0]['price'] == 1.0

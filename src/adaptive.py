@@ -214,3 +214,61 @@ def compute_trailing_atr_stop(
             return min(sl_old, entry)
 
     return old_sl
+
+def volatility_adjusted_lot_size(
+    equity: float,
+    atr_value: float,
+    sl_multiplier: float = 1.5,
+    pip_value: float = 0.1,
+    risk_pct: float = 0.01,
+    min_lot: float = 0.01,
+    max_lot: float = 5.0,
+) -> Tuple[float, float]:
+    """[Patch] Calculate lot size based on ATR volatility."""
+    try:
+        equity = float(equity)
+        atr_value = float(atr_value)
+    except (TypeError, ValueError):
+        logger.warning("Invalid inputs for volatility_adjusted_lot_size")
+        return min_lot, float("nan")
+    if equity <= 0 or atr_value <= 0 or pip_value <= 0:
+        logger.warning("Non-positive inputs for volatility_adjusted_lot_size")
+        return min_lot, float("nan")
+    sl_pips = atr_value * sl_multiplier * 10.0
+    risk_amount = equity * risk_pct
+    risk_per_lot = sl_pips * pip_value
+    if risk_per_lot <= 1e-9:
+        return min_lot, atr_value * sl_multiplier
+    lot = round(risk_amount / risk_per_lot, 2)
+    lot = max(min_lot, min(lot, max_lot))
+    return lot, atr_value * sl_multiplier
+
+
+def dynamic_risk_adjustment(
+    fold_returns: list[float],
+    base_risk: float = 0.01,
+    loss_cutoff: float = -0.05,
+    win_cutoff: float = 0.05,
+) -> float:
+    """[Patch] Adjust risk based on consecutive fold performance."""
+    if not fold_returns:
+        return base_risk
+    last_three = fold_returns[-3:]
+    last_two = fold_returns[-2:]
+    if len(last_three) >= 2 and all(r <= loss_cutoff for r in last_three[-2:]):
+        return base_risk * 0.5
+    if len(last_three) == 3 and all(r <= loss_cutoff for r in last_three):
+        return base_risk * 0.5
+    if len(last_two) == 2 and all(r >= win_cutoff for r in last_two):
+        return base_risk * 1.5
+    return base_risk
+
+
+def check_portfolio_stop(drawdown_pct: float, threshold: float = 0.10) -> bool:
+    """[Patch] Return True if trading should be suspended."""
+    try:
+        dd = float(drawdown_pct)
+    except (TypeError, ValueError):
+        logger.warning("Invalid drawdown_pct for portfolio stop")
+        return False
+    return dd >= threshold
