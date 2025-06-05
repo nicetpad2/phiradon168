@@ -1,3 +1,8 @@
+### 2025-10-09
+- [Patch v5.7.4] Vectorize adaptive signal score threshold calculation
+- New/Updated unit tests added for tests.test_function_registry
+- QA: pytest -q passed (378 tests)
+
 ### 2025-10-08
 - [Patch v5.7.3] Validate auto-trained files and create placeholders
 - New/Updated unit tests added for tests.test_ensure_model_files_exist and tests.test_function_registry
