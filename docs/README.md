@@ -19,6 +19,8 @@ python profile_backtest.py XAUUSD_M1.csv --rows 1000 --console_level WARNING
 - `src/` โค้ดหลักของระบบ
 - `tuning/` โมดูลสำหรับการหา Hyperparameter
 - `logs/` ไฟล์บันทึกผลการรันและ QA ต่าง ๆ
+ดูรายละเอียดแต่ละโฟลเดอร์เพิ่มเติมได้ที่ docs/<ชื่อโฟลเดอร์>/README.md
+
 ## การใช้งานสคริปต์
 - `python ProjectP.py` เตรียมข้อมูลและเรียก pipeline หลัก
 - `python tuning/hyperparameter_sweep.py` ทดสอบค่า hyperparameter
