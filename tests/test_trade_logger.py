@@ -12,6 +12,7 @@ from src.utils.trade_logger import (
     log_open_order,
     log_close_order,
     setup_trade_logger,
+    print_qa_summary,
 )
 
 
@@ -81,3 +82,21 @@ def test_setup_trade_logger(tmp_path):
     log_path = tmp_path / 't.log'
     trade_log = setup_trade_logger(str(log_path), max_bytes=100, backup_count=1)
     assert any(isinstance(h, logging.handlers.RotatingFileHandler) for h in trade_log.handlers)
+
+
+def test_print_qa_summary(tmp_path, capsys):
+    qa_dir = tmp_path / 'qa_logs'
+    qa_dir.mkdir(parents=True)
+    summary_file = qa_dir / 'qa_summary_X.log'
+    summary_file.write_text('OK', encoding='utf-8')
+    text = print_qa_summary(str(tmp_path))
+    captured = capsys.readouterr()
+    assert 'OK' in captured.out
+    assert text.strip() == 'OK'
+
+
+def test_print_qa_summary_missing(tmp_path, caplog):
+    with caplog.at_level(logging.WARNING):
+        text = print_qa_summary(str(tmp_path))
+    assert text == ''
+    assert '[QA-WARNING]' in caplog.text

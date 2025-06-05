@@ -130,3 +130,36 @@ def log_close_order(
         trade_log.warning(msg)
     else:
         trade_log.info(msg)
+
+
+# [Patch v5.7.3] Utility to print QA summary logs
+def print_qa_summary(output_dir: str) -> str:
+    """Print QA summary logs under ``output_dir/qa_logs``.
+
+    Parameters
+    ----------
+    output_dir : str
+        Directory containing ``qa_logs`` folder.
+
+    Returns
+    -------
+    str
+        Concatenated summary text. Empty string if none found.
+    """
+    qa_dir = os.path.join(output_dir, "qa_logs")
+    if not os.path.isdir(qa_dir):
+        logger.warning("[QA-WARNING] QA summary directory not found: %s", qa_dir)
+        return ""
+    summaries = []
+    for fname in os.listdir(qa_dir):
+        if fname.startswith("qa_summary_") and fname.endswith(".log"):
+            path = os.path.join(qa_dir, fname)
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    summaries.append(f.read().strip())
+            except Exception as e:
+                logger.error("[QA-WARNING] Failed reading %s: %s", path, e, exc_info=True)
+    summary_text = "\n".join(summaries)
+    if summary_text:
+        print(summary_text)
+    return summary_text

@@ -161,3 +161,5 @@ fig.savefig('summary.png')
 ```
 ฟังก์ชัน `calculate_position_size` ยังช่วยคำนวณขนาดลอตที่เหมาะสมตามทุนและระยะ SL
 
+Updated for patch 5.7.3.
+

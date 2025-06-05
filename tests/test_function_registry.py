@@ -16,10 +16,10 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "check_duplicates", 925),
     ("src/data_loader.py", "check_price_jumps", 932),
     ("src/data_loader.py", "convert_thai_years", 940),
-    ("src/data_loader.py", "prepare_datetime_index", 947),
-    ("src/data_loader.py", "load_raw_data_m1", 976),
-    ("src/data_loader.py", "load_raw_data_m15", 987),
-    ("src/data_loader.py", "write_test_file", 992),
+    ("src/data_loader.py", "prepare_datetime_index", 978),
+    ("src/data_loader.py", "load_raw_data_m1", 1007),
+    ("src/data_loader.py", "load_raw_data_m15", 1018),
+    ("src/data_loader.py", "write_test_file", 1023),
 
 
     ("src/features.py", "calculate_trend_zone", 1337),
@@ -38,13 +38,13 @@ FUNCTIONS_INFO = [
 
 # [Patch v5.5.3] Updated expected line numbers
 
-    ("src/main.py", "parse_arguments", 1882),
-    ("src/main.py", "setup_output_directory", 1887),
-    ("src/main.py", "load_features_from_file", 1892),
-    ("src/main.py", "drop_nan_rows", 1897),
-    ("src/main.py", "convert_to_float32", 1902),
-    ("src/main.py", "run_initial_backtest", 1907),
-    ("src/main.py", "save_final_data", 1912),
+    ("src/main.py", "parse_arguments", 1884),
+    ("src/main.py", "setup_output_directory", 1889),
+    ("src/main.py", "load_features_from_file", 1894),
+    ("src/main.py", "drop_nan_rows", 1899),
+    ("src/main.py", "convert_to_float32", 1904),
+    ("src/main.py", "run_initial_backtest", 1909),
+    ("src/main.py", "save_final_data", 1914),
 
 
 
@@ -52,13 +52,14 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/main.py", "parse_arguments", 1882),
-    ("src/main.py", "setup_output_directory", 1887),
-    ("src/main.py", "load_features_from_file", 1892),
-    ("src/main.py", "drop_nan_rows", 1897),
-    ("src/main.py", "convert_to_float32", 1902),
-    ("src/main.py", "run_initial_backtest", 1907),
-    ("src/main.py", "save_final_data", 1912),
+    ("src/main.py", "parse_arguments", 1884),
+    ("src/main.py", "setup_output_directory", 1889),
+    ("src/main.py", "load_features_from_file", 1894),
+    ("src/main.py", "drop_nan_rows", 1899),
+    ("src/main.py", "convert_to_float32", 1904),
+    ("src/main.py", "run_initial_backtest", 1909),
+    ("src/main.py", "save_final_data", 1914),
+
 
 
 
@@ -71,6 +72,7 @@ FUNCTIONS_INFO = [
     ("src/strategy.py", "log_trade", 4404),
     ("src/strategy.py", "calculate_metrics", 3087),
     ("src/strategy.py", "aggregate_fold_results", 4407),
+
 
 
 
