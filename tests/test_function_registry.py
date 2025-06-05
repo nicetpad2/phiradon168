@@ -16,10 +16,10 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "check_duplicates", 925),
     ("src/data_loader.py", "check_price_jumps", 932),
     ("src/data_loader.py", "convert_thai_years", 940),
-    ("src/data_loader.py", "prepare_datetime_index", 947),
-    ("src/data_loader.py", "load_raw_data_m1", 976),
-    ("src/data_loader.py", "load_raw_data_m15", 987),
-    ("src/data_loader.py", "write_test_file", 992),
+    ("src/data_loader.py", "prepare_datetime_index", 978),
+    ("src/data_loader.py", "load_raw_data_m1", 1007),
+    ("src/data_loader.py", "load_raw_data_m15", 1018),
+    ("src/data_loader.py", "write_test_file", 1023),
 
 
     ("src/features.py", "calculate_trend_zone", 1337),
@@ -65,12 +65,14 @@ FUNCTIONS_INFO = [
 
 
     ("src/strategy.py", "run_backtest_simulation_v34", 1851),
+
     ("src/strategy.py", "initialize_time_series_split", 4380),
     ("src/strategy.py", "calculate_forced_entry_logic", 4383),
     ("src/strategy.py", "apply_kill_switch", 4386),
     ("src/strategy.py", "log_trade", 4389),
     ("src/strategy.py", "calculate_metrics", 3068),
     ("src/strategy.py", "aggregate_fold_results", 4392),
+
 
 
 

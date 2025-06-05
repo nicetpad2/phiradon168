@@ -830,6 +830,11 @@ QA: pytest -q passed (219 tests)
 - Updated unit tests line numbers for function registry
 - QA: pytest -q passed (348 tests)
 
+### 2025-06-11
+- [Patch v5.7.3] Improve ML meta filter fallback and QA utilities
+- New/Updated unit tests added for convert_thai_datetime, print_qa_summary, qa_output_default
+- QA: pytest -q passed
+
 
 \n
 ### 2025-06-04
