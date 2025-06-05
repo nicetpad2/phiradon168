@@ -1,3 +1,8 @@
+### 2025-10-11
+- [Patch v5.7.7] Fix missing font_manager import in strategy
+- New/Updated unit tests added for tests.test_plot_equity_curve_import
+- QA: pytest -q passed (396 tests)
+
 ### 2025-10-09
 
 - [Patch v5.7.5] Extract order management into new module
