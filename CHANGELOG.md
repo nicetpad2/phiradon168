@@ -1,4 +1,5 @@
 ### 2025-10-16
+
 - [Patch v5.8.3] Add folder-specific READMEs under docs
 - New/Updated unit tests added for none (documentation update)
 - QA: pytest -q passed (existing tests)
@@ -46,136 +47,124 @@
 ### 2025-10-12
 - [Patch v5.7.8] Resolve absolute path for threshold optimization
 - New/Updated unit tests added for tests.test_projectp_cli::test_run_threshold_uses_absolute_path
+
 - QA: pytest -q passed
 
-### 2025-10-09
 
-- [Patch v5.7.5] Extract order management into new module
-- New/Updated unit tests added for tests.test_order_management
-- QA: pytest -q failed (7 failures)
+## [v5.8.2] – 2025-10-15
+### Fixed
+- Replace deprecated utcnow usage in monitor
+### Added
+- Graceful TA fallbacks for RSI and MACD when library missing
 
-### 2025-10-10
-- [Patch v5.7.6] Update function registry line numbers
-- New/Updated unit tests added for tests.test_function_registry
-- QA: pytest -q passed (396 tests)
+## [v5.8.1] – 2025-10-14
+### Added
+- Lightweight ta stub for indicator tests
+
+## [v5.8.0] – 2025-10-14
+- Joint Optuna model+strategy optimization
+
+## [v5.7.9] – 2025-10-13
+### Added
+- Order flow & divergence features for ML filter
+- Implement money management module
+
+## [v5.7.8] – 2025-10-12
+### Fixed
+- Resolve FontProperties parse error for generic aliases
+- Resolve absolute path for threshold optimization
+
+## [v5.7.7] – 2025-10-11
+### Fixed
+- Fix missing font_manager import in strategy
+
+## [v5.7.6] – 2025-10-10
+### Changed
+- Update function registry line numbers
+
 - Confirmed run_tests.py shows 0 failures
 
-### 2025-10-08
-- [Patch v5.7.3] Validate auto-trained files and create placeholders
-- New/Updated unit tests added for tests.test_ensure_model_files_exist and tests.test_function_registry
-- QA: pytest -q passed (371 tests)
-### 2025-10-08
-- [Patch v5.7.3] Improve data validation utilities and resource planning
-- New/Updated unit tests added for tests.test_thai_utils and tests.test_function_registry
-- QA: pytest -q passed (373 tests)
+## [v5.7.5] – 2025-10-09
+### Added
+- Extract order management into new module
 
+## [v5.7.3] – 2025-10-08
+### Added
+- Validate auto-trained files and create placeholders
+- Improve data validation utilities and resource planning
 
-### 2025-06-05
-- [Patch v5.7.4] Vectorize adaptive signal threshold and reduce DataFrame writes
-- New/Updated unit tests added for tests.test_adaptive_signal_threshold
-- QA: pytest -q passed
+## [v5.7.4] – 2025-06-05
+### Changed
+- Vectorize adaptive signal threshold and reduce DataFrame writes
 
+## [v5.7.2] – 2025-10-07
+### Fixed
+- Fix sweep path to absolute for Colab execution
 
+## [v5.7.3] – 2025-10-08
+### Added
+- Log reasons when folds have no trades
 
-### 2025-10-07
-- [Patch v5.7.2] Fix sweep path to absolute for Colab execution
-- New/Updated unit tests added for tests.test_projectp_cli
-- QA: pytest -q passed (370 tests)
+## [v5.6.8] – 2025-10-06
+### Added
+- Handle empty trade logs and lower default ML threshold
+- Add needs_retrain method and retrain warning logic
 
-### 2025-10-08
+## [v5.7.1] – 2025-10-06
+### Changed
+- Lower default signal score threshold and enable meta filter toggle
 
-- [Patch v5.7.3] Log reasons when folds have no trades
-- New/Updated unit tests added for tests.test_empty_summary
+## [v5.6.7] – 2025-10-05
+### Added
+- Add config toggle for soft cooldown and relax thresholds
 
-- QA: pytest -q passed
+## [v5.6.5] – 2025-09-02
+### Changed
+- Relax soft cooldown conditions and shorten cooldown duration
 
-### 2025-10-06
+## [v5.6.6] – 2025-09-03
+### Changed
+- Update soft cooldown logic with side filter
 
-- [Patch v5.6.8] Handle empty trade logs and lower default ML threshold
-- New/Updated unit tests added for tests.test_empty_summary and tests.test_function_registry
-- QA: pytest -q passed (364 tests)
+## [v5.6.7] – 2025-09-04
+### Added
+- เพิ่มพารามิเตอร์ trade_log_path และ m1_path ให้ hyperparameter_sweep
 
-### 2025-10-06
-- [Patch v5.7.1] Lower default signal score threshold and enable meta filter toggle
-- New/Updated unit tests added for tests.test_config_defaults
-- QA: pytest -q passed (363 tests)
+## [v5.6.4] – 2025-09-01
+### Fixed
+- Fix boundary logic for session tagging and reduce duplicate warnings
 
-### 2025-10-06
-- [Patch v5.6.8] Add needs_retrain method and retrain warning logic
-- New/Updated unit tests added for tests.test_drift_retrain_logic
-- QA: pytest -q failed (6 failed)
+## [v5.6.5] – 2025-06-04
+### Added
+- Add volatility filter to entry logic
 
+## [v5.6.4] – 2025-08-31
+### Changed
+- Extend Asia session to 22-8 and update tests
 
-### 2025-10-05
-- [Patch v5.6.7] Add config toggle for soft cooldown and relax thresholds
-- New/Updated unit tests added for tests.test_config_defaults
-- QA: pytest -q passed (363 tests)
+## [v5.6.3] – 2025-08-30
+### Changed
+- Reduce log spam for out-of-session timestamps
 
-### 2025-09-02
-
-- [Patch v5.6.5] Relax soft cooldown conditions and shorten cooldown duration
-- New/Updated unit tests added for cooldown_utils and strategy
-- QA: pytest -q passed (351 tests)
-
-
-### 2025-09-03
-- [Patch v5.6.6] Update soft cooldown logic with side filter
-- New/Updated unit tests added for tests.test_soft_cooldown_logic
-- QA: pytest -q passed
-
-### 2025-09-04
-- [Patch v5.6.7] เพิ่มพารามิเตอร์ trade_log_path และ m1_path ให้ hyperparameter_sweep
-- New/Updated unit tests added for none (existing coverage)
-- QA: pytest -q passed (363 tests)
-
-### 2025-09-01
-- [Patch v5.6.4] Fix boundary logic for session tagging and reduce duplicate warnings
-- New/Updated unit tests added for tests.test_sessions_utils
-- QA: pytest -q passed
-
-### 2025-06-04
-- [Patch v5.6.5] Add volatility filter to entry logic
-- New/Updated unit tests added for tests.test_namedtuple_row and tests.test_volatility_filter
-- QA: pytest -q passed
-
-### 2025-08-31
-
-- [Patch v5.6.4] Extend Asia session to 22-8 and update tests
-- QA: pytest -q passed
-
-
-#
-### 2025-08-30
-- [Patch v5.6.3] Reduce log spam for out-of-session timestamps
-- QA: pytest -q passed (347 tests)
-### 2025-08-29
-- [Patch v5.6.2] Remove PyTables dependency for feature persistence
+## [v5.6.2] – 2025-08-29
+### Removed
+- Remove PyTables dependency for feature persistence
+### Fixed
 - Fix FutureWarning in check_data_quality
-- New/Updated unit tests added for tests.test_features_hdf5
-- QA: pytest -q passed (347 tests)
-### 2025-08-28
-- [Patch v5.6.1] Improve model utilities
-- New/Updated unit tests added for tests.test_model_utils_new
-- QA: pytest -q passed (325 tests)
 
-### 2025-08-28
-
-- [Patch v5.6.1] Add dataclass-based order logging with rotating file support
-- New/Updated unit tests added for tests.test_trade_logger
-- QA: pytest -q passed (325 tests)
+## [v5.6.1] – 2025-08-28
+### Added
+- Improve model utilities
+- Add dataclass-based order logging with rotating file support
 
 
-### 2025-08-26
-- [Patch v5.6.0] Refactor font setup and CSV loader
-- New/Updated unit tests added for data_loader
-- QA: pytest -q passed (325 tests)
+## [v5.6.0] – 2025-08-26
+### Changed
+- Refactor font setup and CSV loader
 
-
-### 2025-08-27
-- [Patch v5.6.1] Refactor cooldown state management
-- New/Updated unit tests added for cooldown_utils
-
-- QA: pytest -q passed (333 tests)
+## [v5.6.1] – 2025-08-27
+### Changed
+- Refactor cooldown state management
 
 
 ### 2025-08-25

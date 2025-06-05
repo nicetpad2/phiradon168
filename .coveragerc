@@ -1,5 +1,9 @@
 [run]
 omit =
+    */tests/*
+    */logs/*
+    */ta/*
+    */__init__.py
     src/strategy.py
     src/main.py
     src/config.py

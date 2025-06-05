@@ -7,7 +7,7 @@
    pip install -r requirements.txt
    ```
 ### Dependencies
-- Python 3.9+
+- Python 3.8-3.10
 - pandas>=2.2.2
 - numpy>=2.0
 - scikit-learn>=1.6.1
