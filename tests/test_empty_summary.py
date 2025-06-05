@@ -4,7 +4,7 @@ import pandas as pd
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
 
-from src import strategy
+from src import strategy, log_analysis
 
 
 def test_run_all_folds_handles_no_trades(simple_m1_df, monkeypatch, tmp_path):
@@ -44,3 +44,14 @@ def test_run_all_folds_handles_no_trades(simple_m1_df, monkeypatch, tmp_path):
     metrics_buy, metrics_sell, df_final, trade_log = result[0], result[1], result[2], result[3]
     assert isinstance(metrics_buy, dict)
     assert trade_log.empty
+
+
+def test_summarize_block_reasons():
+    logs = [
+        {"reason": "ML_META_FILTER"},
+        {"reason": "ML_META_FILTER"},
+        {"reason": "SOFT_COOLDOWN"},
+    ]
+    result = log_analysis.summarize_block_reasons(logs)
+    assert result["ML_META_FILTER"] == 2
+    assert result["SOFT_COOLDOWN"] == 1

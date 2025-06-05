@@ -31,6 +31,7 @@ from src.cooldown_utils import (
 from itertools import product
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
 from src.utils import get_env_float
+from src.log_analysis import summarize_block_reasons  # [Patch v5.7.3]
 from src.config import (
     print_gpu_utilization,  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
     USE_MACD_SIGNALS,
@@ -1237,6 +1238,7 @@ USE_META_CLASSIFIER = safe_get_global('USE_META_CLASSIFIER', DEFAULT_USE_META_CL
 META_MIN_PROBA_THRESH = safe_get_global('META_MIN_PROBA_THRESH', DEFAULT_META_MIN_PROBA_THRESH)
 REENTRY_MIN_PROBA_THRESH = safe_get_global('REENTRY_MIN_PROBA_THRESH', DEFAULT_REENTRY_MIN_PROBA_THRESH)
 OUTPUT_DIR = safe_get_global('OUTPUT_DIR', DEFAULT_OUTPUT_DIR)
+META_PROBA_FILTER_THRESHOLD = safe_get_global('META_PROBA_FILTER_THRESHOLD', 0.6)
 
 
 # --- Backtesting Helper Functions ---
@@ -2338,11 +2340,13 @@ def run_backtest_simulation_v34(
                                 for cat_col in cat_cols_ml: X_ml[cat_col] = X_ml[cat_col].astype(str).fillna("Missing")
                                 proba_tp = active_l1_model.predict_proba(X_ml)[0, 1]; meta_proba_tp_for_log = proba_tp; logging.debug(f"         ML Model '{selected_model_key}' Predicted Proba(TP): {proba_tp:.4f}")
                                 meta_proba = predict(active_l1_model, X_ml)
-                                if meta_proba < 0.6:
+                                if meta_proba < META_PROBA_FILTER_THRESHOLD:
                                     can_open_order = False
                                     block_reason = "ML_META_FILTER"
                                     orders_skipped_ml_l1 += 1
-                                    logging.debug(f"      Block Reason: {block_reason} (MetaProba {meta_proba:.4f} < 0.60)")
+                                    logging.debug(
+                                        f"      Block Reason: {block_reason} (MetaProba {meta_proba:.4f} < {META_PROBA_FILTER_THRESHOLD:.2f})"
+                                    )
                                 ml_threshold = current_reentry_threshold_l1 if is_reentry_trade else current_meta_threshold_l1; logging.debug(f"         Applying ML Threshold: {ml_threshold:.4f} ({'Re-Entry' if is_reentry_trade else 'Standard'})")
                                 if proba_tp < ml_threshold: can_open_order = False; block_reason = f"ML1_SKIP_{selected_model_key.upper()}" if not is_reentry_trade else f"ML1_SKIP_RE_{selected_model_key.upper()}"; orders_skipped_ml_l1 += 1; logging.debug(f"      Block Reason: {block_reason} (Proba {proba_tp:.4f} < {ml_threshold:.4f})")
                             except Exception as e_ml1: logging.error(f"      (Error) ML Filter ({selected_model_key}) failed during prediction: {e_ml1}", exc_info=True); can_open_order = False; block_reason = f"ML1_ERR_{selected_model_key.upper()}" if not is_reentry_trade else f"ML1_ERR_RE_{selected_model_key.upper()}"; meta_proba_tp_for_log = np.nan
@@ -3897,6 +3901,42 @@ def run_all_folds_with_threshold(
             initial_consecutive_losses=current_fold_consecutive_losses,
         )
 
+        if (log_buy is None or log_buy.empty) and (log_sell is None or log_sell.empty):
+            logging.warning(
+                f"[QA-WARNING] Fold {fold+1}: no trades with threshold {l1_thresh_to_use}. Retrying fallback mode."
+            )
+            fb_thresh = 0.05
+            if isinstance(l1_thresh_to_use, (float, int)):
+                fb_thresh = max(0.05, l1_thresh_to_use - 0.1)
+            (df_buy_res, log_buy, eq_buy, hist_buy, dd_buy, costs_buy, blocked_buy, type_l1_b, type_l2_b, final_ks_state_buy, final_losses_buy, ib_lot_buy) = run_backtest_simulation_v34(
+                df_test_fold, label_buy + "_FB", start_cap_buy, "BUY",
+                fund_profile=fund_profile, fold_config=cfg_buy,
+                available_models=available_models, model_switcher_func=model_switcher_func,
+                pattern_label_map=pattern_label_map, meta_min_proba_thresh_override=fb_thresh,
+                current_fold_index=fold, enable_partial_tp=enable_partial_tp_flag,
+                partial_tp_levels=partial_tp_levels_list, partial_tp_move_sl_to_entry=partial_tp_move_sl_flag,
+                enable_kill_switch=enable_kill_switch_flag, kill_switch_max_dd_threshold=kill_switch_dd_thresh,
+                kill_switch_consecutive_losses_config=kill_switch_losses_config,
+                recovery_mode_consecutive_losses_config=recovery_mode_consecutive_losses_config,
+                min_equity_threshold_pct=min_equity_threshold_pct_config,
+                initial_kill_switch_state=current_fold_kill_switch_state,
+                initial_consecutive_losses=current_fold_consecutive_losses,
+            )
+            (df_sell_res, log_sell, eq_sell, hist_sell, dd_sell, costs_sell, blocked_sell, type_l1_s, type_l2_s, final_ks_state_sell, final_losses_sell, ib_lot_sell) = run_backtest_simulation_v34(
+                df_buy_res, label_sell + "_FB", start_cap_sell, "SELL",
+                fund_profile=fund_profile, fold_config=cfg_sell,
+                available_models=available_models, model_switcher_func=model_switcher_func,
+                pattern_label_map=pattern_label_map, meta_min_proba_thresh_override=fb_thresh,
+                current_fold_index=fold, enable_partial_tp=enable_partial_tp_flag,
+                partial_tp_levels=partial_tp_levels_list, partial_tp_move_sl_to_entry=partial_tp_move_sl_flag,
+                enable_kill_switch=enable_kill_switch_flag, kill_switch_max_dd_threshold=kill_switch_dd_thresh,
+                kill_switch_consecutive_losses_config=kill_switch_losses_config,
+                recovery_mode_consecutive_losses_config=recovery_mode_consecutive_losses_config,
+                min_equity_threshold_pct=min_equity_threshold_pct_config,
+                initial_kill_switch_state=current_fold_kill_switch_state,
+                initial_consecutive_losses=current_fold_consecutive_losses,
+            )
+
         logging.debug(f"Storing results for Fold {fold+1}...")
         all_fold_results_df.append(df_sell_res)
         if log_buy is not None and not log_buy.empty: all_trade_logs.append(log_buy)
@@ -3998,7 +4038,11 @@ def run_all_folds_with_threshold(
         previous_fold_metrics = current_fold_metrics
 
         if log_buy is not None and log_buy.empty and log_sell is not None and log_sell.empty:
-            logging.warning(f"          [SUMMARY] Fold {fold+1} ({fund_name}): No trades opened. All entries blocked.")
+            reason_series = summarize_block_reasons(blocked_buy + blocked_sell)
+            reasons_str = ", ".join(f"{k}:{v}" for k, v in reason_series.items()) if not reason_series.empty else "Unknown"
+            logging.warning(
+                f"          [SUMMARY] Fold {fold+1} ({fund_name}): No trades opened. All entries blocked. Reasons: {reasons_str}"
+            )
 
         fold_duration = time.time() - fold_start_time
         fold_equity = eq_sell
@@ -4041,15 +4085,21 @@ def run_all_folds_with_threshold(
 
     run_duration = time.time() - start_time_run
     logging.info(f"      [Runner {run_label}] (Success) Full WF Sim completed (L1_Th={l1_thresh_display}) in {run_duration:.2f} seconds.")
+    try:
+        from src.utils import save_resource_plan
+
+        save_resource_plan(output_dir)
+    except Exception as e:
+        logging.debug("Could not save resource plan: %s", e)
 
     # <<< MODIFIED v4.8.1: Handle cases where no trades were logged or no metrics generated >>>
     if not all_trade_logs:
         logging.warning(
-            f"      [Runner {run_label}] No trades were logged in any fold (L1_Th={l1_thresh_display}). Generating empty summary."
+            f"[QA-WARNING]       [Runner {run_label}] No trades were logged in any fold (L1_Th={l1_thresh_display}). Generating empty summary."
         )
     if not all_fold_metrics:
         logging.warning(
-            f"      [Runner {run_label}] No metrics were generated from any fold (L1_Th={l1_thresh_display}). Using default metrics."
+            f"[QA-WARNING]       [Runner {run_label}] No metrics were generated from any fold (L1_Th={l1_thresh_display}). Using default metrics."
         )
 
     logging.info(f"      [Runner {run_label}] (Processing) Aggregating overall results (L1_Th={l1_thresh_display})...")
