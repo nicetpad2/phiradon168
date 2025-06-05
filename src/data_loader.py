@@ -943,6 +943,31 @@ def convert_thai_years(df, column):
         df[column] = pd.to_datetime(df[column], errors='coerce')
     return df
 
+# [Patch v5.7.3] Robust Thai datetime converter with error handling
+def convert_thai_datetime(series, tz="UTC", errors="raise"):
+    """Convert Thai date strings to timezone-aware ``datetime``.
+
+    Years greater than 2500 are assumed to be Buddhist Era and are
+    converted to Gregorian by subtracting 543. Invalid values raise
+    ``ValueError`` when ``errors='raise'`` otherwise return ``NaT``.
+    """
+    if not isinstance(series, pd.Series):
+        raise TypeError("series must be a pandas Series")
+
+    def _parse(value):
+        try:
+            dt = datetime.datetime.fromisoformat(str(value))
+        except Exception:
+            if errors == "raise":
+                raise ValueError(f"Cannot parse datetime: {value}")
+            return pd.NaT
+        if dt.year > 2500:
+            dt = dt.replace(year=dt.year - 543)
+        ts = pd.Timestamp(dt)
+        return ts.tz_localize(tz) if ts.tzinfo is None else ts.tz_convert(tz)
+
+    return series.apply(_parse)
+
 
 def prepare_datetime_index(df):
     """Stubbed datetime index preparer."""
@@ -995,6 +1020,30 @@ def write_test_file(path):
         f.write("test")
     return path
 
+
+# [Patch v5.7.3] Validate DataFrame for required columns and non-emptiness
+def validate_csv_data(df, required_cols=None):
+    """Ensure ``df`` is non-empty and contains required columns.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Loaded DataFrame to validate.
+    required_cols : list of str, optional
+        Columns that must be present. If ``None`` no check is performed.
+
+    Returns
+    -------
+    pd.DataFrame
+        The validated DataFrame.
+    """
+    if df is None or df.empty:
+        raise ValueError("CSV data is empty")
+    if required_cols:
+        missing = [c for c in required_cols if c not in df.columns]
+        if missing:
+            raise KeyError(f"Missing columns: {missing}")
+    return df
 
 # [Patch v5.4.5] Robust loader for final M1 data
 def load_final_m1_data(path, trade_log_df=None):

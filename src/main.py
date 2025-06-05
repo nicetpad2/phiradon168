@@ -67,7 +67,7 @@ from src.strategy import (
     run_all_folds_with_threshold,
     train_and_export_meta_model,
     DriftObserver,
-    plot_equity_curve,
+    plot_equity_curve,  # [Patch v5.7.3] import plotting helper
 )
 from src.utils import (
     export_trade_log,
