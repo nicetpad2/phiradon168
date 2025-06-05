@@ -1,4 +1,9 @@
 
+### 2025-10-15
+- [Patch v5.8.2] Replace deprecated utcnow usage in monitor
+- New/Updated unit tests added for none (existing coverage)
+- QA: pytest -q passed (420 tests)
+
 ### 2025-10-14
 - [Patch v5.8.1] Add lightweight ta stub for indicator tests
 - New/Updated unit tests added for tests.test_warning_skip_more and related modules
