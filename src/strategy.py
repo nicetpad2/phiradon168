@@ -31,6 +31,7 @@ from src.cooldown_utils import (
 from itertools import product
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
 from src.utils import get_env_float
+from src.log_analysis import summarize_block_reasons  # [Patch v5.7.3]
 from src.config import (
     print_gpu_utilization,  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
     USE_MACD_SIGNALS,
@@ -3994,7 +3995,11 @@ def run_all_folds_with_threshold(
         previous_fold_metrics = current_fold_metrics
 
         if log_buy is not None and log_buy.empty and log_sell is not None and log_sell.empty:
-            logging.warning(f"          [SUMMARY] Fold {fold+1} ({fund_name}): No trades opened. All entries blocked.")
+            reason_series = summarize_block_reasons(blocked_buy + blocked_sell)
+            reasons_str = ", ".join(f"{k}:{v}" for k, v in reason_series.items()) if not reason_series.empty else "Unknown"
+            logging.warning(
+                f"          [SUMMARY] Fold {fold+1} ({fund_name}): No trades opened. All entries blocked. Reasons: {reasons_str}"
+            )
 
         fold_duration = time.time() - fold_start_time
         fold_equity = eq_sell

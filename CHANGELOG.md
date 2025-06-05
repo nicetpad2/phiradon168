@@ -4,8 +4,10 @@
 - QA: pytest -q passed (370 tests)
 
 ### 2025-10-08
-- [Patch v5.7.3] Suggest relaxing threshold when no trades logged
-- New/Updated unit tests added for tests.test_trade_logger
+
+- [Patch v5.7.3] Log reasons when folds have no trades
+- New/Updated unit tests added for tests.test_empty_summary
+
 - QA: pytest -q passed
 
 ### 2025-10-06
