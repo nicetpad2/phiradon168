@@ -3039,6 +3039,21 @@ class DriftObserver:
             def calculate_metrics(trade_log_df=None, final_equity=None, equity_history_segment=None, initial_capital=None, label="", model_type_l1="N/A", model_type_l2="N/A", run_summary=None, ib_lot_accumulator=0.0):
                 pass
 
+    def needs_retrain(self, fold_num, threshold=DRIFT_WASSERSTEIN_THRESHOLD):
+        """Determine if the given fold requires re-training based on drift."""
+        fold_data = self.results.get(fold_num)
+        if not fold_data or not isinstance(fold_data, dict):
+            return False
+        for metrics in fold_data.values():
+            if isinstance(metrics, dict):
+                w_dist = metrics.get("wasserstein")
+                if isinstance(w_dist, (int, float, np.number)) and pd.notna(w_dist) and w_dist > threshold:
+                    logging.info(
+                        f"    (DriftObserver) Retrain triggered: Wasserstein {w_dist:.4f} > {threshold:.2f} (Fold {fold_num + 1})"
+                    )
+                    return True
+        return False
+
     def save(self, filepath):
         """Saves the DriftObserver object (currently skipped)."""
         logging.info(f"   (Info) Skipping save of DriftObserver object to {filepath} (v3.6.8 Reduce Files).")
@@ -3795,6 +3810,10 @@ def run_all_folds_with_threshold(
                     except Exception as e_export_drift:
                         logging.error(f"          (Error) Failed to export Drift Summary for Fold {fold+1}: {e_export_drift}", exc_info=True)
                 logging.info(f"          Drift Analysis complete for Fold {fold+1}. Mean Wasserstein: {fold_drift_score_mean:.4f}")
+                if drift_observer.needs_retrain(fold):
+                    logging.warning(
+                        f"          (Drift) Fold {fold+1} drift exceeds threshold. Recommend retraining model."
+                    )
             except Exception as e_drift_analyze:
                 logging.error(f"          (Error) Drift analysis failed for Fold {fold+1}: {e_drift_analyze}", exc_info=True)
 
@@ -4021,8 +4040,21 @@ def run_all_folds_with_threshold(
 
     # <<< MODIFIED v4.8.1: Handle cases where no trades were logged or no metrics generated >>>
     if not all_trade_logs:
-        logging.error(f"      [Runner {run_label}] (Error) No trades were logged in any fold (L1_Th={l1_thresh_display}). Cannot aggregate results.")
-        return None, None, pd.DataFrame(), pd.DataFrame(), {}, [], None, "N/A", "N/A", 0.0
+        debug_fake_trade = os.getenv("DEBUG_FAKE_TRADE", "0") == "1"
+        if debug_fake_trade:
+            logging.warning(
+                f"      [Runner {run_label}] (Debug) No trades logged; generating fake trade for aggregation."
+            )
+            fake_trade = pd.DataFrame(
+                [{"entry_time": pd.Timestamp.utcnow(), "exit_time": pd.Timestamp.utcnow(), "side": "DEBUG", "profit": 0.0}]
+            )
+            all_trade_logs.append(fake_trade)
+            all_fold_metrics.append({"buy": {}, "sell": {}, "debug_fake_trade": True})
+        else:
+            logging.error(
+                f"      [Runner {run_label}] (Error) No trades were logged in any fold (L1_Th={l1_thresh_display}). Cannot aggregate results."
+            )
+            return None, None, pd.DataFrame(), pd.DataFrame(), {}, [], None, "N/A", "N/A", 0.0
     if not all_fold_metrics:
         logging.error(f"      [Runner {run_label}] (Error) No metrics were generated from any fold (L1_Th={l1_thresh_display}). Cannot aggregate results.")
         return None, None, pd.DataFrame(), pd.DataFrame(), {}, [], None, "N/A", "N/A", 0.0

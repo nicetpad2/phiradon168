@@ -1,4 +1,5 @@
 ### 2025-10-06
+
 - [Patch v5.6.8] Update function registry test line numbers
 - New/Updated unit tests added for tests.test_function_registry
 - QA: pytest -q passed (363 tests)
