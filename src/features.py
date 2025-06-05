@@ -455,6 +455,11 @@ def calculate_m15_trend_zone(df_m15):
             _m15_trend_cache[cache_key] = result_df
         return result_df
     df = df_m15.copy()
+    if df.index.duplicated().any():
+        logging.warning(
+            "(Warning) พบ duplicate labels ใน index M15, กำลังลบซ้ำ..."
+        )  # [Patch v5.8.3]
+        df = df[~df.index.duplicated(keep='last')]
     try:
         df["Close"] = pd.to_numeric(df["Close"], errors='coerce')
         if df["Close"].isnull().all():

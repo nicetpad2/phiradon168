@@ -98,6 +98,24 @@ def test_get_mtf_sma_trend():
     assert trend in {'UP', 'DOWN', 'NEUTRAL'}
 
 
+def test_calculate_m15_trend_zone_duplicate_index(monkeypatch):
+    idx = pd.date_range('2024-01-01', periods=3, freq='15min')
+    idx = idx.insert(1, idx[1])
+    df = pd.DataFrame({'Close': [1, 2, 2, 3]}, index=idx)
+
+    def fake_ema(series, period):
+        return pd.Series([1] * len(series), index=series.index, dtype='float32')
+
+    def fake_rsi(series, period):
+        return pd.Series([55] * len(series), index=series.index, dtype='float32')
+
+    monkeypatch.setattr(features, 'ema', fake_ema)
+    monkeypatch.setattr(features, 'rsi', fake_rsi)
+
+    result = features.calculate_m15_trend_zone(df)
+    assert len(result) == len(df)
+
+
 def test_calculate_m1_entry_signals():
     df = pd.DataFrame(
         {
