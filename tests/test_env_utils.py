@@ -43,3 +43,26 @@ def test_config_threshold_env(monkeypatch):
     assert cfg.DRIFT_WASSERSTEIN_THRESHOLD == 0.25
     monkeypatch.delenv('DRIFT_WASSERSTEIN_THRESHOLD', raising=False)
     importlib.reload(cfg)
+
+
+def test_min_signal_score_env(monkeypatch):
+    monkeypatch.setenv("MIN_SIGNAL_SCORE_ENTRY", "0.75")
+    if 'src.config' in sys.modules:
+        monkeypatch.delitem(sys.modules, 'src.config', raising=False)
+    cfg = importlib.import_module('src.config')
+    assert cfg.MIN_SIGNAL_SCORE_ENTRY == 0.75
+    monkeypatch.delenv('MIN_SIGNAL_SCORE_ENTRY', raising=False)
+    importlib.reload(cfg)
+
+
+def test_meta_threshold_env(monkeypatch):
+    monkeypatch.setenv("META_MIN_PROBA_THRESH", "0.4")
+    monkeypatch.setenv("REENTRY_MIN_PROBA_THRESH", "0.35")
+    if 'src.features' in sys.modules:
+        monkeypatch.delitem(sys.modules, 'src.features', raising=False)
+    ft = importlib.import_module('src.features')
+    assert ft.META_MIN_PROBA_THRESH == 0.4
+    assert ft.REENTRY_MIN_PROBA_THRESH == 0.35
+    monkeypatch.delenv('META_MIN_PROBA_THRESH', raising=False)
+    monkeypatch.delenv('REENTRY_MIN_PROBA_THRESH', raising=False)
+    importlib.reload(ft)

@@ -21,6 +21,7 @@ import gc # For memory management
 from src.utils.gc_utils import maybe_collect
 from functools import lru_cache
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
+from src.utils import get_env_float
 
 _rsi_cache = {}  # [Patch v4.8.12] Cache RSIIndicator per period
 _atr_cache = {}  # [Patch v4.8.12] Cache AverageTrueRange per period
@@ -684,15 +685,18 @@ try:
     META_MIN_PROBA_THRESH
 except NameError:
     META_MIN_PROBA_THRESH = DEFAULT_META_MIN_PROBA_THRESH
+META_MIN_PROBA_THRESH = get_env_float("META_MIN_PROBA_THRESH", META_MIN_PROBA_THRESH)  # env override
 try:
     REENTRY_MIN_PROBA_THRESH
 except NameError:
     REENTRY_MIN_PROBA_THRESH = META_MIN_PROBA_THRESH
+REENTRY_MIN_PROBA_THRESH = get_env_float("REENTRY_MIN_PROBA_THRESH", REENTRY_MIN_PROBA_THRESH)  # env override
 # <<< [Patch] Added try-except for Meta-Meta threshold >>>
 try:
     META_META_MIN_PROBA_THRESH
 except NameError:
     META_META_MIN_PROBA_THRESH = DEFAULT_META_META_MIN_PROBA_THRESH
+META_META_MIN_PROBA_THRESH = get_env_float("META_META_MIN_PROBA_THRESH", META_META_MIN_PROBA_THRESH)  # env override
 # <<< End of [Patch] >>>
 try:
     ENABLE_OPTUNA_TUNING
