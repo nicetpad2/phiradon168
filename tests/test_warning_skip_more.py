@@ -88,13 +88,31 @@ def test_macd_returns_values():
     assert not diff.isna().all()
 
 
+def test_rsi_pandas_fallback(monkeypatch):
+    series = pd.Series(np.arange(30, dtype='float32'))
+    monkeypatch.setattr(features, '_TA_AVAILABLE', False)
+    monkeypatch.setattr(features, 'ta', None, raising=False)
+    result = features.rsi(series, period=14)
+    assert not result.isna().all()
+
+
+def test_macd_pandas_fallback(monkeypatch):
+    series = pd.Series(np.arange(60, dtype='float32'))
+    monkeypatch.setattr(features, '_TA_AVAILABLE', False)
+    monkeypatch.setattr(features, 'ta', None, raising=False)
+    line, signal, diff = features.macd(series)
+    assert not line.isna().all()
+    assert not signal.isna().all()
+    assert not diff.isna().all()
+
+
 def test_macd_fallback_when_ta_missing(monkeypatch, caplog):
     series = pd.Series(range(50), dtype='float32')
     monkeypatch.setattr(features, 'ta', None, raising=False)
     with caplog.at_level(logging.WARNING):
         line, signal, diff = features.macd(series)
     assert not line.isna().all()
-    assert any('TA MACD failed' in msg for msg in caplog.messages)
+    assert any('fallback MACD' in msg for msg in caplog.messages)
 
 
 def test_engineer_m1_features_nan_inf_warning(caplog):
