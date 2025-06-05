@@ -1169,7 +1169,7 @@ DEFAULT_KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD = 7
 DEFAULT_FUND_PROFILES = {"NORMAL": {"risk": 0.01, "mm_mode": "balanced"}}
 DEFAULT_FUND_NAME = "NORMAL"
 DEFAULT_USE_META_CLASSIFIER = True
-DEFAULT_META_MIN_PROBA_THRESH = 0.5
+DEFAULT_META_MIN_PROBA_THRESH = 0.3
 DEFAULT_REENTRY_MIN_PROBA_THRESH = 0.5
 DEFAULT_OUTPUT_DIR = "./output_default"
 
@@ -2669,7 +2669,7 @@ DEFAULT_N_WALK_FORWARD_SPLITS = 5
 DEFAULT_ENTRY_CONFIG_PER_FOLD = {0: {}} # Minimal default
 DEFAULT_FUND_PROFILES = {"NORMAL": {"risk": 0.01, "mm_mode": "balanced"}}
 DEFAULT_FUND_NAME = "NORMAL"
-DEFAULT_META_MIN_PROBA_THRESH = 0.5
+DEFAULT_META_MIN_PROBA_THRESH = 0.3
 DEFAULT_ENABLE_PARTIAL_TP = True
 DEFAULT_PARTIAL_TP_LEVELS = []
 DEFAULT_PARTIAL_TP_MOVE_SL_TO_ENTRY = True
@@ -4021,11 +4021,13 @@ def run_all_folds_with_threshold(
 
     # <<< MODIFIED v4.8.1: Handle cases where no trades were logged or no metrics generated >>>
     if not all_trade_logs:
-        logging.error(f"      [Runner {run_label}] (Error) No trades were logged in any fold (L1_Th={l1_thresh_display}). Cannot aggregate results.")
-        return None, None, pd.DataFrame(), pd.DataFrame(), {}, [], None, "N/A", "N/A", 0.0
+        logging.warning(
+            f"      [Runner {run_label}] No trades were logged in any fold (L1_Th={l1_thresh_display}). Generating empty summary."
+        )
     if not all_fold_metrics:
-        logging.error(f"      [Runner {run_label}] (Error) No metrics were generated from any fold (L1_Th={l1_thresh_display}). Cannot aggregate results.")
-        return None, None, pd.DataFrame(), pd.DataFrame(), {}, [], None, "N/A", "N/A", 0.0
+        logging.warning(
+            f"      [Runner {run_label}] No metrics were generated from any fold (L1_Th={l1_thresh_display}). Using default metrics."
+        )
 
     logging.info(f"      [Runner {run_label}] (Processing) Aggregating overall results (L1_Th={l1_thresh_display})...")
     trade_log_wf = pd.DataFrame()
