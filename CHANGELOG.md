@@ -1,3 +1,8 @@
+- [Patch v5.8.0] Joint Optuna model+strategy optimization
+- New/Updated unit tests added for tests.test_joint_optuna
+- QA: pytest -q passed (407 tests)
+
+### 2025-10-13
 - [Patch v5.7.9] Add order flow & divergence features for ML filter
 - New/Updated unit tests added for tests.test_features_more
 - QA: pytest -q passed (401 tests)
