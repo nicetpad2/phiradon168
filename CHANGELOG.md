@@ -1,4 +1,11 @@
 
+### 2025-10-16
+
+- [Patch v5.8.3] Update .coveragerc omit patterns
+- New/Updated unit tests added for none (config update)
+
+- QA: pytest -q passed (423 tests)
+
 ### 2025-10-15
 - [Patch v5.8.2] Replace deprecated utcnow usage in monitor
 - New/Updated unit tests added for none (existing coverage)
