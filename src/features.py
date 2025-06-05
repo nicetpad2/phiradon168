@@ -633,7 +633,7 @@ except ImportError:
 
 # Ensure global configurations are accessible if run independently
 # Define defaults if globals are not found
-DEFAULT_META_MIN_PROBA_THRESH = 0.5
+DEFAULT_META_MIN_PROBA_THRESH = 0.25
 DEFAULT_ENABLE_OPTUNA_TUNING = True
 DEFAULT_OPTUNA_N_TRIALS = 50
 DEFAULT_OPTUNA_CV_SPLITS = 5

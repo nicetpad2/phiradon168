@@ -43,6 +43,16 @@ def test_convert_thai_years_parses():
     assert pd.api.types.is_datetime64_ns_dtype(res['Date'])
 
 
+def test_convert_thai_datetime_valid():
+    ts = dl.convert_thai_datetime('2567-01-01 00:00')
+    assert ts.year == 2024
+
+
+def test_convert_thai_datetime_invalid():
+    ts = dl.convert_thai_datetime('notadate')
+    assert pd.isna(ts)
+
+
 def test_prepare_datetime_index_sets_index():
     df = pd.DataFrame({'Date': ['2024-01-01']})
     res = dl.prepare_datetime_index(df.copy())

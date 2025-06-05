@@ -1169,7 +1169,7 @@ DEFAULT_KILL_SWITCH_WARNING_CONSECUTIVE_LOSSES_THRESHOLD = 7
 DEFAULT_FUND_PROFILES = {"NORMAL": {"risk": 0.01, "mm_mode": "balanced"}}
 DEFAULT_FUND_NAME = "NORMAL"
 DEFAULT_USE_META_CLASSIFIER = True
-DEFAULT_META_MIN_PROBA_THRESH = 0.3
+DEFAULT_META_MIN_PROBA_THRESH = 0.25
 DEFAULT_REENTRY_MIN_PROBA_THRESH = 0.5
 DEFAULT_OUTPUT_DIR = "./output_default"
 
@@ -2669,7 +2669,7 @@ DEFAULT_N_WALK_FORWARD_SPLITS = 5
 DEFAULT_ENTRY_CONFIG_PER_FOLD = {0: {}} # Minimal default
 DEFAULT_FUND_PROFILES = {"NORMAL": {"risk": 0.01, "mm_mode": "balanced"}}
 DEFAULT_FUND_NAME = "NORMAL"
-DEFAULT_META_MIN_PROBA_THRESH = 0.3
+DEFAULT_META_MIN_PROBA_THRESH = 0.25
 DEFAULT_ENABLE_PARTIAL_TP = True
 DEFAULT_PARTIAL_TP_LEVELS = []
 DEFAULT_PARTIAL_TP_MOVE_SL_TO_ENTRY = True
@@ -3656,6 +3656,8 @@ def run_all_folds_with_threshold(
     kill_switch_losses_config=None,
     recovery_mode_consecutive_losses_config=None,
     min_equity_threshold_pct_config=None,
+    fallback_threshold=None,
+    enable_fallback_mode=False,
 ):
     """
     Orchestrates the full Walk-Forward simulation across all folds for a given
@@ -3683,6 +3685,8 @@ def run_all_folds_with_threshold(
         kill_switch_losses_config (int, optional): Kill switch loss threshold. Defaults to global.
         recovery_mode_consecutive_losses_config (int, optional): Recovery mode loss threshold. Defaults to global.
         min_equity_threshold_pct_config (float, optional): Min equity % for FE. Defaults to global.
+        fallback_threshold (float, optional): Threshold used when ``enable_fallback_mode`` and no trades are found.
+        enable_fallback_mode (bool, optional): If True, rerun with ``fallback_threshold`` when no trades occur.
 
     Returns:
         tuple: A tuple containing aggregated results:
@@ -4125,15 +4129,48 @@ def run_all_folds_with_threshold(
             df_walk_forward_results_pd_final = pd.DataFrame()
 
     logging.info(f"      [Runner {run_label}] Returning aggregated results.")
-    return (
-        metrics_buy_overall, metrics_sell_overall,
-        df_walk_forward_results_pd_final, trade_log_wf,
-        all_equity_histories, all_fold_metrics,
+    results = (
+        metrics_buy_overall,
+        metrics_sell_overall,
+        df_walk_forward_results_pd_final,
+        trade_log_wf,
+        all_equity_histories,
+        all_fold_metrics,
         first_fold_test_data,
         model_type_l1_used_in_run,
         model_type_l2_used_in_run,
-        total_ib_lot_accumulator_run
+        total_ib_lot_accumulator_run,
     )
+    if enable_fallback_mode and trade_log_wf.empty and isinstance(fallback_threshold, (int, float)):
+        if fallback_threshold < l1_thresh_to_use:
+            logging.info(
+                f"      [Runner {run_label}] No trades found. Running fallback with threshold {fallback_threshold:.2f}"
+            )
+            return run_all_folds_with_threshold(
+                fund_profile=fund_profile,
+                current_l1_threshold=fallback_threshold,
+                df_m1_final=df_m1_final,
+                available_models=available_models,
+                model_switcher_func=model_switcher_func,
+                n_walk_forward_splits=n_walk_forward_splits,
+                entry_config_per_fold=entry_config_per_fold,
+                drift_observer=drift_observer,
+                output_dir=output_dir,
+                initial_capital=initial_capital,
+                pattern_label_map=pattern_label_map,
+                default_l1_threshold=default_l1_threshold,
+                enable_partial_tp_flag=enable_partial_tp_flag,
+                partial_tp_levels_list=partial_tp_levels_list,
+                partial_tp_move_sl_flag=partial_tp_move_sl_flag,
+                enable_kill_switch_flag=enable_kill_switch_flag,
+                kill_switch_dd_thresh=kill_switch_dd_thresh,
+                kill_switch_losses_config=kill_switch_losses_config,
+                recovery_mode_consecutive_losses_config=recovery_mode_consecutive_losses_config,
+                min_equity_threshold_pct_config=min_equity_threshold_pct_config,
+                fallback_threshold=fallback_threshold,
+                enable_fallback_mode=False,
+            )
+    return results
 
 logging.info("Part 9: Walk-Forward Orchestration & Analysis Functions Loaded.")
 # === END OF PART 9/12 ===
