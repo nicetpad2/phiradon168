@@ -1,6 +1,15 @@
+- [Patch v5.8.0] Joint Optuna model+strategy optimization
+- New/Updated unit tests added for tests.test_joint_optuna
+- QA: pytest -q passed (407 tests)
+
+### 2025-10-13
 - [Patch v5.7.9] Add order flow & divergence features for ML filter
 - New/Updated unit tests added for tests.test_features_more
 - QA: pytest -q passed (401 tests)
+
+- [Patch v5.7.9] Implement money management module
+- New/Updated unit tests added for tests.test_money_management
+- QA: pytest -q passed (409 tests)
 
 ### 2025-10-12
 - [Patch v5.7.8] Resolve FontProperties parse error for generic aliases
@@ -895,6 +904,8 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed
 
 ### 2025-06-06
+
 - [Patch v5.8.0] Add AUC monitoring module and tests
 - New/Updated unit tests added for tests.test_monitor
 - QA: pytest -q passed (408 tests)
+

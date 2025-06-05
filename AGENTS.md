@@ -94,6 +94,7 @@
   - Provide “recommended defaults” for SNIPER_CONFIG, RELAX_CONFIG, and ULTRA_RELAX_CONFIG
   - Publish tuning reports and shapley-value summaries for transparency
   - Manage adaptive risk and SL/TP scaling modules
+  - Jointly optimize model and strategy parameters with Optuna, evaluating AUC per fold
 
 ---
 
@@ -219,3 +220,8 @@
 - `gold ai 3_5.py` now imports `src.main.main` after refactor to modular code.
 - Added new `strategy` package for entry and exit rules.
 - Added `order_manager` module for order placement logic.
+- Added `money_management` module for ATR-based SL/TP and portfolio stop logic.
+- Added `wfv_monitor` module for KPI-driven Walk-Forward validation.
+- Added `tuning.joint_optuna` module for joint model + strategy optimization.
+
+
