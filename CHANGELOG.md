@@ -1,7 +1,9 @@
+
 ### 2025-10-14
 - [Patch v5.8.1] Add lightweight ta stub for indicator tests
 - New/Updated unit tests added for tests.test_warning_skip_more and related modules
 - QA: pytest -q passed (420 tests)
+
 
 - [Patch v5.8.0] Joint Optuna model+strategy optimization
 - New/Updated unit tests added for tests.test_joint_optuna
