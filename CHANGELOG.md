@@ -1,4 +1,5 @@
 ### 2025-10-09
+
 - [Patch v5.7.5] Fix default trade_log_path in hyperparameter sweep
 - New/Updated unit tests added for tests.test_hyperparameter_sweep_cli
 - QA: pytest -q failed (6 failed)
