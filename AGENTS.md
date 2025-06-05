@@ -218,3 +218,4 @@
 - `gold ai 3_5.py` now imports `src.main.main` after refactor to modular code.
 - Added new `strategy` package for entry and exit rules.
 - Added `order_manager` module for order placement logic.
+- Added `wfv_monitor` module for KPI-driven Walk-Forward validation.
