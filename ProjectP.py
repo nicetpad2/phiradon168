@@ -61,7 +61,10 @@ def run_preprocess():
 
 def run_sweep():
     """รันการค้นหาค่าพารามิเตอร์."""
-    subprocess.run([sys.executable, "tuning/hyperparameter_sweep.py"], check=True)
+    # [Patch v5.7.2] Resolve sweep path relative to this file for Colab support
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    sweep_path = os.path.join(script_dir, "tuning", "hyperparameter_sweep.py")
+    subprocess.run([sys.executable, sweep_path], check=True)
 
 
 def run_threshold():
