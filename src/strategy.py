@@ -3537,12 +3537,28 @@ def plot_equity_curve(equity_series_data, title, initial_capital, output_dir, fi
     logging.debug("   Formatting plot...")
     font_prop = None
     try:
-        current_font_family = plt.rcParams.get('font.family')
-        font_family_name = current_font_family[0] if isinstance(current_font_family, list) and current_font_family else current_font_family
+        current_font_family = plt.rcParams.get("font.family")
+        font_family_name = (
+            current_font_family[0]
+            if isinstance(current_font_family, list) and current_font_family
+            else current_font_family
+        )
         if isinstance(font_family_name, str):
-            font_prop = fm.FontProperties(family=font_family_name)
+            if font_family_name.lower() in {
+                "sans-serif",
+                "serif",
+                "cursive",
+                "fantasy",
+                "monospace",
+            }:
+                fallback_list = plt.rcParams.get(f"font.{font_family_name}", [])
+                font_family_name = fallback_list[0] if fallback_list else None
+            if font_family_name:
+                font_prop = fm.FontProperties(family=font_family_name)
     except Exception as e_fontprop:
-        logging.warning(f"   (Warning) Cannot get FontProperties for plot labels: {e_fontprop}")
+        logging.warning(
+            f"   (Warning) Cannot get FontProperties for plot labels: {e_fontprop}"
+        )
 
     ax.set_title(title, fontproperties=font_prop, fontsize=14)
     ax.set_ylabel("Equity (USD)", fontproperties=font_prop, fontsize=12)
