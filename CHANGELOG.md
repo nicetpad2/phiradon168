@@ -9,6 +9,11 @@
 - [Patch v5.8.2] Replace deprecated utcnow usage in monitor
 - New/Updated unit tests added for none (existing coverage)
 - QA: pytest -q passed (420 tests)
+
+### 2025-10-16
+- [Patch v5.8.2] Organize logs into dated fold directories and ignore logs/
+- New/Updated unit tests added for tests.test_function_registry
+- QA: pytest -q passed (423 tests)
 ### 2025-10-14
 - [Patch v5.8.2] Graceful TA fallbacks for RSI and MACD when library missing
 - New/Updated unit tests added for tests.test_warning_skip_more and tests.test_features_more

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Iterable, List, Dict
 import numpy as np
 from sklearn.metrics import accuracy_score, roc_auc_score
-from src.config import logger
+from src.config import logger, LOG_DIR
 
 
 def _write_row(path: str, row: List[str]):
@@ -22,7 +22,7 @@ def log_performance_metrics(
     y_true: Iterable[int],
     proba: Iterable[float],
     label: str = "daily",
-    summary_path: str = "logs/performance_metrics.csv",
+    summary_path: str = os.path.join(LOG_DIR, "performance_metrics.csv"),
 ) -> Dict[str, float]:
     y_true = np.array(list(y_true))
     proba = np.array(list(proba))
@@ -36,7 +36,7 @@ def log_performance_metrics(
     return {"auc": auc, "accuracy": acc}
 
 
-def monitor_auc_from_csv(path: str, label: str = "daily", summary_path: str = "logs/performance_metrics.csv") -> Dict[str, float] | None:
+def monitor_auc_from_csv(path: str, label: str = "daily", summary_path: str = os.path.join(LOG_DIR, "performance_metrics.csv")) -> Dict[str, float] | None:
     if not os.path.exists(path):
         logger.error("metrics file not found: %s", path)
         return None

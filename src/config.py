@@ -24,6 +24,7 @@ import random
 from collections import Counter, defaultdict
 from joblib import load, dump as joblib_dump
 import traceback
+from datetime import datetime
 import pandas as pd
 import numpy as np
 # [Patch v5.5.1] Enable auto-installation of libraries
@@ -53,8 +54,14 @@ from src.utils import get_env_float
 
 # --- Logging Configuration ---
 # กำหนดค่าพื้นฐานสำหรับการ Logging
-# สามารถปรับ level, format, และ filename ได้ตามต้องการ
-LOG_FILENAME = f'gold_ai_v{__version__}_qa.log'
+# จัดเก็บไฟล์ log ลงในโฟลเดอร์ย่อยตามวันที่และ fold
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+BASE_LOG_DIR = os.path.join(BASE_DIR, 'logs')
+LOG_DATE = datetime.now().strftime('%Y-%m-%d')
+FOLD_ID = os.getenv('FOLD_ID', 'fold0')
+LOG_DIR = os.path.join(BASE_LOG_DIR, LOG_DATE, FOLD_ID)
+os.makedirs(LOG_DIR, exist_ok=True)
+LOG_FILENAME = os.path.join(LOG_DIR, f'gold_ai_v{__version__}_qa.log')
 
 # ตั้งค่า Logger กลางเพื่อให้โมดูลอื่น ๆ ใช้งานร่วมกัน
 logger = logging.getLogger('NiceGold')
@@ -409,7 +416,7 @@ else:
 
 DEFAULT_CSV_PATH_M1 = os.path.join(FILE_BASE, "XAUUSD_M1.csv")
 DEFAULT_CSV_PATH_M15 = os.path.join(FILE_BASE, "XAUUSD_M15.csv")
-DEFAULT_LOG_DIR = os.path.join(FILE_BASE, "logs")
+DEFAULT_LOG_DIR = BASE_LOG_DIR
 
 
 # --- GPU Acceleration Setup (Optional) ---
