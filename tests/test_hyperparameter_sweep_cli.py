@@ -57,3 +57,8 @@ def test_run_sweep_filters_unknown_params(tmp_path, monkeypatch):
     assert df.loc[0, 'seed'] == 1
 
 
+def test_parse_args_defaults():
+    args = hs.parse_args([])
+    assert args.trade_log_path.endswith('trade_log_v32_walkforward.csv.gz')
+
+

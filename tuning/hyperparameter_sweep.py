@@ -141,7 +141,7 @@ def run_sweep(
         logger.warning("No metric column found for best_param export.")
 
 
-def main() -> None:
+def parse_args(args=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_dir', default='sweep_results')
     parser.add_argument('--seed', type=int, default=42)
@@ -149,9 +149,16 @@ def main() -> None:
     parser.add_argument('--param_learning_rate', default='0.01,0.05')
     parser.add_argument('--param_depth', default='6,8')
     parser.add_argument('--param_l2_leaf_reg', default='1,3,5')
-    parser.add_argument('--trade_log_path')
+    parser.add_argument(
+        '--trade_log_path',
+        default='./output_default/trade_log_v32_walkforward.csv.gz',
+    )
     parser.add_argument('--m1_path')
-    args = parser.parse_args()
+    return parser.parse_args(args)
+
+
+def main(args=None) -> None:
+    args = parse_args(args)
 
     params_grid = _parse_multi_params(args)
     run_sweep(

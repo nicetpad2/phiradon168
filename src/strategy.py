@@ -2020,21 +2020,20 @@ def run_backtest_simulation_v34(
     equity_realistic_arr = np.full(num_bars, np.nan, dtype=float)
     drawdown_arr = np.full(num_bars, np.nan, dtype=float)
     active_count_arr = np.zeros(num_bars, dtype=int)
-    # [Patch v5.7.4] Precompute adaptive thresholds and result buffers
-    if USE_ADAPTIVE_SIGNAL_SCORE:
-        signal_scores_series = pd.to_numeric(df_sim["Signal_Score"], errors="coerce")
-        adaptive_thresholds = get_dynamic_signal_score_thresholds(
-            signal_scores_series,
-            ADAPTIVE_SIGNAL_SCORE_WINDOW,
-            ADAPTIVE_SIGNAL_SCORE_QUANTILE,
-            MIN_SIGNAL_SCORE_ENTRY_MIN,
-            MIN_SIGNAL_SCORE_ENTRY_MAX,
+    adaptive_score_thresh_arr = None
+    if USE_ADAPTIVE_SIGNAL_SCORE and 'Signal_Score' in df_sim.columns:
+        signal_scores_num = pd.to_numeric(df_sim['Signal_Score'], errors='coerce')
+        adaptive_score_thresh_arr = (
+            signal_scores_num.shift(1)
+            .rolling(ADAPTIVE_SIGNAL_SCORE_WINDOW, min_periods=1)
+            .quantile(ADAPTIVE_SIGNAL_SCORE_QUANTILE)
+            .clip(MIN_SIGNAL_SCORE_ENTRY_MIN, MIN_SIGNAL_SCORE_ENTRY_MAX)
+            .fillna(MIN_SIGNAL_SCORE_ENTRY)
+            .to_numpy()
         )
-    else:
-        adaptive_thresholds = np.full(num_bars, MIN_SIGNAL_SCORE_ENTRY, dtype=float)
 
-    m15_trend_zone_arr = np.empty(num_bars, dtype=object)
-    m1_entry_signal_arr = np.empty(num_bars, dtype=object)
+    m15_zone_arr = np.empty(num_bars, dtype=object)
+    m1_signal_arr = np.empty(num_bars, dtype=object)
     signal_score_arr = np.full(num_bars, np.nan, dtype=float)
     trade_reason_arr = np.empty(num_bars, dtype=object)
     session_arr = np.empty(num_bars, dtype=object)
@@ -2229,14 +2228,14 @@ def run_backtest_simulation_v34(
             final_m1_signal = "NONE"
             if side == "BUY" and entry_long_signal: final_m1_signal = "BUY"
             elif side == "SELL" and entry_short_signal: final_m1_signal = "SELL"
-            m15_trend_zone_arr[current_bar_index] = m15_trend
-            m1_entry_signal_arr[current_bar_index] = final_m1_signal
+            m15_zone_arr[current_bar_index] = m15_trend
+            m1_signal_arr[current_bar_index] = final_m1_signal
             signal_score_arr[current_bar_index] = signal_score if pd.notna(signal_score) else np.nan
             trade_reason_arr[current_bar_index] = trade_reason if final_m1_signal != "NONE" else "NONE"
             session_arr[current_bar_index] = session_tag
             trade_tag_arr[current_bar_index] = current_trade_tag
-            if USE_ADAPTIVE_SIGNAL_SCORE:
-                current_thresh = adaptive_thresholds[current_bar_index]
+            if USE_ADAPTIVE_SIGNAL_SCORE and adaptive_score_thresh_arr is not None:
+                current_thresh = adaptive_score_thresh_arr[current_bar_index]
                 if (
                     last_logged_signal_thresh is None
                     or abs(current_thresh - last_logged_signal_thresh) > 1e-6
@@ -2616,12 +2615,12 @@ def run_backtest_simulation_v34(
     df_sim[f"Equity_Realistic{label_suffix}"] = equity_realistic_arr
     df_sim[f"Max_Drawdown_At_Point{label_suffix}"] = drawdown_arr
     df_sim[f"Active_Order_Count{label_suffix}"] = active_count_arr
-    df_sim.loc[:, f"M15_Trend_Zone{label_suffix}"] = m15_trend_zone_arr
-    df_sim.loc[:, f"M1_Entry_Signal{label_suffix}"] = m1_entry_signal_arr
-    df_sim.loc[:, f"Signal_Score{label_suffix}"] = signal_score_arr
-    df_sim.loc[:, f"Trade_Reason{label_suffix}"] = trade_reason_arr
-    df_sim.loc[:, f"Session{label_suffix}"] = session_arr
-    df_sim.loc[:, f"Trade_Tag{label_suffix}"] = trade_tag_arr
+    df_sim[f"M15_Trend_Zone{label_suffix}"] = m15_zone_arr
+    df_sim[f"M1_Entry_Signal{label_suffix}"] = m1_signal_arr
+    df_sim[f"Signal_Score{label_suffix}"] = signal_score_arr
+    df_sim[f"Trade_Reason{label_suffix}"] = trade_reason_arr
+    df_sim[f"Session{label_suffix}"] = session_arr
+    df_sim[f"Trade_Tag{label_suffix}"] = trade_tag_arr
 
     trade_log_df_segment = pd.DataFrame(trade_log)
     logging.info(f"Created trade log DataFrame for {label} with {len(trade_log_df_segment)} entries.")
