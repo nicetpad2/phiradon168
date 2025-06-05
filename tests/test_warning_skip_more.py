@@ -88,6 +88,24 @@ def test_macd_returns_values():
     assert not diff.isna().all()
 
 
+def test_rsi_pandas_fallback(monkeypatch):
+    series = pd.Series(np.arange(30, dtype='float32'))
+    monkeypatch.setattr(features, '_TA_AVAILABLE', False)
+    monkeypatch.setattr(features, 'ta', None, raising=False)
+    result = features.rsi(series, period=14)
+    assert not result.isna().all()
+
+
+def test_macd_pandas_fallback(monkeypatch):
+    series = pd.Series(np.arange(60, dtype='float32'))
+    monkeypatch.setattr(features, '_TA_AVAILABLE', False)
+    monkeypatch.setattr(features, 'ta', None, raising=False)
+    line, signal, diff = features.macd(series)
+    assert not line.isna().all()
+    assert not signal.isna().all()
+    assert not diff.isna().all()
+
+
 def test_engineer_m1_features_nan_inf_warning(caplog):
     df = pd.DataFrame({'Open': [1.0], 'High': [np.inf], 'Low': [0.0], 'Close': [1.0]})
     with caplog.at_level(logging.INFO):

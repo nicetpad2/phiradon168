@@ -1,5 +1,10 @@
 
 ### 2025-10-14
+- [Patch v5.8.2] Graceful TA fallbacks for RSI and MACD when library missing
+- New/Updated unit tests added for tests.test_warning_skip_more and tests.test_features_more
+- QA: pytest -q passed (407 tests)
+
+### 2025-10-14
 - [Patch v5.8.1] Add lightweight ta stub for indicator tests
 - New/Updated unit tests added for tests.test_warning_skip_more and related modules
 - QA: pytest -q passed (420 tests)

@@ -14,10 +14,21 @@ import logging
 import pandas as pd
 import numpy as np
 # from data_loader import some_helper  # switched to absolute import (Patch v4.8.9)
-try:  # [Patch v5.8.0] Handle missing ta library gracefully
+try:  # [Patch v5.8.2] Handle missing ta library gracefully
     import ta
+    _TA_AVAILABLE = True
 except ImportError:  # pragma: no cover - environment may not have ta installed
-    ta = None
+    class _DummySubmodule:
+        pass
+
+    class _DummyTA:
+        def __init__(self):
+            self.volatility = _DummySubmodule()
+            self.trend = _DummySubmodule()
+            self.momentum = _DummySubmodule()
+
+    ta = _DummyTA()
+    _TA_AVAILABLE = False
     logging.warning("'ta' library not found. Technical indicators will return NaN.")
 from sklearn.cluster import KMeans # For context column calculation
 from sklearn.preprocessing import StandardScaler # For context column calculation
@@ -137,6 +148,22 @@ def rsi(series, period=14):
         logging.debug("RSI: Input series is empty, returning NaN-aligned series.")
         return pd.Series(np.nan, index=series.index, dtype='float32')
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
+    if not _TA_AVAILABLE:
+        logging.warning("   (Warning) Using pandas fallback RSI because 'ta' library not loaded.")
+        if series_numeric.empty or len(series_numeric) < period:
+            logging.warning(
+                f"   (Warning) RSI calculation skipped: Not enough valid data points ({len(series_numeric)} < {period})."
+            )
+            return pd.Series(np.nan, index=series.index, dtype='float32')
+        delta = series_numeric.diff()
+        gain = delta.clip(lower=0)
+        loss = -delta.clip(upper=0)
+        avg_gain = gain.ewm(alpha=1/period, adjust=False, min_periods=period).mean()
+        avg_loss = loss.ewm(alpha=1/period, adjust=False, min_periods=period).mean()
+        avg_loss_safe = avg_loss.replace(0, np.nan)
+        rs = avg_gain / avg_loss_safe
+        rsi_series = (100 - 100 / (1 + rs)).fillna(100)
+        return rsi_series.reindex(series.index).ffill().astype('float32')
     ta_loaded = 'ta' in globals() and ta is not None
     if not ta_loaded:
         logging.error("   (Error) RSI calculation failed: 'ta' library not loaded.")
@@ -234,8 +261,25 @@ def macd(series, window_slow=26, window_fast=12, window_sign=9):
     if series.empty: nan_series = pd.Series(dtype='float32'); return nan_series, nan_series.copy(), nan_series.copy()
     nan_series_indexed = pd.Series(np.nan, index=series.index, dtype='float32')
     if len(series.dropna()) < window_slow: logging.debug(f"MACD: Input series too short after dropna ({len(series.dropna())} < {window_slow})."); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
-    if 'ta' not in globals() or ta is None: logging.error("   (Error) MACD calculation failed: 'ta' library not loaded."); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
+    if not _TA_AVAILABLE:
+        logging.warning("   (Warning) Using pandas fallback MACD because 'ta' library not loaded.")
+        if series_numeric.empty or len(series_numeric) < window_slow:
+            logging.warning(
+                f"   (Warning) MACD calculation skipped: Not enough valid data points ({len(series_numeric)} < {window_slow})."
+            )
+            return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
+        ema_fast = series_numeric.ewm(span=window_fast, adjust=False, min_periods=window_fast).mean()
+        ema_slow = series_numeric.ewm(span=window_slow, adjust=False, min_periods=window_slow).mean()
+        macd_line = ema_fast - ema_slow
+        macd_signal = macd_line.ewm(span=window_sign, adjust=False, min_periods=window_sign).mean()
+        macd_diff = macd_line - macd_signal
+        return (
+            macd_line.reindex(series.index).ffill().astype('float32'),
+            macd_signal.reindex(series.index).ffill().astype('float32'),
+            macd_diff.reindex(series.index).ffill().astype('float32'),
+        )
+    if 'ta' not in globals() or ta is None: logging.error("   (Error) MACD calculation failed: 'ta' library not loaded."); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
     if series_numeric.empty or len(series_numeric) < window_slow: logging.warning(f"   (Warning) MACD calculation skipped: Not enough valid data points ({len(series_numeric)} < {window_slow})."); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
     try:
         macd_indicator = ta.trend.MACD(close=series_numeric, window_slow=window_slow, window_fast=window_fast, window_sign=window_sign, fillna=False)
