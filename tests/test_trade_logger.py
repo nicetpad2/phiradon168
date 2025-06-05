@@ -32,9 +32,11 @@ def test_export_trade_log_empty_creates_audit(tmp_path):
     export_trade_log(pd.DataFrame(), str(out_dir), 'L2')
     log_file = out_dir / 'trade_log_L2.csv'
     qa_file = out_dir / 'qa_logs' / 'L2_trade_qa.log'
+    relax_file = out_dir / 'qa_logs' / 'relax_threshold_L2.log'
     assert log_file.exists()
     assert qa_file.exists()
     assert qa_file.read_text() == "[QA] No trade. Output file generated as EMPTY.\n"
+    assert relax_file.exists()
 
 
 def test_aggregate_trade_logs(tmp_path):

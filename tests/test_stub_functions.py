@@ -11,3 +11,4 @@ def test_stub_functions_present():
     main = importlib.import_module('src.main')
     assert hasattr(main, 'setup_fonts')
     assert hasattr(main, 'print_gpu_utilization')
+    assert hasattr(main, 'plot_equity_curve')

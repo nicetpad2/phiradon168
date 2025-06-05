@@ -1,12 +1,21 @@
 ### 2025-10-08
+
 - [Patch v5.7.3] Improve utility helpers and add resource debugging
 - New/Updated unit tests added for tests.test_new_utils
 - QA: pytest -q passed (373 tests)
+
 
 ### 2025-10-07
 - [Patch v5.7.2] Fix sweep path to absolute for Colab execution
 - New/Updated unit tests added for tests.test_projectp_cli
 - QA: pytest -q passed (370 tests)
+
+### 2025-10-08
+
+- [Patch v5.7.3] Log reasons when folds have no trades
+- New/Updated unit tests added for tests.test_empty_summary
+
+- QA: pytest -q passed
 
 ### 2025-10-06
 

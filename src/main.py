@@ -44,6 +44,11 @@ def print_gpu_utilization(_=None):
     """ฟังก์ชันสำรองสำหรับแสดงการใช้ GPU (ไม่ทำอะไร)."""
     pass
 
+
+def plot_equity_curve(*_args, **_kwargs):
+    """ฟังก์ชันสำรองสำหรับวาดกราฟ Equity Curve (ไม่ทำอะไร)."""
+    pass
+
 import time
 from src.data_loader import (
     setup_output_directory as dl_setup_output_directory,
@@ -62,6 +67,7 @@ from src.strategy import (
     run_all_folds_with_threshold,
     train_and_export_meta_model,
     DriftObserver,
+    plot_equity_curve,
 )
 from src.utils import (
     export_trade_log,
