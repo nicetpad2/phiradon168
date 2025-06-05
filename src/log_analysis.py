@@ -182,3 +182,11 @@ def plot_summary(df: pd.DataFrame):
     ax.set_ylabel("value")
     return fig
 
+
+def summarize_block_reasons(blocked_logs: list[dict]) -> pd.Series:
+    """[Patch v5.7.3] Return counts of block reasons from blocked order log."""
+    if not blocked_logs:
+        return pd.Series(dtype=int)
+    reasons = [b.get("reason", "UNKNOWN") for b in blocked_logs if isinstance(b, dict)]
+    return pd.Series(reasons).value_counts()
+
