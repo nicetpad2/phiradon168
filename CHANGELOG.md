@@ -29,6 +29,7 @@
 ## [v5.7.6] – 2025-10-10
 ### Changed
 - Update function registry line numbers
+
 - Confirmed run_tests.py shows 0 failures
 
 ## [v5.7.5] – 2025-10-09

@@ -17,6 +17,7 @@ setup(
         'GPUtil>=1.4.0',
         'torch>=2.0.0',
     ],
+    python_requires='>=3.8,<3.11',
     entry_points={
         'console_scripts': [
             'nicegold-main = src.main:main',
