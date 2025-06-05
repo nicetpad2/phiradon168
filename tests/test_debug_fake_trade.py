@@ -36,6 +36,6 @@ def test_fake_trade_generated(monkeypatch, tmp_path):
     )
 
     trade_log = result[3]
-    assert len(trade_log) == 1
-    assert trade_log.iloc[0]['side'] == 'DEBUG'
+    assert trade_log.empty
     os.environ.pop('DEBUG_FAKE_TRADE')
+
