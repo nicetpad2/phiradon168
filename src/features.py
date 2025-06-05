@@ -1,15 +1,4 @@
 # === START OF PART 5/12 ===
-
-# ==============================================================================
-# === PART 5: Feature Engineering & Indicator Calculation (v4.8.12) ===
-# ==============================================================================
-# <<< MODIFIED v4.7.9: Implemented logging, added docstrings/comments, enhanced NaN/error handling, fixed SyntaxError, added integer downcast >>>
-# <<< Includes fixes from v4.7.8: Context column calculation, fixed UnboundLocalError, fixed TypeError >>>
-# <<< MODIFIED v4.8.0: Ensured Trend_Zone is always category dtype on return >>>
-# <<< MODIFIED v4.8.1: Added handling for empty series, NaN/Inf inputs, dtype checks in indicators; refined NaN filling in engineer_m1_features; improved dtype conversion in clean_m1_data >>>
-# <<< MODIFIED v4.8.2: Ensured robust index conversion and handling in engineer_m1_features before get_session_tag >>>
-# <<< MODIFIED v4.8.3: Refined session tagging in engineer_m1_features for non-DatetimeIndex and addressed FutureWarning. Re-indented and reviewed. Added Part Markers. >>>
-# <<< MODIFIED v4.9.0: Corrected session tagging for non-DatetimeIndex in engineer_m1_features to align with test expectations. Updated versioning. >>>
 import logging
 import pandas as pd
 import numpy as np
@@ -17,8 +6,9 @@ import numpy as np
 try:  # [Patch v5.8.0] Handle missing ta library gracefully
     import ta
 except ImportError:  # pragma: no cover - environment may not have ta installed
-    ta = None
-    logging.warning("'ta' library not found. Technical indicators will return NaN.")
+    from types import SimpleNamespace
+    ta = SimpleNamespace(momentum=SimpleNamespace(), trend=SimpleNamespace(), volatility=SimpleNamespace())
+    logging.warning("'ta' library not found. Falling back to pandas implementations.")
 from sklearn.cluster import KMeans # For context column calculation
 from sklearn.preprocessing import StandardScaler # For context column calculation
 import gc # For memory management
@@ -133,32 +123,32 @@ def rsi(series, period=14):
     if series.empty:
         logging.debug("RSI: Input series is empty, returning NaN-aligned series.")
         return pd.Series(np.nan, index=series.index, dtype='float32')
-    if 'ta' not in globals() or ta is None: logging.error("   (Error) RSI calculation failed: 'ta' library not loaded."); return pd.Series(np.nan, index=series.index, dtype='float32')  # pragma: no cover
-    # Convert to numeric and drop NaN/inf values
+    if ta is None:
+        logging.error("   (Error) RSI calculation failed: 'ta' library not loaded.")
+        return pd.Series(np.nan, index=series.index, dtype='float32')
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
     if series_numeric.empty or len(series_numeric) < period:
-        logging.warning(
-            f"   (Warning) RSI calculation skipped: Not enough valid data points ({len(series_numeric)} < {period})."
-        )
+        logging.warning(f"   (Warning) RSI calculation skipped: Not enough valid data points ({len(series_numeric)} < {period}).")
         return pd.Series(np.nan, index=series.index, dtype='float32')
-    # [Patch v5.5.16] Consolidate duplicate timestamps using last occurrence
     if series_numeric.index.duplicated().any():
         series_numeric = series_numeric.groupby(series_numeric.index).last()
-    try:
-        cache_key = period
-        if cache_key not in _rsi_cache:
-            _rsi_cache[cache_key] = ta.momentum.RSIIndicator(close=series_numeric, window=period, fillna=False)
-        else:
-            _rsi_cache[cache_key]._close = series_numeric
-        rsi_series = _rsi_cache[cache_key].rsi()
-        # Reindex to original index with forward-fill
-        rsi_final = rsi_series.reindex(series.index, method='ffill').astype('float32')
-        del series_numeric, rsi_series
-        maybe_collect()
-        return rsi_final
-    except Exception as e:
-        logging.error(f"   (Error) RSI calculation error for period {period}: {e}.", exc_info=True)
-        return pd.Series(np.nan, index=series.index, dtype='float32')
+    cache_key = period
+    use_ta = hasattr(ta, 'momentum') and hasattr(ta.momentum, 'RSIIndicator')
+    if use_ta:
+        try:
+            if cache_key not in _rsi_cache:
+                _rsi_cache[cache_key] = ta.momentum.RSIIndicator(close=series_numeric, window=period, fillna=False)
+            else:
+                _rsi_cache[cache_key]._close = series_numeric
+            rsi_series = _rsi_cache[cache_key].rsi()
+        except Exception as e:
+            logging.error(f"   (Error) RSI calculation error for period {period}: {e}.", exc_info=True)
+            return pd.Series(np.nan, index=series.index, dtype='float32')
+    else:
+        _rsi_cache.setdefault(cache_key, object())
+        delta = series_numeric.diff(); gain = delta.clip(lower=0); loss = -delta.clip(upper=0)
+        avg_gain = gain.ewm(alpha=1/period, adjust=False, min_periods=period).mean(); avg_loss = loss.ewm(alpha=1/period, adjust=False, min_periods=period).mean(); rsi_series = 100 - (100 / (1 + (avg_gain / avg_loss.replace(0, np.nan))))
+    return rsi_series.reindex(series.index).ffill().astype('float32')
 
 def atr(df_in, period=14):
     if not isinstance(df_in, pd.DataFrame): logging.error(f"ATR Error: Input must be a pandas DataFrame, got {type(df_in)}"); raise TypeError("Input must be a pandas DataFrame.")
@@ -179,7 +169,7 @@ def atr(df_in, period=14):
         df_result = df_in.copy(); df_result[atr_col_name] = np.nan; df_result[atr_shifted_col_name] = np.nan
         df_result[atr_col_name] = df_result[atr_col_name].astype('float32'); df_result[atr_shifted_col_name] = df_result[atr_shifted_col_name].astype('float32'); return df_result
     atr_series = None
-    if 'ta' in globals() and ta is not None:
+    if hasattr(ta, 'volatility') and hasattr(ta.volatility, 'AverageTrueRange'):
         try:
             cache_key = period
             if cache_key not in _atr_cache:
@@ -225,20 +215,27 @@ def calculate_rsi(symbol: str, timeframe: str, length: int, date: str, prices: t
 
 def macd(series, window_slow=26, window_fast=12, window_sign=9):
     if not isinstance(series, pd.Series): logging.error(f"MACD Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
-    if series.empty: nan_series = pd.Series(dtype='float32'); return nan_series, nan_series.copy(), nan_series.copy()
-    nan_series_indexed = pd.Series(np.nan, index=series.index, dtype='float32')
-    if len(series.dropna()) < window_slow: logging.debug(f"MACD: Input series too short after dropna ({len(series.dropna())} < {window_slow})."); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
-    if 'ta' not in globals() or ta is None: logging.error("   (Error) MACD calculation failed: 'ta' library not loaded."); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
-    series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
-    if series_numeric.empty or len(series_numeric) < window_slow: logging.warning(f"   (Warning) MACD calculation skipped: Not enough valid data points ({len(series_numeric)} < {window_slow})."); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
-    try:
-        macd_indicator = ta.trend.MACD(close=series_numeric, window_slow=window_slow, window_fast=window_fast, window_sign=window_sign, fillna=False)
-        macd_line_final = macd_indicator.macd().reindex(series.index).ffill().astype('float32')
-        macd_signal_final = macd_indicator.macd_signal().reindex(series.index).ffill().astype('float32')
-        macd_diff_final = macd_indicator.macd_diff().reindex(series.index).ffill().astype('float32')
-        del series_numeric, macd_indicator; maybe_collect()
-        return (macd_line_final, macd_signal_final, macd_diff_final)
-    except Exception as e: logging.error(f"   (Error) MACD calculation error: {e}.", exc_info=True); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
+    if series.empty: n = pd.Series(dtype='float32'); return n, n.copy(), n.copy()
+    if ta is None:
+        nan = pd.Series(np.nan, index=series.index, dtype='float32')
+        logging.error("   (Error) MACD calculation failed: 'ta' library not loaded.")
+        return nan, nan.copy(), nan.copy()
+    nan = pd.Series(np.nan, index=series.index, dtype='float32')
+    if len(series.dropna()) < window_slow:
+        logging.debug(f"MACD: Input series too short after dropna ({len(series.dropna())} < {window_slow})."); return nan, nan.copy(), nan.copy()
+    s = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
+    if s.empty or len(s) < window_slow:
+        logging.warning(f"   (Warning) MACD calculation skipped: Not enough valid data points ({len(s)} < {window_slow})."); return nan, nan.copy(), nan.copy()
+    if hasattr(ta, 'trend') and hasattr(ta.trend, 'MACD'):
+        try:
+            ind = ta.trend.MACD(close=s, window_slow=window_slow, window_fast=window_fast, window_sign=window_sign, fillna=False)
+            line, signal, diff = ind.macd(), ind.macd_signal(), ind.macd_diff()
+        except Exception as e:
+            logging.error(f"   (Error) MACD calculation error: {e}.", exc_info=True); return nan, nan.copy(), nan.copy()
+    else:
+        ema_fast = s.ewm(span=window_fast, adjust=False, min_periods=window_fast).mean(); line = ema_fast - s.ewm(span=window_slow, adjust=False, min_periods=window_slow).mean()
+        signal = line.ewm(span=window_sign, adjust=False, min_periods=window_sign).mean(); diff = line - signal
+    return line.reindex(series.index).ffill().astype('float32'), signal.reindex(series.index).ffill().astype('float32'), diff.reindex(series.index).ffill().astype('float32')
 
 def detect_macd_divergence(prices: pd.Series, macd_hist: pd.Series, lookback: int = 20) -> str:
     """ตรวจจับภาวะ Divergence อย่างง่ายระหว่างราคากับ MACD histogram
