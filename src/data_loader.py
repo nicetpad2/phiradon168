@@ -38,6 +38,8 @@ try:
     import requests
 except ImportError:  # pragma: no cover - optional dependency for certain features
     requests = None
+
+logger = logging.getLogger(__name__)
 import datetime # <<< ENSURED Standard import 'import datetime'
 
 # --- JSON Serialization Helper (moved earlier for global availability) ---
@@ -942,6 +944,35 @@ def convert_thai_years(df, column):
     if column in df.columns:
         df[column] = pd.to_datetime(df[column], errors='coerce')
     return df
+
+# [Patch v5.7.3] Convert Thai Buddhist year datetime string to pandas Timestamp
+def convert_thai_datetime(dt_str: str) -> pd.Timestamp:
+    """Convert Thai Buddhist calendar datetime to Gregorian.
+
+    Parameters
+    ----------
+    dt_str : str
+        Date or datetime string which may use Buddhist Era year.
+
+    Returns
+    -------
+    pd.Timestamp
+        Converted UTC timestamp or ``pd.NaT`` on failure.
+    """
+    try:
+        if not isinstance(dt_str, str):
+            raise ValueError("invalid input")
+        parts = dt_str.strip().split()
+        date_part = parts[0]
+        year, month, day = map(int, date_part.split("-"))
+        if year > 2500:
+            year -= 543
+        time_part = parts[1] if len(parts) > 1 else "00:00:00"
+        ts = pd.to_datetime(f"{year:04d}-{month:02d}-{day:02d} {time_part}", errors="coerce")
+        return ts.tz_localize("UTC") if ts.tzinfo is None else ts.tz_convert("UTC")
+    except Exception as e:
+        logger.warning(f"[QA-WARNING] convert_thai_datetime failed for '{dt_str}': {e}")
+        return pd.NaT
 
 
 def prepare_datetime_index(df):

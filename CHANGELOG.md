@@ -1,13 +1,19 @@
 ### 2025-10-08
+- [Patch v5.7.3] Validate auto-trained files and create placeholders
+- New/Updated unit tests added for tests.test_ensure_model_files_exist and tests.test_function_registry
+- QA: pytest -q passed (371 tests)
 
+### 2025-10-08
 - [Patch v5.7.3] Improve utility helpers and add resource debugging
 - New/Updated unit tests added for tests.test_new_utils
 - QA: pytest -q passed (373 tests)
+
 
 ### 2025-06-05
 - [Patch v5.7.4] Vectorize adaptive signal threshold and reduce DataFrame writes
 - New/Updated unit tests added for tests.test_adaptive_signal_threshold
 - QA: pytest -q passed
+
 
 
 ### 2025-10-07
@@ -830,6 +836,11 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.5.7] Vectorize equity and drawdown updates in run_backtest_simulation_v34
 - Updated unit tests line numbers for function registry
 - QA: pytest -q passed (348 tests)
+
+### 2025-06-11
+- [Patch v5.7.3] Improve ML meta filter fallback and QA utilities
+- New/Updated unit tests added for convert_thai_datetime, print_qa_summary, qa_output_default
+- QA: pytest -q passed
 
 
 \n

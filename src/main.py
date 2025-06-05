@@ -74,6 +74,7 @@ from src.utils import (
     download_model_if_missing,
     download_feature_list_if_missing,
     get_env_float,
+    validate_file,
 )
 from sklearn.model_selection import TimeSeriesSplit  # [Patch v5.5.4] Needed for equity plot fold boundaries
 import pandas as pd
@@ -124,7 +125,7 @@ DEFAULT_DATA_FILE_PATH_M15 = os.path.join(_BASE_DIR, "XAUUSD_M15.csv")
 DEFAULT_DATA_FILE_PATH_M1 = os.path.join(_BASE_DIR, "XAUUSD_M1.csv")
 DEFAULT_META_META_CLASSIFIER_PATH = "meta_meta_classifier.pkl"
 DEFAULT_USE_META_CLASSIFIER = os.getenv("USE_META_CLASSIFIER", "True").lower() in ("true", "1", "yes")
-DEFAULT_META_MIN_PROBA_THRESH = 0.3
+DEFAULT_META_MIN_PROBA_THRESH = 0.25
 DEFAULT_REENTRY_MIN_PROBA_THRESH = 0.5
 DEFAULT_USE_META_META_CLASSIFIER = False
 DEFAULT_META_META_MIN_PROBA_THRESH = 0.5
@@ -559,6 +560,13 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
                 save_features_main_json(features, output_dir)
             else:
                 save_features_json(features, key, output_dir)
+
+        if not validate_file(model_path):
+            logging.warning(f"[QA] Placeholder created for '{key}' model")
+            open(model_path, "a").close()
+        if not validate_file(features_path):
+            logging.warning(f"[QA] Placeholder created for '{key}' features")
+            open(features_path, "a").close()
     logging.info("--- (Auto-Train Check) Finished ---")
 
 

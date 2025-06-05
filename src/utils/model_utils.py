@@ -95,3 +95,9 @@ def predict(model: Any, X: pd.DataFrame, class_idx: int = 1) -> Optional[float]:
         return None
     proba = model.predict_proba(X)
     return float(proba[0, class_idx])
+
+
+# [Patch v5.7.3] Utility to validate existence and size of a file
+def validate_file(path: str) -> bool:
+    """Return True if file exists and is non-empty."""
+    return os.path.isfile(path) and os.path.getsize(path) > 0
