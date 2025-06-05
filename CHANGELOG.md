@@ -1,8 +1,9 @@
 
 ### 2025-10-16
-- [Patch v1.1.0] Real training function using CatBoost fallback
-- [Patch v1.1.1] Training utilities for hyperparameter sweep
-- [Patch v5.5.17] Delegate signal generation to entry_rules & exit_rules
+
+- [Patch v5.8.3] Update .coveragerc omit patterns
+- New/Updated unit tests added for none (config update)
+
 - QA: pytest -q passed (423 tests)
 
 ### 2025-10-15
