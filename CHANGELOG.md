@@ -1,4 +1,9 @@
 
+### 2025-10-16
+- [Patch v5.8.3] Handle duplicate index in M15 Trend Zone
+- New/Updated unit tests added for tests.test_features_more::test_calculate_m15_trend_zone_duplicate_index
+- QA: pytest -q passed (424 tests)
+
 ### 2025-10-15
 - [Patch v5.8.2] Replace deprecated utcnow usage in monitor
 - New/Updated unit tests added for none (existing coverage)
