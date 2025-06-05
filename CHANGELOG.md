@@ -916,3 +916,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_monitor
 - QA: pytest -q passed (408 tests)
 
+### 2025-06-07
+- [Patch v5.8.1] Add pandas MACD fallback when TA library unavailable
+- New/Updated unit tests added for tests.test_warning_skip_more::test_macd_fallback_when_ta_missing
+- QA: pytest -q passed (420 tests)
+

@@ -84,7 +84,7 @@ def test_clean_m1_data_inf_values_warning(caplog):
 def test_macd_ta_not_loaded_error(monkeypatch, caplog):
     series = pd.Series(range(30), dtype='float32')
     monkeypatch.setattr(features, 'ta', None, raising=False)
-    with caplog.at_level(logging.ERROR):
+    with caplog.at_level(logging.WARNING):
         line, signal, diff = features.macd(series)
-    assert line.isna().all() and signal.isna().all() and diff.isna().all()
-    assert any("MACD calculation failed" in msg for msg in caplog.messages)
+    assert not line.isna().all() and not signal.isna().all() and not diff.isna().all()
+    assert any("TA MACD failed" in msg for msg in caplog.messages)

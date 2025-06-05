@@ -234,17 +234,15 @@ def macd(series, window_slow=26, window_fast=12, window_sign=9):
     if series.empty: nan_series = pd.Series(dtype='float32'); return nan_series, nan_series.copy(), nan_series.copy()
     nan_series_indexed = pd.Series(np.nan, index=series.index, dtype='float32')
     if len(series.dropna()) < window_slow: logging.debug(f"MACD: Input series too short after dropna ({len(series.dropna())} < {window_slow})."); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
-    if 'ta' not in globals() or ta is None: logging.error("   (Error) MACD calculation failed: 'ta' library not loaded."); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
     if series_numeric.empty or len(series_numeric) < window_slow: logging.warning(f"   (Warning) MACD calculation skipped: Not enough valid data points ({len(series_numeric)} < {window_slow})."); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
     try:
-        macd_indicator = ta.trend.MACD(close=series_numeric, window_slow=window_slow, window_fast=window_fast, window_sign=window_sign, fillna=False)
-        macd_line_final = macd_indicator.macd().reindex(series.index).ffill().astype('float32')
-        macd_signal_final = macd_indicator.macd_signal().reindex(series.index).ffill().astype('float32')
-        macd_diff_final = macd_indicator.macd_diff().reindex(series.index).ffill().astype('float32')
-        del series_numeric, macd_indicator; maybe_collect()
-        return (macd_line_final, macd_signal_final, macd_diff_final)
-    except Exception as e: logging.error(f"   (Error) MACD calculation error: {e}.", exc_info=True); return nan_series_indexed, nan_series_indexed.copy(), nan_series_indexed.copy()
+        if 'ta' in globals() and ta is not None:
+            macd_indicator = ta.trend.MACD(close=series_numeric, window_slow=window_slow, window_fast=window_fast, window_sign=window_sign, fillna=False)
+            line = macd_indicator.macd(); signal = macd_indicator.macd_signal(); diff = macd_indicator.macd_diff(); del macd_indicator
+        else: raise ImportError('ta missing')
+    except Exception as e: logging.warning(f"   (Warning) TA MACD failed: {e}. Falling back."); ema_fast = series_numeric.ewm(span=window_fast, adjust=False, min_periods=1).mean(); ema_slow = series_numeric.ewm(span=window_slow, adjust=False, min_periods=1).mean(); line = ema_fast - ema_slow; signal = line.ewm(span=window_sign, adjust=False, min_periods=1).mean(); diff = line - signal
+    macd_line_final = line.reindex(series.index).ffill().astype('float32'); macd_signal_final = signal.reindex(series.index).ffill().astype('float32'); macd_diff_final = diff.reindex(series.index).ffill().astype('float32'); del series_numeric; maybe_collect(); return (macd_line_final, macd_signal_final, macd_diff_final)
 
 def detect_macd_divergence(prices: pd.Series, macd_hist: pd.Series, lookback: int = 20) -> str:
     """ตรวจจับภาวะ Divergence อย่างง่ายระหว่างราคากับ MACD histogram
