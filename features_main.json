@@ -16,5 +16,8 @@
   "Candle_Speed_lag5",
   "cluster",
   "spike_score",
-  "Pattern_Label"
+  "Pattern_Label",
+  "OF_Imbalance",
+  "Momentum_Divergence",
+  "Relative_Volume"
 ]

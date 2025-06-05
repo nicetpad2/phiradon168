@@ -285,6 +285,38 @@ def detect_macd_divergence(prices: pd.Series, macd_hist: pd.Series, lookback: in
 
     return "none"
 
+# [Patch v5.7.9] New feature helpers
+def calculate_order_flow_imbalance(df: pd.DataFrame) -> pd.Series:
+    """คำนวณความไม่สมดุลของ Order Flow"""
+    if not isinstance(df, pd.DataFrame) or not {"BuyVolume", "SellVolume"}.issubset(df.columns):
+        return pd.Series(0.0, index=getattr(df, "index", None), dtype="float32")
+    buy = pd.to_numeric(df["BuyVolume"], errors="coerce").fillna(0.0)
+    sell = pd.to_numeric(df["SellVolume"], errors="coerce").fillna(0.0)
+    total = buy + sell
+    imbalance = np.where(total > 0, (buy - sell) / total, 0.0)
+    return pd.Series(imbalance, index=df.index, dtype="float32")
+
+
+def calculate_relative_volume(df: pd.DataFrame, period: int = 20) -> pd.Series:
+    """คำนวณ Relative Volume จากปริมาณซื้อขายแบบรวม 5 แท่ง"""
+    if not isinstance(df, pd.DataFrame) or "Volume" not in df.columns:
+        return pd.Series(0.0, index=getattr(df, "index", None), dtype="float32")
+    vol_5m = pd.to_numeric(df["Volume"], errors="coerce").fillna(0.0).rolling(5, min_periods=1).sum()
+    avg_vol = vol_5m.rolling(period, min_periods=1).mean()
+    rel = np.where(avg_vol > 0, vol_5m / avg_vol, 0.0)
+    return pd.Series(rel, index=df.index, dtype="float32", name=df["Volume"].name)
+
+
+def calculate_momentum_divergence(close_series: pd.Series) -> pd.Series:
+    """คำนวณ Momentum Divergence ระหว่าง MACD บน M1 และค่าเฉลี่ย 5 แท่ง"""
+    if not isinstance(close_series, pd.Series) or close_series.empty:
+        return pd.Series(0.0, index=getattr(close_series, "index", None), dtype="float32")
+    m1_hist = macd(close_series)[2]
+    m5_close = close_series.rolling(5, min_periods=1).mean()
+    m5_hist = macd(m5_close)[2]
+    div = (m1_hist - m5_hist).astype("float32")
+    return div.reindex(close_series.index).fillna(0.0)
+
 def rolling_zscore(series, window, min_periods=None):
     if not isinstance(series, pd.Series): logging.error(f"Rolling Z-Score Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
     if series.empty:
@@ -487,10 +519,31 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
         if 'cluster' in df.columns: df['cluster']=pd.to_numeric(df['cluster'],downcast='integer')
     if 'spike_score' not in df.columns:
         try:
-            gain_z_abs=abs(pd.to_numeric(df.get('Gain_Z',0.0),errors='coerce').fillna(0.0)); wick_ratio=pd.to_numeric(df.get('Wick_Ratio',0.0),errors='coerce').fillna(0.0)
-            atr_val=pd.to_numeric(df.get('ATR_14',1.0),errors='coerce').fillna(1.0).replace([np.inf,-np.inf],1.0)
-            score=(wick_ratio*0.5+gain_z_abs*0.3+atr_val*0.2); score=np.where((atr_val>1.5)&(wick_ratio>0.6),score*1.2,score); df['spike_score']=score.clip(0,1).astype('float32')
-        except Exception as e_spike: df['spike_score']=0.0; logging.error(f"         (Error) Spike score calculation failed: {e_spike}.",exc_info=True)
+            gain_z_abs = abs(pd.to_numeric(df.get('Gain_Z', 0.0), errors='coerce').fillna(0.0))
+            wick_ratio = pd.to_numeric(df.get('Wick_Ratio', 0.0), errors='coerce').fillna(0.0)
+            atr_val = pd.to_numeric(df.get('ATR_14', 1.0), errors='coerce').fillna(1.0).replace([np.inf, -np.inf], 1.0)
+            score = (wick_ratio * 0.5 + gain_z_abs * 0.3 + atr_val * 0.2)
+            score = np.where((atr_val > 1.5) & (wick_ratio > 0.6), score * 1.2, score)
+            df['spike_score'] = score.clip(0, 1).astype('float32')
+        except Exception as e_spike:
+            df['spike_score'] = 0.0
+            logging.error(f"         (Error) Spike score calculation failed: {e_spike}.", exc_info=True)
+
+    # [Patch v5.7.9] additional engineered features
+    if {'BuyVolume', 'SellVolume'}.issubset(df.columns):
+        df['OF_Imbalance'] = calculate_order_flow_imbalance(df)
+    else:
+        df['OF_Imbalance'] = 0.0
+
+    if 'Close' in df.columns:
+        df['Momentum_Divergence'] = calculate_momentum_divergence(df['Close'])
+    else:
+        df['Momentum_Divergence'] = 0.0
+
+    if 'Volume' in df.columns:
+        df['Relative_Volume'] = calculate_relative_volume(df)
+    else:
+        df['Relative_Volume'] = 0.0
     if 'session' not in df.columns:
         logging.info("      Creating 'session' column...")
         try:
@@ -525,7 +578,7 @@ def clean_m1_data(df_m1):  # pragma: no cover
     if not isinstance(df_m1, pd.DataFrame): logging.error("Clean M1 Data Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m1.empty: logging.warning("   (Warning) ข้ามการทำความสะอาดข้อมูล M1: DataFrame ว่างเปล่า."); return pd.DataFrame(), []
     df_cleaned = df_m1.copy()
-    potential_m1_features = ["Candle_Body", "Candle_Range", "Candle_Ratio", "Gain", "Gain_Z", "MACD_line", "MACD_signal", "MACD_hist", "MACD_hist_smooth", "ATR_14", "ATR_14_Shifted", "ATR_14_Rolling_Avg", "Candle_Speed", "Wick_Length", "Wick_Ratio", "Pattern_Label", "Signal_Score", 'Volatility_Index', 'ADX', 'RSI', 'cluster', 'spike_score', 'session']
+    potential_m1_features = ["Candle_Body", "Candle_Range", "Candle_Ratio", "Gain", "Gain_Z", "MACD_line", "MACD_signal", "MACD_hist", "MACD_hist_smooth", "ATR_14", "ATR_14_Shifted", "ATR_14_Rolling_Avg", "Candle_Speed", "Wick_Length", "Wick_Ratio", "Pattern_Label", "Signal_Score", 'Volatility_Index', 'ADX', 'RSI', 'cluster', 'spike_score', 'OF_Imbalance', 'Momentum_Divergence', 'Relative_Volume', 'session']
     lag_cols_in_df = [col for col in df_cleaned.columns if '_lag' in col]
     potential_m1_features.extend(lag_cols_in_df)
     if META_CLASSIFIER_FEATURES: potential_m1_features.extend([f for f in META_CLASSIFIER_FEATURES if f not in potential_m1_features])
@@ -645,6 +698,7 @@ DEFAULT_META_CLASSIFIER_FEATURES = [
     "Gain_Z_lag1", "Gain_Z_lag3", "Gain_Z_lag5",
     "Candle_Speed_lag1", "Candle_Speed_lag3", "Candle_Speed_lag5",
     "cluster", "spike_score", "Pattern_Label",
+    "OF_Imbalance", "Momentum_Divergence", "Relative_Volume",
 ]
 # <<< [Patch] Added default for Meta-Meta threshold >>>
 DEFAULT_META_META_MIN_PROBA_THRESH = 0.5
