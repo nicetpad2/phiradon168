@@ -642,11 +642,11 @@ OMS_MAX_DISTANCE_PIPS = 1000.0  # [Patch v5.5.8] Max allowed SL/TP distance
 # --- Entry/Exit Logic Parameters ---
 logging.debug("Setting Entry/Exit Logic Parameters...")
 # [Patch] Allow MIN_SIGNAL_SCORE_ENTRY override via environment
-MIN_SIGNAL_SCORE_ENTRY = get_env_float("MIN_SIGNAL_SCORE_ENTRY", 1.0)
+MIN_SIGNAL_SCORE_ENTRY = get_env_float("MIN_SIGNAL_SCORE_ENTRY", 0.3)
 # [Patch v5.3.9] Adaptive threshold settings
 ADAPTIVE_SIGNAL_SCORE_WINDOW = 1000   # Bars used for quantile calculation
-ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.6  # Quantile for threshold (e.g., 60th)
-MIN_SIGNAL_SCORE_ENTRY_MIN = 0.5      # Clamp lower bound
+ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.4  # [Patch v5.7.1] Lower quantile (40th)
+MIN_SIGNAL_SCORE_ENTRY_MIN = 0.3      # Clamp lower bound
 MIN_SIGNAL_SCORE_ENTRY_MAX = 3.0      # Clamp upper bound
 MIN_SIGNAL_SCORE_ENTRY = max(MIN_SIGNAL_SCORE_ENTRY_MIN, min(MIN_SIGNAL_SCORE_ENTRY_MAX, MIN_SIGNAL_SCORE_ENTRY))
 USE_ADAPTIVE_SIGNAL_SCORE = True

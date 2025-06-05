@@ -5,6 +5,11 @@
 - QA: pytest -q passed (364 tests)
 
 ### 2025-10-06
+- [Patch v5.7.1] Lower default signal score threshold and enable meta filter toggle
+- New/Updated unit tests added for tests.test_config_defaults
+- QA: pytest -q passed (363 tests)
+
+### 2025-10-06
 - [Patch v5.6.8] Add needs_retrain method and retrain warning logic
 - New/Updated unit tests added for tests.test_drift_retrain_logic
 - QA: pytest -q failed (6 failed)
