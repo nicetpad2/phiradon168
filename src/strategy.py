@@ -1947,6 +1947,17 @@ def run_backtest_simulation_v34(
     result_cols = ["Lot_Size", "Order_Opened", "Order_Closed_Time", "PnL_Realized_USD", "Commission_USD", "Spread_Cost_USD", "Slippage_USD", "Equity_Realistic", "Active_Order_Count", "Max_Drawdown_At_Point", "Exit_Reason_Actual", "Exit_Price_Actual", "PnL_Points_Actual", "M15_Trend_Zone", "M1_Entry_Signal", "Signal_Score", "Trade_Reason", "Session", "BE_Triggered_Time", "Is_Reentry", "Meta_Proba_TP", "Meta2_Proba_TP", "Forced_Entry", "Entry_Price_Actual", "SL_Price_Actual", "TP_Price_Actual", "ATR_At_Entry", "Equity_Before_Open", "Entry_Gain_Z", "Entry_MACD_Smooth", "Entry_Candle_Ratio", "Entry_ADX", "Entry_Volatility_Index", "Trade_Tag", "Risk_Mode", "Active_Model", "Model_Confidence"]
     df_sim = df_m1_segment_pd.copy()
     volume_ma20 = df_sim['Volume'].rolling(20).mean() if 'Volume' in df_sim.columns else None
+    adaptive_score_thresh_arr = None
+    if USE_ADAPTIVE_SIGNAL_SCORE and 'Signal_Score' in df_sim.columns:
+        signal_scores_num = pd.to_numeric(df_sim['Signal_Score'], errors='coerce')
+        adaptive_score_thresh_arr = (
+            signal_scores_num.shift(1)
+            .rolling(ADAPTIVE_SIGNAL_SCORE_WINDOW, min_periods=1)
+            .quantile(ADAPTIVE_SIGNAL_SCORE_QUANTILE)
+            .clip(MIN_SIGNAL_SCORE_ENTRY_MIN, MIN_SIGNAL_SCORE_ENTRY_MAX)
+            .fillna(MIN_SIGNAL_SCORE_ENTRY)
+            .to_numpy()
+        )
     for col_base in result_cols:
         col_name = f"{col_base}{label_suffix}"
         if col_name not in df_sim.columns:
@@ -1988,6 +1999,12 @@ def run_backtest_simulation_v34(
     equity_realistic_arr = np.full(num_bars, np.nan, dtype=float)
     drawdown_arr = np.full(num_bars, np.nan, dtype=float)
     active_count_arr = np.zeros(num_bars, dtype=int)
+    m15_zone_arr = np.empty(num_bars, dtype=object)
+    m1_signal_arr = np.empty(num_bars, dtype=object)
+    signal_score_arr = np.full(num_bars, np.nan, dtype=float)
+    trade_reason_arr = np.empty(num_bars, dtype=object)
+    session_arr = np.empty(num_bars, dtype=object)
+    trade_tag_arr = np.empty(num_bars, dtype=object)
     run_summary = {}
 
     try:
@@ -2176,23 +2193,18 @@ def run_backtest_simulation_v34(
 
             m15_trend = getattr(row, "Trend_Zone", "NEUTRAL"); entry_long_signal = (getattr(row, "Entry_Long", 0) == 1); entry_short_signal = (getattr(row, "Entry_Short", 0) == 1); trade_tag = getattr(row, "Trade_Tag", "N/A"); signal_score = pd.to_numeric(getattr(row, "Signal_Score", np.nan), errors='coerce'); trade_reason = getattr(row, "Trade_Reason", "NONE"); pattern_label = getattr(row, "Pattern_Label", "Normal")
             final_m1_signal = "NONE"
-            if side == "BUY" and entry_long_signal: final_m1_signal = "BUY"
-            elif side == "SELL" and entry_short_signal: final_m1_signal = "SELL"
-            df_sim.at[current_index, f"M15_Trend_Zone{label_suffix}"] = m15_trend
-            df_sim.at[current_index, f"M1_Entry_Signal{label_suffix}"] = final_m1_signal
-            df_sim.at[current_index, f"Signal_Score{label_suffix}"] = signal_score if pd.notna(signal_score) else np.nan
-            df_sim.at[current_index, f"Trade_Reason{label_suffix}"] = trade_reason if final_m1_signal != "NONE" else "NONE"
-            df_sim.at[current_index, f"Session{label_suffix}"] = session_tag
-            df_sim.at[current_index, f"Trade_Tag{label_suffix}"] = current_trade_tag
-            if USE_ADAPTIVE_SIGNAL_SCORE:
-                recent_df = df_sim.iloc[max(0, current_bar_index - ADAPTIVE_SIGNAL_SCORE_WINDOW):current_bar_index]
-                current_thresh = get_dynamic_signal_score_entry(
-                    recent_df,
-                    ADAPTIVE_SIGNAL_SCORE_WINDOW,
-                    ADAPTIVE_SIGNAL_SCORE_QUANTILE,
-                    MIN_SIGNAL_SCORE_ENTRY_MIN,
-                    MIN_SIGNAL_SCORE_ENTRY_MAX,
-                )
+            if side == "BUY" and entry_long_signal:
+                final_m1_signal = "BUY"
+            elif side == "SELL" and entry_short_signal:
+                final_m1_signal = "SELL"
+            m15_zone_arr[current_bar_index] = m15_trend
+            m1_signal_arr[current_bar_index] = final_m1_signal
+            signal_score_arr[current_bar_index] = signal_score if pd.notna(signal_score) else np.nan
+            trade_reason_arr[current_bar_index] = trade_reason if final_m1_signal != "NONE" else "NONE"
+            session_arr[current_bar_index] = session_tag
+            trade_tag_arr[current_bar_index] = current_trade_tag
+            if USE_ADAPTIVE_SIGNAL_SCORE and adaptive_score_thresh_arr is not None:
+                current_thresh = adaptive_score_thresh_arr[current_bar_index]
                 if (
                     last_logged_signal_thresh is None
                     or abs(current_thresh - last_logged_signal_thresh) > 1e-6
@@ -2562,6 +2574,12 @@ def run_backtest_simulation_v34(
     df_sim[f"Equity_Realistic{label_suffix}"] = equity_realistic_arr
     df_sim[f"Max_Drawdown_At_Point{label_suffix}"] = drawdown_arr
     df_sim[f"Active_Order_Count{label_suffix}"] = active_count_arr
+    df_sim[f"M15_Trend_Zone{label_suffix}"] = m15_zone_arr
+    df_sim[f"M1_Entry_Signal{label_suffix}"] = m1_signal_arr
+    df_sim[f"Signal_Score{label_suffix}"] = signal_score_arr
+    df_sim[f"Trade_Reason{label_suffix}"] = trade_reason_arr
+    df_sim[f"Session{label_suffix}"] = session_arr
+    df_sim[f"Trade_Tag{label_suffix}"] = trade_tag_arr
 
     trade_log_df_segment = pd.DataFrame(trade_log)
     logging.info(f"Created trade log DataFrame for {label} with {len(trade_log_df_segment)} entries.")
