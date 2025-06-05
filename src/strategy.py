@@ -3894,6 +3894,42 @@ def run_all_folds_with_threshold(
             initial_consecutive_losses=current_fold_consecutive_losses,
         )
 
+        if (log_buy is None or log_buy.empty) and (log_sell is None or log_sell.empty):
+            logging.warning(
+                f"[QA-WARNING] Fold {fold+1}: no trades with threshold {l1_thresh_to_use}. Retrying fallback mode."
+            )
+            fb_thresh = 0.05
+            if isinstance(l1_thresh_to_use, (float, int)):
+                fb_thresh = max(0.05, l1_thresh_to_use - 0.1)
+            (df_buy_res, log_buy, eq_buy, hist_buy, dd_buy, costs_buy, blocked_buy, type_l1_b, type_l2_b, final_ks_state_buy, final_losses_buy, ib_lot_buy) = run_backtest_simulation_v34(
+                df_test_fold, label_buy + "_FB", start_cap_buy, "BUY",
+                fund_profile=fund_profile, fold_config=cfg_buy,
+                available_models=available_models, model_switcher_func=model_switcher_func,
+                pattern_label_map=pattern_label_map, meta_min_proba_thresh_override=fb_thresh,
+                current_fold_index=fold, enable_partial_tp=enable_partial_tp_flag,
+                partial_tp_levels=partial_tp_levels_list, partial_tp_move_sl_to_entry=partial_tp_move_sl_flag,
+                enable_kill_switch=enable_kill_switch_flag, kill_switch_max_dd_threshold=kill_switch_dd_thresh,
+                kill_switch_consecutive_losses_config=kill_switch_losses_config,
+                recovery_mode_consecutive_losses_config=recovery_mode_consecutive_losses_config,
+                min_equity_threshold_pct=min_equity_threshold_pct_config,
+                initial_kill_switch_state=current_fold_kill_switch_state,
+                initial_consecutive_losses=current_fold_consecutive_losses,
+            )
+            (df_sell_res, log_sell, eq_sell, hist_sell, dd_sell, costs_sell, blocked_sell, type_l1_s, type_l2_s, final_ks_state_sell, final_losses_sell, ib_lot_sell) = run_backtest_simulation_v34(
+                df_buy_res, label_sell + "_FB", start_cap_sell, "SELL",
+                fund_profile=fund_profile, fold_config=cfg_sell,
+                available_models=available_models, model_switcher_func=model_switcher_func,
+                pattern_label_map=pattern_label_map, meta_min_proba_thresh_override=fb_thresh,
+                current_fold_index=fold, enable_partial_tp=enable_partial_tp_flag,
+                partial_tp_levels=partial_tp_levels_list, partial_tp_move_sl_to_entry=partial_tp_move_sl_flag,
+                enable_kill_switch=enable_kill_switch_flag, kill_switch_max_dd_threshold=kill_switch_dd_thresh,
+                kill_switch_consecutive_losses_config=kill_switch_losses_config,
+                recovery_mode_consecutive_losses_config=recovery_mode_consecutive_losses_config,
+                min_equity_threshold_pct=min_equity_threshold_pct_config,
+                initial_kill_switch_state=current_fold_kill_switch_state,
+                initial_consecutive_losses=current_fold_consecutive_losses,
+            )
+
         logging.debug(f"Storing results for Fold {fold+1}...")
         all_fold_results_df.append(df_sell_res)
         if log_buy is not None and not log_buy.empty: all_trade_logs.append(log_buy)
@@ -4042,15 +4078,21 @@ def run_all_folds_with_threshold(
 
     run_duration = time.time() - start_time_run
     logging.info(f"      [Runner {run_label}] (Success) Full WF Sim completed (L1_Th={l1_thresh_display}) in {run_duration:.2f} seconds.")
+    try:
+        from src.utils import save_resource_plan
+
+        save_resource_plan(output_dir)
+    except Exception as e:
+        logging.debug("Could not save resource plan: %s", e)
 
     # <<< MODIFIED v4.8.1: Handle cases where no trades were logged or no metrics generated >>>
     if not all_trade_logs:
         logging.warning(
-            f"      [Runner {run_label}] No trades were logged in any fold (L1_Th={l1_thresh_display}). Generating empty summary."
+            f"[QA-WARNING]       [Runner {run_label}] No trades were logged in any fold (L1_Th={l1_thresh_display}). Generating empty summary."
         )
     if not all_fold_metrics:
         logging.warning(
-            f"      [Runner {run_label}] No metrics were generated from any fold (L1_Th={l1_thresh_display}). Using default metrics."
+            f"[QA-WARNING]       [Runner {run_label}] No metrics were generated from any fold (L1_Th={l1_thresh_display}). Using default metrics."
         )
 
     logging.info(f"      [Runner {run_label}] (Processing) Aggregating overall results (L1_Th={l1_thresh_display})...")
