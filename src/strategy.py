@@ -1667,6 +1667,9 @@ def check_main_exit_conditions(order, row, current_bar_index, now_timestamp):
     Returns:
         tuple: (order_closed_this_bar, exit_price, close_reason, close_timestamp)
     """
+    from src.order_manager import check_main_exit_conditions as _impl
+    result = _impl(order, row, current_bar_index, now_timestamp)
+
     global MAX_HOLDING_BARS
 
     order_closed_this_bar = False
@@ -1738,7 +1741,7 @@ def check_main_exit_conditions(order, row, current_bar_index, now_timestamp):
         else:
             logging.warning(f"      (Warning) Cannot check MaxBars for order {order.get('entry_time')}: Missing 'entry_bar_count'.")
 
-    return order_closed_this_bar, exit_price_final, close_reason_final, close_timestamp_final
+    return result
 
 # <<< [Patch] MODIFIED v4.8.8 (Patch 26.5.1): Applied [PATCH B - Unified] for logging. >>>
 def _update_open_order_state(order, current_high, current_low, current_atr, avg_atr, now, base_be_r_thresh, fold_sl_multiplier_base, base_tp_multiplier_config, be_sl_counter, tsl_counter):
@@ -1746,6 +1749,21 @@ def _update_open_order_state(order, current_high, current_low, current_atr, avg_
     Updates the state (BE, TSL, TTP2) of an order that remains open in the current bar.
     Prioritizes BE trigger over TSL activation/update.
     """
+    from src.order_manager import update_open_order_state as _impl
+    result = _impl(
+        order,
+        current_high,
+        current_low,
+        current_atr,
+        avg_atr,
+        now,
+        base_be_r_thresh,
+        fold_sl_multiplier_base,
+        base_tp_multiplier_config,
+        be_sl_counter,
+        tsl_counter,
+    )
+
     global DYNAMIC_BE_ATR_THRESHOLD_HIGH, DYNAMIC_BE_R_ADJUST_HIGH, ADAPTIVE_TSL_START_ATR_MULT
 
     be_triggered_this_bar = False
@@ -1847,7 +1865,7 @@ def _update_open_order_state(order, current_high, current_low, current_atr, avg_
     tp_price_val_after = order.get('tp_price')
     tp_after_str = f"{tp_price_val_after:.5f}" if pd.notna(tp_price_val_after) else "NaN"
     logging.debug(f"            Order {entry_time_log} after update_trailing_tp2. TP after={tp_after_str}")
-    return order, be_triggered_this_bar, tsl_updated_this_bar, be_sl_counter, tsl_counter
+    return result
 
 # <<< [Patch v5.5.2] Helper to resolve close index >>>
 def _resolve_close_index(df_sim, entry_idx, close_timestamp):
@@ -2002,21 +2020,20 @@ def run_backtest_simulation_v34(
     equity_realistic_arr = np.full(num_bars, np.nan, dtype=float)
     drawdown_arr = np.full(num_bars, np.nan, dtype=float)
     active_count_arr = np.zeros(num_bars, dtype=int)
-    # [Patch v5.7.4] Precompute adaptive thresholds and result buffers
-    if USE_ADAPTIVE_SIGNAL_SCORE:
-        signal_scores_series = pd.to_numeric(df_sim["Signal_Score"], errors="coerce")
-        adaptive_thresholds = get_dynamic_signal_score_thresholds(
-            signal_scores_series,
-            ADAPTIVE_SIGNAL_SCORE_WINDOW,
-            ADAPTIVE_SIGNAL_SCORE_QUANTILE,
-            MIN_SIGNAL_SCORE_ENTRY_MIN,
-            MIN_SIGNAL_SCORE_ENTRY_MAX,
+    adaptive_score_thresh_arr = None
+    if USE_ADAPTIVE_SIGNAL_SCORE and 'Signal_Score' in df_sim.columns:
+        signal_scores_num = pd.to_numeric(df_sim['Signal_Score'], errors='coerce')
+        adaptive_score_thresh_arr = (
+            signal_scores_num.shift(1)
+            .rolling(ADAPTIVE_SIGNAL_SCORE_WINDOW, min_periods=1)
+            .quantile(ADAPTIVE_SIGNAL_SCORE_QUANTILE)
+            .clip(MIN_SIGNAL_SCORE_ENTRY_MIN, MIN_SIGNAL_SCORE_ENTRY_MAX)
+            .fillna(MIN_SIGNAL_SCORE_ENTRY)
+            .to_numpy()
         )
-    else:
-        adaptive_thresholds = np.full(num_bars, MIN_SIGNAL_SCORE_ENTRY, dtype=float)
 
-    m15_trend_zone_arr = np.empty(num_bars, dtype=object)
-    m1_entry_signal_arr = np.empty(num_bars, dtype=object)
+    m15_zone_arr = np.empty(num_bars, dtype=object)
+    m1_signal_arr = np.empty(num_bars, dtype=object)
     signal_score_arr = np.full(num_bars, np.nan, dtype=float)
     trade_reason_arr = np.empty(num_bars, dtype=object)
     session_arr = np.empty(num_bars, dtype=object)
@@ -2211,14 +2228,14 @@ def run_backtest_simulation_v34(
             final_m1_signal = "NONE"
             if side == "BUY" and entry_long_signal: final_m1_signal = "BUY"
             elif side == "SELL" and entry_short_signal: final_m1_signal = "SELL"
-            m15_trend_zone_arr[current_bar_index] = m15_trend
-            m1_entry_signal_arr[current_bar_index] = final_m1_signal
+            m15_zone_arr[current_bar_index] = m15_trend
+            m1_signal_arr[current_bar_index] = final_m1_signal
             signal_score_arr[current_bar_index] = signal_score if pd.notna(signal_score) else np.nan
             trade_reason_arr[current_bar_index] = trade_reason if final_m1_signal != "NONE" else "NONE"
             session_arr[current_bar_index] = session_tag
             trade_tag_arr[current_bar_index] = current_trade_tag
-            if USE_ADAPTIVE_SIGNAL_SCORE:
-                current_thresh = adaptive_thresholds[current_bar_index]
+            if USE_ADAPTIVE_SIGNAL_SCORE and adaptive_score_thresh_arr is not None:
+                current_thresh = adaptive_score_thresh_arr[current_bar_index]
                 if (
                     last_logged_signal_thresh is None
                     or abs(current_thresh - last_logged_signal_thresh) > 1e-6
@@ -2598,12 +2615,12 @@ def run_backtest_simulation_v34(
     df_sim[f"Equity_Realistic{label_suffix}"] = equity_realistic_arr
     df_sim[f"Max_Drawdown_At_Point{label_suffix}"] = drawdown_arr
     df_sim[f"Active_Order_Count{label_suffix}"] = active_count_arr
-    df_sim.loc[:, f"M15_Trend_Zone{label_suffix}"] = m15_trend_zone_arr
-    df_sim.loc[:, f"M1_Entry_Signal{label_suffix}"] = m1_entry_signal_arr
-    df_sim.loc[:, f"Signal_Score{label_suffix}"] = signal_score_arr
-    df_sim.loc[:, f"Trade_Reason{label_suffix}"] = trade_reason_arr
-    df_sim.loc[:, f"Session{label_suffix}"] = session_arr
-    df_sim.loc[:, f"Trade_Tag{label_suffix}"] = trade_tag_arr
+    df_sim[f"M15_Trend_Zone{label_suffix}"] = m15_zone_arr
+    df_sim[f"M1_Entry_Signal{label_suffix}"] = m1_signal_arr
+    df_sim[f"Signal_Score{label_suffix}"] = signal_score_arr
+    df_sim[f"Trade_Reason{label_suffix}"] = trade_reason_arr
+    df_sim[f"Session{label_suffix}"] = session_arr
+    df_sim[f"Trade_Tag{label_suffix}"] = trade_tag_arr
 
     trade_log_df_segment = pd.DataFrame(trade_log)
     logging.info(f"Created trade log DataFrame for {label} with {len(trade_log_df_segment)} entries.")
