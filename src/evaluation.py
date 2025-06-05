@@ -1,5 +1,6 @@
 import os
 import json
+from src.utils import load_json_with_comments
 from typing import Iterable, Tuple, Dict
 import numpy as np
 import pandas as pd
@@ -71,8 +72,7 @@ def evaluate_meta_classifier(model_path: str, validation_path: str, features_pat
         features_path = os.path.join(os.path.dirname(model_path), "features_main.json")
 
     try:
-        with open(features_path, "r", encoding="utf-8") as f:
-            features = json.load(f)
+        features = load_json_with_comments(features_path)
         if not isinstance(features, list):
             raise ValueError("Invalid features format")
     except (FileNotFoundError, ValueError) as e:
