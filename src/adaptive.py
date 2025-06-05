@@ -272,3 +272,43 @@ def check_portfolio_stop(drawdown_pct: float, threshold: float = 0.10) -> bool:
         logger.warning("Invalid drawdown_pct for portfolio stop")
         return False
     return dd >= threshold
+
+
+def calculate_dynamic_sl_tp(
+    atr: float,
+    win_rate: float,
+    sl_min_pips: float = 20.0,
+    sl_max_pips: float = 30.0,
+    atr_multiplier: float = 1.5,
+) -> Tuple[float, float]:
+    """Return SL/TP distances based on ATR and win rate.
+
+    - SL ใช้ค่าระหว่าง ``sl_min_pips`` ถึง ``sl_max_pips``
+      โดยอิงจาก ``atr * atr_multiplier`` ในหน่วยราคา
+    - TP จะปรับตาม ``win_rate``:
+      * ต่ำกว่า 40% ⇒ TP = 3×SL
+      * สูงกว่า 50% ⇒ TP = 1.5×SL
+      * อื่น ๆ ⇒ TP = 2×SL
+    """
+
+    try:
+        atr_val = float(atr)
+        wr = float(win_rate)
+    except (TypeError, ValueError):
+        logger.warning("Invalid inputs for calculate_dynamic_sl_tp")
+        return float("nan"), float("nan")
+
+    sl_by_atr = atr_val * atr_multiplier
+    sl_min = sl_min_pips / 10.0
+    sl_max = sl_max_pips / 10.0
+    sl = max(sl_min, min(sl_by_atr, sl_max))
+
+    if wr < 0.40:
+        tp_mult = 3.0
+    elif wr > 0.50:
+        tp_mult = 1.5
+    else:
+        tp_mult = 2.0
+
+    tp = sl * tp_mult
+    return sl, tp
