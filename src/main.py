@@ -1353,8 +1353,8 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                         eq_sell_hist_fund_plot = eq_sell_hist_fund_plot[~eq_sell_hist_fund_plot.index.duplicated(keep='last')]
 
                         if 'plot_equity_curve' in globals() and callable(plot_equity_curve):
-                            plot_equity_curve(eq_buy_hist_fund_plot, f"Equity Curve - BUY ({fund_name})", initial_capital, OUTPUT_DIR, f"buy{final_run_suffix_fund}", fold_boundaries)
-                            plot_equity_curve(eq_sell_hist_fund_plot, f"Equity Curve - SELL ({fund_name})", initial_capital, OUTPUT_DIR, f"sell{final_run_suffix_fund}", fold_boundaries)
+                            plot_equity_curve(eq_buy_hist_fund_plot, f"Equity Curve - BUY ({fund_name})", INITIAL_CAPITAL, OUTPUT_DIR, f"buy{final_run_suffix_fund}", fold_boundaries)
+                            plot_equity_curve(eq_sell_hist_fund_plot, f"Equity Curve - SELL ({fund_name})", INITIAL_CAPITAL, OUTPUT_DIR, f"sell{final_run_suffix_fund}", fold_boundaries)
                         else:
                             logging.warning("   Function 'plot_equity_curve' not found. Skipping equity plots.")
                     except Exception as e_plot:
