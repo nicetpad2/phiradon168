@@ -196,3 +196,24 @@ def test_merge_wave_pattern_labels_missing(tmp_path):
                       index=pd.date_range('2024-01-01', periods=1, freq='1min'))
     res = features.merge_wave_pattern_labels(df, str(tmp_path / 'missing.csv'))
     assert res['Wave_Pattern'].iloc[0] == 'Unknown'
+
+
+def test_calculate_order_flow_imbalance_basic():
+    df = pd.DataFrame({'BuyVolume': [3.0, 1.0], 'SellVolume': [1.0, 1.0]})
+    res = features.calculate_order_flow_imbalance(df)
+    assert np.isclose(res.iloc[0], 0.5)
+    assert np.isclose(res.iloc[1], 0.0)
+
+
+def test_calculate_relative_volume_basic():
+    df = pd.DataFrame({'Volume': [1, 2, 3, 4, 5]}, index=pd.RangeIndex(5))
+    res = features.calculate_relative_volume(df, period=2)
+    vol_5m = df['Volume'].rolling(5, min_periods=1).sum()
+    expected = vol_5m / vol_5m.rolling(2, min_periods=1).mean()
+    pd.testing.assert_series_equal(res, expected.astype('float32'), check_names=False)
+
+
+def test_calculate_momentum_divergence_basic():
+    close = pd.Series([1, 2, 3, 4, 5], dtype='float32')
+    res = features.calculate_momentum_divergence(close)
+    assert len(res) == len(close)

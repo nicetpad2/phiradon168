@@ -1,3 +1,7 @@
+- [Patch v5.7.9] Add order flow & divergence features for ML filter
+- New/Updated unit tests added for tests.test_features_more
+- QA: pytest -q passed (401 tests)
+
 ### 2025-10-12
 - [Patch v5.7.8] Resolve FontProperties parse error for generic aliases
 - New/Updated unit tests added for tests.test_plot_equity_curve_font
