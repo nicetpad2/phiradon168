@@ -8,9 +8,12 @@
 - New/Updated unit tests added for tests.test_new_utils
 - QA: pytest -q passed (373 tests)
 
-- [Patch v5.7.3] Configurable meta filter thresholds with fallback logic
-- New/Updated unit tests added for tests.test_env_utils
-- QA: pytest -q passed (370 tests)
+
+### 2025-06-05
+- [Patch v5.7.4] Vectorize adaptive signal threshold and reduce DataFrame writes
+- New/Updated unit tests added for tests.test_adaptive_signal_threshold
+- QA: pytest -q passed
+
 
 
 ### 2025-10-07
