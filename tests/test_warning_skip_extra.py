@@ -25,7 +25,7 @@ def test_rsi_ta_not_loaded_warning(monkeypatch, caplog):
     with caplog.at_level(logging.WARNING):
         res = features.rsi(series, period=14)
     assert res.isna().all()
-    assert any('RSI calculation skipped' in msg for msg in caplog.messages)
+    assert any('fallback RSI' in msg for msg in caplog.messages)
 
 
 def test_get_session_tag_nat():
@@ -87,4 +87,4 @@ def test_macd_ta_not_loaded_warning(monkeypatch, caplog):
     with caplog.at_level(logging.WARNING):
         line, signal, diff = features.macd(series)
     assert not line.isna().all()
-    assert any('pandas fallback' in msg.lower() for msg in caplog.messages)
+    assert any('fallback MACD' in msg for msg in caplog.messages)
