@@ -8,6 +8,10 @@
 - New/Updated unit tests added for tests.test_new_utils
 - QA: pytest -q passed (373 tests)
 
+- [Patch v5.7.3] Configurable meta filter thresholds with fallback logic
+- New/Updated unit tests added for tests.test_env_utils
+- QA: pytest -q passed (370 tests)
+
 
 ### 2025-10-07
 - [Patch v5.7.2] Fix sweep path to absolute for Colab execution

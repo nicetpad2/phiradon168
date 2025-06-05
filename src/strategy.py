@@ -1172,6 +1172,9 @@ DEFAULT_FUND_NAME = "NORMAL"
 DEFAULT_USE_META_CLASSIFIER = True
 DEFAULT_META_MIN_PROBA_THRESH = 0.25
 DEFAULT_REENTRY_MIN_PROBA_THRESH = 0.5
+DEFAULT_META_FILTER_THRESHOLD = 0.6
+DEFAULT_META_FILTER_RELAXED_THRESHOLD = 0.5
+DEFAULT_META_FILTER_RELAX_BLOCKS = 5
 DEFAULT_OUTPUT_DIR = "./output_default"
 
 # Access globals safely using safe_get_global (defined in Part 3)
@@ -1237,8 +1240,10 @@ DEFAULT_FUND_NAME = safe_get_global('DEFAULT_FUND_NAME', DEFAULT_FUND_NAME)
 USE_META_CLASSIFIER = safe_get_global('USE_META_CLASSIFIER', DEFAULT_USE_META_CLASSIFIER)
 META_MIN_PROBA_THRESH = safe_get_global('META_MIN_PROBA_THRESH', DEFAULT_META_MIN_PROBA_THRESH)
 REENTRY_MIN_PROBA_THRESH = safe_get_global('REENTRY_MIN_PROBA_THRESH', DEFAULT_REENTRY_MIN_PROBA_THRESH)
+META_FILTER_THRESHOLD = safe_get_global('META_FILTER_THRESHOLD', DEFAULT_META_FILTER_THRESHOLD)
+META_FILTER_RELAXED_THRESHOLD = safe_get_global('META_FILTER_RELAXED_THRESHOLD', DEFAULT_META_FILTER_RELAXED_THRESHOLD)
+META_FILTER_RELAX_BLOCKS = int(safe_get_global('META_FILTER_RELAX_BLOCKS', DEFAULT_META_FILTER_RELAX_BLOCKS))
 OUTPUT_DIR = safe_get_global('OUTPUT_DIR', DEFAULT_OUTPUT_DIR)
-META_PROBA_FILTER_THRESHOLD = safe_get_global('META_PROBA_FILTER_THRESHOLD', 0.6)
 
 
 # --- Backtesting Helper Functions ---
@@ -1885,7 +1890,7 @@ def run_backtest_simulation_v34(
         raise ValueError(
             f"Missing required columns in input DataFrame for backtest: {missing}"
         )
-    global meta_model_type_used, meta_meta_model_type_used, USE_REENTRY, REENTRY_COOLDOWN_BARS, TIMEFRAME_MINUTES_M1, POINT_VALUE, MAX_CONCURRENT_ORDERS, MAX_HOLDING_BARS, COMMISSION_PER_001_LOT, SPREAD_POINTS, MIN_SLIPPAGE_POINTS, MAX_SLIPPAGE_POINTS, MAX_DRAWDOWN_THRESHOLD, ENABLE_FORCED_ENTRY, FORCED_ENTRY_BAR_THRESHOLD, FORCED_ENTRY_MIN_SIGNAL_SCORE, FORCED_ENTRY_LOOKBACK_PERIOD, FORCED_ENTRY_CHECK_MARKET_COND, FORCED_ENTRY_MAX_ATR_MULT, FORCED_ENTRY_MIN_GAIN_Z_ABS, FORCED_ENTRY_ALLOWED_REGIMES, FE_ML_FILTER_THRESHOLD, forced_entry_max_consecutive_losses, OUTPUT_DIR, USE_META_CLASSIFIER, BASE_BE_SL_R_THRESHOLD, DYNAMIC_BE_ATR_THRESHOLD_HIGH, DYNAMIC_BE_R_ADJUST_HIGH, META_MIN_PROBA_THRESH, REENTRY_MIN_PROBA_THRESH
+    global meta_model_type_used, meta_meta_model_type_used, USE_REENTRY, REENTRY_COOLDOWN_BARS, TIMEFRAME_MINUTES_M1, POINT_VALUE, MAX_CONCURRENT_ORDERS, MAX_HOLDING_BARS, COMMISSION_PER_001_LOT, SPREAD_POINTS, MIN_SLIPPAGE_POINTS, MAX_SLIPPAGE_POINTS, MAX_DRAWDOWN_THRESHOLD, ENABLE_FORCED_ENTRY, FORCED_ENTRY_BAR_THRESHOLD, FORCED_ENTRY_MIN_SIGNAL_SCORE, FORCED_ENTRY_LOOKBACK_PERIOD, FORCED_ENTRY_CHECK_MARKET_COND, FORCED_ENTRY_MAX_ATR_MULT, FORCED_ENTRY_MIN_GAIN_Z_ABS, FORCED_ENTRY_ALLOWED_REGIMES, FE_ML_FILTER_THRESHOLD, forced_entry_max_consecutive_losses, OUTPUT_DIR, USE_META_CLASSIFIER, BASE_BE_SL_R_THRESHOLD, DYNAMIC_BE_ATR_THRESHOLD_HIGH, DYNAMIC_BE_R_ADJUST_HIGH, META_MIN_PROBA_THRESH, REENTRY_MIN_PROBA_THRESH, META_FILTER_THRESHOLD, META_FILTER_RELAXED_THRESHOLD, META_FILTER_RELAX_BLOCKS
 
     meta_proba_tp_for_log = np.nan; meta2_proba_tp_for_log = np.nan; meta_proba_tp_for_fe_log = np.nan; total_ib_lot_accumulator = 0.0
     equity = initial_capital_segment; peak_equity = initial_capital_segment; max_drawdown_pct = 0.0
@@ -1894,7 +1899,7 @@ def run_backtest_simulation_v34(
     equity_history = {start_time_equity: initial_capital_segment}
     total_commission_paid = 0.0; total_slippage_loss = 0.0; total_spread_cost = 0.0
     orders_blocked_by_drawdown = 0; orders_blocked_by_cooldown = 0; orders_lot_scaled = 0
-    be_sl_triggered_count_run = 0; tsl_triggered_count_run = 0; orders_skipped_ml_l1 = 0; orders_skipped_ml_l2 = 0
+    be_sl_triggered_count_run = 0; tsl_triggered_count_run = 0; orders_skipped_ml_l1 = 0; orders_skipped_ml_l2 = 0; meta_filter_block_streak = 0
     reentry_trades_opened = 0; forced_entry_trades_opened = 0
     min_ts = pd.Timestamp.min.tz_localize('UTC') if not df_m1_segment_pd.empty and df_m1_segment_pd.index.tz is not None else pd.Timestamp.min
     last_trade_cooldown_end_time = defaultdict(lambda: min_ts); last_tp_time = defaultdict(lambda: min_ts)
@@ -2340,13 +2345,22 @@ def run_backtest_simulation_v34(
                                 for cat_col in cat_cols_ml: X_ml[cat_col] = X_ml[cat_col].astype(str).fillna("Missing")
                                 proba_tp = active_l1_model.predict_proba(X_ml)[0, 1]; meta_proba_tp_for_log = proba_tp; logging.debug(f"         ML Model '{selected_model_key}' Predicted Proba(TP): {proba_tp:.4f}")
                                 meta_proba = predict(active_l1_model, X_ml)
-                                if meta_proba < META_PROBA_FILTER_THRESHOLD:
-                                    can_open_order = False
-                                    block_reason = "ML_META_FILTER"
-                                    orders_skipped_ml_l1 += 1
-                                    logging.debug(
-                                        f"      Block Reason: {block_reason} (MetaProba {meta_proba:.4f} < {META_PROBA_FILTER_THRESHOLD:.2f})"
-                                    )
+                                if meta_proba < META_FILTER_THRESHOLD:
+                                    meta_filter_block_streak += 1
+                                    if meta_filter_block_streak >= META_FILTER_RELAX_BLOCKS and meta_proba >= META_FILTER_RELAXED_THRESHOLD:
+                                        logging.info(
+                                            f"      (Fallback) Relaxed meta filter applied after {meta_filter_block_streak} blocks"
+                                        )
+                                        meta_filter_block_streak = 0
+                                    else:
+                                        can_open_order = False
+                                        block_reason = "ML_META_FILTER"
+                                        orders_skipped_ml_l1 += 1
+                                        logging.debug(
+                                            f"      Block Reason: {block_reason} (MetaProba {meta_proba:.4f} < {META_FILTER_THRESHOLD:.2f})"
+                                        )
+                                else:
+                                    meta_filter_block_streak = 0
                                 ml_threshold = current_reentry_threshold_l1 if is_reentry_trade else current_meta_threshold_l1; logging.debug(f"         Applying ML Threshold: {ml_threshold:.4f} ({'Re-Entry' if is_reentry_trade else 'Standard'})")
                                 if proba_tp < ml_threshold: can_open_order = False; block_reason = f"ML1_SKIP_{selected_model_key.upper()}" if not is_reentry_trade else f"ML1_SKIP_RE_{selected_model_key.upper()}"; orders_skipped_ml_l1 += 1; logging.debug(f"      Block Reason: {block_reason} (Proba {proba_tp:.4f} < {ml_threshold:.4f})")
                             except Exception as e_ml1: logging.error(f"      (Error) ML Filter ({selected_model_key}) failed during prediction: {e_ml1}", exc_info=True); can_open_order = False; block_reason = f"ML1_ERR_{selected_model_key.upper()}" if not is_reentry_trade else f"ML1_ERR_RE_{selected_model_key.upper()}"; meta_proba_tp_for_log = np.nan
@@ -2359,6 +2373,7 @@ def run_backtest_simulation_v34(
                         blocked_order_log.append(log_entry_blocked)
                         if not log_ml_skip: logging.info(f"      Order Blocked. Reason: {block_reason}")
                 if can_open_order:
+                    meta_filter_block_streak = 0
                     logging.info(f"      >>> Opening {side} Order ({entry_type_str}) at {now} <<<"); atr_entry = current_atr_shifted
                     if pd.isna(atr_entry) or np.isinf(atr_entry) or atr_entry < 1e-9: logging.warning(f"         (Warning) Cannot calculate SL/TP at {now}: Invalid ATR_Shifted ({atr_entry}). Skipping Order.")
                     else:
