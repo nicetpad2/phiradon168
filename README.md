@@ -163,3 +163,5 @@ fig.savefig('summary.png')
 
 Updated for patch 5.7.3.
 
+Patch 5.7.8 resolves font configuration parsing errors when plotting.
+

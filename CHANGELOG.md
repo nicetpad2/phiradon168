@@ -1,6 +1,6 @@
 ### 2025-10-12
-- [Patch v5.7.8] Handle Matplotlib font alias gracefully in plot
-- New/Updated unit tests added for tests.test_function_registry
+- [Patch v5.7.8] Resolve FontProperties parse error for generic aliases
+- New/Updated unit tests added for tests.test_plot_equity_curve_font
 - QA: pytest -q passed (396 tests)
 
 ### 2025-10-11
