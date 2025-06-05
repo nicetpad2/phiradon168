@@ -66,3 +66,19 @@ def test_meta_threshold_env(monkeypatch):
     monkeypatch.delenv('META_MIN_PROBA_THRESH', raising=False)
     monkeypatch.delenv('REENTRY_MIN_PROBA_THRESH', raising=False)
     importlib.reload(ft)
+
+
+def test_meta_filter_threshold_env(monkeypatch):
+    monkeypatch.setenv("META_FILTER_THRESHOLD", "0.55")
+    monkeypatch.setenv("META_FILTER_RELAXED_THRESHOLD", "0.45")
+    monkeypatch.setenv("META_FILTER_RELAX_BLOCKS", "4")
+    if 'src.config' in sys.modules:
+        monkeypatch.delitem(sys.modules, 'src.config', raising=False)
+    cfg = importlib.import_module('src.config')
+    assert cfg.META_FILTER_THRESHOLD == 0.55
+    assert cfg.META_FILTER_RELAXED_THRESHOLD == 0.45
+    assert cfg.META_FILTER_RELAX_BLOCKS == 4
+    monkeypatch.delenv('META_FILTER_THRESHOLD', raising=False)
+    monkeypatch.delenv('META_FILTER_RELAXED_THRESHOLD', raising=False)
+    monkeypatch.delenv('META_FILTER_RELAX_BLOCKS', raising=False)
+    importlib.reload(cfg)
