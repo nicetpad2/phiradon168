@@ -1667,6 +1667,9 @@ def check_main_exit_conditions(order, row, current_bar_index, now_timestamp):
     Returns:
         tuple: (order_closed_this_bar, exit_price, close_reason, close_timestamp)
     """
+    from src.order_manager import check_main_exit_conditions as _impl
+    result = _impl(order, row, current_bar_index, now_timestamp)
+
     global MAX_HOLDING_BARS
 
     order_closed_this_bar = False
@@ -1738,7 +1741,7 @@ def check_main_exit_conditions(order, row, current_bar_index, now_timestamp):
         else:
             logging.warning(f"      (Warning) Cannot check MaxBars for order {order.get('entry_time')}: Missing 'entry_bar_count'.")
 
-    return order_closed_this_bar, exit_price_final, close_reason_final, close_timestamp_final
+    return result
 
 # <<< [Patch] MODIFIED v4.8.8 (Patch 26.5.1): Applied [PATCH B - Unified] for logging. >>>
 def _update_open_order_state(order, current_high, current_low, current_atr, avg_atr, now, base_be_r_thresh, fold_sl_multiplier_base, base_tp_multiplier_config, be_sl_counter, tsl_counter):
@@ -1746,6 +1749,21 @@ def _update_open_order_state(order, current_high, current_low, current_atr, avg_
     Updates the state (BE, TSL, TTP2) of an order that remains open in the current bar.
     Prioritizes BE trigger over TSL activation/update.
     """
+    from src.order_manager import update_open_order_state as _impl
+    result = _impl(
+        order,
+        current_high,
+        current_low,
+        current_atr,
+        avg_atr,
+        now,
+        base_be_r_thresh,
+        fold_sl_multiplier_base,
+        base_tp_multiplier_config,
+        be_sl_counter,
+        tsl_counter,
+    )
+
     global DYNAMIC_BE_ATR_THRESHOLD_HIGH, DYNAMIC_BE_R_ADJUST_HIGH, ADAPTIVE_TSL_START_ATR_MULT
 
     be_triggered_this_bar = False
@@ -1847,7 +1865,7 @@ def _update_open_order_state(order, current_high, current_low, current_atr, avg_
     tp_price_val_after = order.get('tp_price')
     tp_after_str = f"{tp_price_val_after:.5f}" if pd.notna(tp_price_val_after) else "NaN"
     logging.debug(f"            Order {entry_time_log} after update_trailing_tp2. TP after={tp_after_str}")
-    return order, be_triggered_this_bar, tsl_updated_this_bar, be_sl_counter, tsl_counter
+    return result
 
 # <<< [Patch v5.5.2] Helper to resolve close index >>>
 def _resolve_close_index(df_sim, entry_idx, close_timestamp):
