@@ -22,7 +22,7 @@
 - `tuning/` สคริปต์ค้นหา Hyperparameter
 - `tests/` ชุดทดสอบอัตโนมัติ
 - `docs/` เอกสารประกอบ
-- `logs/` ผลการรันและบันทึกต่าง ๆ
+- `logs/<date>/<fold>/` โฟลเดอร์บันทึก log แยกตามวันที่และ fold
 
 ## การใช้งานสคริปต์หลัก
 - `python ProjectP.py` เตรียมข้อมูลพื้นฐานและรันขั้นตอนหลัก
@@ -148,13 +148,13 @@ from src.log_analysis import (
     plot_summary,
 )
 
-logs_df = parse_trade_logs('logs')
+logs_df = parse_trade_logs('logs/2025-06-05/fold1/gold_ai_v5.8.2_qa.log')
 summary = calculate_hourly_summary(logs_df)
 print(summary)
 reason_stats = calculate_reason_summary(logs_df)
 duration = calculate_duration_stats(logs_df)
 drawdown = calculate_drawdown_stats(logs_df)
-alerts = calculate_alert_summary('logs')
+alerts = calculate_alert_summary('logs/2025-06-05/fold1/gold_ai_v5.8.2_qa.log')
 export_summary_to_csv(summary.reset_index(), 'summary.csv.gz')
 fig = plot_summary(summary)
 fig.savefig('summary.png')

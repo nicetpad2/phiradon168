@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from src import features as feat
+from src.config import LOG_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 def analyze_feature_distribution(
     df: pd.DataFrame,
     feature_list: List[str],
-    output_dir: str = "logs/feature_analysis",
+    output_dir: str = os.path.join(LOG_DIR, "feature_analysis"),
 ) -> Optional[Dict[str, Dict[str, float]]]:
     """Calculate summary statistics and histogram data for a list of features.
 
@@ -130,7 +131,7 @@ def select_top_pnl_features(
 def calculate_correlation_matrix(
     df: pd.DataFrame,
     feature_list: List[str],
-    output_dir: str = "logs/feature_analysis",
+    output_dir: str = os.path.join(LOG_DIR, "feature_analysis"),
 ) -> Optional[pd.DataFrame]:
     """คำนวณ correlation matrix สำหรับฟีเจอร์ที่ระบุ
 
