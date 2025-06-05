@@ -10,6 +10,11 @@
 - New/Updated unit tests added for tests.test_soft_cooldown_logic
 - QA: pytest -q passed
 
+### 2025-09-04
+- [Patch v5.6.7] เพิ่มพารามิเตอร์ trade_log_path และ m1_path ให้ hyperparameter_sweep
+- New/Updated unit tests added for none (existing coverage)
+- QA: pytest -q passed (363 tests)
+
 ### 2025-09-01
 - [Patch v5.6.4] Fix boundary logic for session tagging and reduce duplicate warnings
 - New/Updated unit tests added for tests.test_sessions_utils

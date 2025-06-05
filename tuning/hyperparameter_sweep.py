@@ -20,7 +20,7 @@ import inspect
 from datetime import datetime
 from tqdm import tqdm
 
-from src.config import logger
+from src.config import logger, DefaultConfig
 from src.training import real_train_func
 
 
@@ -45,7 +45,14 @@ def _filter_kwargs(func: Callable, kwargs: Dict[str, object]) -> Dict[str, objec
     return {k: v for k, v in kwargs.items() if k in sig.parameters}
 
 
-def run_sweep(output_dir: str, params_grid: Dict[str, List], seed: int = 42, resume: bool = True) -> None:
+def run_sweep(
+    output_dir: str,
+    params_grid: Dict[str, List],
+    seed: int = 42,
+    resume: bool = True,
+    trade_log_path: str | None = None,
+    m1_path: str | None = None,
+) -> None:
     """รัน hyperparameter sweep พร้อมคุณสมบัติ resume และ QA log"""
     os.makedirs(output_dir, exist_ok=True)
     summary_path = os.path.join(output_dir, 'summary.csv')
@@ -80,7 +87,12 @@ def run_sweep(output_dir: str, params_grid: Dict[str, List], seed: int = 42, res
         logger.info(log_msg)
         try:
             call_dict = _filter_kwargs(real_train_func, param_dict)
-            result = real_train_func(output_dir=output_dir, **call_dict)
+            result = real_train_func(
+                output_dir=output_dir,
+                trade_log_path=trade_log_path,
+                m1_path=m1_path or DefaultConfig.DATA_FILE_PATH_M1,
+                **call_dict,
+            )
             summary_row = {
                 'run_id': run_id,
                 **param_dict,
@@ -137,10 +149,19 @@ def main() -> None:
     parser.add_argument('--param_learning_rate', default='0.01,0.05')
     parser.add_argument('--param_depth', default='6,8')
     parser.add_argument('--param_l2_leaf_reg', default='1,3,5')
+    parser.add_argument('--trade_log_path')
+    parser.add_argument('--m1_path')
     args = parser.parse_args()
 
     params_grid = _parse_multi_params(args)
-    run_sweep(args.output_dir, params_grid, seed=args.seed, resume=args.resume)
+    run_sweep(
+        args.output_dir,
+        params_grid,
+        seed=args.seed,
+        resume=args.resume,
+        trade_log_path=args.trade_log_path,
+        m1_path=args.m1_path,
+    )
 
 
 if __name__ == '__main__':
