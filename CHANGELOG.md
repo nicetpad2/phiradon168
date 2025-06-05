@@ -4,6 +4,11 @@
 - New/Updated unit tests added for tests.test_new_utils
 - QA: pytest -q passed (373 tests)
 
+### 2025-06-05
+- [Patch v5.7.4] Vectorize adaptive signal threshold and reduce DataFrame writes
+- New/Updated unit tests added for tests.test_adaptive_signal_threshold
+- QA: pytest -q passed
+
 
 ### 2025-10-07
 - [Patch v5.7.2] Fix sweep path to absolute for Colab execution
