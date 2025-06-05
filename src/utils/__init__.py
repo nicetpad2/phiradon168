@@ -8,6 +8,7 @@ from src.utils.trade_logger import (
     log_open_order,
     log_close_order,
     setup_trade_logger,
+    save_trade_snapshot,
 )
 from src.utils.trade_splitter import (
     split_trade_log,
@@ -32,6 +33,7 @@ __all__ = [
     "log_open_order",
     "log_close_order",
     "setup_trade_logger",
+    "save_trade_snapshot",
     "split_trade_log",
     "has_buy_sell",
     "download_model_if_missing",

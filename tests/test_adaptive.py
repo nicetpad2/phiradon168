@@ -16,6 +16,9 @@ from src.adaptive import (
     calculate_atr,
     atr_position_size,
     compute_trailing_atr_stop,
+    volatility_adjusted_lot_size,
+    dynamic_risk_adjustment,
+    check_portfolio_stop,
 )
 import src.features as features
 
@@ -112,3 +115,24 @@ def test_compute_trailing_atr_stop_sell():
 def test_trailing_stop_case_insensitive():
     assert compute_trailing_atr_stop(1.0, 2.0, 0.5, 'buy', 0.5) > 0.5
     assert compute_trailing_atr_stop(1.0, 0.5, 0.5, 'Sell', 1.5) < 1.5
+
+
+def test_volatility_adjusted_lot_size():
+    lot, sl = volatility_adjusted_lot_size(1000, 0.2, sl_multiplier=2.0,
+                                           pip_value=0.1, risk_pct=0.01)
+    assert lot > 0
+    assert sl == 0.4
+
+
+def test_dynamic_risk_adjustment():
+    risk = dynamic_risk_adjustment([-0.06, -0.07, -0.06], base_risk=0.01)
+    assert risk == 0.005
+    risk2 = dynamic_risk_adjustment([0.06, 0.05], base_risk=0.01)
+    assert risk2 == 0.015
+    risk3 = dynamic_risk_adjustment([], base_risk=0.01)
+    assert risk3 == 0.01
+
+
+def test_check_portfolio_stop():
+    assert check_portfolio_stop(0.12)
+    assert not check_portfolio_stop(0.05)

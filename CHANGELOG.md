@@ -888,3 +888,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.7.2] ML meta fallback & QA utilities
 - New/Updated unit tests added for tests.test_data_utils_new, tests.test_qa_tools
 - QA: pytest -q passed (373 tests)
+
+### 2025-06-05
+- [Patch v5.7.9] Enhance risk management with volatility lot sizing
+- New/Updated unit tests added for tests.test_adaptive, tests.test_trade_logger
+- QA: pytest -q passed

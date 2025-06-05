@@ -132,6 +132,16 @@ def log_close_order(
         trade_log.info(msg)
 
 
+def save_trade_snapshot(data: dict, output_file: str) -> None:
+    """[Patch] Append trade snapshot data to CSV."""
+    if not isinstance(data, dict):
+        raise TypeError("data must be dict")
+    df = pd.DataFrame([data])
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    header = not os.path.exists(output_file)
+    df.to_csv(output_file, mode="a", index=False, header=header)
+
+
 # [Patch v5.7.3] Utility to print QA summary logs
 def print_qa_summary(output_dir: str) -> str:
     """Print QA summary logs under ``output_dir/qa_logs``.
