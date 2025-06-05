@@ -22,10 +22,10 @@ def test_ema_all_nan_logs_warning(caplog):
 def test_rsi_ta_not_loaded_error(monkeypatch, caplog):
     series = pd.Series([1, 2, 3], dtype='float32')
     monkeypatch.setattr(features, 'ta', None, raising=False)
-    with caplog.at_level(logging.ERROR):
+    with caplog.at_level(logging.WARNING):
         res = features.rsi(series, period=14)
     assert res.isna().all()
-    assert any("'ta' library not loaded" in msg for msg in caplog.messages)
+    assert any("fallback RSI" in msg for msg in caplog.messages)
 
 
 def test_get_session_tag_nat():
@@ -87,4 +87,4 @@ def test_macd_ta_not_loaded_error(monkeypatch, caplog):
     with caplog.at_level(logging.WARNING):
         line, signal, diff = features.macd(series)
     assert not line.isna().all() and not signal.isna().all() and not diff.isna().all()
-    assert any("TA MACD failed" in msg for msg in caplog.messages)
+    assert any("fallback MACD" in msg for msg in caplog.messages)
