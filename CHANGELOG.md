@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests.test_plot_equity_curve_import
 - QA: pytest -q passed (396 tests)
 
+### 2025-10-12
+- [Patch v5.7.8] Resolve absolute path for threshold optimization
+- New/Updated unit tests added for tests.test_projectp_cli::test_run_threshold_uses_absolute_path
+- QA: pytest -q passed
+
 ### 2025-10-09
 
 - [Patch v5.7.5] Extract order management into new module
