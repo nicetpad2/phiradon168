@@ -1,3 +1,8 @@
+### 2025-10-08
+- [Patch v5.7.3] Improve data validation utilities and resource planning
+- New/Updated unit tests added for tests.test_thai_utils and tests.test_function_registry
+- QA: pytest -q passed (373 tests)
+
 ### 2025-10-07
 - [Patch v5.7.2] Fix sweep path to absolute for Colab execution
 - New/Updated unit tests added for tests.test_projectp_cli

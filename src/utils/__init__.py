@@ -12,6 +12,7 @@ from src.utils.trade_logger import (
 from src.utils.model_utils import download_model_if_missing, download_feature_list_if_missing
 from src.utils.env_utils import get_env_float
 from src.utils.gc_utils import maybe_collect
+from src.utils.hardware import estimate_resource_plan
 
 __all__ = [
     "get_session_tag",
@@ -26,4 +27,5 @@ __all__ = [
     "download_feature_list_if_missing",
     "get_env_float",
     "maybe_collect",
+    "estimate_resource_plan",
 ]
