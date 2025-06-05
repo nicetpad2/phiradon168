@@ -1,6 +1,6 @@
 import os
 import csv
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Iterable, List, Dict
 import numpy as np
 from sklearn.metrics import accuracy_score, roc_auc_score
@@ -29,7 +29,10 @@ def log_performance_metrics(
     acc = accuracy_score(y_true, proba >= 0.5)
     auc = roc_auc_score(y_true, proba)
     logger.info(f"[Monitor] {label} AUC={auc:.4f}, ACC={acc:.4f}")
-    _write_row(summary_path, [datetime.utcnow().isoformat(), label, f"{auc:.4f}", f"{acc:.4f}"])
+    _write_row(
+        summary_path,
+        [datetime.now(timezone.utc).isoformat(), label, f"{auc:.4f}", f"{acc:.4f}"]
+    )
     return {"auc": auc, "accuracy": acc}
 
 
