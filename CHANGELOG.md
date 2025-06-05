@@ -1,3 +1,7 @@
+- [Patch v5.8.1] Fix RSI warning when 'ta' missing
+- New/Updated unit tests added for tests.test_warning_skip
+- QA: pytest -q passed
+
 - [Patch v5.8.0] Joint Optuna model+strategy optimization
 - New/Updated unit tests added for tests.test_joint_optuna
 - QA: pytest -q passed (407 tests)

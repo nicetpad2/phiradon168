@@ -128,18 +128,24 @@ def sma(series, period):
         return pd.Series(np.nan, index=series.index, dtype='float32')  # pragma: no cover
 
 def rsi(series, period=14):
-    if not isinstance(series, pd.Series): logging.error(f"RSI Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
+    if not isinstance(series, pd.Series):
+        logging.error(f"RSI Error: Input must be a pandas Series, got {type(series)}")
+        raise TypeError("Input must be a pandas Series.")
     # [Patch v4.8.12] Use module-level cache for RSIIndicator
+    # [Patch v5.8.1] Ensure insufficient data warning is logged even when 'ta' is missing
     if series.empty:
         logging.debug("RSI: Input series is empty, returning NaN-aligned series.")
         return pd.Series(np.nan, index=series.index, dtype='float32')
-    if 'ta' not in globals() or ta is None: logging.error("   (Error) RSI calculation failed: 'ta' library not loaded."); return pd.Series(np.nan, index=series.index, dtype='float32')  # pragma: no cover
-    # Convert to numeric and drop NaN/inf values
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
+    ta_loaded = 'ta' in globals() and ta is not None
+    if not ta_loaded:
+        logging.error("   (Error) RSI calculation failed: 'ta' library not loaded.")
     if series_numeric.empty or len(series_numeric) < period:
         logging.warning(
             f"   (Warning) RSI calculation skipped: Not enough valid data points ({len(series_numeric)} < {period})."
         )
+        return pd.Series(np.nan, index=series.index, dtype='float32')
+    if not ta_loaded:
         return pd.Series(np.nan, index=series.index, dtype='float32')
     # [Patch v5.5.16] Consolidate duplicate timestamps using last occurrence
     if series_numeric.index.duplicated().any():
