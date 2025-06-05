@@ -893,7 +893,9 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.7.9] Enhance risk management with volatility lot sizing
 - New/Updated unit tests added for tests.test_adaptive, tests.test_trade_logger
 - QA: pytest -q passed
+
 ### 2025-06-06
 - [Patch v5.8.0] Add trend filter for M15 zone
 - New/Updated unit tests added for tests.test_trend_filter
 - QA: pytest -q passed
+
