@@ -80,8 +80,14 @@ class CooldownManager:
         self.cooldown_counter = 0
 
 
-def is_soft_cooldown_triggered(pnls: List[float], lookback: int = 15, loss_count: int = 2) -> tuple[bool, int]:
-    """[Patch v5.0.24] Determine if soft cooldown should activate.
+def is_soft_cooldown_triggered(
+    pnls: List[float],
+    lookback: int = 15,
+    loss_count: int = 2,
+    sides: List[str] | None = None,
+    side_filter: str | None = None,
+) -> tuple[bool, int]:
+    """[Patch v5.6.6] Determine if soft cooldown should activate.
 
     If fewer than ``lookback`` trades exist, all available PnLs are considered.
     This ensures early trades can still trigger the cooldown.
@@ -96,7 +102,15 @@ def is_soft_cooldown_triggered(pnls: List[float], lookback: int = 15, loss_count
         return False, 0
 
     effective_lookback = min(len(pnls), lookback)
-    recent_losses = sum(1 for p in pnls[-effective_lookback:] if p < 0)
+    if sides is not None and side_filter is not None and len(sides) == len(pnls):
+        relevant = [
+            p
+            for p, s in zip(pnls[-effective_lookback:], sides[-effective_lookback:])
+            if s == side_filter
+        ]
+    else:
+        relevant = pnls[-effective_lookback:]
+    recent_losses = sum(1 for p in relevant if p < 0)
     return recent_losses >= loss_count, recent_losses
 
 
