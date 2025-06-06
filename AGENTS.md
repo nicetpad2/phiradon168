@@ -286,3 +286,4 @@
   `strategy.stoploss_utils`, `strategy.trade_executor`, and `strategy.plots` modules.
 
 
+- Added `signal_classifier` module for simple ML signal classification and threshold tuning.

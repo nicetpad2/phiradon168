@@ -981,3 +981,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests for trade logger and hyperparameter sweep
 - QA: pytest -q passed (429 tests)
 
+
+### 2025-06-08
+- [Patch v5.9.0] Add signal classifier utilities and basic ML workflow
+- New/Updated unit tests added for tests/test_signal_classifier.py
+- QA: pytest -q passed (existing + new tests)
