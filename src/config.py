@@ -1,6 +1,31 @@
 # pragma: no cover
 # === START OF PART 1/12 ===
 
+# ==============================================================================
+# กำหนดค่า default constants ที่ทดสอบโดย tests/test_config_defaults.py
+# ให้เป็น module-level เสมอ (เพื่อหลีกเลี่ยงกรณี pytest import ไม่ครบ)
+# ==============================================================================
+MIN_SIGNAL_SCORE_ENTRY = 0.3
+M15_TREND_RSI_UP = 60
+M15_TREND_RSI_DOWN = 40
+FORCED_ENTRY_MIN_GAIN_Z_ABS = 0.5
+FORCED_ENTRY_ALLOWED_REGIMES = [
+    "Normal", "Breakout", "StrongTrend", "Reversal",
+    "Pullback", "InsideBar", "Choppy"
+]
+ENABLE_SOFT_COOLDOWN = True
+ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.4
+REENTRY_MIN_PROBA_THRESH = 0.40
+OMS_ENABLED = True
+OMS_DEFAULT = True
+PAPER_MODE = False
+POST_TRADE_COOLDOWN_BARS = 2
+
+# ==============================================================================
+# ป้องกันกรณีที่ pytest import แค่ SimpleNamespace เดิม (fallback) โดยตรวจสอบสภาพแวดล้อม
+# ==============================================================================
+import sys
+
 # -*- coding: utf-8 -*-
 # <<< เพิ่ม Encoding declaration สำหรับอักษรไทย >>>
 
