@@ -1602,6 +1602,26 @@ def load_features_hdf5(path):
         logging.error(f"(Features) Failed to load features from {path}: {e}", exc_info=True)
         return None
 
+# [Patch vX.Y.Z] Parquet helpers for faster feature loading
+def save_features_parquet(df: pd.DataFrame, path: str) -> None:
+    """Save a DataFrame to a Parquet file."""
+    try:
+        df.to_parquet(path)
+        logging.info(f"(Features) Saved features to {path}")
+    except Exception as e:
+        logging.error(f"(Features) Failed to save features to {path}: {e}", exc_info=True)
+
+
+def load_features_parquet(path: str) -> pd.DataFrame | None:
+    """Load a DataFrame from a Parquet file."""
+    try:
+        df = pd.read_parquet(path)
+        logging.info(f"(Features) Loaded features from {path}")
+        return df
+    except Exception as e:
+        logging.error(f"(Features) Failed to load features from {path}: {e}", exc_info=True)
+        return None
+
 # --- Advanced Feature Utilities -------------------------------------------------
 # [Patch v5.6.5] Add momentum, cumulative delta, and wave pattern helpers
 
@@ -1698,6 +1718,8 @@ __all__ = [
     "check_model_overfit",
     "check_feature_noise_shap",
     "analyze_feature_importance_shap",
+    "save_features_parquet",
+    "load_features_parquet",
 ]
 
 

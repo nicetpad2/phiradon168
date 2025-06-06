@@ -1,3 +1,8 @@
+### 2025-10-24
+- [Patch vX.Y.Z] Optimize backtest performance by caching features in Parquet
+- New/Updated unit tests added for tests.test_features_parquet
+- QA: pytest -q passed (565 tests)
+
 ### 2025-10-23
 - [Patch v5.9.2] Increase unit test coverage for cooldown utilities
 - New/Updated unit tests added for tests.test_cooldown_utils_full
