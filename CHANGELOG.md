@@ -1,4 +1,9 @@
 ### 2025-06-06
+- [Patch v5.9.0] Accept numpy float in update_drawdown
+- New/Updated unit tests added for tests.test_cooldown_state::test_update_drawdown_numpy_float
+- QA: pytest -q passed (504 tests)
+
+### 2025-06-06
 - [Patch v5.8.9] Fix logging capture and plotting APIs
 - New/Updated unit tests added for none (test fixes)
 - QA: pytest -q passed (503 tests)
