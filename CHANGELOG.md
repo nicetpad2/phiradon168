@@ -1,12 +1,21 @@
+
 ### 2025-10-24
 - [Patch vX.Y.Z] Optimize backtest performance by caching features in Parquet
 - New/Updated unit tests added for tests.test_features_parquet
 - QA: pytest -q passed (565 tests)
 
+
 ### 2025-10-23
 - [Patch v5.9.2] Increase unit test coverage for cooldown utilities
 - New/Updated unit tests added for tests.test_cooldown_utils_full
 - QA: pytest -q passed (506 tests)
+
+### 2025-06-06
+
+- [Patch v5.9.4] Improve hyperparameter sweep with real trade log and metric export
+- New/Updated unit tests added for tests.test_hyperparameter_sweep_cli
+- QA: pytest -q passed (tests count TBD)
+
 
 ### 2025-06-06
 - [Patch v5.9.2] Add unit tests for dashboard and evaluation
@@ -1053,3 +1062,10 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.9.2] Ensure side trade logs created via export_trade_log
 - New/Updated unit tests added for tests.test_trade_logger
 - QA: pytest -q passed (518 tests)
+
+### 2025-06-06
+- [Patch vX.Y.Z] ปรับพารามิเตอร์ Entry ให้มีโอกาสเกิด Trade เพิ่มขึ้น
+- New/Updated unit tests added for tests/test_mtf_trend_confirmed.py
+- QA: pytest -q passed (566 tests)
+
+

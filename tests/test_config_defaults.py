@@ -12,4 +12,5 @@ def test_default_parameters():
     assert cfg.ADAPTIVE_SIGNAL_SCORE_QUANTILE == 0.4
     assert cfg.REENTRY_MIN_PROBA_THRESH == 0.45
     assert cfg.OMS_ENABLED is True
+    assert cfg.PAPER_MODE is False
     assert cfg.POST_TRADE_COOLDOWN_BARS == 2
