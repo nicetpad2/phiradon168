@@ -1,7 +1,41 @@
 # Phiradon168
+[![CI](https://github.com/yourname/Phiradon168/actions/workflows/ci.yml/badge.svg)](https://github.com/yourname/Phiradon168/actions) [![Coverage](https://codecov.io/gh/yourname/Phiradon168/branch/main/graph/badge.svg)](https://codecov.io/gh/yourname/Phiradon168) [![PyPI version](https://img.shields.io/pypi/v/phiradon168.svg)](https://pypi.org/project/phiradon168/)
 
-คำแนะนำการติดตั้ง
--------------------
+## Overview
+ระบบ NICEGOLD Enterprise ใช้เทรดและวิเคราะห์ XAUUSD บนกรอบเวลา M1 รองรับทั้งการทดสอบย้อนหลังและ Walk-Forward Validation
+
+## Prerequisites
+- Python 3.8-3.10
+- ติดตั้งไลบรารีด้วย `pip install -r requirements.txt`
+- กำหนดตัวแปรสภาพแวดล้อมผ่านไฟล์ `.env` (ดูตัวอย่าง `.env.example`)
+
+## Installation
+```bash
+git clone <repo-url>
+cd Phiradon168
+pip install -r requirements.txt
+```
+
+## Usage
+```bash
+python main.py --mode backtest
+python ProjectP.py --mode all
+```
+
+## Project Structure
+- src/: โค้ดหลักและโมดูลต่าง ๆ
+- config/: ไฟล์ตั้งค่า (`pipeline.yaml`)
+- tuning/: สคริปต์หาค่า hyperparameter
+- tests/: ชุดทดสอบอัตโนมัติ
+- docs/: เอกสารประกอบ
+- logs/<date>/<fold>/: log แยกตามวันที่และ fold
+
+## Contribution Guidelines
+- ชื่อ branch: `feature/<desc>` หรือ `hotfix/<issue>`
+- commit message รูปแบบ `[Patch vX.Y.Z] <ข้อความสั้น>`
+- รัน `pytest -q` และจัดรูปแบบโค้ดด้วย PEP8/Black
+
+### คำแนะนำการติดตั้งเพิ่มเติม
 1. สร้าง virtualenv และติดตั้งไลบรารีหลัก:
    ```bash
    pip install -r requirements.txt
