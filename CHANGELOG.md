@@ -1,3 +1,8 @@
+### 2025-06-09
+- [Patch v5.9.11] Increase coverage of trend_filter
+- New/Updated unit tests added for tests.test_trend_filter
+- QA: pytest -q reported failures (5 failed, 641 passed)
+
 ### 2025-06-06
 - [Patch v5.9.9] Increase coverage of trade_logger to 100%
 - New/Updated unit tests added for tests.test_trade_logger
@@ -1127,8 +1132,10 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for none (dependency fix)
 - QA: pytest -q reported failures (5 failed, 635 passed)
 
+
 ### 2025-06-09
 - [Patch v5.9.11] เพิ่ม unit test hyperparameter_sweep ครอบคลุม 100%
 - New/Updated unit tests added for tests.test_hyperparameter_sweep_cli
 - QA: pytest --cov=tuning.hyperparameter_sweep -q passed (12 tests)
+
 

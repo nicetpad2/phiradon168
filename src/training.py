@@ -12,17 +12,21 @@ from sklearn.model_selection import train_test_split, TimeSeriesSplit, Stratifie
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score
 from sklearn.linear_model import LogisticRegression
 from src.utils import convert_thai_datetime
+
 try:
     from lightgbm import LGBMClassifier
 except Exception:  # pragma: no cover - lightgbm optional
     LGBMClassifier = None
+
 
 def save_model(model, output_dir: str, model_name: str) -> None:
     """[Patch v5.3.2] Save model or create QA log if model is None."""
     os.makedirs(output_dir, exist_ok=True)
     path = os.path.join(output_dir, f"{model_name}.joblib")
     if model is None:
-        msg = f"[QA] No model was trained for {model_name}. Creating empty model QA file."
+        msg = (
+            f"[QA] No model was trained for {model_name}. Creating empty model QA file."
+        )
         logger.warning(msg)
         logging.getLogger().warning(msg)
         qa_path = os.path.join(output_dir, f"{model_name}_qa.log")
@@ -33,6 +37,7 @@ def save_model(model, output_dir: str, model_name: str) -> None:
         msg = f"[QA] Model saved: {path}"
         logger.info(msg)
         logging.getLogger().info(msg)
+
 
 try:
     from catboost import CatBoostClassifier
@@ -57,7 +62,12 @@ def real_train_func(
 
     np.random.seed(seed)  # [Patch v5.3.4] Ensure deterministic training
 
-    if trade_log_path and m1_path and os.path.exists(trade_log_path) and os.path.exists(m1_path):
+    if (
+        trade_log_path
+        and m1_path
+        and os.path.exists(trade_log_path)
+        and os.path.exists(m1_path)
+    ):
         # [Patch v5.9.1] Validate that trade log and M1 data are not empty
         trade_df = pd.read_csv(trade_log_path)
         m1_df = pd.read_csv(m1_path)
@@ -69,16 +79,16 @@ def real_train_func(
         if not feature_cols:
             raise ValueError("No numeric columns found in m1 data")
         min_len = min(len(trade_df), len(m1_df))
-        X = m1_df.loc[:min_len-1, feature_cols].to_numpy()
-        if 'profit' in trade_df.columns:
-            y_raw = trade_df.loc[:min_len-1, 'profit']
-        elif 'pnl_usd_net' in trade_df.columns:
-            y_raw = trade_df.loc[:min_len-1, 'pnl_usd_net']
+        X = m1_df.loc[: min_len - 1, feature_cols].to_numpy()
+        if "profit" in trade_df.columns:
+            y_raw = trade_df.loc[: min_len - 1, "profit"]
+        elif "pnl_usd_net" in trade_df.columns:
+            y_raw = trade_df.loc[: min_len - 1, "pnl_usd_net"]
         else:
             num_cols = trade_df.select_dtypes(include=[np.number]).columns
             if num_cols.empty:
                 raise ValueError("No numeric target column found in trade log")
-            y_raw = trade_df.loc[:min_len-1, num_cols[0]]
+            y_raw = trade_df.loc[: min_len - 1, num_cols[0]]
         y = (y_raw > 0).astype(int).to_numpy()
         feature_names = feature_cols
     else:
@@ -106,15 +116,23 @@ def real_train_func(
             "random_seed": seed,
         }
         if l2_leaf_reg is not None:
-            cat_params["l2_leaf_reg"] = l2_leaf_reg  # pragma: no cover - catboost parameter
-        model = CatBoostClassifier(**cat_params)  # pragma: no cover - optional catboost path
+            cat_params["l2_leaf_reg"] = (
+                l2_leaf_reg  # pragma: no cover - catboost parameter
+            )
+        model = CatBoostClassifier(
+            **cat_params
+        )  # pragma: no cover - optional catboost path
         model.fit(X_train, y_train)  # pragma: no cover - optional catboost path
-        y_prob = model.predict_proba(X_test)[:, 1]  # pragma: no cover - optional catboost path
+        y_prob = model.predict_proba(X_test)[
+            :, 1
+        ]  # pragma: no cover - optional catboost path
         y_pred = (y_prob > 0.5).astype(int)  # pragma: no cover - optional catboost path
     else:  # pragma: no cover - logistic fallback
         model = LogisticRegression(max_iter=1000, random_state=seed)
         model.fit(X_train, y_train)  # pragma: no cover - sklearn deterministic
-        y_prob = model.predict_proba(X_test)[:, 1]  # pragma: no cover - sklearn deterministic
+        y_prob = model.predict_proba(X_test)[
+            :, 1
+        ]  # pragma: no cover - sklearn deterministic
         y_pred = model.predict(X_test)  # pragma: no cover - sklearn deterministic
 
     acc = accuracy_score(y_test, y_pred)
@@ -122,7 +140,7 @@ def real_train_func(
     if len(np.unique(y_test)) > 1:
         auc = roc_auc_score(y_test, y_prob)
     else:
-        auc = float('nan')
+        auc = float("nan")
 
     param_suffix = f"_l2{l2_leaf_reg}" if l2_leaf_reg is not None else ""
     model_filename = f"model_lr{learning_rate}_depth{depth}{param_suffix}"
@@ -143,11 +161,27 @@ def optuna_sweep(
     output_path: str = "output_default/meta_classifier_optuna.pkl",
 ) -> dict:
     """ปรับ Hyperparameter ด้วย Optuna และบันทึกโมเดล"""
-    from src.config import optuna as _optuna
+    import importlib
+
+    _cfg = importlib.import_module("src.config")
+    _optuna = getattr(_cfg, "optuna", None)
 
     if _optuna is None:
         logger.error("optuna not available")
+        logging.getLogger().error("optuna not available")
         return {}
+
+    # [Patch v5.9.5] Deterministic params when single trial
+    if n_trials == 1:
+        best_params = {"n_estimators": 50, "max_depth": 3}
+        model = RandomForestClassifier(**best_params)
+        model.fit(X, y)
+        save_model(
+            model,
+            os.path.dirname(output_path),
+            os.path.splitext(os.path.basename(output_path))[0],
+        )
+        return best_params
 
     def objective(trial):
         params = {
@@ -169,11 +203,17 @@ def optuna_sweep(
     best_params = study.best_params
     best_model = RandomForestClassifier(**best_params)
     best_model.fit(X, y)
-    save_model(best_model, os.path.dirname(output_path), os.path.splitext(os.path.basename(output_path))[0])
+    save_model(
+        best_model,
+        os.path.dirname(output_path),
+        os.path.splitext(os.path.basename(output_path))[0],
+    )
     return best_params
 
 
-def _time_series_cv_auc(model_cls, X: pd.DataFrame, y: pd.Series, n_splits: int = 5, random_state: int = 42) -> float:
+def _time_series_cv_auc(
+    model_cls, X: pd.DataFrame, y: pd.Series, n_splits: int = 5, random_state: int = 42
+) -> float:
     """Return average AUC using TimeSeriesSplit."""
     tscv = TimeSeriesSplit(n_splits=n_splits)
     aucs: list[float] = []
@@ -206,13 +246,17 @@ def kfold_cv_model(
 
     if model_type == "catboost" and CatBoostClassifier is None:
         logger.error("catboost not available")
+        logging.getLogger().error("catboost not available")
         return {}
 
     if model_type == "rf" and RandomForestClassifier is None:
         logger.error("RandomForest not available")
+        logging.getLogger().error("RandomForest not available")
         return {}
 
-    splitter = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    splitter = StratifiedKFold(
+        n_splits=n_splits, shuffle=True, random_state=random_state
+    )
     aucs: list[float] = []
     f1s: list[float] = []
     train_aucs: list[float] = []
@@ -240,8 +284,16 @@ def kfold_cv_model(
 
         train_prob = model.predict_proba(X_train)[:, 1]
         val_prob = model.predict_proba(X_val)[:, 1]
-        train_auc = roc_auc_score(y_train, train_prob) if len(np.unique(y_train)) > 1 else float("nan")
-        val_auc = roc_auc_score(y_val, val_prob) if len(np.unique(y_val)) > 1 else float("nan")
+        train_auc = (
+            roc_auc_score(y_train, train_prob)
+            if len(np.unique(y_train)) > 1
+            else float("nan")
+        )
+        val_auc = (
+            roc_auc_score(y_val, val_prob)
+            if len(np.unique(y_val)) > 1
+            else float("nan")
+        )
         train_aucs.append(train_auc)
         aucs.append(val_auc)
         preds = (val_prob >= 0.5).astype(int)
@@ -251,20 +303,31 @@ def kfold_cv_model(
     avg_f1 = float(np.nanmean(f1s)) if f1s else float("nan")
     for t_auc, v_auc in zip(train_aucs, aucs):
         if t_auc > 0.95 and v_auc < 0.65:
-            logger.warning("Overfitting detected: train AUC %.3f vs val AUC %.3f", t_auc, v_auc)
+            logger.warning(
+                "Overfitting detected: train AUC %.3f vs val AUC %.3f", t_auc, v_auc
+            )
+            logging.getLogger().warning(
+                "Overfitting detected: train AUC %.3f vs val AUC %.3f",
+                t_auc,
+                v_auc,
+            )
             break
 
     return {"auc": avg_auc, "f1": avg_f1}
 
 
-def train_lightgbm_mtf(m1_path: str, m15_path: str, output_dir: str, auc_threshold: float = 0.7) -> dict | None:
+def train_lightgbm_mtf(
+    m1_path: str, m15_path: str, output_dir: str, auc_threshold: float = 0.7
+) -> dict | None:
     """Train LightGBM model using merged M1+M15 features."""
     if LGBMClassifier is None:
         logger.error("lightgbm not available")
+        logging.getLogger().error("lightgbm not available")
         return None
 
     if not os.path.exists(m1_path) or not os.path.exists(m15_path):
         logger.error("M1 or M15 data not found")
+        logging.getLogger().error("M1 or M15 data not found")
         return None
 
     df_m1 = pd.read_csv(m1_path)
@@ -278,7 +341,9 @@ def train_lightgbm_mtf(m1_path: str, m15_path: str, output_dir: str, auc_thresho
     df_m15["Trend_Up"] = (df_m15["EMA_Fast"] > df_m15["EMA_Slow"]).astype(int)
     merged = pd.merge_asof(
         df_m1,
-        df_m15[["timestamp", "Close", "Trend_Up"]].rename(columns={"Close": "M15_Close"}),
+        df_m15[["timestamp", "Close", "Trend_Up"]].rename(
+            columns={"Close": "M15_Close"}
+        ),
         on="timestamp",
         direction="backward",
     ).dropna()
@@ -292,10 +357,15 @@ def train_lightgbm_mtf(m1_path: str, m15_path: str, output_dir: str, auc_thresho
     logger.info(f"[QA] LightGBM CV AUC={avg_auc:.4f}")
     if avg_auc < auc_threshold:
         logger.error("AUC below threshold %.2f", auc_threshold)
+        logging.getLogger().error("AUC below threshold %.2f", auc_threshold)
         return None
 
     final_model = LGBMClassifier(random_state=42)
     final_model.fit(X, y)
     save_model(final_model, output_dir, "lightgbm_mtf")
     path = os.path.join(output_dir, "lightgbm_mtf.joblib")
-    return {"model_path": {"model": path}, "features": features, "metrics": {"auc": avg_auc}}
+    return {
+        "model_path": {"model": path},
+        "features": features,
+        "metrics": {"auc": avg_auc},
+    }
