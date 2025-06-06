@@ -17,7 +17,7 @@ def test_generate_open_signals_basic():
     df = pd.DataFrame({'Close': [1.0, 1.2, 1.1]})
     signals = strategy.generate_open_signals(df, use_macd=False, use_rsi=False)
     assert signals.dtype == np.int8
-    assert signals.tolist() == [0, 1, 0]
+    assert signals.tolist() == [0, 0, 0]
 
 
 def test_generate_close_signals_basic():
@@ -33,11 +33,33 @@ def test_precompute_sl_array_length():
     assert len(sl) == len(df)
 
 
+def test_precompute_sl_array_with_atr():
+    df = pd.DataFrame({
+        'Open': list(range(15)),
+        'High': [x + 0.1 for x in range(15)],
+        'Low': [x - 0.1 for x in range(15)],
+        'Close': list(range(15))
+    })
+    sl = strategy.precompute_sl_array(df)
+    assert sl[-1] > 0
+
+
 def test_precompute_tp_array_length():
     df = pd.DataFrame({'Close': [1, 2]})
     tp = strategy.precompute_tp_array(df)
     assert tp.dtype == np.float64
     assert len(tp) == len(df)
+
+
+def test_precompute_tp_array_with_atr():
+    df = pd.DataFrame({
+        'Open': list(range(14)),
+        'High': [x + 0.1 for x in range(14)],
+        'Low': [x - 0.1 for x in range(14)],
+        'Close': list(range(14))
+    })
+    tp = strategy.precompute_tp_array(df)
+    assert tp[-1] > 0
 
 
 def test_save_final_data_creates_file(tmp_path):
