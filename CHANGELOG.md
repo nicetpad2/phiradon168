@@ -1,4 +1,8 @@
 ### 2025-06-06
+- [Patch v5.10.1] Refactor imports for pytest handling in profile_backtest
+- New/Updated unit tests added for tests.test_profile_backtest
+- QA: pytest -q passed (703 tests)
+### 2025-06-06
 - [Patch v5.9.16] Fix tests import path
 - New/Updated unit tests added for none (import fix)
 - QA: pytest tests/test_order_manager_more.py -q passed (7 tests)
