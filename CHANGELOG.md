@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests.test_signal_classifier_additional
 - QA: pytest -q passed (698 tests)
 
+### 2025-06-06
+- [Patch v5.9.15] Achieve full coverage for sessions module
+- New/Updated unit tests added for tests.test_sessions_utils
+- QA: pytest -q passed (698 tests)
+
 ### 2025-06-10
 - [Patch v5.9.12] Increase coverage of training module
 - New/Updated unit tests added for tests.test_training_extended
@@ -1164,7 +1169,9 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (691 tests)
 
 ### 2025-06-06
+
 - [Patch v5.9.15] เพิ่มเทส order_manager ครอบคลุมครบ
 - New/Updated unit tests added for tests.test_order_manager_more
 - QA: pytest -q passed (562 tests)
+
 
