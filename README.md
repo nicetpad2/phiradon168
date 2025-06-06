@@ -59,6 +59,10 @@ python ProjectP.py
 python profile_backtest.py XAUUSD_M1.csv --rows 10000 --limit 30 --output profile.txt --output-file backtest.prof
 ```
 คำสั่งด้านบนจะแสดง 30 ฟังก์ชันที่ใช้เวลามากที่สุดตามค่า `cumtime` จาก `cProfile` และบันทึกผลไว้ใน `profile.txt` รวมทั้งไฟล์ `backtest.prof` สำหรับเปิดใน SnakeViz.
+หากต้องการเก็บไฟล์ profiling แยกตามแต่ละรอบ ให้ระบุโฟลเดอร์ผ่าน `--output-profile-dir` ดังนี้:
+```bash
+python profile_backtest.py XAUUSD_M1.csv --output-profile-dir profiles
+```
 นอกจากนี้ยังสามารถระบุชื่อ Fund Profile และสั่งให้ฝึกโมเดลหลังจบการทดสอบได้ดังนี้:
 ```bash
 python profile_backtest.py XAUUSD_M1.csv --fund AGGRESSIVE --train --train-output models

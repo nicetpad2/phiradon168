@@ -9,6 +9,10 @@ import argparse
 import cProfile
 import pstats
 import sys
+import os
+import time
+import datetime
+import tracemalloc
 import pandas as pd
 import logging
 from multiprocessing import Pool, get_context
@@ -138,6 +142,7 @@ def profile_from_cli() -> None:
     parser.add_argument('--limit', type=int, default=20, help='Number of functions to display')
     parser.add_argument('--output', help='File path to save the stats table')
     parser.add_argument('--output-file', default='backtest_profile.prof', help='Profiling result .prof file')
+    parser.add_argument('--output-profile-dir', help='Directory to store profile files for each run')  # [Patch v5.8.4]
     parser.add_argument('--fund', help='Fund profile name to use')  # [Patch v5.3.0]
     parser.add_argument('--train', action='store_true', help='Run training after profiling')  # [Patch v5.3.0]
     parser.add_argument('--train-output', default='models', help='Training output directory')  # [Patch v5.3.0]
@@ -148,6 +153,15 @@ def profile_from_cli() -> None:
         if isinstance(h, logging.StreamHandler):
             h.setLevel(level)
 
+    # Determine output profile file path
+    output_prof = args.output_file
+    if args.output_profile_dir:
+        os.makedirs(args.output_profile_dir, exist_ok=True)
+        stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_prof = os.path.join(args.output_profile_dir, f"{stamp}_{args.output_file}")
+
+    tracemalloc.start()
+    start = time.perf_counter()
     profiler = run_profile(
         lambda: main_profile(
             args.csv,
@@ -156,8 +170,11 @@ def profile_from_cli() -> None:
             train=args.train,
             train_output=args.train_output,
         ),
-        args.output_file,
+        output_prof,
     )
+    runtime = time.perf_counter() - start
+    _, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
     stats = pstats.Stats(profiler).sort_stats('cumtime')
     if args.output:
         with open(args.output, 'w') as f:
@@ -165,6 +182,12 @@ def profile_from_cli() -> None:
             stats.print_stats(args.limit)
     else:
         stats.print_stats(args.limit)
+
+    # Summary
+    hottest = sorted(stats.stats.items(), key=lambda x: x[1][3], reverse=True)[:args.limit]
+    hot_list = ", ".join(f"{h[0][2]}({h[1][3]:.2f}s)" for h in hottest)
+    print(f"[SUMMARY] Runtime: {runtime:.2f}s, Peak memory: {peak/1024**2:.2f} MB")
+    print(f"[HOT SPOTS] {hot_list}")
 
 
 if __name__ == '__main__':
