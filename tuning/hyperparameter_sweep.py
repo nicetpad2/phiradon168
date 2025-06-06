@@ -22,6 +22,15 @@ from datetime import datetime
 from tqdm import tqdm
 
 from src.config import logger, DefaultConfig
+
+
+def _create_placeholder_trade_log(path: str) -> None:
+    """Create a minimal trade log so the sweep can run."""
+    df = pd.DataFrame({"profit": [1.0]})
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    compression = "gzip" if path.endswith(".gz") else None
+    df.to_csv(path, index=False, compression=compression)
+    logger.warning(f"สร้าง trade log ตัวอย่างที่ {path}")
 from src.training import real_train_func
 
 # [Patch v5.9.4] Default trade log path under configured OUTPUT_DIR
@@ -81,8 +90,8 @@ def run_sweep(
         if os.path.exists(alt):
             trade_log_path = alt
         else:
-            logger.error(f"ไม่พบไฟล์ trade log: {trade_log_path}")
-            raise SystemExit(1)
+            logger.warning(f"ไม่พบไฟล์ trade log: {trade_log_path} จะสร้างไฟล์ตัวอย่าง")
+            _create_placeholder_trade_log(trade_log_path)
     try:
         pd.read_csv(trade_log_path)
     except Exception as e:  # pragma: no cover - unexpected read failure

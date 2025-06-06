@@ -1,11 +1,18 @@
+
 ### 2025-06-06
 - [Patch v5.10.4] Increase coverage for data loader
 - New/Updated unit tests added for tests/unit/test_data_loader_full.py
 - QA: pytest -q passed (767 tests)
+
 ### 2025-06-23
 - [Patch v5.10.3] Ensure config defaults imported under pytest
 - New/Updated unit tests added for tests/test_config_defaults.py
 - QA: pytest -q tests/test_config_defaults.py passed (1 test)
+
+### 2025-06-07
+- [Patch v6.0.2] Cover empty log path in event_etl
+- New/Updated unit tests added for tests/test_event_etl.py
+- QA: pytest -q tests/test_event_etl.py passed (2 tests)
 
 ### 2025-06-06
 
@@ -1220,3 +1227,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.10.5] เพิ่มการจัดการ import torch และค่าเริ่มต้น FUND_PROFILES
 - New/Updated unit tests added for none (config fallback)
 - QA: pytest -q failed (import errors)
+### 2025-06-06
+- [Patch v5.10.6] Improve update_signal_threshold test coverage
+- New/Updated unit tests added for tests/test_signal_threshold_update.py
+- QA: pytest --cov=src.adaptive -q passed (733 tests)

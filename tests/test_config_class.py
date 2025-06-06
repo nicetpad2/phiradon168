@@ -49,3 +49,27 @@ def test_config_invalid_float(monkeypatch):
     monkeypatch.setenv('LOG_DIR', 'tmp_logs')
     with pytest.raises(TypeError):
         _reload_config()
+
+def test_config_defaults(monkeypatch, tmp_path):
+    monkeypatch.delenv('NUM_WORKERS', raising=False)
+    monkeypatch.delenv('LEARNING_RATE', raising=False)
+    monkeypatch.setenv('LOG_DIR', str(tmp_path / 'logs'))
+    cfg_module = _reload_config()
+    cfg = cfg_module.Config()
+    assert cfg.NUM_WORKERS == 1
+    assert cfg.LEARNING_RATE == 0.001
+
+
+def test_parse_helpers(monkeypatch):
+    cfg_module = _reload_config()
+    monkeypatch.setenv('PARSE_INT', '3')
+    assert cfg_module.Config._parse_int('PARSE_INT', 0) == 3
+    monkeypatch.setenv('PARSE_INT', 'oops')
+    with pytest.raises(TypeError):
+        cfg_module.Config._parse_int('PARSE_INT', 0)
+
+    monkeypatch.setenv('PARSE_FLOAT', '0.25')
+    assert cfg_module.Config._parse_float('PARSE_FLOAT', 0.0) == 0.25
+    monkeypatch.setenv('PARSE_FLOAT', 'err')
+    with pytest.raises(TypeError):
+        cfg_module.Config._parse_float('PARSE_FLOAT', 0.0)
