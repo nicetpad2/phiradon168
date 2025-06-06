@@ -1,3 +1,8 @@
+### 2025-06-07
+- [Patch v6.0.2] เพิ่ม test ครอบคลุม wfv optuna
+- New/Updated unit tests added for tests/test_optuna_wfv.py
+- QA: pytest -q tests/test_wfv_utils_extra.py tests/test_optuna_wfv.py tests/test_wfv_full.py --cov=src.wfv passed (13 tests)
+
 ### 2025-06-23
 - [Patch v5.10.3] Ensure config defaults imported under pytest
 - New/Updated unit tests added for tests/test_config_defaults.py
