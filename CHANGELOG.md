@@ -1,7 +1,9 @@
 ### 2025-06-06
-- [Patch v5.10.2] Fallback when config import fails in threshold_optimization
-- New/Updated unit tests added for tests.test_threshold_optimization
-- QA: pytest -q passed (703 tests)
+
+- [Patch v5.10.2] Handle GPU import errors quietly
+- New/Updated unit tests added for none (config import fix)
+- QA: pytest -q failed (tests error)
+
 ### 2025-06-06
 - [Patch v5.10.1] Refactor imports for pytest handling in profile_backtest
 - New/Updated unit tests added for tests.test_profile_backtest
