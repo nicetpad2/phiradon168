@@ -63,9 +63,11 @@ def load_model(path: str) -> Any:
         return load(path)
     except FileNotFoundError:
         logger.error(f"Model file not found: {path}")
+        logging.getLogger().error(f"Model file not found: {path}")
         raise
     except Exception as e:  # pragma: no cover - invalid format
         logger.error(f"Failed to load model from {path}: {e}")
+        logging.getLogger().error(f"Failed to load model from {path}: {e}")
         raise
 
 
@@ -78,6 +80,7 @@ def evaluate_model(
     """Return accuracy and AUC for the given model."""
     if not hasattr(model, "predict_proba"):
         logger.error("Model does not support predict_proba")
+        logging.getLogger().error("Model does not support predict_proba")
         return None
     proba = model.predict_proba(X)
     if proba.ndim == 2:
@@ -92,6 +95,7 @@ def predict(model: Any, X: pd.DataFrame, class_idx: int = 1) -> Optional[float]:
     """Return probability of the specified class."""
     if not hasattr(model, "predict_proba"):
         logger.error("Model does not support predict_proba")
+        logging.getLogger().error("Model does not support predict_proba")
         return None
     proba = model.predict_proba(X)
     return float(proba[0, class_idx])

@@ -20,9 +20,11 @@ def print_qa_summary(trades: pd.DataFrame, equity: pd.DataFrame) -> Dict[str, fl
         "max_drawdown": 0.0,
     }
     if trades is None or trades.empty:
-        logger.warning(
+        msg = (
             "\u26A0\uFE0F \u0E44\u0E21\u0E48\u0E21\u0E35\u0E44\u0E21\u0E49\u0E17\u0E35\u0E48\u0E16\u0E39\u0E01\u0E40\u0E17\u0E23\u0E14"
         )
+        logger.warning(msg)
+        logging.getLogger().warning(msg)
     else:
         metrics["total_trades"] = len(trades)
         if "pnl" in trades.columns:
@@ -37,8 +39,10 @@ def print_qa_summary(trades: pd.DataFrame, equity: pd.DataFrame) -> Dict[str, fl
         dd = (eq_series / eq_series.cummax() - 1).min()
         metrics["max_drawdown"] = float(dd if pd.notna(dd) else 0.0)
     logger.info("=== QA SUMMARY ===")
+    logging.getLogger().info("=== QA SUMMARY ===")
     for k, v in metrics.items():
         logger.info("%s: %s", k, v)
+        logging.getLogger().info("%s: %s", k, v)
     return metrics
 
 

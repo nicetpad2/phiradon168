@@ -161,9 +161,13 @@ if __name__ == "__main__":
         for f in audit_files:
             fpath = os.path.join(output_dir, f)
             if os.path.exists(fpath):
-                logger.info(f"[QA] Output present: {fpath}")
+                msg = f"[QA] Output present: {fpath}"
+                logger.info(msg)
+                logging.getLogger().info(msg)
             else:
-                logger.error(f"[QA] Output missing: {fpath}")
+                msg = f"[QA] Output missing: {fpath}"
+                logger.error(msg)
+                logging.getLogger().error(msg)
                 os.makedirs(output_dir, exist_ok=True)
                 open(fpath, "w", encoding="utf-8").close()
     except KeyboardInterrupt:

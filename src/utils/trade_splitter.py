@@ -35,13 +35,19 @@ def split_trade_log(df: pd.DataFrame, output_dir: str) -> None:
         side = normalize_side(trade.get("side", ""))
         if side == "BUY":
             buy_rows.append(trade)
-            logger.info(f"เขียนไฟล์ trade_log_BUY.csv เลขแถวที่ {idx}")
+            msg = f"เขียนไฟล์ trade_log_BUY.csv เลขแถวที่ {idx}"
+            logger.info(msg)
+            logging.getLogger().info(msg)
         elif side == "SELL":
             sell_rows.append(trade)
-            logger.info(f"เขียนไฟล์ trade_log_SELL.csv เลขแถวที่ {idx}")
+            msg = f"เขียนไฟล์ trade_log_SELL.csv เลขแถวที่ {idx}"
+            logger.info(msg)
+            logging.getLogger().info(msg)
         else:
             normal_rows.append(trade)
-            logger.info(f"เขียนไฟล์ trade_log_NORMAL.csv เลขแถวที่ {idx}")
+            msg = f"เขียนไฟล์ trade_log_NORMAL.csv เลขแถวที่ {idx}"
+            logger.info(msg)
+            logging.getLogger().info(msg)
 
     written = 0
     if buy_rows:
@@ -54,6 +60,6 @@ def split_trade_log(df: pd.DataFrame, output_dir: str) -> None:
         pd.DataFrame(normal_rows).to_csv(os.path.join(output_dir, "trade_log_NORMAL.csv"), index=False)
         written += 1
     if written == 0:
-        logger.warning(
-            "[QA-WARNING] ไม่พบรายการใดถูกเขียนลง trade_log_BUY.csv / SELL.csv / NORMAL.csv  กรุณาตรวจสอบเงื่อนไขในโค้ด"
-        )
+        msg = "[QA-WARNING] ไม่พบรายการใดถูกเขียนลง trade_log_BUY.csv / SELL.csv / NORMAL.csv  กรุณาตรวจสอบเงื่อนไขในโค้ด"
+        logger.warning(msg)
+        logging.getLogger().warning(msg)

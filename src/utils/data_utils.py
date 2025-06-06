@@ -23,8 +23,10 @@ def prepare_csv_auto(path: str) -> pd.DataFrame:
     """Load CSV file gracefully even if ``timestamp`` column is missing."""
     if not os.path.exists(path):
         logger.error("prepare_csv_auto: file not found %s", path)
+        logging.getLogger().error("prepare_csv_auto: file not found %s", path)
         return pd.DataFrame()
     df = pd.read_csv(path)
     if "timestamp" not in df.columns:
         logger.warning("[QA-WARNING] timestamp column missing in %s", path)
+        logging.getLogger().warning("[QA-WARNING] timestamp column missing in %s", path)
     return df

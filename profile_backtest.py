@@ -116,9 +116,9 @@ def main_profile(
     required_cols = ['Open', 'High', 'Low', 'Close']
     missing = [c for c in required_cols if c not in df.columns]
     if missing:
-        logger.error(
-            f"(Error) Missing required columns in input DataFrame for profile: {missing}"
-        )
+        msg = f"(Error) Missing required columns in input DataFrame for profile: {missing}"
+        logger.error(msg)
+        logging.getLogger().error(msg)
         return
     # Provide minimal fold_config and current_fold_index to avoid warnings
     fund_profile = get_fund_profile(fund_profile_name)

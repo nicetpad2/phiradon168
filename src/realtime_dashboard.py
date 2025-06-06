@@ -39,7 +39,7 @@ def check_drawdown_alert(drawdown: pd.Series, threshold: float = 0.05) -> bool:
     """Return True if latest drawdown exceeds threshold."""
     if drawdown.empty:
         return False
-    return drawdown.iloc[-1] <= -abs(threshold)
+    return bool(drawdown.iloc[-1] <= -abs(threshold))
 
 
 def generate_dashboard(log_path: str, threshold: float = 0.05) -> Tuple[object, bool]:
