@@ -1,5 +1,10 @@
 
 ### 2025-06-06
+- [Patch v5.9.9] ปรับปรุง update_config_from_dict
+- New/Updated unit tests added for tests.test_config_loader
+- QA: pytest -q passed (13 tests)
+
+### 2025-06-06
 
 - [Patch v5.9.8] Add hyper_sweep and WFV modes
 - New/Updated unit tests added for tests.test_projectp_cli, tests.test_config_loader, tests.test_wfv_runner
