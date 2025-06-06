@@ -45,14 +45,16 @@ def test_run_threshold_uses_absolute_path(monkeypatch):
 def test_run_hyperparameter_sweep_calls_module(monkeypatch):
     captured = {}
 
-    def fake_sweep(out_dir, params, seed=0, resume=True):
+    def fake_sweep(out_dir, params, seed=0, resume=True, trade_log_path=None, m1_path=None):
         captured['params'] = params
+        captured['trade_log_path'] = trade_log_path
 
     import importlib
     module = importlib.import_module('tuning.hyperparameter_sweep')
     monkeypatch.setattr(module, 'run_sweep', fake_sweep)
     proj.run_hyperparameter_sweep({'lr': [0.1]})
     assert captured['params'] == {'lr': [0.1]}
+    assert captured['trade_log_path'] == module.DEFAULT_TRADE_LOG
 
 
 def test_run_threshold_optimization_calls_module(monkeypatch):
