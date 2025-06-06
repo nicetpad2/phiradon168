@@ -52,6 +52,35 @@ import gzip
 import requests  # For Font Download
 from src.utils import get_env_float
 
+# -----------------------------------------------------------------------------
+# Fallback defaults for key constants used across the project.
+# These are defined up-front so that even when pytest imports this module in a
+# restricted environment (or with partial stubs such as SimpleNamespace), tests
+# like ``tests/test_config_defaults.py`` can rely on these attributes being
+# present. They may be re-assigned later in the file based on environment
+# variables or additional logic, but the values below guarantee sane defaults at
+# module import time.
+# -----------------------------------------------------------------------------
+MIN_SIGNAL_SCORE_ENTRY = 0.3
+M15_TREND_RSI_UP = 60
+M15_TREND_RSI_DOWN = 40
+FORCED_ENTRY_MIN_GAIN_Z_ABS = 0.5
+FORCED_ENTRY_ALLOWED_REGIMES = [
+    "Normal",
+    "Breakout",
+    "StrongTrend",
+    "Reversal",
+    "InsideBar",
+    "Choppy",
+]
+ENABLE_SOFT_COOLDOWN = True
+ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.4
+REENTRY_MIN_PROBA_THRESH = 0.40
+OMS_DEFAULT = True
+OMS_ENABLED = True
+PAPER_MODE = False
+POST_TRADE_COOLDOWN_BARS = 2
+
 # --- Logging Configuration ---
 # กำหนดค่าพื้นฐานสำหรับการ Logging
 # จัดเก็บไฟล์ log ลงในโฟลเดอร์ย่อยตามวันที่และ fold
