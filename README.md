@@ -47,7 +47,7 @@ python ProjectP.py --mode all
 ### Dependencies
 - Python 3.8-3.10
 - pandas>=2.2.2
-- numpy>=2.0
+- numpy<2.0
 - scikit-learn>=1.6.1
 - catboost>=1.2.8
 
