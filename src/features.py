@@ -390,6 +390,50 @@ def calculate_momentum_divergence(close_series: pd.Series) -> pd.Series:
     div = (m1_hist - m5_hist).astype("float32")
     return div.reindex(close_series.index).fillna(0.0)
 
+
+def volatility_filter(df: pd.DataFrame, period: int = 14, window: int = 50) -> pd.Series:
+    """Return True when current ATR >= rolling mean ATR of recent bars."""
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be a pandas DataFrame")
+    col = f"ATR_{period}"
+    if col not in df.columns and {"High", "Low", "Close"}.issubset(df.columns):
+        df = df.join(atr(df[["High", "Low", "Close"]], period)[[col]])
+    if col not in df.columns:
+        return pd.Series(False, index=df.index, dtype=bool)
+    atr_series = pd.to_numeric(df[col], errors="coerce")
+    mean_series = atr_series.rolling(window, min_periods=1).mean()
+    return (atr_series >= mean_series).fillna(False)
+
+
+def median_filter(series: pd.Series, window: int = 3) -> pd.Series:
+    """Apply simple rolling median filter."""
+    if not isinstance(series, pd.Series):
+        raise TypeError("Input must be a pandas Series")
+    return series.rolling(window, min_periods=1).median()
+
+
+def bar_range_filter(df: pd.DataFrame, threshold: float) -> pd.Series:
+    """Return True when bar range >= threshold."""
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be a pandas DataFrame")
+    if not {"High", "Low"}.issubset(df.columns):
+        return pd.Series(False, index=df.index, dtype=bool)
+    high = pd.to_numeric(df["High"], errors="coerce")
+    low = pd.to_numeric(df["Low"], errors="coerce")
+    bar_range = high - low
+    return (bar_range >= threshold).fillna(False)
+
+
+def volume_filter(df: pd.DataFrame, window: int = 20, factor: float = 0.7, column: str = "Volume") -> pd.Series:
+    """Return True when volume >= rolling average * factor."""
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be a pandas DataFrame")
+    if column not in df.columns:
+        return pd.Series(True, index=df.index, dtype=bool)
+    vol = pd.to_numeric(df[column], errors="coerce").fillna(0.0)
+    avg = vol.rolling(window, min_periods=1).mean()
+    return (vol >= avg * factor).fillna(False)
+
 def rolling_zscore(series, window, min_periods=None):
     if not isinstance(series, pd.Series): logging.error(f"Rolling Z-Score Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
     if series.empty:
@@ -1621,6 +1665,10 @@ __all__ = [
     "calculate_order_flow_imbalance",
     "calculate_relative_volume",
     "calculate_momentum_divergence",
+    "volatility_filter",
+    "median_filter",
+    "bar_range_filter",
+    "volume_filter",
     "rolling_zscore",
     "tag_price_structure_patterns",
     "calculate_m15_trend_zone",

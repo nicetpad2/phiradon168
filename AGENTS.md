@@ -99,7 +99,10 @@
   - Track model drift and notify when retraining is required
   - Provide evaluation utility `evaluate_meta_classifier` in src.evaluation
   - Record daily/weekly AUC metrics using `src.monitor`
-- **Modules:** `src/evaluation.py`, `src/monitor.py`
+
+  - Evaluate parameter stability across folds
+- **Modules:** `src/evaluation.py`, `src/monitor.py`, `src/param_stability.py`
+
 
 
 ### [RL_Scalper_AI](src/adaptive.py)
@@ -210,7 +213,9 @@
   - Use Matplotlib (no seaborn) for static plots; export PNG/HTML for reports
   - Develop HTML/JavaScript dashboards (e.g., with Plotly or Dash) for executive summaries
   - New module `src.dashboard` generates Plotly HTML dashboards for WFV results
+  - New module `src/realtime_dashboard.py` provides Streamlit-based real-time monitoring
 - **Modules:** `src/dashboard.py`
+  `src/realtime_dashboard.py`
 
 ---
 
@@ -286,3 +291,4 @@
   `strategy.stoploss_utils`, `strategy.trade_executor`, and `strategy.plots` modules.
 
 
+- Added `signal_classifier` module for simple ML signal classification and threshold tuning.
