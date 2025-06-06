@@ -1,8 +1,11 @@
 """Bootstrap script for running the main entry point."""
 
-from src.config import logger
-import sys
 import logging
+try:  # [Patch v5.10.2] allow import without heavy dependencies
+    from src.config import logger
+except Exception:  # pragma: no cover - fallback logger for tests
+    logger = logging.getLogger("ProjectP")
+import sys
 import os
 import argparse
 import subprocess
