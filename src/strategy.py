@@ -4447,10 +4447,24 @@ def generate_open_signals(
     df: pd.DataFrame,
     use_macd: bool = USE_MACD_SIGNALS,
     use_rsi: bool = USE_RSI_SIGNALS,
+    trend: str | None = None,
+    ma_fast: int = 15,
+    ma_slow: int = 50,
+    volume_col: str = "Volume",
+    vol_window: int = 10,
 ) -> np.ndarray:
     """สร้างสัญญาณเปิด order พร้อมตัวเลือกเปิด/ปิด MACD และ RSI"""
     from strategy.entry_rules import generate_open_signals as _impl  # [Patch v5.5.17] delegate
-    result = _impl(df, use_macd=use_macd, use_rsi=use_rsi)
+    result = _impl(
+        df,
+        use_macd=use_macd,
+        use_rsi=use_rsi,
+        trend=trend,
+        ma_fast=ma_fast,
+        ma_slow=ma_slow,
+        volume_col=volume_col,
+        vol_window=vol_window,
+    )
     # --- original implementation retained for line consistency ---
     open_mask = df["Close"] > df["Close"].shift(1)
     if use_macd:
