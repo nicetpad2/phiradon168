@@ -4,6 +4,11 @@
 - QA: pytest -q passed (506 tests)
 
 ### 2025-06-06
+- [Patch v5.9.2] Add unit tests for dashboard and evaluation
+- New/Updated unit tests added for tests.test_dashboard_extra2, tests.test_evaluation_extra
+- QA: pytest -q passed (517 tests)
+
+### 2025-06-06
 - [Patch v5.9.1] Validate trade log not empty in real_train_func
 - New/Updated unit tests added for tests.test_training_empty_log::test_real_train_func_empty_trade_log
 - QA: pytest -q passed (505 tests)
