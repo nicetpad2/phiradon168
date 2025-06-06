@@ -234,3 +234,85 @@ def optuna_walk_forward(
         rows.append({"trial": t.number, **t.params, "value": t.value})
 
     return pd.DataFrame(rows)
+
+
+# [Patch v5.8.7] Walk-forward optimization with per-fold Optuna tuning
+def optuna_walk_forward_per_fold(
+    df: pd.DataFrame,
+    param_space: Dict[str, Tuple[float, float, float]],
+    backtest_func: Callable[[pd.DataFrame, ...], MetricDict],
+    train_window: int,
+    test_window: int,
+    step: int,
+    n_trials: int = 10,
+    direction: str = "maximize",
+    objective_metric: str = "pnl",
+) -> pd.DataFrame:
+    """Optimize parameters on each training fold and evaluate on the next test fold.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Time-indexed price or feature data.
+    param_space : dict
+        Mapping of parameter name to ``(low, high, step)`` ranges.
+    backtest_func : Callable
+        Backtest function executed with sampled parameters.
+    train_window : int
+        Number of rows to use for training/optimization.
+    test_window : int
+        Number of rows used for testing.
+    step : int
+        Step size between folds.
+    n_trials : int, optional
+        Number of Optuna trials per fold. Defaults to 10.
+    direction : str, optional
+        Optimization direction. Defaults to ``"maximize"``.
+    objective_metric : str, optional
+        Metric name to optimize. Defaults to ``"pnl"``.
+
+    Returns
+    -------
+    pd.DataFrame
+        Metrics per fold combined with the best parameters.
+    """
+    from src.config import optuna as _optuna
+
+    if _optuna is None:  # pragma: no cover - optuna may be missing
+        logger.warning("optuna not available; returning empty results")
+        return pd.DataFrame()
+
+    assert df.index.is_monotonic_increasing, "DataFrame index must be sorted by datetime"
+
+    fold = 0
+    start = 0
+    rows: List[Dict[str, float]] = []
+    while start + train_window + test_window <= len(df):
+        train_df = df.iloc[start : start + train_window]
+        test_df = df.iloc[start + train_window : start + train_window + test_window]
+
+        if not train_df.index[-1] < test_df.index[0]:
+            raise ValueError("Train and test sets overlap. Check window parameters.")
+
+        def objective(trial: "_optuna.trial.Trial") -> float:
+            params = {}
+            for name, (low, high, step_size) in param_space.items():
+                if isinstance(low, int) and isinstance(high, int) and float(step_size).is_integer():
+                    params[name] = trial.suggest_int(name, int(low), int(high), step=int(step_size))
+                else:
+                    params[name] = trial.suggest_float(name, float(low), float(high), step=step_size)
+            metrics = backtest_func(train_df, **params)
+            return float(metrics.get(objective_metric, metrics.get("pnl", 0.0)))
+
+        sampler = _optuna.samplers.RandomSampler(seed=42)
+        study = _optuna.create_study(direction=direction, sampler=sampler)
+        study.optimize(objective, n_trials=n_trials)
+
+        best_params = study.best_params
+        metrics = backtest_func(test_df, **best_params)
+        rows.append({"fold": fold, **best_params, **metrics})
+
+        fold += 1
+        start += step
+
+    return pd.DataFrame(rows)
