@@ -1,3 +1,8 @@
+### 2025-06-06
+- [Patch v5.9.4] Improve OMS logging and add PAPER_MODE
+- New/Updated unit tests added for tests.test_config_defaults
+- QA: pytest -q passed (558 tests)
+
 ### 2025-10-23
 - [Patch v5.9.2] Increase unit test coverage for cooldown utilities
 - New/Updated unit tests added for tests.test_cooldown_utils_full
