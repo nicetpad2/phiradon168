@@ -1073,3 +1073,9 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_forced_trigger
 - QA: pytest -q passed (existing tests)
 
+
+### 2025-06-07
+- [Patch v5.9.5] Update expected line numbers in function registry tests
+- Updated unit tests for tests.test_function_registry
+- QA: pytest -q passed (578 tests)
+
