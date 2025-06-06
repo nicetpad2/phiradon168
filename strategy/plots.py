@@ -1,15 +1,19 @@
-"""Utility plotting functions for strategy visuals."""
+"""Plot helpers for strategy results."""
+from __future__ import annotations
+
+from typing import Sequence, Optional
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from typing import Sequence
+
+
+def plot_equity_curve(equity: Sequence[float], filepath: Optional[str] = None):
+    """Plot equity curve and optionally save to file."""
+    fig, ax = plt.subplots()
+    ax.plot(list(equity))
+    ax.set_title("Equity Curve")
+    if filepath:
+        fig.savefig(filepath)
+    return fig
 
 __all__ = ["plot_equity_curve"]
-
-
-def plot_equity_curve(equity: Sequence[float]):
-    """Plot a simple equity curve."""
-    plt.figure()
-    plt.plot(list(equity))
-    plt.title("Equity Curve")
-    plt.xlabel("Trade")
-    plt.ylabel("Equity")
-    return plt.gca()
