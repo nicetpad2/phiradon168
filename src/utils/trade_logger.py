@@ -64,6 +64,19 @@ def export_trade_log(trades, output_dir, label, fund_name=None):
             f.write("[QA] No trade. Output file generated as EMPTY.\n")
         suggest_threshold_relaxation(qa_dir, label)
 
+    # [Patch v5.9.2] Ensure BUY/SELL/NORMAL logs exist for QA
+    try:
+        from src.utils.trade_splitter import split_trade_log, has_buy_sell
+        if trades is not None and not trades.empty and has_buy_sell(trades):
+            split_trade_log(trades, output_dir)
+        else:
+            for fname in ("trade_log_BUY.csv", "trade_log_SELL.csv", "trade_log_NORMAL.csv"):
+                fpath = os.path.join(output_dir, fname)
+                if not os.path.exists(fpath):
+                    pd.DataFrame().to_csv(fpath, index=False)
+    except Exception as e:  # pragma: no cover - best effort QA safeguard
+        logger.warning(f"[QA-WARNING] Failed to prepare side logs: {e}")
+
 
 def suggest_threshold_relaxation(qa_dir: str, label: str) -> None:
     """[Patch v5.7.3] Log suggestion to relax ML threshold if no trades found."""

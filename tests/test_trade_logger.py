@@ -22,6 +22,10 @@ def test_export_trade_log_creates_file(tmp_path):
     out_dir = tmp_path / 'out'
     export_trade_log(df, str(out_dir), 'L1')
     assert (out_dir / 'trade_log_L1.csv').exists()
+    # [Patch v5.9.2] Side-specific logs should be created even without 'side' column
+    assert (out_dir / 'trade_log_BUY.csv').exists()
+    assert (out_dir / 'trade_log_SELL.csv').exists()
+    assert (out_dir / 'trade_log_NORMAL.csv').exists()
     qa_dir = out_dir / 'qa_logs'
     assert not (qa_dir / 'L1_trade_qa.log').exists()
     summary = qa_dir / 'qa_summary_L1.log'
@@ -35,6 +39,10 @@ def test_export_trade_log_empty_creates_audit(tmp_path):
     log_file = out_dir / 'trade_log_L2.csv'
     qa_file = out_dir / 'qa_logs' / 'L2_trade_qa.log'
     relax_file = out_dir / 'qa_logs' / 'relax_threshold_L2.log'
+    # Side logs should still be created as empty files
+    assert (out_dir / 'trade_log_BUY.csv').exists()
+    assert (out_dir / 'trade_log_SELL.csv').exists()
+    assert (out_dir / 'trade_log_NORMAL.csv').exists()
     assert log_file.exists()
     assert qa_file.exists()
     assert qa_file.read_text() == "[QA] No trade. Output file generated as EMPTY.\n"
