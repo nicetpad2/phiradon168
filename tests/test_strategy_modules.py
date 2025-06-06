@@ -37,6 +37,7 @@ def test_run_backtest_simple():
     assert isinstance(orders, list)
 
 
-def test_plot_equity_curve_returns_axis():
-    ax = plot_equity_curve([1, 2, 3])
-    assert hasattr(ax, "plot")
+def test_plot_equity_curve_saves_file(tmp_path):
+    df = pd.DataFrame({"Equity": [1, 2, 3]})
+    out_file = plot_equity_curve(df, tmp_path)
+    assert out_file.exists()
