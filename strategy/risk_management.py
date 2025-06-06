@@ -9,4 +9,65 @@ def calculate_position_size(balance: float, risk_pct: float, sl_distance: float,
     lot = balance * risk_pct / sl_distance
     return max(lot, min_lot)
 
-__all__ = ["calculate_position_size"]
+
+def compute_lot_size(equity: float, risk_pct: float, sl_pips: float, pip_value: float = 0.1, min_lot: float = 0.01) -> float:
+    """Return lot size using fixed risk per trade."""
+    if equity <= 0 or risk_pct <= 0 or sl_pips <= 0 or pip_value <= 0:
+        raise ValueError("invalid inputs for compute_lot_size")
+    risk_amount = equity * risk_pct
+    risk_per_001 = sl_pips * pip_value
+    lot = risk_amount / risk_per_001 * 0.01
+    return max(lot, min_lot)
+
+
+def adjust_risk_by_equity(equity: float, base_risk_pct: float = 0.01, low_equity_threshold: float = 500.0) -> float:
+    """Reduce risk percentage when equity drops below threshold."""
+    if equity < 0 or base_risk_pct <= 0:
+        raise ValueError("invalid inputs for adjust_risk_by_equity")
+    return 0.005 if equity < low_equity_threshold else base_risk_pct
+
+
+def dynamic_position_size(base_lot: float, atr_current: float, atr_avg: float, high_ratio: float = 1.5, low_ratio: float = 0.75, fixed_lot: float = 0.05) -> float:
+    """Adjust lot size based on volatility."""
+    if base_lot <= 0 or atr_current <= 0 or atr_avg <= 0:
+        raise ValueError("invalid inputs for dynamic_position_size")
+    ratio = atr_current / atr_avg
+    if ratio > high_ratio:
+        return round(base_lot * 0.8, 2)
+    if ratio < low_ratio:
+        return fixed_lot
+    return base_lot
+
+
+def check_max_daily_drawdown(start_equity: float, current_equity: float, threshold_pct: float = 0.02) -> bool:
+    """Return True if drawdown from day's start exceeds threshold."""
+    if start_equity <= 0 or current_equity < 0 or threshold_pct <= 0:
+        raise ValueError("invalid inputs for check_max_daily_drawdown")
+    dd = (start_equity - current_equity) / start_equity
+    return dd >= threshold_pct
+
+
+def check_trailing_equity_stop(peak_equity: float, current_equity: float, threshold_pct: float = 0.05) -> bool:
+    """Return True if equity falls from peak beyond threshold."""
+    if peak_equity <= 0 or current_equity < 0 or threshold_pct <= 0:
+        raise ValueError("invalid inputs for check_trailing_equity_stop")
+    drop = (peak_equity - current_equity) / peak_equity
+    return drop >= threshold_pct
+
+
+def can_open_trade(open_trades: int, max_open: int = 2) -> bool:
+    """Return True if a new trade can be opened."""
+    if open_trades < 0 or max_open <= 0:
+        raise ValueError("invalid inputs for can_open_trade")
+    return open_trades < max_open
+
+
+__all__ = [
+    "calculate_position_size",
+    "compute_lot_size",
+    "adjust_risk_by_equity",
+    "dynamic_position_size",
+    "check_max_daily_drawdown",
+    "check_trailing_equity_stop",
+    "can_open_trade",
+]
