@@ -124,7 +124,6 @@ class OverfitModel:
         return np.tile([0.6, 0.4], (len(X), 1))
 
 
-@pytest.mark.xfail(reason="unstable in CI")
 def test_kfold_cv_model_overfit(monkeypatch, caplog):
     X = pd.DataFrame({'a': [0, 1, 0, 1, 0, 1, 0, 1], 'b': [1, 0, 1, 0, 1, 0, 1, 0]})
     y = pd.Series([0, 1, 0, 1, 0, 1, 0, 1])
@@ -135,7 +134,6 @@ def test_kfold_cv_model_overfit(monkeypatch, caplog):
     assert any('Overfitting detected' in m for m in caplog.messages)
 
 
-@pytest.mark.xfail(reason="unstable in CI")
 def test_kfold_cv_model_rf_missing(monkeypatch, caplog):
     X = pd.DataFrame({'a': [0, 1], 'b': [1, 0]})
     y = pd.Series([0, 1])
@@ -177,7 +175,6 @@ def test_kfold_cv_model_rf_basic(monkeypatch):
     assert 'auc' in res and 'f1' in res
 
 
-@pytest.mark.xfail(reason="unstable in CI")
 def test_optuna_sweep_success(tmp_path, monkeypatch):
     class Trial:
         def suggest_int(self, name, low, high):
@@ -201,7 +198,6 @@ def test_optuna_sweep_success(tmp_path, monkeypatch):
     assert params == {'n_estimators': 50, 'max_depth': 3}
 
 
-@pytest.mark.xfail(reason="unstable in CI")
 def test_train_lightgbm_mtf_no_files(tmp_path, monkeypatch, caplog):
     monkeypatch.setattr(training, 'LGBMClassifier', lambda *a, **k: None, raising=False)
     with caplog.at_level(logging.ERROR):
@@ -210,7 +206,6 @@ def test_train_lightgbm_mtf_no_files(tmp_path, monkeypatch, caplog):
     assert any('M1 or M15 data not found' in m for m in caplog.messages)
 
 
-@pytest.mark.xfail(reason="unstable in CI")
 def test_train_lightgbm_mtf_low_auc(tmp_path, monkeypatch, caplog):
     timestamps = pd.date_range('2024-01-01', periods=5, freq='1min')
     df = pd.DataFrame({

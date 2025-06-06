@@ -4,9 +4,17 @@ import pandas as pd
 import pytest
 import logging
 import runpy
+import warnings
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
+
+# Ignore RuntimeWarning emitted by runpy when module is already imported
+warnings.filterwarnings(
+    "ignore",
+    message=r".*tuning\.hyperparameter_sweep.*",
+    category=RuntimeWarning,
+)
 
 import tuning.hyperparameter_sweep as hs
 
@@ -172,7 +180,9 @@ def test_cli_entrypoint_runs_main(tmp_path, monkeypatch):
 
     monkeypatch.setattr(training, 'real_train_func', dummy_train)
     monkeypatch.setattr(sys, 'argv', ['hyperparameter_sweep.py', '--output_dir', str(tmp_path), '--trade_log_path', str(trade_log)])
-    runpy.run_module('tuning.hyperparameter_sweep', run_name='__main__')
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', RuntimeWarning)
+        runpy.run_module('tuning.hyperparameter_sweep', run_name='__main__')
     assert (tmp_path / 'summary.csv').exists()
 
 
