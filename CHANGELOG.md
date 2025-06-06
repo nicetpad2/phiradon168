@@ -1105,3 +1105,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.9.8] Preserve OMS state during kill switch events
 - New/Updated unit tests added for none (behavioral patch)
 - QA: pytest -q passed (existing tests)
+
+### 2025-06-08
+- [Patch v5.9.9] Add settings loader tests
+- New/Updated unit tests added for tests.test_settings
+- QA: pytest -q tests/test_settings.py passed
