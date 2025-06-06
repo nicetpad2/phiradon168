@@ -1,3 +1,8 @@
+### 2025-06-10
+- [Patch v5.9.12] Increase coverage of training module
+- New/Updated unit tests added for tests.test_training_extended
+- QA: pytest -q passed (25 tests)
+
 ### 2025-06-09
 - [Patch v5.9.11] Increase coverage of trend_filter
 - New/Updated unit tests added for tests.test_trend_filter
