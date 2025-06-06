@@ -112,9 +112,10 @@ def run_backtest():
     pipeline.run_backtest_pipeline(pd.DataFrame(), pd.DataFrame(), model_path, threshold)
 
 
-def run_report():
+def run_report() -> None:
     """สร้างรายงานผลการทดสอบ."""
-    pipeline.run_report()
+    config = pipeline.load_config()
+    pipeline.run_report(config)
 
 
 def run_full_pipeline() -> None:
