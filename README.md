@@ -1,5 +1,6 @@
 # Phiradon168
-[![CI](https://github.com/nicetpad2/Phiradon168/actions/workflows/ci.yml/badge.svg)](https://github.com/nicetpad2/Phiradon168/actions) [![Coverage](https://codecov.io/gh/nicetpad2/Phiradon168/branch/main/graph/badge.svg)](https://codecov.io/gh/nicetpad2/Phiradon168) [![PyPI version](https://img.shields.io/pypi/v/phiradon168.svg)](https://pypi.org/project/phiradon168/)
+
+[![CI](https://github.com/Phiradon168/Phiradon168/actions/workflows/ci.yml/badge.svg)](https://github.com/Phiradon168/Phiradon168/actions) [![Coverage](https://codecov.io/gh/Phiradon168/Phiradon168/branch/main/graph/badge.svg)](https://codecov.io/gh/Phiradon168/Phiradon168) [![PyPI version](https://img.shields.io/pypi/v/phiradon168.svg)](https://pypi.org/project/phiradon168/)
 
 ## Overview
 ระบบ NICEGOLD Enterprise ใช้เทรดและวิเคราะห์ XAUUSD บนกรอบเวลา M1 รองรับทั้งการทดสอบย้อนหลังและ Walk-Forward Validation
@@ -199,7 +200,10 @@ fig.savefig('summary.png')
 ```
 ฟังก์ชัน `calculate_position_size` ยังช่วยคำนวณขนาดลอตที่เหมาะสมตามทุนและระยะ SL
 
-Updated for patch 5.7.3.
+Updated for patch 5.8.5.
 
 Patch 5.7.8 resolves font configuration parsing errors when plotting.
 
+
+## Vendored Libraries
+โฟลเดอร์ `vendor/ta/` นำโค้ดไลบรารี ta เวอร์ชัน 0.11.0 มารวมไว้เป็นสำรอง หากไม่ต้องการสามารถติดตั้ง `ta` จาก PyPI และลบโฟลเดอร์นี้ได้

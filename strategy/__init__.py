@@ -13,12 +13,12 @@ from .cooldown import (
 )
 from .metrics import calculate_metrics
 from .drift_observer import DriftObserver
-from .trend_filter import apply_trend_filter
-from .strategy import apply_strategy
-from .order_management import create_order
-from .risk_management import calculate_position_size
+from .strategy import run_backtest
+from .order_management import OrderManager, OrderStatus as OrderStatusOM
+from .risk_management import calculate_position_size, RiskManager, OrderStatus as OrderStatusRM
 from .stoploss_utils import atr_stop_loss
-from .trade_executor import execute_order
+from .stoploss_utils import atr_sl_tp_wrapper
+from .trade_executor import open_trade
 from .plots import plot_equity_curve
 
 __all__ = [
@@ -36,10 +36,13 @@ __all__ = [
     'calculate_metrics',
     'DriftObserver',
     'apply_trend_filter',
-    'apply_strategy',
-    'create_order',
+    'run_backtest',
+    'OrderManager',
+    'OrderStatusOM',
+    'RiskManager',
+    'OrderStatusRM',
     'calculate_position_size',
-    'atr_stop_loss',
-    'execute_order',
+    'atr_sl_tp_wrapper',
+    'open_trade',
     'plot_equity_curve',
 ]

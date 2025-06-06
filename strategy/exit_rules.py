@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from src.features import macd, rsi
+from src.features import macd, rsi, atr
 from src.config import USE_MACD_SIGNALS, USE_RSI_SIGNALS
 
 
@@ -26,10 +26,16 @@ def generate_close_signals(
 
 
 def precompute_sl_array(df: pd.DataFrame) -> np.ndarray:
-    """คำนวณ Stop-Loss ล่วงหน้า"""
-    return np.zeros(len(df), dtype=np.float64)
+    """คำนวณ Stop-Loss ล่วงหน้าตาม ATR"""
+    if "ATR_14" not in df.columns:
+        df = atr(df, 14)
+    sl = pd.to_numeric(df.get("ATR_14"), errors="coerce") * 1.5
+    return sl.fillna(0.0).to_numpy(dtype=np.float64)
 
 
 def precompute_tp_array(df: pd.DataFrame) -> np.ndarray:
-    """คำนวณ Take-Profit ล่วงหน้า"""
-    return np.zeros(len(df), dtype=np.float64)
+    """คำนวณ Take-Profit ล่วงหน้าตาม ATR"""
+    if "ATR_14" not in df.columns:
+        df = atr(df, 14)
+    tp = pd.to_numeric(df.get("ATR_14"), errors="coerce") * 2.5
+    return tp.fillna(0.0).to_numpy(dtype=np.float64)
