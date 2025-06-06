@@ -1,3 +1,7 @@
+### 2025-06-06
+- [Patch v5.9.8] Add runtime config loader
+- New/Updated unit tests added for tests.test_config_loader
+- QA: pytest -q passed (581 tests)
 
 ### 2025-06-06
 - [Patch v5.9.7] Expand coverage to all src modules
