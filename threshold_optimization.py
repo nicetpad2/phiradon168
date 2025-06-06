@@ -2,7 +2,14 @@ import os
 import argparse
 import pandas as pd
 
-from src.config import logger, optuna
+try:
+    from src.config import logger, optuna
+except Exception:  # pragma: no cover - fallback when config fails
+    import logging
+    logger = logging.getLogger("threshold_opt")
+    optuna = None
+# [Patch v5.9.17] provide basic logger/optuna if src.config import fails
+
 
 # [Patch v5.5.14] Improved threshold optimization with Optuna
 

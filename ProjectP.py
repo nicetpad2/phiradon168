@@ -1,6 +1,11 @@
 """Bootstrap script for running the main entry point."""
 
-from src.config import logger
+try:
+    from src.config import logger
+except Exception:  # pragma: no cover - fallback logger
+    import logging
+    logger = logging.getLogger("ProjectP")
+# [Patch v5.9.17] Fallback logger if src.config fails
 import sys
 import logging
 import os
