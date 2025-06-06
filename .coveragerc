@@ -1,19 +1,16 @@
 [run]
-include = src/placeholder.py
+source = src
 omit =
     */tests/*
     */logs/*
     */ta/*
     */vendor/ta/*
     */__init__.py
-    src/strategy.py
-    src/main.py
-    src/config.py
-    src/data_loader.py
-    src/features.py
-    strategy/*
-    tuning/*
-    threshold_optimization.py
-    utils.py
+
 [report]
-include = src/placeholder.py
+omit =
+    */tests/*
+    */logs/*
+    */ta/*
+    */vendor/ta/*
+    */__init__.py

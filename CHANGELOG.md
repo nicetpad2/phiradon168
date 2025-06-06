@@ -1,5 +1,10 @@
 
 ### 2025-06-06
+- [Patch v5.9.7] Expand coverage to all src modules
+- New/Updated unit tests added for none (configuration change)
+- QA: pytest --cov=src passed (580 tests)
+
+### 2025-06-06
 - [Patch vX.Y.Z] เปิดใช้งาน OMS_DEFAULT=True และเพิ่ม PAPER_MODE Flag สำหรับ Paper Trading
 - New/Updated unit tests added for tests.test_config_defaults, tests.test_function_registry
 - QA: pytest -q passed (569 tests)
