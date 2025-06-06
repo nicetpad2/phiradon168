@@ -67,7 +67,6 @@ FUNCTIONS_INFO = [
 
 
 
-
     ("src/strategy.py", "run_backtest_simulation_v34", 1948),
 
     ("src/strategy.py", "initialize_time_series_split", 4599),
@@ -79,6 +78,8 @@ FUNCTIONS_INFO = [
 
     ("src/strategy.py", "aggregate_fold_results", 4611),
 
+
+    ("src/strategy.py", "aggregate_fold_results", 4606),
 
 
 

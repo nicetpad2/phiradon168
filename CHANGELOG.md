@@ -1,9 +1,13 @@
 
-### 2025-10-24
-- [Patch vX.Y.Z] Optimize backtest performance by caching features in Parquet
-- New/Updated unit tests added for tests.test_features_parquet
-- QA: pytest -q passed (565 tests)
+### 2025-06-06
+- [Patch vX.Y.Z] เปิดใช้งาน OMS_DEFAULT=True และเพิ่ม PAPER_MODE Flag สำหรับ Paper Trading
+- New/Updated unit tests added for tests.test_config_defaults, tests.test_function_registry
+- QA: pytest -q passed (569 tests)
 
+### 2025-06-06
+- [Patch v5.9.4] Improve OMS logging and add PAPER_MODE
+- New/Updated unit tests added for tests.test_config_defaults
+- QA: pytest -q passed (558 tests)
 
 ### 2025-10-23
 - [Patch v5.9.2] Increase unit test coverage for cooldown utilities
