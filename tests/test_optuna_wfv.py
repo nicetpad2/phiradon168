@@ -1,9 +1,10 @@
 import os, sys
 import pandas as pd
+import pytest
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
 import src.config as config
-from src.wfv import optuna_walk_forward
+from src.wfv import optuna_walk_forward, optuna_walk_forward_per_fold
 
 
 def dummy_backtest(df, signal=1.0, loss_thresh=4, atr_mult=1.0, ma_period=20):
@@ -26,3 +27,18 @@ def test_optuna_walk_forward_no_optuna(monkeypatch):
     monkeypatch.setattr(config, 'optuna', None, raising=False)
     res = optuna_walk_forward(df, space, dummy_backtest, train_window=4, test_window=2, step=2, n_trials=1)
     assert res.empty
+
+
+def test_optuna_walk_forward_per_fold_basic():
+    df = pd.DataFrame({'Close': range(12)}, index=pd.RangeIndex(12))
+    space = {'signal': (0.5, 1.0, 0.5)}
+    res = optuna_walk_forward_per_fold(df, space, dummy_backtest, train_window=4, test_window=2, step=2, n_trials=1)
+    assert not res.empty
+    assert 'fold' in res.columns
+
+
+def test_optuna_walk_forward_per_fold_overlap_error():
+    df = pd.DataFrame({'Close': range(6)}, index=[0, 2, 1, 3, 4, 5])
+    space = {'signal': (0.5, 1.0, 0.5)}
+    with pytest.raises(AssertionError):
+        optuna_walk_forward_per_fold(df, space, dummy_backtest, train_window=4, test_window=1, step=1, n_trials=1)

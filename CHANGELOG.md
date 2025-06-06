@@ -1,18 +1,15 @@
 
 
-### 2025-06-07
-- [Patch v5.8.7] Add expectancy metric calculation in log_analysis
-- New/Updated unit tests added for tests.test_log_analysis
-- QA: pytest -q failed (14 failed)
-
 ### 2025-10-20
-- [Patch v5.8.5] Sync features_main.json version and update documentation links
-- QA: pytest -q passed (462 tests)
+- [Patch v5.8.7] Add per-fold Optuna WFV and overlap check
+- New/Updated unit tests added for tests.test_optuna_wfv
+- QA: pytest -q passed (pending)
 
+### 2025-10-19
+- [Patch v5.8.6] Add CI workflow and update badges
+- New/Updated unit tests added for none (CI configuration)
+- QA: pytest -q passed (existing tests)
 
-### 2025-06-06
-- [Patch v5.8.6] Save equity curve with timestamp
-- New/Updated unit tests added for tests.test_strategy_modules
 
 
 ### 2025-10-18
