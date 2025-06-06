@@ -1,7 +1,9 @@
 ### 2025-10-17
+
 - [Patch v5.8.4] Pin requirements and add dev file
 - New/Updated unit tests added for none (dependency update)
 - QA: pytest -q passed (429 tests)
+
 
 ### 2025-10-16
 

@@ -7,7 +7,15 @@ import os
 import argparse
 import subprocess
 import pandas as pd
+from typing import Dict, List
 import main as pipeline
+
+# Default grid for hyperparameter sweep
+DEFAULT_SWEEP_PARAMS: Dict[str, List[float]] = {
+    "learning_rate": [0.01, 0.05],
+    "depth": [6, 8],
+    "l2_leaf_reg": [1, 3, 5],
+}
 
 # [Patch] Initialize pynvml for GPU status detection
 try:
@@ -59,20 +67,35 @@ def run_preprocess():
     return main()
 
 
-def run_sweep():
-    """รันการค้นหาค่าพารามิเตอร์."""
-    # [Patch v5.7.2] Resolve sweep path relative to this file for Colab support
+def _run_script(relative_path: str) -> None:
+    """Execute a Python script located relative to this file."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    sweep_path = os.path.join(script_dir, "tuning", "hyperparameter_sweep.py")
-    subprocess.run([sys.executable, sweep_path], check=True)
+    abs_path = os.path.join(script_dir, relative_path)
+    subprocess.run([sys.executable, abs_path], check=True)
+
+
+def run_hyperparameter_sweep(params: Dict[str, List[float]]) -> None:
+    """รันการค้นหาค่าพารามิเตอร์."""
+    logger.debug(f"Starting sweep with params: {params}")
+    from tuning.hyperparameter_sweep import run_sweep as _sweep
+    _sweep("sweep_results", params, seed=42, resume=True)
+
+
+def run_sweep():
+    """รันการค้นหาค่าพารามิเตอร์ (backward compatibility)."""
+    _run_script(os.path.join("tuning", "hyperparameter_sweep.py"))
+
+
+def run_threshold_optimization() -> pd.DataFrame:
+    """รันการปรับค่า threshold."""
+    logger.debug("Starting threshold optimization")
+    from threshold_optimization import run_threshold_optimization as _opt
+    return _opt()
 
 
 def run_threshold():
-    """รันการปรับค่า threshold."""
-    # [Patch v5.7.8] Resolve threshold script path relative to this file
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    threshold_path = os.path.join(script_dir, "threshold_optimization.py")
-    subprocess.run([sys.executable, threshold_path], check=True)
+    """รันการปรับค่า threshold (backward compatibility)."""
+    _run_script("threshold_optimization.py")
 
 
 def run_backtest():
@@ -94,11 +117,11 @@ def run_report():
     pipeline.run_report()
 
 
-def run_all_steps():
+def run_full_pipeline() -> None:
     """รันทุกโหมดต่อเนื่องกัน."""
     run_preprocess()
-    run_sweep()
-    run_threshold()
+    run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
+    run_threshold_optimization()
     run_backtest()
     run_report()
 
@@ -108,15 +131,15 @@ def run_mode(mode):
     if mode == "preprocess":
         run_preprocess()
     elif mode == "sweep":
-        run_sweep()
+        run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
     elif mode == "threshold":
-        run_threshold()
+        run_threshold_optimization()
     elif mode == "backtest":
         run_backtest()
     elif mode == "report":
         run_report()
     elif mode == "all":
-        run_all_steps()
+        run_full_pipeline()
     else:
         raise ValueError(f"Unknown mode: {mode}")
 
