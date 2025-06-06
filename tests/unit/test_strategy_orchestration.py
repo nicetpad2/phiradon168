@@ -25,6 +25,29 @@ def test_apply_strategy_adds_columns(monkeypatch):
     assert "Entry" in res and "Exit" in res
 
 
+def test_apply_strategy_does_not_mutate(monkeypatch):
+    df = pd.DataFrame({"Close": [1, 2, 3]})
+    calls = {"open": 0, "close": 0}
+
+    def fake_open(arg):
+        calls["open"] += 1
+        return np.array([0, 0, 0])
+
+    def fake_close(arg):
+        calls["close"] += 1
+        return np.array([1, 1, 1])
+
+    monkeypatch.setattr(strategy_module, "generate_open_signals", fake_open)
+    monkeypatch.setattr(strategy_module, "generate_close_signals", fake_close)
+    original = df.copy()
+
+    result = strategy_module.apply_strategy(df)
+    assert calls == {"open": 1, "close": 1}
+    assert list(result["Entry"]) == [0, 0, 0]
+    assert list(result["Exit"]) == [1, 1, 1]
+    assert "Entry" not in original.columns and "Exit" not in original.columns
+
+
 def test_apply_strategy_type_error():
     with pytest.raises(TypeError):
         strategy_module.apply_strategy([1, 2, 3])
