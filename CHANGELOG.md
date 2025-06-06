@@ -1178,3 +1178,7 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (562 tests)
 
 
+### 2025-06-06
+- [Patch v5.9.16] Make tests folder a package
+- New/Updated unit tests added for none (package init)
+- QA: pytest -q tests/test_threshold_optimization.py::test_parse_args_defaults passed (1 test)
