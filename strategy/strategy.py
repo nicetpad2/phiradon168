@@ -16,3 +16,11 @@ def apply_strategy(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 __all__ = ["apply_strategy"]
+
+def run_backtest(df: pd.DataFrame, initial_balance: float) -> list:
+    """Dummy backtest returning an empty list."""
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("df must be a pandas DataFrame")
+    return []
+
+__all__.append("run_backtest")

@@ -14,3 +14,15 @@ def execute_order(order: dict, exit_price: float) -> float:
     return (exit_price - entry) * multiplier
 
 __all__ = ["execute_order"]
+
+def open_trade(side: str, price: float, sl: float, tp: float, size: float) -> dict:
+    """Create and return a new trade dictionary."""
+    return {
+        "side": side,
+        "entry_price": price,
+        "sl_price": sl,
+        "tp_price": tp,
+        "size": size,
+    }
+
+__all__.append("open_trade")

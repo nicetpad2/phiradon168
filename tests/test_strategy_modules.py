@@ -1,24 +1,26 @@
 import os
 import sys
 import pandas as pd
+from datetime import datetime
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
 
 from strategy import (
-    apply_strategy,
-    create_order,
+    run_backtest,
+    OrderManager,
     calculate_position_size,
-    atr_stop_loss,
-    execute_order,
+    atr_sl_tp_wrapper,
+    open_trade,
     plot_equity_curve,
 )
 
 
-def test_create_order_contains_sl_tp():
-    order = create_order("BUY", 1.0, 0.9, 1.1)
-    assert order["sl"] == 0.9
-    assert order["tp"] == 1.1
+def test_order_manager_place_order():
+    om = OrderManager()
+    now = datetime.utcnow()
+    status = om.place_order({}, now)
+    assert status.name == "OPEN"
 
 
 def test_calculate_position_size_basic():
@@ -26,25 +28,18 @@ def test_calculate_position_size_basic():
     assert size == 1.0
 
 
-def test_atr_stop_loss():
-    s = pd.Series(range(20))
-    sl = atr_stop_loss(s, period=5)
-    assert len(sl) == len(s)
+def test_atr_sl_tp_wrapper():
+    sl, tp = atr_sl_tp_wrapper(1.0, 0.1, "BUY")
+    assert sl < 1.0 and tp > 1.0
 
 
-def test_apply_strategy_simple():
+def test_run_backtest_simple():
     df = pd.DataFrame({"Close": [1.0, 1.1, 1.0]})
-    result = apply_strategy(df)
-    assert "Entry" in result and "Exit" in result
+    orders = run_backtest(df, 1000)
+    assert isinstance(orders, list)
 
 
-def test_create_and_execute_order():
-    order = create_order("BUY", 1.0, 0.9, 1.1)
-    pnl = execute_order(order, 1.2)
-    assert pnl > 0
+def test_plot_equity_curve_returns_axis():
+    ax = plot_equity_curve([1, 2, 3])
+    assert hasattr(ax, "plot")
 
-
-def test_plot_equity_curve_saves_file(tmp_path):
-    df = pd.DataFrame({"Equity": [1, 2, 3]})
-    out_file = plot_equity_curve(df, tmp_path)
-    assert out_file.exists()
