@@ -24,6 +24,7 @@
   - [Wave_Marker_Unit](#wave_marker_unit)
   - [Insight_Visualizer](#insight_visualizer)
   - [Log_Analysis_Helper](#log_analysis_helper)
+  - [Event_ETL_Manager](#event_etl_manager)
 - [📌 Process & Collaboration Guidelines](#-process--collaboration-guidelines)
 ## 🧠 Core AI Units
 
@@ -227,6 +228,13 @@
   - Parse raw trade logs and compute hourly win rates
   - Provide utilities for risk sizing, TSL statistics, and expectancy metrics
 - **Modules:** `src/log_analysis.py`
+
+### [Event_ETL_Manager](src/event_etl.py)
+- **Main Role:** ETL of trade log events
+- **Key Responsibilities:**
+  - Create and maintain `trade_events` table
+  - Ingest logs after each fold
+- **Modules:** `src/event_etl.py`
 
 ## 📌 Process & Collaboration Guidelines
 

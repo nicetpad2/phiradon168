@@ -1053,3 +1053,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.9.2] Ensure side trade logs created via export_trade_log
 - New/Updated unit tests added for tests.test_trade_logger
 - QA: pytest -q passed (518 tests)
+
+### 2025-06-07
+- [Patch v5.10.0] Add log event ETL and DB table
+- New/Updated unit tests added for tests.test_event_etl
+- QA: pytest -q passed (565 tests)
