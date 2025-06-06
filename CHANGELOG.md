@@ -1,8 +1,9 @@
 ### 2025-10-21
 
-- [Patch v5.8.8] Add simulated noise backtest utility
-- New/Updated unit tests added for tests.test_qa_tools
-- QA: pytest -q (known failures)
+- [Patch v5.8.8] Add WFV overfitting utilities
+- New/Updated unit tests added for tests.test_wfv_overfit
+- QA: pytest -q passed (tests count TBD)
+
 
 
 ### 2025-10-20

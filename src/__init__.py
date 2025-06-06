@@ -13,7 +13,11 @@ from src.money_management import (
     adaptive_position_size,
     portfolio_hard_stop,
 )
-from src.evaluation import evaluate_meta_classifier
+from src.evaluation import (
+    evaluate_meta_classifier,
+    walk_forward_yearly_validation,
+    detect_overfit_wfv,
+)
 from src.wfv import walk_forward_grid_search, prune_features_by_importance
 from src.param_stability import save_fold_params, analyze_param_stability
 
@@ -28,6 +32,8 @@ __all__ = [
     "adaptive_position_size",
     "portfolio_hard_stop",
     "evaluate_meta_classifier",
+    "walk_forward_yearly_validation",
+    "detect_overfit_wfv",
     "walk_forward_grid_search",
     "prune_features_by_importance",
     "save_fold_params",
