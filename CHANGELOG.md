@@ -1221,3 +1221,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.10.5] เพิ่มการจัดการ import torch และค่าเริ่มต้น FUND_PROFILES
 - New/Updated unit tests added for none (config fallback)
 - QA: pytest -q failed (import errors)
+### 2025-06-06
+- [Patch v5.10.6] Improve update_signal_threshold test coverage
+- New/Updated unit tests added for tests/test_signal_threshold_update.py
+- QA: pytest --cov=src.adaptive -q passed (733 tests)
