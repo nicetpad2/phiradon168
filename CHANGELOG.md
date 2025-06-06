@@ -4,6 +4,11 @@
 - QA: pytest -q passed (506 tests)
 
 ### 2025-06-06
+- [Patch v5.9.4] Improve hyperparameter sweep with real trade log and metric export
+- New/Updated unit tests added for tests.test_hyperparameter_sweep_cli
+- QA: pytest -q passed (tests count TBD)
+
+### 2025-06-06
 - [Patch v5.9.2] Add unit tests for dashboard and evaluation
 - New/Updated unit tests added for tests.test_dashboard_extra2, tests.test_evaluation_extra
 - QA: pytest -q passed (517 tests)
