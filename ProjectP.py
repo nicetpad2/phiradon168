@@ -1,8 +1,14 @@
 """Bootstrap script for running the main entry point."""
 
-from src.config import logger
-import sys
 import logging
+
+try:
+    from src.config import logger
+except Exception:  # pragma: no cover - fallback when config import fails
+    logger = logging.getLogger("ProjectPFallback")
+    if not logger.handlers:
+        logger.addHandler(logging.NullHandler())
+import sys
 import os
 import argparse
 import subprocess

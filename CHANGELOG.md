@@ -1189,3 +1189,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.9.16] Make tests folder a package
 - New/Updated unit tests added for none (package init)
 - QA: pytest -q tests/test_threshold_optimization.py::test_parse_args_defaults passed (1 test)
+
+### 2025-06-06
+- [Patch v5.9.17] Graceful fallback when src.config import fails
+- New/Updated unit tests added for tests/test_projectp_cli.py tests/test_threshold_optimization.py
+- QA: pytest -q tests/test_projectp_cli.py tests/test_threshold_optimization.py passed (15 tests)

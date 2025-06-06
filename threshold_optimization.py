@@ -1,8 +1,15 @@
 import os
 import argparse
 import pandas as pd
+import logging
 
-from src.config import logger, optuna
+try:
+    from src.config import logger, optuna
+except Exception:  # pragma: no cover - fallback when config import fails
+    logger = logging.getLogger("ThresholdOptFallback")
+    if not logger.handlers:
+        logger.addHandler(logging.NullHandler())
+    optuna = None
 
 # [Patch v5.5.14] Improved threshold optimization with Optuna
 
