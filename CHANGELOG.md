@@ -1,3 +1,4 @@
+
 ### 2025-06-06
 - [Patch vX.Y.Z] เปิดใช้งาน OMS_DEFAULT=True และเพิ่ม PAPER_MODE Flag สำหรับ Paper Trading
 - New/Updated unit tests added for tests.test_config_defaults, tests.test_function_registry
@@ -12,6 +13,13 @@
 - [Patch v5.9.2] Increase unit test coverage for cooldown utilities
 - New/Updated unit tests added for tests.test_cooldown_utils_full
 - QA: pytest -q passed (506 tests)
+
+### 2025-06-06
+
+- [Patch v5.9.4] Improve hyperparameter sweep with real trade log and metric export
+- New/Updated unit tests added for tests.test_hyperparameter_sweep_cli
+- QA: pytest -q passed (tests count TBD)
+
 
 ### 2025-06-06
 - [Patch v5.9.2] Add unit tests for dashboard and evaluation
@@ -1059,7 +1067,9 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_trade_logger
 - QA: pytest -q passed (518 tests)
 
-### 2025-06-07
-- [Patch v5.10.0] Add log event ETL and DB table
-- New/Updated unit tests added for tests.test_event_etl
-- QA: pytest -q passed (565 tests)
+### 2025-06-06
+
+- [Patch v5.9.3] ปรับลำดับ Log Forced Trigger → Attempt
+- New/Updated unit tests added for tests.test_forced_trigger
+- QA: pytest -q passed (existing tests)
+

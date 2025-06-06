@@ -312,3 +312,47 @@ def calculate_dynamic_sl_tp(
 
     tp = sl * tp_mult
     return sl, tp
+
+
+def update_signal_threshold(current_score: float, params) -> float:
+    """[Patch] Adjust ``signal_score_threshold`` based on ``current_score``.
+
+    หากมีการปรับค่าจะบันทึก Log รูปแบบ
+    ``[Adaptive] Threshold changed | Fold=<…> | Profile=<…> | Old=<…> -> New=<…> | Current Score=<…>``
+    """
+
+    try:
+        score = float(current_score)
+    except (TypeError, ValueError):
+        logger.warning("Invalid current_score for update_signal_threshold")
+        return params.signal_score_threshold
+
+    some_condition = score > 0.8
+    other_condition = score < 0.2
+
+    if some_condition:
+        old_th = params.signal_score_threshold
+        new_th = 0.50
+        params.signal_score_threshold = new_th
+        logger.info(
+            "[Adaptive] Threshold changed | Fold=%s | Profile=%s | Old=%s -> New=%s | Current Score=%.2f",
+            getattr(params, "current_fold", "N/A"),
+            getattr(params, "profile_name", "N/A"),
+            old_th,
+            new_th,
+            score,
+        )
+    elif other_condition:
+        old_th = params.signal_score_threshold
+        new_th = 0.25
+        params.signal_score_threshold = new_th
+        logger.info(
+            "[Adaptive] Threshold changed | Fold=%s | Profile=%s | Old=%s -> New=%s | Current Score=%.2f",
+            getattr(params, "current_fold", "N/A"),
+            getattr(params, "profile_name", "N/A"),
+            old_th,
+            new_th,
+            score,
+        )
+
+    return params.signal_score_threshold
