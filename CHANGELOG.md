@@ -1,7 +1,6 @@
 ### 2025-10-17
-
-- [Patch v5.8.4] Pin requirements and add dev file
-- New/Updated unit tests added for none (dependency update)
+- [Patch v5.8.4] Improve run_tests script with coverage summary, parallel option and fast flag
+- New/Updated unit tests added for none (utility script)
 - QA: pytest -q passed (429 tests)
 
 
