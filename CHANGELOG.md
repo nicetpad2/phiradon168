@@ -1,3 +1,8 @@
+### 2025-10-19
+- [Patch v5.8.6] Add CI workflow and update badges
+- New/Updated unit tests added for none (CI configuration)
+- QA: pytest -q passed (existing tests)
+
 ### 2025-10-18
 - [Patch v5.8.5] Add strategy submodules and documentation
 - New/Updated unit tests added for tests.test_strategy_modules
