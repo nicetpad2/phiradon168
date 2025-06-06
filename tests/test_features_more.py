@@ -44,7 +44,7 @@ def test_macd_with_dummy_ta(monkeypatch):
     line, signal, diff = features.macd(series, window_slow=5, window_fast=2, window_sign=2)
     assert line.iloc[-1] == series.iloc[-1]
     assert signal.iloc[-1] == series.iloc[-1] * 0.5
-    assert diff.iloc[-1] == series.iloc[-1] * 0.1
+    assert np.isclose(diff.iloc[-1], series.iloc[-1] * 0.1)
 
 
 def test_calculate_m15_trend_zone(monkeypatch):
