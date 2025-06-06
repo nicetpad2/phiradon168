@@ -1,6 +1,7 @@
 import sys
 import os
 import pandas as pd
+import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -68,3 +69,24 @@ def test_get_session_tag_warn_once(caplog):
         assert get_session_tag(ts2, session_times_utc=custom, warn_once=True) == 'N/A'
     warnings = [r for r in caplog.records if 'out of all session ranges' in r.getMessage()]
     assert len(warnings) == 1
+
+
+def test_get_session_tag_missing_global(monkeypatch, caplog):
+    from src import utils
+    # ลบตัวแปร SESSION_TIMES_UTC ชั่วคราวเพื่อทดสอบ path fallback
+    backup = utils.sessions.SESSION_TIMES_UTC
+    monkeypatch.delattr(utils.sessions, 'SESSION_TIMES_UTC', raising=False)
+    ts = pd.Timestamp('2024-01-01 01:00', tz='UTC')
+    with caplog.at_level('WARNING'):
+        tag = get_session_tag(ts)
+    assert tag == 'Asia'
+    assert any('Global SESSION_TIMES_UTC not found' in r.getMessage() for r in caplog.records)
+    # คืนค่าเดิมให้ environment ทดสอบอื่น ๆ ไม่กระทบ
+    monkeypatch.setattr(utils.sessions, 'SESSION_TIMES_UTC', backup, raising=False)
+
+
+@pytest.mark.parametrize('hour', [23, 1])
+def test_get_session_tag_tz_map_wraparound(hour):
+    tz_map = {'Night': ('UTC', 22, 2)}
+    ts = pd.Timestamp(f'2024-01-01 {hour:02d}:00', tz='UTC')
+    assert get_session_tag(ts, session_tz_map=tz_map) == 'Night'

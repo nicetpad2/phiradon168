@@ -1,6 +1,14 @@
 ### 2025-06-06
+- [Patch v5.9.15] Add wfv unit tests
+- New/Updated unit tests added for tests.test_wfv_full
+- QA: pytest -q passed (11 tests)
 - [Patch v5.9.13] Improve coverage to 70%
 - New/Updated unit tests added for tests.test_signal_classifier_additional
+- QA: pytest -q passed (698 tests)
+
+### 2025-06-06
+- [Patch v5.9.15] Achieve full coverage for sessions module
+- New/Updated unit tests added for tests.test_sessions_utils
 - QA: pytest -q passed (698 tests)
 
 ### 2025-06-10
@@ -1163,7 +1171,9 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for none (revert docstring change)
 - QA: pytest -q passed (691 tests)
 
+
 ### 2025-06-07
 - [Patch v5.9.15] เพิ่ม unit tests ครอบคลุมโมดูล strategy
 - New/Updated unit tests added for tests/unit/test_strategy_additional_coverage.py
 - QA: pytest -q passed (700+ tests)
+
