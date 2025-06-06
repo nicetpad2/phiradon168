@@ -69,6 +69,9 @@ python ProjectP.py --mode all
 - `python main.py --stage backtest` รัน backtest พร้อม config ใน `config/pipeline.yaml`
 - `python main.py --stage all` ทำ Walk-Forward Validation ทั้งชุด
 - `python profile_backtest.py <CSV>` วิเคราะห์คอขวดประสิทธิภาพ
+- `python qa_output_default.py` สรุปรายงานไฟล์ QA ใน `output_default`
+- `python scripts/validate_features.py features_main.json` ตรวจสอบรายชื่อฟีเจอร์
+- `streamlit run src/realtime_dashboard.py -- --log_path <log.csv>` เปิดแดชบอร์ดเรียลไทม์
 ## การตั้งค่า config.yaml
 ไฟล์ `config/pipeline.yaml` ใช้กำหนดค่าพื้นฐานของ pipeline เช่นระดับ log และโฟลเดอร์โมเดล
 ตัวอย่างค่าเริ่มต้น:
