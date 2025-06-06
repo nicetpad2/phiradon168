@@ -6,9 +6,12 @@ import logging
 import os
 import argparse
 import subprocess
+import json
 import pandas as pd
 from typing import Dict, List
 import main as pipeline
+from config_loader import update_config_from_dict  # [Patch] dynamic config update
+from wfv_runner import run_walkforward  # [Patch] walk-forward helper
 
 # Default grid for hyperparameter sweep
 DEFAULT_SWEEP_PARAMS: Dict[str, List[float]] = {
@@ -51,7 +54,7 @@ def parse_projectp_args(args=None):
     parser = argparse.ArgumentParser(description="สคริปต์ควบคุมโหมดการทำงาน")
     parser.add_argument(
         "--mode",
-        choices=["preprocess", "sweep", "threshold", "backtest", "report", "all"],
+        choices=["preprocess", "sweep", "threshold", "backtest", "report", "all", "hyper_sweep", "wfv"],
         default="preprocess",
         help="ขั้นตอนที่จะรัน",
     )
@@ -145,8 +148,19 @@ def run_mode(mode):
         run_backtest()
     elif mode == "report":
         run_report()
+    elif mode == "hyper_sweep":
+        run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
+    elif mode == "wfv":
+        run_walkforward()  # [Patch] call simplified WFV runner
     elif mode == "all":
-        run_full_pipeline()
+        # [Patch] Sweep then update config and run WFV
+        run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
+        best_params_path = os.path.join("output_default", "best_params.json")
+        if os.path.exists(best_params_path):
+            with open(best_params_path, "r", encoding="utf-8") as fh:
+                best_params = json.load(fh)
+            update_config_from_dict(best_params)
+        run_walkforward()
     else:
         raise ValueError(f"Unknown mode: {mode}")
 
