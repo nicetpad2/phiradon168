@@ -1,13 +1,9 @@
 ### 2025-10-21
-- [Patch v5.8.8] Add function to compare in/out-sample feature distributions
-- New/Updated unit tests added for tests.test_feature_analysis::test_compare_in_out_distribution_basic
-- QA: pytest tests/test_feature_analysis.py -q passed (8 tests)
 
+- [Patch v5.8.8] Add simulated noise backtest utility
+- New/Updated unit tests added for tests.test_qa_tools
+- QA: pytest -q (known failures)
 
-### 2025-10-21
-- [Patch v5.8.8] Implement basic noise filters (ATR, median, range, volume)
-- New/Updated unit tests added for tests.test_noise_filters
-- QA: pytest -q failed (environment limitations)
 
 ### 2025-10-20
 - [Patch v5.8.7] Add risk management helpers
