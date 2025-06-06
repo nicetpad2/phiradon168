@@ -1,3 +1,7 @@
+### 2025-10-21
+- [Patch v5.8.8] Add hard cutoff checker for drawdown and losses
+- New/Updated unit tests added for tests.test_strategy_new_modules
+- QA: pytest -q passed (467 tests)
 
 ### 2025-10-20
 - [Patch v5.8.7] Add risk management helpers

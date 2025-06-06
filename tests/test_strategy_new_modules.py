@@ -12,6 +12,7 @@ from strategy.risk_management import (
     check_max_daily_drawdown,
     check_trailing_equity_stop,
     can_open_trade,
+    should_hard_cutoff,
 )
 from strategy.stoploss_utils import atr_stop_loss
 from strategy.trade_executor import execute_order
@@ -66,3 +67,8 @@ def test_equity_drawdown_checks():
     assert check_max_daily_drawdown(1000.0, 980.0)
     assert check_trailing_equity_stop(1200.0, 1140.0)
     assert can_open_trade(1, max_open=2)
+
+
+def test_should_hard_cutoff():
+    assert should_hard_cutoff(0.05, 2)
+    assert not should_hard_cutoff(0.01, 1)
