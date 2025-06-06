@@ -40,3 +40,47 @@ def test_run_threshold_uses_absolute_path(monkeypatch):
                             'threshold_optimization.py')
     assert called['path'] == expected
     assert os.path.isabs(called['path'])
+
+
+def test_run_hyperparameter_sweep_calls_module(monkeypatch):
+    captured = {}
+
+    def fake_sweep(out_dir, params, seed=0, resume=True):
+        captured['params'] = params
+
+    import importlib
+    module = importlib.import_module('tuning.hyperparameter_sweep')
+    monkeypatch.setattr(module, 'run_sweep', fake_sweep)
+    proj.run_hyperparameter_sweep({'lr': [0.1]})
+    assert captured['params'] == {'lr': [0.1]}
+
+
+def test_run_threshold_optimization_calls_module(monkeypatch):
+    called = {}
+
+    def fake_opt():
+        called['ok'] = True
+        return 'df'
+
+    import importlib
+    module = importlib.import_module('threshold_optimization')
+    monkeypatch.setattr(module, 'run_threshold_optimization', fake_opt)
+    result = proj.run_threshold_optimization()
+    assert called.get('ok') is True
+    assert result == 'df'
+
+
+def test_run_full_pipeline_sequence(monkeypatch):
+    calls = []
+
+    monkeypatch.setattr(proj, 'run_preprocess', lambda: calls.append('pre'))
+    monkeypatch.setattr(
+        proj, 'run_hyperparameter_sweep', lambda params: calls.append('sweep')
+    )
+    monkeypatch.setattr(
+        proj, 'run_threshold_optimization', lambda: calls.append('th')
+    )
+    monkeypatch.setattr(proj, 'run_backtest', lambda: calls.append('back'))
+    monkeypatch.setattr(proj, 'run_report', lambda: calls.append('rep'))
+    proj.run_full_pipeline()
+    assert calls == ['pre', 'sweep', 'th', 'back', 'rep']
