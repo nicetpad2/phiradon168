@@ -1,12 +1,21 @@
-### 2025-06-06
-- [Patch v5.9.4] Improve OMS logging and add PAPER_MODE
-- New/Updated unit tests added for tests.test_config_defaults
-- QA: pytest -q passed (558 tests)
+
+### 2025-10-24
+- [Patch vX.Y.Z] Optimize backtest performance by caching features in Parquet
+- New/Updated unit tests added for tests.test_features_parquet
+- QA: pytest -q passed (565 tests)
+
 
 ### 2025-10-23
 - [Patch v5.9.2] Increase unit test coverage for cooldown utilities
 - New/Updated unit tests added for tests.test_cooldown_utils_full
 - QA: pytest -q passed (506 tests)
+
+### 2025-06-06
+
+- [Patch v5.9.4] Improve hyperparameter sweep with real trade log and metric export
+- New/Updated unit tests added for tests.test_hyperparameter_sweep_cli
+- QA: pytest -q passed (tests count TBD)
+
 
 ### 2025-06-06
 - [Patch v5.9.2] Add unit tests for dashboard and evaluation
@@ -1055,6 +1064,8 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (518 tests)
 
 ### 2025-06-06
+
 - [Patch v5.9.3] ปรับลำดับ Log Forced Trigger → Attempt
 - New/Updated unit tests added for tests.test_forced_trigger
 - QA: pytest -q passed (existing tests)
+
