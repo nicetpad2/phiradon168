@@ -76,3 +76,34 @@ def test_optuna_walk_forward_per_fold_overlap_error():
         wfv.optuna_walk_forward_per_fold(df, space, dummy_backtest, train_window=4, test_window=1, step=1, n_trials=1)
 
 
+
+def test_optuna_walk_forward_int_params():
+    wfv = load_wfv()
+    df = pd.DataFrame({'Close': range(12)}, index=pd.RangeIndex(12))
+    space = {'loss_thresh': (1, 2, 1)}
+    res = wfv.optuna_walk_forward(
+        df,
+        space,
+        dummy_backtest,
+        train_window=4,
+        test_window=2,
+        step=2,
+        n_trials=1,
+    )
+    assert 'loss_thresh' in res.columns
+
+
+def test_optuna_walk_forward_per_fold_int_params():
+    wfv = load_wfv()
+    df = pd.DataFrame({'Close': range(12)}, index=pd.RangeIndex(12))
+    space = {'loss_thresh': (1, 2, 1)}
+    res = wfv.optuna_walk_forward_per_fold(
+        df,
+        space,
+        dummy_backtest,
+        train_window=4,
+        test_window=2,
+        step=2,
+        n_trials=1,
+    )
+    assert set(res.columns).issuperset({'fold', 'loss_thresh'})
