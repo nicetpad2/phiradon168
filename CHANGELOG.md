@@ -1,3 +1,10 @@
+### 2025-10-21
+
+- [Patch v5.8.8] Add WFV overfitting utilities
+- New/Updated unit tests added for tests.test_wfv_overfit
+- QA: pytest -q passed (tests count TBD)
+
+
 
 ### 2025-10-20
 - [Patch v5.8.7] Add risk management helpers
@@ -27,6 +34,11 @@
 - [Patch v5.8.4] Update setup.py packaging metadata
 - New/Updated unit tests added for none (packaging update)
 - QA: pytest -q passed (429 tests)
+
+### 2025-06-08
+- [Patch v5.8.3] Add data leakage prevention utilities
+- New/Updated unit tests added for tests.test_leakage
+- QA: pytest -q passed (failed in CI)
 
 ### 2025-06-06
 - [Patch v5.8.5] Add core strategy modules under strategy/
@@ -985,3 +997,4 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.8.8] Add k-fold cross validation utility and tests
 - New/Updated unit tests added for tests.test_kfold_cv
 - QA: pytest -q passed (selected tests)
+
