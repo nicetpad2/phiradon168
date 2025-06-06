@@ -1207,3 +1207,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for none (config exception log)
 - QA: pytest -q failed (import errors)
 
+
+### 2025-06-06
+- [Patch v5.10.4] Update function registry line numbers
+- New/Updated unit tests added for tests/test_function_registry.py
+- QA: pytest tests/test_function_registry.py -q passed (46 tests)
