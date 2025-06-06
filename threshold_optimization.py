@@ -3,8 +3,11 @@ import argparse
 import pandas as pd
 import logging
 
-try:  # [Patch v5.10.2] fallback when heavy config import fails
-    from src.config import logger, optuna
+try:  # [Patch v5.10.3] robust fallback when heavy config import fails
+    import importlib
+    _cfg = importlib.import_module("src.config")
+    logger = getattr(_cfg, "logger", logging.getLogger("threshold_optimization"))
+    optuna = getattr(_cfg, "optuna", None)
 except Exception:  # pragma: no cover - optional dependency
     logger = logging.getLogger("threshold_optimization")
     try:
