@@ -1249,7 +1249,54 @@ META_FILTER_RELAXED_THRESHOLD = safe_get_global('META_FILTER_RELAXED_THRESHOLD',
 META_FILTER_RELAX_BLOCKS = int(safe_get_global('META_FILTER_RELAX_BLOCKS', DEFAULT_META_FILTER_RELAX_BLOCKS))
 POST_TRADE_COOLDOWN_BARS = safe_get_global("POST_TRADE_COOLDOWN_BARS", 2)
 OMS_ENABLED = safe_get_global("OMS_ENABLED", True)
+PAPER_MODE = safe_get_global("PAPER_MODE", False)
 OUTPUT_DIR = safe_get_global('OUTPUT_DIR', DEFAULT_OUTPUT_DIR)
+
+# [Patch v5.9.3] Add attempt_order helper with block reason logging
+def attempt_order(side: str, price: float, params: dict) -> tuple[bool, list[str]]:
+    """Attempt to execute an order and log all block reasons."""
+    can_execute = True
+    block_reasons: list[str] = []
+
+    if not OMS_ENABLED:
+        block_reasons.append("OMS_DISABLED")
+
+    if params.get("kill_switch_active"):
+        block_reasons.append("KILL_SWITCH_ACTIVE")
+
+    if params.get("soft_cooldown_active"):
+        block_reasons.append("SOFT_COOLDOWN_ACTIVE")
+
+    if params.get("spike_guard_active"):
+        block_reasons.append("SPIKE_GUARD_ACTIVE")
+
+    if not params.get("meta_filter_passed", True):
+        block_reasons.append("META_FILTER_BLOCKED")
+
+    if params.get("require_m15_trend") and not params.get("m15_trend_ok", True):
+        block_reasons.append("M15_TREND_UNMATCHED")
+
+    if params.get("paper_mode"):
+        block_reasons.append("PAPER_MODE_SIMULATION")
+
+    if block_reasons:
+        can_execute = False
+        primary_reason = block_reasons[0]
+        logger.warning(
+            "Order Blocked | Side=%s, Reason=%s, All_Reasons=%s",
+            side,
+            primary_reason,
+            block_reasons,
+        )
+        return False, block_reasons
+
+    logger.info(
+        "Order Executed | Side=%s, Price=%s, Params=%s",
+        side,
+        price,
+        params,
+    )
+    return True, []
 
 
 # --- Backtesting Helper Functions ---
@@ -1922,7 +1969,7 @@ def run_backtest_simulation_v34(
         raise ValueError(
             f"Missing required columns in input DataFrame for backtest: {missing}"
         )
-    global meta_model_type_used, meta_meta_model_type_used, USE_REENTRY, REENTRY_COOLDOWN_BARS, TIMEFRAME_MINUTES_M1, POINT_VALUE, MAX_CONCURRENT_ORDERS, MAX_HOLDING_BARS, COMMISSION_PER_001_LOT, SPREAD_POINTS, MIN_SLIPPAGE_POINTS, MAX_SLIPPAGE_POINTS, MAX_DRAWDOWN_THRESHOLD, ENABLE_FORCED_ENTRY, FORCED_ENTRY_BAR_THRESHOLD, FORCED_ENTRY_MIN_SIGNAL_SCORE, FORCED_ENTRY_LOOKBACK_PERIOD, FORCED_ENTRY_CHECK_MARKET_COND, FORCED_ENTRY_MAX_ATR_MULT, FORCED_ENTRY_MIN_GAIN_Z_ABS, FORCED_ENTRY_ALLOWED_REGIMES, FE_ML_FILTER_THRESHOLD, forced_entry_max_consecutive_losses, OUTPUT_DIR, USE_META_CLASSIFIER, BASE_BE_SL_R_THRESHOLD, DYNAMIC_BE_ATR_THRESHOLD_HIGH, DYNAMIC_BE_R_ADJUST_HIGH, META_MIN_PROBA_THRESH, REENTRY_MIN_PROBA_THRESH, META_FILTER_THRESHOLD, META_FILTER_RELAXED_THRESHOLD, META_FILTER_RELAX_BLOCKS, POST_TRADE_COOLDOWN_BARS, OMS_ENABLED
+    global meta_model_type_used, meta_meta_model_type_used, USE_REENTRY, REENTRY_COOLDOWN_BARS, TIMEFRAME_MINUTES_M1, POINT_VALUE, MAX_CONCURRENT_ORDERS, MAX_HOLDING_BARS, COMMISSION_PER_001_LOT, SPREAD_POINTS, MIN_SLIPPAGE_POINTS, MAX_SLIPPAGE_POINTS, MAX_DRAWDOWN_THRESHOLD, ENABLE_FORCED_ENTRY, FORCED_ENTRY_BAR_THRESHOLD, FORCED_ENTRY_MIN_SIGNAL_SCORE, FORCED_ENTRY_LOOKBACK_PERIOD, FORCED_ENTRY_CHECK_MARKET_COND, FORCED_ENTRY_MAX_ATR_MULT, FORCED_ENTRY_MIN_GAIN_Z_ABS, FORCED_ENTRY_ALLOWED_REGIMES, FE_ML_FILTER_THRESHOLD, forced_entry_max_consecutive_losses, OUTPUT_DIR, USE_META_CLASSIFIER, BASE_BE_SL_R_THRESHOLD, DYNAMIC_BE_ATR_THRESHOLD_HIGH, DYNAMIC_BE_R_ADJUST_HIGH, META_MIN_PROBA_THRESH, REENTRY_MIN_PROBA_THRESH, META_FILTER_THRESHOLD, META_FILTER_RELAXED_THRESHOLD, META_FILTER_RELAX_BLOCKS, POST_TRADE_COOLDOWN_BARS, OMS_ENABLED, PAPER_MODE
 
     meta_proba_tp_for_log = np.nan; meta2_proba_tp_for_log = np.nan; meta_proba_tp_for_fe_log = np.nan; total_ib_lot_accumulator = 0.0
     equity = initial_capital_segment; peak_equity = initial_capital_segment; max_drawdown_pct = 0.0
@@ -2309,10 +2356,22 @@ def run_backtest_simulation_v34(
                     logging.info(f"[OMS_Guardian] Post-trade cooldown started ({POST_TRADE_COOLDOWN_BARS} bars)")
             elif not active_orders: bars_since_last_trade += 1
             if open_new_order:
-                entry_type_str = 'Forced' if is_forced_entry else ('Re-Entry' if is_reentry_trade else 'Standard'); logging.info(f"   Attempting to Open New Order ({entry_type_str}) for {side} at {now}..."); can_open_order = True; block_reason = None
-                if not OMS_ENABLED:
+                entry_type_str = (
+                    'Forced' if is_forced_entry else ('Re-Entry' if is_reentry_trade else 'Standard')
+                )
+                logging.debug(
+                    f"   Checking OMS (Enabled={OMS_ENABLED}, Paper={PAPER_MODE})"
+                )
+                can_open_order = True
+                block_reason = None
+                if not OMS_ENABLED and not PAPER_MODE:
                     can_open_order = False
-                    block_reason = "OMS_DISABLED"
+                    block_reason = (
+                        "KILL_SWITCH_ACTIVE" if kill_switch_activated else "OMS_DISABLED"
+                    )
+                logging.info(
+                    f"   Attempting to Open New Order ({entry_type_str}) for {side} at {now}..."
+                )
                 current_equity_check = equity_at_start_of_bar + current_equity_change_this_bar; potential_peak_check = max(peak_equity, current_equity_check); current_dd_check = (potential_peak_check - current_equity_check) / potential_peak_check if potential_peak_check > 1e-9 else 0.0; min_equity_level = initial_capital_segment * min_equity_threshold_pct
                 if current_equity_check < min_equity_level: can_open_order = False; block_reason = f"LOW_EQUITY ({current_equity_check:.2f} < {min_equity_level:.2f})"
                 if can_open_order and current_dd_check > MAX_DRAWDOWN_THRESHOLD: can_open_order = False; block_reason = f"MAX_DD ({current_dd_check*100:.1f}% > {MAX_DRAWDOWN_THRESHOLD*100:.0f}%)"; orders_blocked_by_drawdown += 1
