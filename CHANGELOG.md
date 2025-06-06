@@ -1122,3 +1122,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_settings
 - QA: pytest -q tests/test_settings.py passed
 
+### 2025-06-08
+- [Patch v5.9.10] Pin numpy version below 2.0
+- New/Updated unit tests added for none (dependency fix)
+- QA: pytest -q reported failures (5 failed, 635 passed)
+
