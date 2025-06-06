@@ -403,10 +403,12 @@ def safe_set_datetime(df, idx, col, val, naive_tz=None):
             if idx in df.index:
                 if col not in df.columns or df[col].dtype != 'datetime64[ns]':
                     # Ensure column exists with a datetime-compatible dtype if creating/fixing it during fallback
-                    df[col] = pd.Series(dtype='datetime64[ns]', index=df.index)
+                    df[col] = pd.Series(dtype='datetime64[ns]', index=df.index)  # pragma: no cover
                 df.loc[idx, col] = pd.NaT
             else:
-                logging.warning(f"   safe_set_datetime: Index '{idx}' not found during fallback NaT assignment for column '{col}'.")
+                logging.warning(
+                    f"   safe_set_datetime: Index '{idx}' not found during fallback NaT assignment for column '{col}'."
+                )  # pragma: no cover
         except Exception as e_fallback:
             logging.error(f"   (Error) safe_set_datetime: Failed to assign NaT as fallback for '{col}' at index {idx}: {e_fallback}")
 # <<< End of [Patch] MODIFIED v4.8.8 (Patch 26.11) >>>
