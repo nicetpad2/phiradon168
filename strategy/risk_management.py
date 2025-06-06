@@ -102,6 +102,23 @@ def can_open_trade(open_trades: int, max_open: int = 2) -> bool:
     return open_trades < max_open
 
 
+# [Patch v5.8.8] Hard cut-off checker
+def should_hard_cutoff(
+    daily_drawdown_pct: float,
+    consecutive_losses: int,
+    dd_threshold: float = 0.03,
+    loss_threshold: int = 5,
+) -> bool:
+    """Return True if trading should stop for the day."""
+    if not isinstance(daily_drawdown_pct, (int, float)):
+        raise TypeError("daily_drawdown_pct must be numeric")
+    if not isinstance(consecutive_losses, int):
+        raise TypeError("consecutive_losses must be int")
+    if daily_drawdown_pct >= dd_threshold or consecutive_losses >= loss_threshold:
+        return True
+    return False
+
+
 @dataclass
 class RiskManager:
     """Track drawdown and enforce kill switch."""
@@ -132,6 +149,7 @@ __all__ = [
     "check_max_daily_drawdown",
     "check_trailing_equity_stop",
     "can_open_trade",
+    "should_hard_cutoff",
     "RiskManager",
     "OrderStatus",
 ]
