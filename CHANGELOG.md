@@ -1132,10 +1132,10 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for none (dependency fix)
 - QA: pytest -q reported failures (5 failed, 635 passed)
 
-### 2025-06-08
 
-- [Patch v5.9.11] เพิ่ม unit test utils.py ครอบคลุม 100%
-- New/Updated unit tests added for tests.test_new_utils
-- QA: pytest -q passed (642 tests)
+### 2025-06-09
+- [Patch v5.9.11] เพิ่ม unit test hyperparameter_sweep ครอบคลุม 100%
+- New/Updated unit tests added for tests.test_hyperparameter_sweep_cli
+- QA: pytest --cov=tuning.hyperparameter_sweep -q passed (12 tests)
 
 
