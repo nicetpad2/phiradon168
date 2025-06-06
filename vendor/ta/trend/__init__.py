@@ -1,3 +1,5 @@
+# Vendored from python-ta version 0.11.0 on 2025-06-06
+# Upstream: https://github.com/bukosabino/ta
 import pandas as pd
 
 class MACD:

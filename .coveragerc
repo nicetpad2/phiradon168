@@ -3,6 +3,7 @@ omit =
     */tests/*
     */logs/*
     */ta/*
+    */vendor/ta/*
     */__init__.py
     src/strategy.py
     src/main.py
