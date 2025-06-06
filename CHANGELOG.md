@@ -1,8 +1,9 @@
 ### 2025-10-17
 
-- [Patch v5.8.4] Refactor QA output script
-- New/Updated unit tests added for tests.test_qa_output_default
-- QA: pytest -q passed (424 tests)
+- [Patch v5.8.4] CLI option for profiling output directory and summary metrics
+- New/Updated unit tests added for tests.test_profile_backtest::test_profile_cli_output_dir
+- QA: pytest -q passed (existing tests)
+
 
 ### 2025-10-16
 
