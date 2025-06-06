@@ -14,6 +14,7 @@ except Exception:  # pragma: no cover - optional dependency
         import optuna
     except Exception:
         optuna = None
+# [Patch v5.9.17] provide basic logger/optuna if src.config import fails
 
 # [Patch v5.5.14] Improved threshold optimization with Optuna
 
