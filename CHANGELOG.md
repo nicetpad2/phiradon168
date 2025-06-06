@@ -1,3 +1,9 @@
+### 2025-10-17
+
+- [Patch v5.8.4] Refactor QA output script
+- New/Updated unit tests added for tests.test_qa_output_default
+- QA: pytest -q passed (424 tests)
+
 ### 2025-10-16
 
 - [Patch v5.8.3] Add folder-specific READMEs under docs
