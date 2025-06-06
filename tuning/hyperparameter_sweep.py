@@ -28,6 +28,15 @@ from src.training import real_train_func
 DEFAULT_TRADE_LOG = os.path.join(
     DefaultConfig.OUTPUT_DIR, "trade_log_v32_walkforward.csv.gz"
 )
+# [Patch v5.9.5] Fallback to alternative trade log locations
+if not os.path.exists(DEFAULT_TRADE_LOG):
+    alt_path = os.path.join(DefaultConfig.OUTPUT_DIR, "trade_log_v32_walkforward.csv")
+    if os.path.exists(alt_path):
+        DEFAULT_TRADE_LOG = alt_path
+    else:
+        simple_path = os.path.join(DefaultConfig.OUTPUT_DIR, "trade_log_NORMAL.csv")
+        if os.path.exists(simple_path):
+            DEFAULT_TRADE_LOG = simple_path
 
 
 def _parse_csv_list(text: str, cast: Callable) -> List:
@@ -67,8 +76,13 @@ def run_sweep(
         logger.error("ต้องระบุ trade_log_path เพื่อทำการ sweep")
         raise SystemExit(1)
     if not os.path.exists(trade_log_path):
-        logger.error(f"ไม่พบไฟล์ trade log: {trade_log_path}")
-        raise SystemExit(1)
+        # [Patch v5.9.5] Try fallback paths if compressed log missing
+        alt = trade_log_path.replace('.csv.gz', '.csv')
+        if os.path.exists(alt):
+            trade_log_path = alt
+        else:
+            logger.error(f"ไม่พบไฟล์ trade log: {trade_log_path}")
+            raise SystemExit(1)
     try:
         pd.read_csv(trade_log_path)
     except Exception as e:  # pragma: no cover - unexpected read failure
