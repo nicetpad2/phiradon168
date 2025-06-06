@@ -52,6 +52,7 @@ def run_parallel_feature_engineering(list_of_fold_params, processes=4):
 
 def get_fund_profile(name: str | None) -> dict:
     """Return fund profile dict from config by name."""
+    # [Patch v5.10.2] Import config lazily for pytest compatibility
     from src.config import FUND_PROFILES, DEFAULT_FUND_NAME
     if not name:
         name = DEFAULT_FUND_NAME
@@ -132,6 +133,7 @@ def main_profile(
     )
 
     if train:
+        # [Patch v5.10.2] Delay import to avoid side effects when testing
         from src.training import real_train_func
         real_train_func(train_output)
 
