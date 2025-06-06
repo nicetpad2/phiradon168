@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import List
 from dataclasses import dataclass
+import numpy as np
 
 
 @dataclass
@@ -148,7 +149,7 @@ def update_losses(state: CooldownState, pnl: float) -> int:
 def update_drawdown(state: CooldownState, drawdown_pct: float) -> float:
     """[Patch] Update current drawdown percentage."""
 
-    if not isinstance(drawdown_pct, (int, float)):
+    if not isinstance(drawdown_pct, (int, float, np.number)):
         raise TypeError("drawdown_pct must be numeric")
     state.drawdown_pct = float(drawdown_pct)
     return state.drawdown_pct
