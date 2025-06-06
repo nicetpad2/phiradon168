@@ -1,4 +1,8 @@
 ### 2025-06-06
+- [Patch v5.9.16] Fix tests import path
+- New/Updated unit tests added for none (import fix)
+- QA: pytest tests/test_order_manager_more.py -q passed (7 tests)
+### 2025-06-06
 - [Patch v5.9.15] Add wfv unit tests
 - New/Updated unit tests added for tests.test_wfv_full
 - QA: pytest -q passed (11 tests)
@@ -1171,10 +1175,9 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for none (revert docstring change)
 - QA: pytest -q passed (691 tests)
 
-### 2025-06-06
 
-- [Patch v5.9.15] เพิ่มเทส order_manager ครอบคลุมครบ
-- New/Updated unit tests added for tests.test_order_manager_more
-- QA: pytest -q passed (562 tests)
-
+### 2025-06-07
+- [Patch v5.9.15] เพิ่ม unit tests ครอบคลุมโมดูล strategy
+- New/Updated unit tests added for tests/unit/test_strategy_additional_coverage.py
+- QA: pytest -q passed (700+ tests)
 
