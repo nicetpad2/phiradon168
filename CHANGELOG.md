@@ -1,3 +1,7 @@
+### 2025-10-21
+- [Patch v5.8.8] Add simulated noise backtest utility
+- New/Updated unit tests added for tests.test_qa_tools
+- QA: pytest -q (known failures)
 
 ### 2025-10-20
 - [Patch v5.8.7] Add risk management helpers
