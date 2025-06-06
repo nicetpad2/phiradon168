@@ -32,3 +32,12 @@ def test_update_signal_threshold_low():
         th = update_signal_threshold(0.1, params)
     assert th == 0.25
     mock_info.assert_called()
+
+
+def test_update_signal_threshold_invalid():
+    params = DummyParams()
+    logger = logging.getLogger('src.adaptive')
+    with patch.object(logger, 'warning') as mock_warn:
+        th = update_signal_threshold('bad', params)
+    assert th == params.signal_score_threshold
+    mock_warn.assert_called_once()

@@ -22,3 +22,17 @@ def test_ingest_log_to_db(tmp_path):
     with engine.connect() as conn:
         rows = conn.execute(text("SELECT event_type FROM trade_events ORDER BY id")).fetchall()
     assert [r[0] for r in rows] == ["ATTEMPT", "BLOCK", "EXECUTE", "KILL_SWITCH"]
+
+
+def test_ingest_log_to_db_empty(tmp_path):
+    """Should return 0 when log file has no recognized events."""
+    db_path = tmp_path / "db.sqlite"
+    engine = create_engine(f"sqlite:///{db_path}")
+    init_db(engine)
+    log_file = tmp_path / "empty.log"
+    log_file.write_text("INFO:root: nothing to see here")
+    count = ingest_log_to_db(str(log_file), engine)
+    assert count == 0
+    with engine.connect() as conn:
+        result = conn.execute(text("SELECT COUNT(*) FROM trade_events")).scalar()
+    assert result == 0
