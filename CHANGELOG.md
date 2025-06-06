@@ -1,3 +1,8 @@
+### 2025-10-21
+- [Patch v5.8.8] Add WFV overfitting utilities
+- New/Updated unit tests added for tests.test_wfv_overfit
+- QA: pytest -q passed (tests count TBD)
+
 
 ### 2025-10-20
 - [Patch v5.8.7] Add risk management helpers

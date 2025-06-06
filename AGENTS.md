@@ -98,6 +98,8 @@
   - Audit fallback logic for ML failures; recommend retraining or hyperparameter updates
   - Track model drift and notify when retraining is required
   - Provide evaluation utility `evaluate_meta_classifier` in src.evaluation
+  - Detect overfit on walk-forward splits via `walk_forward_yearly_validation`
+    and `detect_overfit_wfv`
   - Record daily/weekly AUC metrics using `src.monitor`
 - **Modules:** `src/evaluation.py`, `src/monitor.py`
 

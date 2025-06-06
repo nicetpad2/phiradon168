@@ -31,3 +31,22 @@ def create_dashboard(equity: pd.Series, drawdown: pd.Series, returns: pd.Series,
 def save_dashboard(fig: go.Figure, output_path: str) -> None:
     """Save plotly dashboard to HTML."""
     fig.write_html(output_path, include_plotlyjs="cdn")
+
+
+def plot_wfv_summary(results: pd.DataFrame) -> go.Figure:
+    """Create bar chart summarizing PnL per fold."""
+    if results is None or results.empty:
+        raise ValueError("results dataframe is empty")
+    fig = go.Figure()
+    fig.add_bar(x=results["fold"], y=results["test_pnl"], name="Test PnL")
+    if "train_pnl" in results.columns:
+        fig.add_bar(x=results["fold"], y=results["train_pnl"], name="Train PnL")
+    fig.update_layout(
+        barmode="group",
+        title="WFV PnL per Fold",
+        xaxis_title="Fold",
+        yaxis_title="PnL",
+        height=500,
+        width=700,
+    )
+    return fig
