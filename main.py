@@ -3,6 +3,8 @@ import subprocess
 import os
 import sys
 import logging
+import logging.config
+import yaml
 import pandas as pd
 
 from src.utils.pipeline_config import (
@@ -13,16 +15,20 @@ from src.utils.pipeline_config import (
 from src.utils.errors import PipelineError
 from src.utils.hardware import has_gpu
 
-LOG_FORMAT = "%(asctime)s | %(levelname)s | %(module)s:%(lineno)d | %(message)s"
 logger = logging.getLogger(__name__)
 
 
 def setup_logging(level: str) -> None:
-    """Configure logging with a consistent format."""
-    logging.basicConfig(format=LOG_FORMAT, level=getattr(logging, level.upper(), logging.INFO))
+    """Configure logging from YAML file."""
+    with open("config/logger_config.yaml", "r") as f:
+        log_cfg = yaml.safe_load(f.read())
+    if level:
+        log_cfg["root"]["level"] = level.upper()
+    logging.config.dictConfig(log_cfg)
 
 
 # [Patch v5.8.2] CLI pipeline orchestrator
+
 
 def parse_args(args=None) -> argparse.Namespace:
     """Parse command line arguments."""
@@ -66,7 +72,10 @@ def run_sweep(config: PipelineConfig, runner=subprocess.run) -> None:
     """Run hyperparameter sweep stage."""
     logger.info("[Stage] sweep")
     try:
-        runner([os.environ.get("PYTHON", "python"), "tuning/hyperparameter_sweep.py"], check=True)
+        runner(
+            [os.environ.get("PYTHON", "python"), "tuning/hyperparameter_sweep.py"],
+            check=True,
+        )
     except subprocess.CalledProcessError as exc:
         logger.error("Sweep failed", exc_info=True)
         raise PipelineError("sweep stage failed") from exc
@@ -76,7 +85,10 @@ def run_threshold(config: PipelineConfig, runner=subprocess.run) -> None:
     """Run threshold optimization stage."""
     logger.info("[Stage] threshold")
     try:
-        runner([os.environ.get("PYTHON", "python"), "threshold_optimization.py"], check=True)
+        runner(
+            [os.environ.get("PYTHON", "python"), "threshold_optimization.py"],
+            check=True,
+        )
     except subprocess.CalledProcessError as exc:
         logger.error("Threshold optimization failed", exc_info=True)
         raise PipelineError("threshold stage failed") from exc
@@ -91,7 +103,11 @@ def run_backtest(config: PipelineConfig, pipeline_func=run_backtest_pipeline) ->
     """Run backtest stage."""
     logger.info("[Stage] backtest")
     model_dir = config.model_dir
-    model_files = [f for f in os.listdir(model_dir) if f.startswith("model_") and f.endswith(".joblib")]
+    model_files = [
+        f
+        for f in os.listdir(model_dir)
+        if f.startswith("model_") and f.endswith(".joblib")
+    ]
     model_files.sort()
     model_path = os.path.join(model_dir, model_files[-1]) if model_files else None
     thresh_path = os.path.join(model_dir, config.threshold_file)
@@ -140,7 +156,9 @@ def main(args=None) -> int:
         if parsed.profile and stage == "backtest":
             import profile_backtest
 
-            profile_backtest.run_profile(lambda: run_backtest(config), parsed.output_file)
+            profile_backtest.run_profile(
+                lambda: run_backtest(config), parsed.output_file
+            )
             return 0
         if stage == "preprocess":
             run_preprocess(config)

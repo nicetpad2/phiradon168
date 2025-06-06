@@ -29,13 +29,12 @@ def plot_equity_curve(trade_df: pd.DataFrame, output_path: Path) -> Path:
     output_path.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     fig, ax = plt.subplots()
-    ax.plot(trade_df.index, trade_df.squeeze())
-    ax.set_xlabel("Index")
-    ax.set_ylabel("Equity")
-    fig.tight_layout()
-    file_path = output_path / f"equity_curve_{timestamp}.png"
-    fig.savefig(file_path, dpi=300)
-    plt.close(fig)
-    return file_path
+
+    ax.plot(list(equity))
+    ax.set_title("Equity Curve")
+    if filepath:
+        fig.savefig(filepath)
+    return ax
+
 
 __all__ = ["plot_equity_curve"]
