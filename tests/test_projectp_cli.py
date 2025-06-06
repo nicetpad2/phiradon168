@@ -5,6 +5,8 @@ import pytest
 def test_parse_args_modes():
     assert proj.parse_args(["--mode", "sweep"]).mode == "sweep"
     assert proj.parse_args([]).mode == "preprocess"
+    assert proj.parse_args(["--mode", "hyper_sweep"]).mode == "hyper_sweep"
+    assert proj.parse_args(["--mode", "wfv"]).mode == "wfv"
 
 
 def test_run_mode_invalid():
@@ -84,3 +86,23 @@ def test_run_full_pipeline_sequence(monkeypatch):
     monkeypatch.setattr(proj, 'run_report', lambda: calls.append('rep'))
     proj.run_full_pipeline()
     assert calls == ['pre', 'sweep', 'th', 'back', 'rep']
+
+
+def test_run_mode_wfv(monkeypatch):
+    called = {}
+    monkeypatch.setattr(proj, 'run_walkforward', lambda: called.setdefault('run', True))
+    proj.run_mode('wfv')
+    assert called.get('run') is True
+
+
+def test_run_mode_all(monkeypatch, tmp_path):
+    calls = []
+    monkeypatch.setattr(proj, 'run_hyperparameter_sweep', lambda params: calls.append('sweep'))
+    best = tmp_path / 'best_params.json'
+    best.write_text('{"MIN_SIGNAL_SCORE_ENTRY": 0.9}')
+    monkeypatch.setattr(proj.os.path, 'join', lambda *a: str(best))
+    monkeypatch.setattr(proj.os.path, 'exists', lambda p: True)
+    monkeypatch.setattr(proj, 'update_config_from_dict', lambda d: calls.append('update'))
+    monkeypatch.setattr(proj, 'run_walkforward', lambda: calls.append('wfv'))
+    proj.run_mode('all')
+    assert calls == ['sweep', 'update', 'wfv']

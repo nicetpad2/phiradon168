@@ -1,5 +1,10 @@
 
 ### 2025-06-06
+- [Patch v5.9.8] Add hyper_sweep and WFV modes
+- New/Updated unit tests added for tests.test_projectp_cli, tests.test_config_loader, tests.test_wfv_runner
+- QA: pytest -q passed (584 tests)
+
+### 2025-06-06
 - [Patch v5.9.7] Expand coverage to all src modules
 - New/Updated unit tests added for none (configuration change)
 - QA: pytest --cov=src passed (580 tests)
