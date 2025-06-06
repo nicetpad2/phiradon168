@@ -2578,8 +2578,9 @@ def run_backtest_simulation_v34(
 
             if equity <= 0 and not kill_switch_activated:
                 logging.warning(f"[Patch] Margin Call triggered. Equity = {equity:.2f}."); kill_switch_activated = True; kill_switch_trigger_time = now; equity = 0
-                OMS_ENABLED = False
-                logging.error(f"Equity Drawdown – Kill Switch Activated: Equity down {current_dd_final*100:.1f}% from Peak")
+                # OMS_ENABLED = False  # [Commented] ไม่ปิด OMS แบบถาวร ให้ระบบยังสามารถพิจารณา forced entry ได้ใน M1
+                logging.warning("Kill Switch Activated แต่ไม่ปิด OMS ทิ้ง")
+                logging.error(f"Equity Drawdown – Kill Switch Activated: Equity down {current_dd_final*100:.1f}% from Peak (แต่ไม่ปิด OMS ทิ้ง)")
                 if active_orders:
                     logging.warning(f"      Force closing {len(active_orders)} orders due to Margin Call at {now}.")
                     for mc_order in active_orders: trade_log_entry_mc = {"period": label, "side": mc_order.get("side"), "entry_idx": mc_order.get("entry_idx"), "entry_time": mc_order.get("entry_time"), "entry_price": mc_order.get("entry_price"), "close_time": now, "exit_price": current_close, "exit_reason": "MARGIN_CALL", "lot": mc_order.get("lot", 0.0), "pnl_usd_net": 0.0, "is_partial_tp": False, "partial_tp_level": len(mc_order.get("partial_tp_processed_levels", set())), "risk_mode_at_entry": mc_order.get("risk_mode_at_entry", "N/A"), "active_model_at_entry": mc_order.get("active_model_at_entry", "N/A")}; trade_log.append(trade_log_entry_mc)
@@ -2619,8 +2620,9 @@ def run_backtest_simulation_v34(
                     )
                     kill_switch_activated = True
                     kill_switch_trigger_time = now
-                    OMS_ENABLED = False
-                    logging.error(f"Equity Drawdown – Kill Switch Activated: Equity down {current_dd_final*100:.1f}% from Peak")
+                    # OMS_ENABLED = False  # [Commented] ไม่ปิด OMS ทิ้ง ปล่อยให้ตลาดยังเข้าทดลองได้ในโหมด Paper (ถ้าเปิดไว้)
+                    logging.warning("Kill Switch Activated แต่ไม่ปิด OMS ทิ้ง")
+                    logging.error(f"Equity Drawdown – Kill Switch Activated: Equity down {current_dd_final*100:.1f}% from Peak (แต่ไม่ปิด OMS ทิ้ง)")
                     break
                 elif consecutive_losses >= kill_switch_consecutive_losses_config:
                     logging.warning("[Patch] Kill Switch triggered due to consecutive losses.")
@@ -2629,8 +2631,9 @@ def run_backtest_simulation_v34(
                     )
                     kill_switch_activated = True
                     kill_switch_trigger_time = now
-                    OMS_ENABLED = False
-                    logging.error(f"Equity Drawdown – Kill Switch Activated: Equity down {current_dd_final*100:.1f}% from Peak")
+                    # OMS_ENABLED = False  # [Commented] ไม่ปิด OMS ทิ้ง ปล่อยให้ Paper Mode ยังสามารถบันทึกผลได้
+                    logging.warning("Kill Switch Activated แต่ไม่ปิด OMS ทิ้ง")
+                    logging.error(f"Equity Drawdown – Kill Switch Activated: Equity down {current_dd_final*100:.1f}% from Peak (แต่ไม่ปิด OMS ทิ้ง)")
                     break
                 else:
                     if should_warn_drawdown(cd_state, KILL_SWITCH_WARNING_MAX_DD_THRESHOLD):

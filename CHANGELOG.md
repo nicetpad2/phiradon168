@@ -1103,3 +1103,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.8.11] Fix `entry_type_str` undefined for forced entries
 - Added unit test `test_forced_entry_fix.py`
 - QA: pytest -q passed (580 tests)
+
+### 2025-06-08
+- [Patch v5.9.8] Preserve OMS state during kill switch events
+- New/Updated unit tests added for none (behavioral patch)
+- QA: pytest -q passed (existing tests)
