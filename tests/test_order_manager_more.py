@@ -12,7 +12,9 @@ sys.path.insert(0, ROOT_DIR)
 
 import src.order_manager as om
 
-from test_order_manager_module import _setup_strategy
+
+from .test_order_manager_module import _setup_strategy
+
 
 
 @pytest.mark.parametrize(
