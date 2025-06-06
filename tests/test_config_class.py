@@ -41,3 +41,11 @@ def test_config_invalid_num(monkeypatch):
     monkeypatch.setenv('LOG_DIR', 'tmp_logs')
     with pytest.raises(TypeError):
         _reload_config()
+
+
+def test_config_invalid_float(monkeypatch):
+    """Ensure invalid float env raises TypeError."""
+    monkeypatch.setenv('LEARNING_RATE', 'oops')
+    monkeypatch.setenv('LOG_DIR', 'tmp_logs')
+    with pytest.raises(TypeError):
+        _reload_config()
