@@ -1064,8 +1064,8 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (518 tests)
 
 ### 2025-06-06
-- [Patch vX.Y.Z] ปรับพารามิเตอร์ Entry ให้มีโอกาสเกิด Trade เพิ่มขึ้น
-- New/Updated unit tests added for tests/test_mtf_trend_confirmed.py
-- QA: pytest -q passed (566 tests)
 
+- [Patch v5.9.3] ปรับลำดับ Log Forced Trigger → Attempt
+- New/Updated unit tests added for tests.test_forced_trigger
+- QA: pytest -q passed (existing tests)
 

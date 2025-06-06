@@ -1934,6 +1934,17 @@ def _resolve_close_index(df_sim, entry_idx, close_timestamp):
     )
     return resolved_idx
 # <<< [Patch] MODIFIED v4.8.8 (Patch 26.5.1): Applied [PATCH C - Unified] for error handling and logging fix. >>>
+# [Patch v5.9.3] Helper to check forced entry trigger before logging
+def check_forced_trigger(bars_since_last_trade: int, score: float):
+    """Return whether forced entry conditions are met."""
+    triggered = (
+        bars_since_last_trade >= FORCED_ENTRY_BAR_THRESHOLD
+        and pd.notna(score)
+        and abs(score) >= FORCED_ENTRY_MIN_SIGNAL_SCORE
+    )
+    return triggered, {"bars_since_last": bars_since_last_trade, "score": score}
+
+
 def run_backtest_simulation_v34(
     df_m1_segment_pd,
     label,
@@ -2330,6 +2341,11 @@ def run_backtest_simulation_v34(
             else: logging.debug(f"   Standard entry blocked at {now}. Reason: {block_reason_entry}")
             if not open_new_order and ENABLE_FORCED_ENTRY and not forced_entry_temporarily_disabled:
                 if bars_since_last_trade >= FORCED_ENTRY_BAR_THRESHOLD:
+                    forced_triggered, fe_info = check_forced_trigger(bars_since_last_trade, signal_score)
+                    if forced_triggered:
+                        logging.info(
+                            f"(Forced Triggered) Side={side}, Bars since last={fe_info['bars_since_last']}, Score={fe_info['score']}, Timestamp={now}"
+                        )
                     logging.debug(f"   Checking Forced Entry conditions at {now} (Bars since last trade: {bars_since_last_trade})...")
                     fe_market_cond_met = True; block_reason_fe = "N/A"
                     if FORCED_ENTRY_CHECK_MARKET_COND:
@@ -2344,7 +2360,11 @@ def run_backtest_simulation_v34(
                     logging.debug(f"      FE Signal Score Met: {fe_signal_score_met} (Score: {signal_score:.2f} vs Threshold: {FORCED_ENTRY_MIN_SIGNAL_SCORE:.2f})")
                     if fe_market_cond_met and fe_signal_score_met:
                         fe_side = "BUY" if signal_score > 0 else "SELL"
-                        if fe_side == side: open_new_order = True; is_forced_entry = True; is_reentry_trade = False; logging.info(f"      (Forced Entry Triggered) Side: {side}, Bars since last: {bars_since_last_trade}, Score: {signal_score:.2f}")
+                        if fe_side == side:
+                            open_new_order = True
+                            is_forced_entry = True
+                            is_reentry_trade = False
+                            logging.info(f"Attempt Forced {side} | Timestamp={now}")
                         else: logging.debug(f"      FE condition met, but signal side ({fe_side}) does not match simulation side ({side}).")
                     elif not fe_market_cond_met: logging.debug(f"      FE blocked by Market Condition: {block_reason_fe}")
                     elif not fe_signal_score_met: logging.debug(f"      FE blocked by Low Signal Score.")
@@ -2356,9 +2376,11 @@ def run_backtest_simulation_v34(
                     logging.info(f"[OMS_Guardian] Post-trade cooldown started ({POST_TRADE_COOLDOWN_BARS} bars)")
             elif not active_orders: bars_since_last_trade += 1
             if open_new_order:
-                entry_type_str = (
-                    'Forced' if is_forced_entry else ('Re-Entry' if is_reentry_trade else 'Standard')
-                )
+                if not is_forced_entry:
+                    entry_type_str = 'Re-Entry' if is_reentry_trade else 'Standard'
+                    logging.info(
+                        f"   Attempting to Open New Order ({entry_type_str}) for {side} at {now}..."
+                    )
                 logging.debug(
                     f"   Checking OMS (Enabled={OMS_ENABLED}, Paper={PAPER_MODE})"
                 )
@@ -2369,9 +2391,6 @@ def run_backtest_simulation_v34(
                     block_reason = (
                         "KILL_SWITCH_ACTIVE" if kill_switch_activated else "OMS_DISABLED"
                     )
-                logging.info(
-                    f"   Attempting to Open New Order ({entry_type_str}) for {side} at {now}..."
-                )
                 current_equity_check = equity_at_start_of_bar + current_equity_change_this_bar; potential_peak_check = max(peak_equity, current_equity_check); current_dd_check = (potential_peak_check - current_equity_check) / potential_peak_check if potential_peak_check > 1e-9 else 0.0; min_equity_level = initial_capital_segment * min_equity_threshold_pct
                 if current_equity_check < min_equity_level: can_open_order = False; block_reason = f"LOW_EQUITY ({current_equity_check:.2f} < {min_equity_level:.2f})"
                 if can_open_order and current_dd_check > MAX_DRAWDOWN_THRESHOLD: can_open_order = False; block_reason = f"MAX_DD ({current_dd_check*100:.1f}% > {MAX_DRAWDOWN_THRESHOLD*100:.0f}%)"; orders_blocked_by_drawdown += 1
