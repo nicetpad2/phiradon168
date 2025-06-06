@@ -2378,7 +2378,12 @@ def run_backtest_simulation_v34(
                     logging.info(f"[OMS_Guardian] Post-trade cooldown started ({POST_TRADE_COOLDOWN_BARS} bars)")
             elif not active_orders: bars_since_last_trade += 1
             if open_new_order:
-                if not is_forced_entry:
+                if is_forced_entry:
+                    entry_type_str = 'Forced'
+                    logging.info(
+                        f"   Attempting to Open Forced Order for {side} at {now}..."
+                    )
+                else:
                     entry_type_str = 'Re-Entry' if is_reentry_trade else 'Standard'
                     logging.info(
                         f"   Attempting to Open New Order ({entry_type_str}) for {side} at {now}..."

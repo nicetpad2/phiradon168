@@ -1084,3 +1084,7 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_placeholder
 - QA: pytest -q passed (selected tests)
 
+### 2025-06-08
+- [Patch v5.8.11] Fix `entry_type_str` undefined for forced entries
+- Added unit test `test_forced_entry_fix.py`
+- QA: pytest -q passed (580 tests)
