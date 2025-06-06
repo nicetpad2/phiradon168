@@ -1,3 +1,7 @@
+### 2025-06-06
+- [Patch v5.8.7] Add Hold-Out OOS documentation
+- New/Updated unit tests added for none (documentation)
+- QA: pytest -q failed (19 failed, 456 passed)
 
 ### 2025-10-20
 - [Patch v5.8.7] Add risk management helpers
