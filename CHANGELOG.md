@@ -1053,3 +1053,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.9.2] Ensure side trade logs created via export_trade_log
 - New/Updated unit tests added for tests.test_trade_logger
 - QA: pytest -q passed (518 tests)
+
+### 2025-06-06
+- [Patch v5.9.3] ปรับลำดับ Log Forced Trigger → Attempt
+- New/Updated unit tests added for tests.test_forced_trigger
+- QA: pytest -q passed (existing tests)
