@@ -1048,3 +1048,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.9.2] Ensure side trade logs created via export_trade_log
 - New/Updated unit tests added for tests.test_trade_logger
 - QA: pytest -q passed (518 tests)
+### 2025-06-06
+- [Patch vX.Y.Z] ปรับพารามิเตอร์ Entry ให้มีโอกาสเกิด Trade เพิ่มขึ้น
+- New/Updated unit tests added for tests/test_mtf_trend_confirmed.py
+- QA: pytest -q passed (566 tests)
+
