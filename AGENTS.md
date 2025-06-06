@@ -187,6 +187,7 @@
 - **Key Responsibilities:**
   - Provide simple arithmetic helper functions
   - Ensure coverage tools remain functional
+  - Calculate required lines to reach target coverage
 - **Modules:** `src/placeholder.py`
 - **Status:** Example module for test coverage
 
