@@ -33,5 +33,6 @@ def test_create_and_execute_order():
 
 
 def test_plot_equity_curve(tmp_path):
-    fig = plot_equity_curve([1, 2, 3], filepath=tmp_path/'eq.png')
-    assert (tmp_path/'eq.png').exists()
+    df = pd.DataFrame({'Equity': [1, 2, 3]})
+    out_file = plot_equity_curve(df, tmp_path)
+    assert out_file.exists()

@@ -42,3 +42,4 @@ def test_run_backtest_simple():
 def test_plot_equity_curve_returns_axis():
     ax = plot_equity_curve([1, 2, 3])
     assert hasattr(ax, "plot")
+
