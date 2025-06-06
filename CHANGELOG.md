@@ -1,3 +1,8 @@
+### 2025-06-06
+- [Patch v5.8.9] Fix logging capture and plotting APIs
+- New/Updated unit tests added for none (test fixes)
+- QA: pytest -q passed (503 tests)
+
 ### 2025-10-21
 
 - [Patch v5.8.8] Add WFV overfitting utilities

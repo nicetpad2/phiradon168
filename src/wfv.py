@@ -111,17 +111,21 @@ def walk_forward_grid_search(
         metrics = backtest_func(test, **best_params)
 
         fold += 1
-        logger.info(
-            "Fold %d: train_range=%s to %s, test_range=%s to %s, best_params=%s, pnl=%.6f, max_dd=%.6f",
-            fold,
-            train.index[0],
-            train.index[-1],
-            test.index[0],
-            test.index[-1],
-            best_params,
-            float(metrics.get("pnl", float("nan"))),
-            float(metrics.get("maxdd", float("nan"))),
+        msg = (
+            "Fold %d: train_range=%s to %s, test_range=%s to %s, best_params=%s, pnl=%.6f, max_dd=%.6f"
+            % (
+                fold,
+                train.index[0],
+                train.index[-1],
+                test.index[0],
+                test.index[-1],
+                best_params,
+                float(metrics.get("pnl", float("nan"))),
+                float(metrics.get("maxdd", float("nan"))),
+            )
         )
+        logger.info(msg)
+        logging.getLogger().info(msg)
         results.append(
             {
                 "start": start,

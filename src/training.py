@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """[Patch v1.1.1] Training utilities for hyperparameter sweep."""
 import os
+import logging
 import numpy as np
 import pandas as pd
 from joblib import dump
@@ -21,15 +22,17 @@ def save_model(model, output_dir: str, model_name: str) -> None:
     os.makedirs(output_dir, exist_ok=True)
     path = os.path.join(output_dir, f"{model_name}.joblib")
     if model is None:
-        logger.warning(
-            f"[QA] No model was trained for {model_name}. Creating empty model QA file."
-        )
+        msg = f"[QA] No model was trained for {model_name}. Creating empty model QA file."
+        logger.warning(msg)
+        logging.getLogger().warning(msg)
         qa_path = os.path.join(output_dir, f"{model_name}_qa.log")
         with open(qa_path, "w", encoding="utf-8") as f:
             f.write("[QA] No model trained. Output not generated.\n")
     else:
         dump(model, path)
-        logger.info(f"[QA] Model saved: {path}")
+        msg = f"[QA] Model saved: {path}"
+        logger.info(msg)
+        logging.getLogger().info(msg)
 
 try:
     from catboost import CatBoostClassifier
