@@ -1,15 +1,18 @@
-"""Simple order placement utilities."""
-from typing import Dict
-
-__all__ = ["place_order"]
+"""Simplified order creation utilities."""
+from __future__ import annotations
 
 
-def place_order(side: str, price: float, sl: float, tp: float, size: float) -> Dict:
-    """Return an order dictionary with mandatory SL/TP."""
+def create_order(side: str, price: float, sl: float, tp: float) -> dict:
+    """Return a dictionary representing an order."""
+    if sl is None or tp is None:
+        raise ValueError("SL and TP must be provided")
+    if side not in {"BUY", "SELL"}:
+        raise ValueError("side must be BUY or SELL")
     return {
         "side": side,
         "entry_price": price,
-        "sl_price": sl,
-        "tp_price": tp,
-        "size": size,
+        "sl": sl,
+        "tp": tp,
     }
+
+__all__ = ["create_order"]

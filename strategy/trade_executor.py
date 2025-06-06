@@ -1,11 +1,16 @@
-"""Execute trades using order and risk modules."""
-from typing import Dict
-
-from .order_management import place_order
-
-__all__ = ["open_trade"]
+"""Utilities for executing a single trade."""
+from __future__ import annotations
 
 
-def open_trade(side: str, price: float, sl: float, tp: float, size: float) -> Dict:
-    """Open a trade and return the order dictionary."""
-    return place_order(side, price, sl, tp, size)
+def execute_order(order: dict, exit_price: float) -> float:
+    """Close an order and return profit in price units."""
+    if "sl" not in order or "tp" not in order:
+        raise KeyError("order must contain sl and tp")
+    if exit_price is None:
+        raise ValueError("exit_price required")
+    side = order.get("side")
+    entry = order.get("entry_price")
+    multiplier = 1 if side == "BUY" else -1
+    return (exit_price - entry) * multiplier
+
+__all__ = ["execute_order"]

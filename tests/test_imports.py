@@ -9,6 +9,12 @@ FILES = [
     'src/strategy.py',
     'strategy/entry_rules.py',
     'strategy/exit_rules.py',
+    'strategy/strategy.py',
+    'strategy/order_management.py',
+    'strategy/risk_management.py',
+    'strategy/stoploss_utils.py',
+    'strategy/trade_executor.py',
+    'strategy/plots.py',
     'src/main.py',
 ]
 

@@ -6,19 +6,19 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
 
 from strategy import (
-    run_backtest,
-    place_order,
+    apply_strategy,
+    create_order,
     calculate_position_size,
-    atr_sl_tp_wrapper,
-    open_trade,
+    atr_stop_loss,
+    execute_order,
     plot_equity_curve,
 )
 
 
-def test_place_order_contains_sl_tp():
-    order = place_order("BUY", 1.0, 0.9, 1.1, 1.0)
-    assert order["sl_price"] == 0.9
-    assert order["tp_price"] == 1.1
+def test_create_order_contains_sl_tp():
+    order = create_order("BUY", 1.0, 0.9, 1.1)
+    assert order["sl"] == 0.9
+    assert order["tp"] == 1.1
 
 
 def test_calculate_position_size_basic():
@@ -26,17 +26,24 @@ def test_calculate_position_size_basic():
     assert size == 1.0
 
 
-def test_atr_sl_tp_wrapper():
-    sl, tp = atr_sl_tp_wrapper(1.0, 0.1, "BUY")
-    assert sl < 1.0 and tp > 1.0
+def test_atr_stop_loss():
+    s = pd.Series(range(20))
+    sl = atr_stop_loss(s, period=5)
+    assert len(sl) == len(s)
 
 
-def test_run_backtest_simple():
+def test_apply_strategy_simple():
     df = pd.DataFrame({"Close": [1.0, 1.1, 1.0]})
-    orders = run_backtest(df, 1000)
-    assert isinstance(orders, list)
+    result = apply_strategy(df)
+    assert "Entry" in result and "Exit" in result
 
 
-def test_plot_equity_curve_returns_axis():
-    ax = plot_equity_curve([1, 2, 3])
-    assert hasattr(ax, "plot")
+def test_create_and_execute_order():
+    order = create_order("BUY", 1.0, 0.9, 1.1)
+    pnl = execute_order(order, 1.2)
+    assert pnl > 0
+
+
+def test_plot_equity_curve_returns_fig():
+    fig = plot_equity_curve([1, 2, 3])
+    assert hasattr(fig, "savefig")

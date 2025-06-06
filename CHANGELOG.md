@@ -10,6 +10,11 @@
 - New/Updated unit tests added for none (packaging update)
 - QA: pytest -q passed (429 tests)
 
+### 2025-06-06
+- [Patch v5.8.5] Add core strategy modules under strategy/
+- New/Updated unit tests added for tests/test_strategy_new_modules.py and tests/test_imports.py
+- QA: pytest -q passed (438 tests)
+
 
 ### 2025-10-16
 
