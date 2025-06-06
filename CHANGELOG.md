@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_config_defaults.py
 - QA: pytest -q tests/test_config_defaults.py passed (1 test)
 
+### 2025-06-07
+- [Patch v6.0.2] Cover empty log path in event_etl
+- New/Updated unit tests added for tests/test_event_etl.py
+- QA: pytest -q tests/test_event_etl.py passed (2 tests)
+
 ### 2025-06-06
 
 - [Patch v5.10.2] Clarify lazy imports in profile_backtest
