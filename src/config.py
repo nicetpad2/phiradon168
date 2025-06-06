@@ -348,11 +348,12 @@ def install_shap():
         shap = None
 
 # GPUtil library (Optional for Resource Monitor)
+# [Patch v5.10.2] broaden exception handling for GPU imports
 # pragma: no cover
 try:
     import GPUtil
     logging.debug("GPUtil library already installed.")
-except ImportError:
+except Exception:
     if AUTO_INSTALL_LIBS:
         logging.info("   กำลังติดตั้ง GPUtil สำหรับตรวจสอบ GPU (Optional)...")
         try:
@@ -365,7 +366,7 @@ except ImportError:
             )
             GPUtil = None
     else:
-        logging.warning("ไลบรารี 'GPUtil' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
+        logging.warning("ไลบรารี 'GPUtil' ไม่ถูกติดตั้ง หรือไม่สามารถโหลดได้")
         GPUtil = None
 # pragma: cover
 
@@ -429,16 +430,16 @@ try:
     if torch.cuda.is_available():
         gpu_name = torch.cuda.get_device_name(0)
         logging.info(f"   (Success) พบ GPU: {gpu_name}")
-        try:
+        try:  # [Patch v5.10.2] handle pynvml import errors
             import pynvml
             pynvml.nvmlInit()
             nvml_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
             logging.info("   (Success) เริ่มต้น pynvml สำหรับการตรวจสอบ GPU สำเร็จ.")
-        except ImportError:
-            logging.warning("   (Warning) ไม่พบ pynvml library. GPU monitoring via pynvml disabled.")
-            pynvml = None
         except Exception as e_nvml:
-            logging.error(f"   (Warning) ข้อผิดพลาด NVML: {e_nvml}.", exc_info=True)
+            logging.warning(
+                "   ไลบรารี 'pynvml' ไม่ถูกติดตั้ง หรือไม่สามารถโหลดได้ -- ข้ามการตรวจสอบ GPU"
+            )
+            logging.debug(f"pynvml error: {e_nvml}")
             pynvml = None
             if nvml_handle:
                 try:
