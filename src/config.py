@@ -407,7 +407,7 @@ def install_shap():
 try:
     import GPUtil
     logging.debug("GPUtil library already installed.")
-except Exception:
+except Exception as e_gp_import:
     if AUTO_INSTALL_LIBS:
         logging.info("   กำลังติดตั้ง GPUtil สำหรับตรวจสอบ GPU (Optional)...")
         try:
@@ -421,6 +421,7 @@ except Exception:
             GPUtil = None
     else:
         logging.warning("ไลบรารี 'GPUtil' ไม่ถูกติดตั้ง หรือไม่สามารถโหลดได้")
+        logging.debug(f"GPUtil import error: {e_gp_import}")
         GPUtil = None
 # pragma: cover
 
@@ -504,8 +505,9 @@ try:
     else:
         logging.info("   (Info) PyTorch ไม่พบ GPU. การเร่งความเร็วด้วย GPU จะถูกปิด.")
         USE_GPU_ACCELERATION = False
-except ImportError:
-    logging.info("   (Info) ไม่พบ PyTorch. การเร่งความเร็วด้วย GPU จะถูกปิด.")
+except Exception as e_torch_import:
+    logging.info("   (Info) ไม่พบ PyTorch หรือไม่สามารถโหลดได้. การเร่งความเร็วด้วย GPU จะถูกปิด.")
+    logging.debug(f"PyTorch import/load error: {e_torch_import}")
     USE_GPU_ACCELERATION = False
 except Exception as e_gpu:
     logging.error(f"   (Error) การตั้งค่า GPU ล้มเหลว: {e_gpu}", exc_info=True)
