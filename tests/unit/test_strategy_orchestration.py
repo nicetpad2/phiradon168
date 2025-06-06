@@ -10,6 +10,11 @@ sys.path.insert(0, ROOT_DIR)
 from strategy import strategy as strategy_module
 
 
+def test_public_api():
+    """Ensure __all__ exports all public functions."""
+    assert sorted(strategy_module.__all__) == ["apply_strategy", "run_backtest"]
+
+
 def test_apply_strategy_adds_columns(monkeypatch):
     df = pd.DataFrame({"Close": [1, 2, 3]})
     monkeypatch.setattr(strategy_module, "generate_open_signals", lambda x: np.array([1, 0, 1]))
