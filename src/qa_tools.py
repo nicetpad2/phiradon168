@@ -38,7 +38,7 @@ def run_noise_backtest(n: int = 1000, initial_price: float = 1800.0,
     if seed is not None:
         np.random.seed(seed)
     price = initial_price + np.cumsum(np.random.randn(n) * vol)
-    idx = pd.date_range(start="2020-01-01", periods=n, freq="T")
+    idx = pd.date_range(start="2020-01-01", periods=n, freq="min")
     df_noise = pd.DataFrame({
         "Open": price,
         "High": price + np.abs(np.random.randn(n) * vol),

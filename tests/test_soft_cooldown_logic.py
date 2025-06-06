@@ -5,7 +5,7 @@ import pytest
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'src'))
+sys.path.insert(1, os.path.join(ROOT_DIR, 'src'))
 
 SOFT_COOLDOWN_LOOKBACK = 15
 # [Patch v5.4.6] Adjust defaults for real market conditions
