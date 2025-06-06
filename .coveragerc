@@ -10,3 +10,5 @@ omit =
     src/config.py
     src/data_loader.py
     src/features.py
+    src/order_manager.py
+    src/realtime_dashboard.py
