@@ -1,6 +1,6 @@
 import pandas as pd
 import warnings
-from src import feature_analysis
+import src.feature_analysis as feature_analysis
 from src.feature_analysis import (
     analyze_feature_distribution,
     detect_low_variance_features,
@@ -51,6 +51,14 @@ def test_calculate_correlation_matrix_basic(tmp_path):
     assert (corr.values <= 1).all() and (corr.values >= -1).all()
 
 
+def test_calculate_correlation_matrix_missing(tmp_path, caplog):
+    df = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
+    with caplog.at_level("ERROR"):
+        result = calculate_correlation_matrix(df, ["a", "b", "c"], output_dir=tmp_path)
+    assert result is None
+    assert "not found" in caplog.text
+
+
 def test_compare_in_out_distribution_basic():
     df_is = pd.DataFrame({"a": [1, 2, 3]})
     df_oos = pd.DataFrame({"a": [4, 5, 6]})
@@ -67,6 +75,35 @@ def test_compare_in_out_distribution_missing(caplog):
         stats = compare_in_out_distribution(df_is, df_oos, ["a", "b"])
     assert stats == {}
     assert "not found" in caplog.text
+
+
+def test_select_top_pnl_features_basic():
+    df = pd.DataFrame({
+        "pnl_usd_net": [1, 2, 3, 4],
+        "feat1": [10, 20, 30, 40],
+        "feat2": [1, 0, -1, -2],
+        "feat3": [5, 4, 3, 2],
+    })
+    top = feature_analysis.select_top_pnl_features(df, target_col="pnl_usd_net", n=2)
+    assert top == ["feat1", "feat2"]
+
+
+def test_select_top_pnl_features_missing_target(caplog):
+    df = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
+    with caplog.at_level("ERROR"):
+        top = feature_analysis.select_top_pnl_features(df, target_col="pnl_usd_net")
+    assert top == []
+    assert "not found" in caplog.text
+
+
+def test_select_top_pnl_features_coerce_target():
+    df = pd.DataFrame({
+        "pnl_usd_net": ["1", "2", "3", "4"],
+        "feat1": [1, 2, 3, 4],
+        "feat2": [4, 3, 2, 1],
+    })
+    top = feature_analysis.select_top_pnl_features(df, target_col="pnl_usd_net", n=1)
+    assert top == ["feat1"]
 
 
 def test_feature_analysis_main_smoke(monkeypatch, tmp_path):

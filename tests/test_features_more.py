@@ -98,7 +98,7 @@ def test_get_mtf_sma_trend():
     assert trend in {'UP', 'DOWN', 'NEUTRAL'}
 
 
-def test_calculate_m15_trend_zone_duplicate_index(monkeypatch):
+def test_calculate_m15_trend_zone_duplicate_index(monkeypatch, caplog):
     idx = pd.date_range('2024-01-01', periods=3, freq='15min')
     idx = idx.insert(1, idx[1])
     df = pd.DataFrame({'Close': [1, 2, 2, 3]}, index=idx)
@@ -112,8 +112,13 @@ def test_calculate_m15_trend_zone_duplicate_index(monkeypatch):
     monkeypatch.setattr(features, 'ema', fake_ema)
     monkeypatch.setattr(features, 'rsi', fake_rsi)
 
-    result = features.calculate_m15_trend_zone(df)
+    with caplog.at_level(logging.INFO):
+        result = features.calculate_m15_trend_zone(df)
+
     assert len(result) == len(df)
+    logs = " ".join(caplog.messages).lower()
+    assert "duplicate labels" in logs
+    assert "removed" in logs
 
 
 def test_calculate_m1_entry_signals():

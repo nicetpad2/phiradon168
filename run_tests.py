@@ -1,7 +1,10 @@
 import argparse
 import logging
 import os
+import sys
 import pytest
+
+# [Patch v5.9.3] Forward command-line args directly to pytest
 
 class _SummaryPlugin:
     """Plugin เก็บสถิติผลการทดสอบ"""
@@ -28,17 +31,15 @@ def main() -> None:
                         help='ข้าม integration tests ที่ใช้เวลานาน')
     parser.add_argument('-n', '--num-processes', default=None,
                         help='จำนวน process สำหรับรันแบบขนาน (pytest-xdist)')
-    args = parser.parse_args()
+    args, extra_args = parser.parse_known_args()
 
     os.environ.setdefault('COMPACT_LOG', '1')
     logging.basicConfig(level=logging.WARNING)
 
-    pytest_args = [
-        '--cov=.',
-        '--cov-config=.coveragerc',
-        '--cov-report=term',
-        '-q',
-    ]
+    pytest_args = extra_args
+    if not pytest_args:
+        pytest_args = ['tests']
+    pytest_args.insert(0, '-q')
     if args.fast:
         pytest_args += ['-m', 'not integration']
 

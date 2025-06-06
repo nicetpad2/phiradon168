@@ -1,12 +1,19 @@
+### 2025-06-06
+- [Patch v5.9.4] Improve OMS logging and add PAPER_MODE
+- New/Updated unit tests added for tests.test_config_defaults
+- QA: pytest -q passed (558 tests)
+
 ### 2025-10-23
 - [Patch v5.9.2] Increase unit test coverage for cooldown utilities
 - New/Updated unit tests added for tests.test_cooldown_utils_full
 - QA: pytest -q passed (506 tests)
 
 ### 2025-06-06
+
 - [Patch v5.9.4] Improve hyperparameter sweep with real trade log and metric export
 - New/Updated unit tests added for tests.test_hyperparameter_sweep_cli
 - QA: pytest -q passed (tests count TBD)
+
 
 ### 2025-06-06
 - [Patch v5.9.2] Add unit tests for dashboard and evaluation
@@ -17,6 +24,16 @@
 - [Patch v5.9.3] เพิ่มเทส param_stability และ qa_tools ครบถ้วน
 - New/Updated unit tests added for tests.test_param_stability, tests.test_qa_tools
 - QA: pytest -q passed (521 tests)
+
+### 2025-06-06
+- [Patch v5.9.2] Log duplicate removal count in calculate_m15_trend_zone
+- New/Updated unit tests added for tests.test_features_more::test_calculate_m15_trend_zone_duplicate_index
+- QA: pytest -q passed (526 tests)
+
+### 2025-06-06
+- [Patch v5.9.2] Add unit tests for order_manager
+- New/Updated unit tests added for tests.test_order_manager_module
+- QA: pytest -q passed (509 tests)
 
 ### 2025-06-06
 - [Patch v5.9.1] Validate trade log not empty in real_train_func
@@ -1043,3 +1060,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.9.2] Ensure side trade logs created via export_trade_log
 - New/Updated unit tests added for tests.test_trade_logger
 - QA: pytest -q passed (518 tests)
+
+### 2025-06-07
+- [Patch v5.10.0] Add log event ETL and DB table
+- New/Updated unit tests added for tests.test_event_etl
+- QA: pytest -q passed (565 tests)
