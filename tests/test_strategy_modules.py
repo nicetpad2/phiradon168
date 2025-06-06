@@ -1,13 +1,14 @@
 import os
 import sys
 import pandas as pd
+from datetime import datetime
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
 
 from strategy import (
     run_backtest,
-    place_order,
+    OrderManager,
     calculate_position_size,
     atr_sl_tp_wrapper,
     open_trade,
@@ -15,10 +16,11 @@ from strategy import (
 )
 
 
-def test_place_order_contains_sl_tp():
-    order = place_order("BUY", 1.0, 0.9, 1.1, 1.0)
-    assert order["sl_price"] == 0.9
-    assert order["tp_price"] == 1.1
+def test_order_manager_place_order():
+    om = OrderManager()
+    now = datetime.utcnow()
+    status = om.place_order({}, now)
+    assert status.name == "OPEN"
 
 
 def test_calculate_position_size_basic():

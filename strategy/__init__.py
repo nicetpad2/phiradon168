@@ -15,8 +15,8 @@ from .metrics import calculate_metrics
 from .drift_observer import DriftObserver
 from .trend_filter import apply_trend_filter
 from .strategy import run_backtest
-from .order_management import place_order
-from .risk_management import calculate_position_size
+from .order_management import OrderManager, OrderStatus as OrderStatusOM
+from .risk_management import calculate_position_size, RiskManager, OrderStatus as OrderStatusRM
 from .stoploss_utils import atr_sl_tp_wrapper
 from .trade_executor import open_trade
 from .plots import plot_equity_curve
@@ -37,7 +37,10 @@ __all__ = [
     'DriftObserver',
     'apply_trend_filter',
     'run_backtest',
-    'place_order',
+    'OrderManager',
+    'OrderStatusOM',
+    'RiskManager',
+    'OrderStatusRM',
     'calculate_position_size',
     'atr_sl_tp_wrapper',
     'open_trade',
