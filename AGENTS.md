@@ -210,7 +210,9 @@
   - Use Matplotlib (no seaborn) for static plots; export PNG/HTML for reports
   - Develop HTML/JavaScript dashboards (e.g., with Plotly or Dash) for executive summaries
   - New module `src.dashboard` generates Plotly HTML dashboards for WFV results
+  - New module `src/realtime_dashboard.py` provides Streamlit-based real-time monitoring
 - **Modules:** `src/dashboard.py`
+  `src/realtime_dashboard.py`
 
 ---
 

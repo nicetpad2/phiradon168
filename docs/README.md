@@ -18,6 +18,7 @@ python profile_backtest.py XAUUSD_M1.csv --rows 1000 --console_level WARNING
 ## โครงสร้างโฟลเดอร์
 - `src/` โค้ดหลักของระบบ
 - `tuning/` โมดูลสำหรับการหา Hyperparameter
+- `docs/holdout_oos.md` คู่มือการแบ่งข้อมูลแบบ Hold-Out OOS
 
 - `logs/<date>/<fold>/` ไฟล์บันทึกผลการรันแยกตามวันที่และ fold
 
