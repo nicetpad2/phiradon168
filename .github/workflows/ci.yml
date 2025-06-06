@@ -14,6 +14,9 @@ jobs:
           pip install -r dev-requirements.txt
           pip install -r requirements.txt
       - name: Lint
-        run: flake8
+        run: |
+          black --check .
+          isort --check-only .
+          flake8 src/ strategy/
       - name: Test
         run: pytest --cov=src --cov=strategy --cov-report=html
