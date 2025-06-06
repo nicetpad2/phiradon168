@@ -20,15 +20,23 @@ def download_model_if_missing(model_path: str, url_env: str) -> bool:
     url = os.getenv(url_env)
     model_name = os.path.basename(model_path)
     if not url:
-        logger.warning(f"No URL specified for {model_name}, skipping download")
+        msg = f"No URL specified for {model_name}, skipping download"
+        logger.warning(msg)
+        logging.getLogger().warning(msg)
         return False
     try:
-        logger.info(f"(Info) Downloading model from {url}...")
+        msg = f"(Info) Downloading model from {url}..."
+        logger.info(msg)
+        logging.getLogger().warning(msg)
         urllib.request.urlretrieve(url, model_path)
-        logger.info("(Success) Model downloaded.")
+        msg2 = "(Success) Model downloaded."
+        logger.info(msg2)
+        logging.getLogger().warning(msg2)
         return True
     except Exception as e:  # pragma: no cover - network errors vary
-        logger.warning(f"Failed to download model from {url}: {e}")
+        msg = f"Failed to download model from {url}: {e}"
+        logger.warning(msg)
+        logging.getLogger().warning(msg)
         return False
 
 # [Patch v5.6.1] Utility to download feature list files if missing
@@ -39,15 +47,23 @@ def download_feature_list_if_missing(features_path: str, url_env: str) -> bool:
     url = os.getenv(url_env)
     file_name = os.path.basename(features_path)
     if not url:
-        logger.warning(f"No URL specified for {file_name}, skipping download")
+        msg = f"No URL specified for {file_name}, skipping download"
+        logger.warning(msg)
+        logging.getLogger().warning(msg)
         return False
     try:
-        logger.info(f"(Info) Downloading feature list from {url}...")
+        msg = f"(Info) Downloading feature list from {url}..."
+        logger.info(msg)
+        logging.getLogger().warning(msg)
         urllib.request.urlretrieve(url, features_path)
-        logger.info("(Success) Feature list downloaded.")
+        msg2 = "(Success) Feature list downloaded."
+        logger.info(msg2)
+        logging.getLogger().warning(msg2)
         return True
     except Exception as e:  # pragma: no cover - network errors vary
-        logger.warning(f"Failed to download feature list from {url}: {e}")
+        msg = f"Failed to download feature list from {url}: {e}"
+        logger.warning(msg)
+        logging.getLogger().warning(msg)
         return False
 
 
