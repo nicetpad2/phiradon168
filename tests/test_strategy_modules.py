@@ -44,6 +44,7 @@ def test_create_and_execute_order():
     assert pnl > 0
 
 
-def test_plot_equity_curve_returns_fig():
-    fig = plot_equity_curve([1, 2, 3])
-    assert hasattr(fig, "savefig")
+def test_plot_equity_curve_saves_file(tmp_path):
+    df = pd.DataFrame({"Equity": [1, 2, 3]})
+    out_file = plot_equity_curve(df, tmp_path)
+    assert out_file.exists()
