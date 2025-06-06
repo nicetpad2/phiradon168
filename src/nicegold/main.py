@@ -13,7 +13,7 @@ import logging
 import os
 import sys
 import json
-from src.utils import get_env_float, maybe_collect
+from nicegold.utils import get_env_float, maybe_collect
 if 'pytest' in sys.modules:
     cfg = sys.modules.get('src.config')
     if cfg is not None and getattr(cfg, '__file__', None) is None and hasattr(cfg, 'ENTRY_CONFIG_PER_FOLD'):
@@ -24,7 +24,7 @@ if 'pytest' in sys.modules:
         logger = logging.getLogger(__name__)
 else:
     try:
-        from src.config import logger, ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD, FUND_PROFILES as CFG_FUND_PROFILES, MULTI_FUND_MODE as CFG_MULTI_FUND_MODE, DEFAULT_FUND_NAME as CFG_DEFAULT_FUND_NAME
+        from nicegold.config import logger, ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD, FUND_PROFILES as CFG_FUND_PROFILES, MULTI_FUND_MODE as CFG_MULTI_FUND_MODE, DEFAULT_FUND_NAME as CFG_DEFAULT_FUND_NAME
     except Exception:  # pragma: no cover - fallback for tests
         logger = logging.getLogger(__name__)
         DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
@@ -50,26 +50,26 @@ def plot_equity_curve(*_args, **_kwargs):
     pass
 
 import time
-from src.data_loader import (
+from nicegold.data_loader import (
     setup_output_directory as dl_setup_output_directory,
     load_data,
     prepare_datetime,
     safe_load_csv_auto,
 )
-from src.features import (
+from nicegold.features import (
     calculate_m15_trend_zone,
     engineer_m1_features,
     clean_m1_data,
     calculate_m1_entry_signals,
     load_features_for_model,
 )
-from src.strategy import (
+from nicegold.strategy import (
     run_all_folds_with_threshold,
     train_and_export_meta_model,
     DriftObserver,
     plot_equity_curve,  # [Patch v5.7.3] import plotting helper
 )
-from src.utils import (
+from nicegold.utils import (
     export_trade_log,
     download_model_if_missing,
     download_feature_list_if_missing,
@@ -1202,7 +1202,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             logging.info(f"\n(Single Fund Mode) กำลังรันสำหรับ Fund Profile: {DEFAULT_FUND_NAME}")
 
         # [Patch v5.5.1] Import model switcher after models and features are loaded
-        from src.features import select_model_for_trade
+        from nicegold.features import select_model_for_trade
 
         for fund_name, fund_profile_config in funds_to_run.items():
             fund_profile_config['name'] = fund_name

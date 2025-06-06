@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple, Callable
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import roc_auc_score, f1_score
 
-from src import config
+from nicegold import config
 logger = config.logger
 
 

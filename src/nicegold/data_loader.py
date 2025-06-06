@@ -433,13 +433,13 @@ import warnings
 import traceback
 # from datetime import datetime # <<< REMOVED: Should use global 'datetime' module imported earlier
 import gc
-from src.utils.gc_utils import maybe_collect
+from nicegold.utils.gc_utils import maybe_collect
 # Ensure 'datetime' module is available from global imports (e.g., Part 3 or top of file)
 # import datetime # This would be redundant if already imported globally
 
 # Ensure global configurations are accessible if run independently
 try:
-    from src.config import MAX_NAT_RATIO_THRESHOLD as CONFIG_MAX_NAT_RATIO_THRESHOLD
+    from nicegold.config import MAX_NAT_RATIO_THRESHOLD as CONFIG_MAX_NAT_RATIO_THRESHOLD
 except Exception:  # pragma: no cover - optional config module
     logging.info("MAX_NAT_RATIO_THRESHOLD not defined globally; using default 0.05")
     CONFIG_MAX_NAT_RATIO_THRESHOLD = 0.05

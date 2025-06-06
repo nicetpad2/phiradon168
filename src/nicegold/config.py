@@ -50,7 +50,7 @@ from IPython import get_ipython
 import shutil
 import gzip
 import requests  # For Font Download
-from src.utils import get_env_float
+from nicegold.utils import get_env_float
 
 # --- Logging Configuration ---
 # กำหนดค่าพื้นฐานสำหรับการ Logging

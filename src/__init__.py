@@ -1,32 +1,37 @@
-"""Top-level package for project modules."""
+"""Compatibility layer forwarding old `src` imports to `nicegold`."""
+from importlib import import_module
+import sys
 
-from src.adaptive import (
-    adaptive_sl_tp,
-    adaptive_risk,
-    log_best_params,
-    calculate_atr,
-    atr_position_size,
-)
-from src.money_management import (
-    atr_sl_tp,
-    update_be_trailing,
-    adaptive_position_size,
-    portfolio_hard_stop,
-)
-from src.evaluation import evaluate_meta_classifier
-from src.wfv import walk_forward_grid_search, prune_features_by_importance
+_aliases = {
+    'adaptive': 'adaptive',
+    'config': 'config',
+    'cooldown_utils': 'cooldown_utils',
+    'dashboard': 'dashboard',
+    'data_loader': 'data_loader',
+    'evaluation': 'evaluation',
+    'feature_analysis': 'feature_analysis',
+    'features': 'features',
+    'log_analysis': 'log_analysis',
+    'main': 'main',
+    'money_management': 'money_management',
+    'monitor': 'monitor',
+    'order_manager': 'order_manager',
+    'qa_tools': 'qa_tools',
+    'training': 'training',
+    'wfv': 'wfv',
+    'wfv_monitor': 'wfv_monitor',
+    'strategy': 'strategy_core',
+    'strategy_core': 'strategy_core',
+    'strategy_pkg': 'strategy'
+}
 
-__all__ = [
-    "adaptive_sl_tp",
-    "adaptive_risk",
-    "log_best_params",
-    "calculate_atr",
-    "atr_position_size",
-    "atr_sl_tp",
-    "update_be_trailing",
-    "adaptive_position_size",
-    "portfolio_hard_stop",
-    "evaluate_meta_classifier",
-    "walk_forward_grid_search",
-    "prune_features_by_importance",
-]
+for old, new in _aliases.items():
+    try:
+        module = import_module(f'nicegold.{new}')
+        sys.modules[f'src.{old}'] = module
+    except ModuleNotFoundError:
+        pass
+
+def __getattr__(name):
+    target = _aliases.get(name, name)
+    return import_module(f'nicegold.{target}')

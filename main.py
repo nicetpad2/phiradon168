@@ -5,13 +5,13 @@ import sys
 import logging
 import pandas as pd
 
-from src.utils.pipeline_config import (
+from nicegold.utils.pipeline_config import (
     load_config,
     PipelineConfig,
     DEFAULT_CONFIG_FILE,
 )
-from src.utils.errors import PipelineError
-from src.utils.hardware import has_gpu
+from nicegold.utils.errors import PipelineError
+from nicegold.utils.hardware import has_gpu
 
 LOG_FORMAT = "%(asctime)s | %(levelname)s | %(module)s:%(lineno)d | %(message)s"
 logger = logging.getLogger(__name__)

@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from src import features as feat
-from src.config import LOG_DIR
+from nicegold import features as feat
+from nicegold.config import LOG_DIR
 
 logger = logging.getLogger(__name__)
 

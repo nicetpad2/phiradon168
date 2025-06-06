@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 import pandas as pd
-from src import features
+from nicegold import features
 
 logger = logging.getLogger(__name__)
 

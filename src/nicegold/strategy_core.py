@@ -15,9 +15,9 @@ import json
 import pandas as pd
 import numpy as np
 from typing import Dict, List
-from src.utils.model_utils import predict
+from nicegold.utils.model_utils import predict
 # [Patch v5.2.0] Use explicit package import for cooldown utilities
-from src.cooldown_utils import (
+from nicegold.cooldown_utils import (
     is_soft_cooldown_triggered,
     step_soft_cooldown,
     CooldownState,
@@ -29,15 +29,15 @@ from src.cooldown_utils import (
     should_warn_losses,
 )
 from itertools import product
-from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
-from src.utils import get_env_float, load_json_with_comments
-from src.log_analysis import summarize_block_reasons  # [Patch v5.7.3]
-from src.config import (
+from nicegold.utils.sessions import get_session_tag  # [Patch v5.1.3]
+from nicegold.utils import get_env_float, load_json_with_comments
+from nicegold.log_analysis import summarize_block_reasons  # [Patch v5.7.3]
+from nicegold.config import (
     print_gpu_utilization,  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
     USE_MACD_SIGNALS,
     USE_RSI_SIGNALS,
 )
-from src.utils.env_utils import get_env_float
+from nicegold.utils.env_utils import get_env_float
 
 logger = logging.getLogger(__name__)
 
@@ -54,14 +54,14 @@ except Exception:  # pragma: no cover - fallback when numba unavailable
         return func
 
 # [Patch v4.8.8] Import safe_set_datetime using unconditional absolute import
-from src.data_loader import safe_set_datetime
-from src.data_loader import safe_load_csv_auto  # [Patch v5.1.6] Ensure CSV loader is imported
-from src.data_loader import simple_converter
-from src.data_loader import load_final_m1_data  # [Patch v5.4.5] Loader with validation
+from nicegold.data_loader import safe_set_datetime
+from nicegold.data_loader import safe_load_csv_auto  # [Patch v5.1.6] Ensure CSV loader is imported
+from nicegold.data_loader import simple_converter
+from nicegold.data_loader import load_final_m1_data  # [Patch v5.4.5] Loader with validation
 
 # [Patch v4.8.9] Import safe_get_global using unconditional absolute import
-from src.data_loader import safe_get_global
-from src.features import (
+from nicegold.data_loader import safe_get_global
+from nicegold.features import (
     select_top_shap_features,
     check_model_overfit,
     analyze_feature_importance_shap,
@@ -80,12 +80,12 @@ from sklearn.metrics import (
     log_loss,
     classification_report,
 )  # [Patch] นำเข้า metric ที่ขาดหายไป
-from src.evaluation import find_best_threshold
-from src.adaptive import compute_dynamic_lot, atr_position_size, compute_trailing_atr_stop
+from nicegold.evaluation import find_best_threshold
+from nicegold.adaptive import compute_dynamic_lot, atr_position_size, compute_trailing_atr_stop
 import gc # For memory management
-from src.utils.gc_utils import maybe_collect
-from src.utils.gc_utils import maybe_collect
-from src.utils.gc_utils import maybe_collect
+from nicegold.utils.gc_utils import maybe_collect
+from nicegold.utils.gc_utils import maybe_collect
+from nicegold.utils.gc_utils import maybe_collect
 import os
 import itertools
 # Import ML libraries conditionally (assuming they are checked/installed in Part 1)
@@ -1668,7 +1668,7 @@ def check_main_exit_conditions(order, row, current_bar_index, now_timestamp):
     Returns:
         tuple: (order_closed_this_bar, exit_price, close_reason, close_timestamp)
     """
-    from src.order_manager import check_main_exit_conditions as _impl
+    from nicegold.order_manager import check_main_exit_conditions as _impl
     result = _impl(order, row, current_bar_index, now_timestamp)
 
     global MAX_HOLDING_BARS
@@ -1750,7 +1750,7 @@ def _update_open_order_state(order, current_high, current_low, current_atr, avg_
     Updates the state (BE, TSL, TTP2) of an order that remains open in the current bar.
     Prioritizes BE trigger over TSL activation/update.
     """
-    from src.order_manager import update_open_order_state as _impl
+    from nicegold.order_manager import update_open_order_state as _impl
     result = _impl(
         order,
         current_high,
@@ -4158,7 +4158,7 @@ def run_all_folds_with_threshold(
     run_duration = time.time() - start_time_run
     logging.info(f"      [Runner {run_label}] (Success) Full WF Sim completed (L1_Th={l1_thresh_display}) in {run_duration:.2f} seconds.")
     try:
-        from src.utils import save_resource_plan
+        from nicegold.utils import save_resource_plan
 
         save_resource_plan(output_dir)
     except Exception as e:
@@ -4449,7 +4449,7 @@ def generate_open_signals(
     use_rsi: bool = USE_RSI_SIGNALS,
 ) -> np.ndarray:
     """สร้างสัญญาณเปิด order พร้อมตัวเลือกเปิด/ปิด MACD และ RSI"""
-    from strategy.entry_rules import generate_open_signals as _impl  # [Patch v5.5.17] delegate
+    from nicegold.strategy.entry_rules import generate_open_signals as _impl  # [Patch v5.5.17] delegate
     result = _impl(df, use_macd=use_macd, use_rsi=use_rsi)
     # --- original implementation retained for line consistency ---
     open_mask = df["Close"] > df["Close"].shift(1)
@@ -4475,7 +4475,7 @@ def generate_close_signals(
     use_rsi: bool = USE_RSI_SIGNALS,
 ) -> np.ndarray:
     """สร้างสัญญาณปิด order พร้อมตัวเลือกเปิด/ปิด MACD และ RSI"""
-    from strategy.exit_rules import generate_close_signals as _impl  # [Patch v5.5.17] delegate
+    from nicegold.strategy.exit_rules import generate_close_signals as _impl  # [Patch v5.5.17] delegate
     close_mask = _impl(df, use_macd=use_macd, use_rsi=use_rsi)
     # padding for line alignment
     # pad1
@@ -4506,12 +4506,12 @@ def generate_close_signals(
 
 def precompute_sl_array(df: pd.DataFrame) -> np.ndarray:
     """คำนวณ Stop-Loss ล่วงหน้า"""
-    from strategy.exit_rules import precompute_sl_array as _sl  # [Patch v5.5.17]
+    from nicegold.strategy.exit_rules import precompute_sl_array as _sl  # [Patch v5.5.17]
     return _sl(df)
 
 
 def precompute_tp_array(df: pd.DataFrame) -> np.ndarray:
     """คำนวณ Take-Profit ล่วงหน้า"""
-    from strategy.exit_rules import precompute_tp_array as _tp  # [Patch v5.5.17]
+    from nicegold.strategy.exit_rules import precompute_tp_array as _tp  # [Patch v5.5.17]
     return _tp(df)
 

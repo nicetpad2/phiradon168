@@ -1,7 +1,7 @@
 """Utility subpackage for shared helper functions."""
 
-from src.utils.sessions import get_session_tag
-from src.utils.trade_logger import (
+from nicegold.utils.sessions import get_session_tag
+from nicegold.utils.trade_logger import (
     export_trade_log,
     aggregate_trade_logs,
     Order,
@@ -10,21 +10,21 @@ from src.utils.trade_logger import (
     setup_trade_logger,
     save_trade_snapshot,
 )
-from src.utils.trade_splitter import (
+from nicegold.utils.trade_splitter import (
     split_trade_log,
     has_buy_sell,
 )
-from src.utils.model_utils import (
+from nicegold.utils.model_utils import (
     download_model_if_missing,
     download_feature_list_if_missing,
     validate_file,
 )
-from src.utils.env_utils import get_env_float
-from src.utils.gc_utils import maybe_collect
-from src.utils.data_utils import convert_thai_datetime, prepare_csv_auto
-from src.utils.resource_plan import get_resource_plan, save_resource_plan
-from src.utils.hardware import estimate_resource_plan
-from src.utils.json_utils import load_json_with_comments
+from nicegold.utils.env_utils import get_env_float
+from nicegold.utils.gc_utils import maybe_collect
+from nicegold.utils.data_utils import convert_thai_datetime, prepare_csv_auto
+from nicegold.utils.resource_plan import get_resource_plan, save_resource_plan
+from nicegold.utils.hardware import estimate_resource_plan
+from nicegold.utils.json_utils import load_json_with_comments
 
 __all__ = [
     "get_session_tag",

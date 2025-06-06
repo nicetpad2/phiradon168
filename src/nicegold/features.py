@@ -35,10 +35,10 @@ except ImportError:  # pragma: no cover - environment may not have ta installed
 from sklearn.cluster import KMeans # For context column calculation
 from sklearn.preprocessing import StandardScaler # For context column calculation
 import gc # For memory management
-from src.utils.gc_utils import maybe_collect
+from nicegold.utils.gc_utils import maybe_collect
 from functools import lru_cache
-from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
-from src.utils import get_env_float, load_json_with_comments
+from nicegold.utils.sessions import get_session_tag  # [Patch v5.1.3]
+from nicegold.utils import get_env_float, load_json_with_comments
 
 _rsi_cache = {}  # [Patch v4.8.12] Cache RSIIndicator per period
 _atr_cache = {}  # [Patch v4.8.12] Cache AverageTrueRange per period

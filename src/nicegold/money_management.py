@@ -1,6 +1,6 @@
 import logging
 from typing import Tuple, Dict
-from src.adaptive import atr_position_size, compute_trailing_atr_stop, check_portfolio_stop
+from nicegold.adaptive import atr_position_size, compute_trailing_atr_stop, check_portfolio_stop
 
 logger = logging.getLogger(__name__)
 

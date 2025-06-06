@@ -1,6 +1,6 @@
 import os
 import json
-from src.utils import load_json_with_comments
+from nicegold.utils import load_json_with_comments
 from typing import Iterable, Tuple, Dict
 import numpy as np
 import pandas as pd
@@ -12,7 +12,7 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
 )
-from src.config import logger
+from nicegold.config import logger
 
 
 def find_best_threshold(

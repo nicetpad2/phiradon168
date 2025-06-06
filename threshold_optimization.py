@@ -2,7 +2,7 @@ import os
 import argparse
 import pandas as pd
 
-from src.config import logger, optuna
+from nicegold.config import logger, optuna
 
 # [Patch v5.5.14] Improved threshold optimization with Optuna
 

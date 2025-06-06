@@ -1,4 +1,4 @@
-from src.cooldown_utils import (
+from nicegold.cooldown_utils import (
     CooldownState,
     is_soft_cooldown_triggered,
     step_soft_cooldown,

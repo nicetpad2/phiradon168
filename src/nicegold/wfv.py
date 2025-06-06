@@ -200,7 +200,7 @@ def optuna_walk_forward(
     pd.DataFrame
         DataFrame summarizing each trial with parameters and score.
     """
-    from src.config import optuna as _optuna
+    from nicegold.config import optuna as _optuna
 
     if _optuna is None:  # pragma: no cover - optuna may be missing
         logger.warning("optuna not available; returning empty results")

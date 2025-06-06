@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-from src.features import macd, rsi, detect_macd_divergence
-from src.config import USE_MACD_SIGNALS, USE_RSI_SIGNALS
+from nicegold.features import macd, rsi, detect_macd_divergence
+from nicegold.config import USE_MACD_SIGNALS, USE_RSI_SIGNALS
 
 
 def generate_open_signals(

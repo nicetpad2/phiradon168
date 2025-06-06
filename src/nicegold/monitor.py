@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Iterable, List, Dict
 import numpy as np
 from sklearn.metrics import accuracy_score, roc_auc_score
-from src.config import logger, LOG_DIR
+from nicegold.config import logger, LOG_DIR
 
 
 def _write_row(path: str, row: List[str]):

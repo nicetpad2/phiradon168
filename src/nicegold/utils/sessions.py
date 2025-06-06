@@ -1,7 +1,7 @@
 """Session tagging utilities shared across modules."""
 
 try:
-    from src.config import logger
+    from nicegold.config import logger
 except Exception:  # pragma: no cover - fallback when config import fails
     import logging as logger
 import pandas as pd

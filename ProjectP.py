@@ -1,6 +1,6 @@
 """Bootstrap script for running the main entry point."""
 
-from src.config import logger
+from nicegold.config import logger
 import sys
 import logging
 import os
@@ -29,7 +29,7 @@ except ImportError:  # pragma: no cover - optional dependency
 except Exception:  # pragma: no cover - NVML failure fallback
     nvml_handle = None
 
-from src.main import main
+from nicegold.main import main
 
 
 def configure_logging():

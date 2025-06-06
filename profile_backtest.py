@@ -17,11 +17,11 @@ import pandas as pd
 import logging
 from multiprocessing import Pool, get_context
 
-from src.strategy import run_backtest_simulation_v34
-from src.data_loader import safe_load_csv_auto
-from src.features import engineer_m1_features  # [Patch v5.1.5]
-from src.config import FUND_PROFILES, DEFAULT_FUND_NAME  # [Patch v5.3.0]
-from src.training import real_train_func  # [Patch v5.3.0]
+from nicegold.strategy_core import run_backtest_simulation_v34
+from nicegold.data_loader import safe_load_csv_auto
+from nicegold.features import engineer_m1_features  # [Patch v5.1.5]
+from nicegold.config import FUND_PROFILES, DEFAULT_FUND_NAME  # [Patch v5.3.0]
+from nicegold.training import real_train_func  # [Patch v5.3.0]
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +93,7 @@ def main_profile(
             if df15 is not None and not df15.empty:
                 df15.index = pd.to_datetime(df15.index, errors='coerce')
                 df15.index.name = 'Datetime'
-                from src.features import calculate_m15_trend_zone
+                from nicegold.features import calculate_m15_trend_zone
                 df15 = calculate_m15_trend_zone(df15)
                 df = pd.merge_asof(
                     df.reset_index().rename(columns={'index': 'Datetime'}),

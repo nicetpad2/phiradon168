@@ -6,7 +6,7 @@ import numpy as np
 
 def check_main_exit_conditions(order, row, current_bar_index, now_timestamp):
     """Check exit conditions for an order."""
-    from src import strategy as _s
+    from nicegold import strategy_core as _s
     MAX_HOLDING_BARS = getattr(_s, "MAX_HOLDING_BARS", 0)
 
     order_closed_this_bar = False
@@ -102,7 +102,7 @@ def update_open_order_state(
     tsl_counter,
 ):
     """Update open order state for BE and TSL logic."""
-    from src import strategy as _s
+    from nicegold import strategy_core as _s
 
     DYNAMIC_BE_ATR_THRESHOLD_HIGH = getattr(_s, "DYNAMIC_BE_ATR_THRESHOLD_HIGH", 0)
     DYNAMIC_BE_R_ADJUST_HIGH = getattr(_s, "DYNAMIC_BE_R_ADJUST_HIGH", 0)

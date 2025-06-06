@@ -1,5 +1,5 @@
 try:
-    from src.config import logger
+    from nicegold.config import logger
 except Exception:
     import logging
     logger = logging.getLogger(__name__)

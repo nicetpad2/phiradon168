@@ -4,10 +4,10 @@ from pathlib import Path
 version = Path("VERSION").read_text().strip()
 
 setup(
-    name="nicegold_enterprise",
+    name="nicegold",
     version=version,
     description="NICEGOLD Enterprise: XAUUSD M1 trading pipeline",
-    packages=find_packages(where="src", exclude=["tests", "docs"]),
+    packages=find_packages(where="src", include=["nicegold*"], exclude=["tests", "docs"]),
     package_dir={"": "src"},
     install_requires=[
         "pandas==2.2.2",
@@ -22,7 +22,7 @@ setup(
     python_requires=">=3.8,<3.11",
     entry_points={
         "console_scripts": [
-            "nicegold=main:main",
+            "nicegold=nicegold.main:main",
             "nicegold-sweep=tuning.hyperparameter_sweep:main",
         ]
     },

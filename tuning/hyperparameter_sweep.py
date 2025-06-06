@@ -20,8 +20,8 @@ import inspect
 from datetime import datetime
 from tqdm import tqdm
 
-from src.config import logger, DefaultConfig
-from src.training import real_train_func
+from nicegold.config import logger, DefaultConfig
+from nicegold.training import real_train_func
 
 
 def _parse_csv_list(text: str, cast: Callable) -> List:

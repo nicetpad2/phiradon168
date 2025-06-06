@@ -4,13 +4,13 @@ import os
 import numpy as np
 import pandas as pd
 from joblib import dump
-from src.config import logger, USE_GPU_ACCELERATION
-from src.utils.model_utils import evaluate_model
+from nicegold.config import logger, USE_GPU_ACCELERATION
+from nicegold.utils.model_utils import evaluate_model
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, TimeSeriesSplit
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.linear_model import LogisticRegression
-from src.utils import convert_thai_datetime
+from nicegold.utils import convert_thai_datetime
 try:
     from lightgbm import LGBMClassifier
 except Exception:  # pragma: no cover - lightgbm optional
@@ -136,7 +136,7 @@ def optuna_sweep(
     output_path: str = "output_default/meta_classifier_optuna.pkl",
 ) -> dict:
     """ปรับ Hyperparameter ด้วย Optuna และบันทึกโมเดล"""
-    from src.config import optuna as _optuna
+    from nicegold.config import optuna as _optuna
 
     if _optuna is None:
         logger.error("optuna not available")

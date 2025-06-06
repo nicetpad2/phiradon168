@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-from src.features import macd, rsi
-from src.config import USE_MACD_SIGNALS, USE_RSI_SIGNALS
+from nicegold.features import macd, rsi
+from nicegold.config import USE_MACD_SIGNALS, USE_RSI_SIGNALS
 
 
 def generate_close_signals(
