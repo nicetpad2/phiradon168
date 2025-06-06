@@ -15,13 +15,11 @@ import datetime
 import tracemalloc
 import pandas as pd
 import logging
-from multiprocessing import Pool, get_context
+from multiprocessing import get_context
 
 from src.strategy import run_backtest_simulation_v34
 from src.data_loader import safe_load_csv_auto
 from src.features import engineer_m1_features  # [Patch v5.1.5]
-from src.config import FUND_PROFILES, DEFAULT_FUND_NAME  # [Patch v5.3.0]
-from src.training import real_train_func  # [Patch v5.3.0]
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +37,7 @@ def run_profile(func, output_file: str) -> cProfile.Profile:
 def calculate_features_for_fold(params):
     """Helper for multiprocessing Pool to calculate features."""
     symbol, df = params
+    logger = logging.getLogger(__name__)
     logger.info("Calculating features for %s", symbol)
     return engineer_m1_features(df)
 
@@ -53,6 +52,7 @@ def run_parallel_feature_engineering(list_of_fold_params, processes=4):
 
 def get_fund_profile(name: str | None) -> dict:
     """Return fund profile dict from config by name."""
+    from src.config import FUND_PROFILES, DEFAULT_FUND_NAME
     if not name:
         name = DEFAULT_FUND_NAME
     profile = FUND_PROFILES.get(name, FUND_PROFILES.get(DEFAULT_FUND_NAME, {}))
@@ -132,6 +132,7 @@ def main_profile(
     )
 
     if train:
+        from src.training import real_train_func
         real_train_func(train_output)
 
 
@@ -142,10 +143,10 @@ def profile_from_cli() -> None:
     parser.add_argument('--limit', type=int, default=20, help='Number of functions to display')
     parser.add_argument('--output', help='File path to save the stats table')
     parser.add_argument('--output-file', default='backtest_profile.prof', help='Profiling result .prof file')
-    parser.add_argument('--output-profile-dir', help='Directory to store profile files for each run')  # [Patch v5.8.4]
-    parser.add_argument('--fund', help='Fund profile name to use')  # [Patch v5.3.0]
-    parser.add_argument('--train', action='store_true', help='Run training after profiling')  # [Patch v5.3.0]
-    parser.add_argument('--train-output', default='models', help='Training output directory')  # [Patch v5.3.0]
+    parser.add_argument('--output-profile-dir', help='Directory to store profile files for each run')
+    parser.add_argument('--fund', help='Fund profile name to use')
+    parser.add_argument('--train', action='store_true', help='Run training after profiling')
+    parser.add_argument('--train-output', default='models', help='Training output directory')
     parser.add_argument('--console_level', default='INFO', help='Console log level')
     args = parser.parse_args()
     level = getattr(logging, args.console_level.upper(), logging.INFO)

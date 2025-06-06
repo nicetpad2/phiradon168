@@ -198,7 +198,7 @@ def test_main_profile_train_option(monkeypatch, tmp_path):
         called['out'] = out
         return {}
 
-    monkeypatch.setattr(profile_backtest, 'real_train_func', dummy_train)
+    monkeypatch.setattr('src.training.real_train_func', dummy_train)
 
     out_dir = tmp_path / 'models'
     profile_backtest.main_profile(str(csv_path), num_rows=2, train=True, train_output=str(out_dir))
@@ -225,7 +225,7 @@ def test_profile_cli_fund_and_train(monkeypatch, tmp_path):
         called['out'] = out
         return {}
 
-    monkeypatch.setattr(profile_backtest, 'real_train_func', dummy_train)
+    monkeypatch.setattr('src.training.real_train_func', dummy_train)
 
     out = tmp_path / 'stats.txt'
     prof = tmp_path / 'cli.prof'
