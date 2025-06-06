@@ -1247,8 +1247,10 @@ META_FILTER_THRESHOLD = safe_get_global('META_FILTER_THRESHOLD', DEFAULT_META_FI
 META_FILTER_RELAXED_THRESHOLD = safe_get_global('META_FILTER_RELAXED_THRESHOLD', DEFAULT_META_FILTER_RELAXED_THRESHOLD)
 META_FILTER_RELAX_BLOCKS = int(safe_get_global('META_FILTER_RELAX_BLOCKS', DEFAULT_META_FILTER_RELAX_BLOCKS))
 POST_TRADE_COOLDOWN_BARS = safe_get_global("POST_TRADE_COOLDOWN_BARS", 2)
-OMS_ENABLED = safe_get_global("OMS_ENABLED", True)
-PAPER_MODE = safe_get_global("PAPER_MODE", False)
+DEFAULT_OMS_ENABLED = True
+DEFAULT_PAPER_MODE = False
+OMS_ENABLED = safe_get_global("OMS_ENABLED", DEFAULT_OMS_ENABLED)
+PAPER_MODE = safe_get_global("PAPER_MODE", DEFAULT_PAPER_MODE)
 OUTPUT_DIR = safe_get_global('OUTPUT_DIR', DEFAULT_OUTPUT_DIR)
 
 # [Patch v5.9.3] Add attempt_order helper with block reason logging
@@ -2482,7 +2484,11 @@ def run_backtest_simulation_v34(
                         if not log_ml_skip: logging.info(f"      Order Blocked. Reason: {block_reason}")
                 if can_open_order:
                     meta_filter_block_streak = 0
-                    logging.info(f"      >>> Opening {side} Order ({entry_type_str}) at {now} <<<"); atr_entry = current_atr_shifted
+                    if PAPER_MODE:
+                        logging.info(f"      >>> Simulated {side} Order ({entry_type_str}) at {now} <<<")
+                    else:
+                        logging.info(f"      >>> Opening {side} Order ({entry_type_str}) at {now} <<<")
+                    atr_entry = current_atr_shifted
                     if pd.isna(atr_entry) or np.isinf(atr_entry) or atr_entry < 1e-9: logging.warning(f"         (Warning) Cannot calculate SL/TP at {now}: Invalid ATR_Shifted ({atr_entry}). Skipping Order.")
                     else:
                         entry_price = current_open
@@ -2527,7 +2533,15 @@ def run_backtest_simulation_v34(
                                     OMS_MAX_DISTANCE_PIPS,
                                 )
                                 new_order = {"entry_idx": current_index, "entry_time": entry_time, "entry_price": entry_price, "original_lot": final_lot, "lot": final_lot, "original_sl_price": sl_price, "sl_price": sl_price, "tp_price": tp2_price, "tp1_price": tp1_price, "entry_bar_count": current_bar_index, "side": side, "m15_trend_zone": m15_trend, "trade_tag": current_trade_tag, "signal_score": signal_score if pd.notna(signal_score) else np.nan, "trade_reason": trade_reason if not is_forced_entry else f"FORCED_{trade_reason}", "session": session_tag, "pattern_label_entry": pattern_label, "be_triggered": False, "be_triggered_time": pd.NaT, "is_reentry": is_reentry_trade, "is_forced_entry": is_forced_entry, "meta_proba_tp": meta_proba_tp_for_log, "meta2_proba_tp": meta2_proba_tp_for_log, "partial_tp_processed_levels": set(), "atr_at_entry": atr_entry, "equity_before_open": current_equity_check, "entry_gain_z": current_gain_z if pd.notna(current_gain_z) else np.nan, "entry_macd_smooth": current_macd_smooth if pd.notna(current_macd_smooth) else np.nan, "entry_candle_ratio": getattr(row, "Candle_Ratio", np.nan), "entry_adx": getattr(row, "ADX", np.nan), "entry_volatility_index": current_vol_index if pd.notna(current_vol_index) else np.nan, "peak_since_tp1": np.nan, "trough_since_tp1": np.nan, "risk_mode_at_entry": risk_mode_applied, "use_trailing_for_tp2": enable_ttp2, "trailing_start_price": tp1_price if enable_ttp2 else np.nan, "trailing_step_r": ADAPTIVE_TSL_DEFAULT_STEP_R if enable_ttp2 else np.nan, "peak_since_ttp2_activation": np.nan, "trough_since_ttp2_activation": np.nan, "active_model_at_entry": selected_model_key, "model_confidence_at_entry": model_confidence, "tsl_activated": False, "peak_since_tsl_activation": np.nan, "trough_since_tsl_activation": np.nan}
-                                next_active_orders.append(new_order); logging.info(f"         +++ ORDER OPENED: Side={side}, Lot={final_lot:.2f}, Entry={entry_price:.5f}, SL={sl_price:.5f}, TP={tp2_price:.5f}")
+                                next_active_orders.append(new_order)
+                                if PAPER_MODE:
+                                    logging.info(
+                                        f"         +++ SIMULATED ORDER: Side={side}, Lot={final_lot:.2f}, Entry={entry_price:.5f}, SL={sl_price:.5f}, TP={tp2_price:.5f}"
+                                    )
+                                else:
+                                    logging.info(
+                                        f"         +++ ORDER OPENED: Side={side}, Lot={final_lot:.2f}, Entry={entry_price:.5f}, SL={sl_price:.5f}, TP={tp2_price:.5f}"
+                                    )
                                 df_sim.at[current_index, f"Order_Opened{label_suffix}"] = True; df_sim.at[current_index, f"Lot_Size{label_suffix}"] = final_lot; df_sim.at[current_index, f"Entry_Price_Actual{label_suffix}"] = entry_price; df_sim.at[current_index, f"SL_Price_Actual{label_suffix}"] = sl_price; df_sim.at[current_index, f"TP_Price_Actual{label_suffix}"] = tp2_price; df_sim.at[current_index, f"ATR_At_Entry{label_suffix}"] = atr_entry; df_sim.at[current_index, f"Equity_Before_Open{label_suffix}"] = current_equity_check; df_sim.at[current_index, f"Is_Reentry{label_suffix}"] = is_reentry_trade; df_sim.at[current_index, f"Forced_Entry{label_suffix}"] = is_forced_entry; df_sim.at[current_index, f"Meta_Proba_TP{label_suffix}"] = meta_proba_tp_for_log; df_sim.at[current_index, f"Meta2_Proba_TP{label_suffix}"] = meta2_proba_tp_for_log; df_sim.at[current_index, f"Entry_Gain_Z{label_suffix}"] = current_gain_z if pd.notna(current_gain_z) else np.nan; df_sim.at[current_index, f"Entry_MACD_Smooth{label_suffix}"] = current_macd_smooth if pd.notna(current_macd_smooth) else np.nan; df_sim.at[current_index, f"Entry_Candle_Ratio{label_suffix}"] = getattr(row, "Candle_Ratio", np.nan); df_sim.at[current_index, f"Entry_ADX{label_suffix}"] = getattr(row, "ADX", np.nan); df_sim.at[current_index, f"Entry_Volatility_Index{label_suffix}"] = current_vol_index if pd.notna(current_vol_index) else np.nan; df_sim.at[current_index, f"Active_Model{label_suffix}"] = selected_model_key; df_sim.at[current_index, f"Model_Confidence{label_suffix}"] = model_confidence
                                 if is_reentry_trade: reentry_trades_opened += 1
                                 if is_forced_entry: forced_entry_trades_opened += 1

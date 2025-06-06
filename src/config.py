@@ -709,7 +709,8 @@ PARTIAL_TP_LEVELS = [           # Define partial TP levels
     {"r_multiple": 0.5, "close_pct": 0.5},   # Close remaining at 1 ATR
 ]
 PARTIAL_TP_MOVE_SL_TO_ENTRY = True # Move SL to entry after first partial TP?
-OMS_ENABLED = True  # Global switch to enable/disable OMS
+OMS_DEFAULT = True  # Default OMS state when not overridden
+OMS_ENABLED = OMS_DEFAULT  # Global switch to enable/disable OMS
 PAPER_MODE = False  # When True, bypass OMS block checks for paper trading
 ENABLE_KILL_SWITCH = True       # Enable/disable kill switch mechanism
 KILL_SWITCH_MAX_DD_THRESHOLD = 0.25 # [Patch v5.3.5] Max drawdown % before activating kill switch
