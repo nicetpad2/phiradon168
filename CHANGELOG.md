@@ -1,4 +1,8 @@
 
+### 2025-10-20
+- [Patch v5.8.7] Add risk management helpers
+- New/Updated unit tests added for tests.test_strategy_new_modules
+- QA: pytest -q passed (466 tests)
 ### 2025-10-19
 - [Patch v5.8.7] Enhance entry/exit rules with MTF confirmation and ATR filters
 - New/Updated unit tests added for tests.test_strategy_signals and tests.test_main_extra
