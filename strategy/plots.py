@@ -28,13 +28,14 @@ def plot_equity_curve(trade_df: pd.DataFrame, output_path: Path) -> Path:
 
     output_path.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filepath = output_path / f"equity_{timestamp}.png"
     fig, ax = plt.subplots()
 
-    ax.plot(list(equity))
+    equity = trade_df["Equity"]
+    ax.plot(equity.tolist())
     ax.set_title("Equity Curve")
-    if filepath:
-        fig.savefig(filepath)
-    return ax
+    fig.savefig(filepath)
+    return filepath
 
 
 __all__ = ["plot_equity_curve"]

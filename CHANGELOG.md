@@ -981,3 +981,7 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests for trade logger and hyperparameter sweep
 - QA: pytest -q passed (429 tests)
 
+### 2025-06-06
+- [Patch v5.8.8] Add k-fold cross validation utility and tests
+- New/Updated unit tests added for tests.test_kfold_cv
+- QA: pytest -q passed (selected tests)

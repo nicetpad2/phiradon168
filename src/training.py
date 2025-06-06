@@ -7,8 +7,8 @@ from joblib import dump
 from src.config import logger, USE_GPU_ACCELERATION
 from src.utils.model_utils import evaluate_model
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split, TimeSeriesSplit
-from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.model_selection import train_test_split, TimeSeriesSplit, StratifiedKFold
+from sklearn.metrics import accuracy_score, roc_auc_score, f1_score
 from sklearn.linear_model import LogisticRegression
 from src.utils import convert_thai_datetime
 try:
@@ -182,6 +182,72 @@ def _time_series_cv_auc(model_cls, X: pd.DataFrame, y: pd.Series, n_splits: int 
         auc = roc_auc_score(y_test, proba)
         aucs.append(auc)
     return float(np.mean(aucs)) if aucs else float("nan")
+
+
+# [Patch v5.8.8] Generic K-Fold CV for CatBoost/RandomForest
+def kfold_cv_model(
+    X: pd.DataFrame,
+    y: pd.Series,
+    model_type: str = "catboost",
+    n_splits: int = 5,
+    early_stopping_rounds: int | None = 50,
+    depth: int = 6,
+    l2_leaf_reg: float | None = None,
+    random_state: int = 42,
+) -> dict:
+    """Perform K-Fold CV and return averaged AUC and F1 score."""
+
+    if model_type == "catboost" and CatBoostClassifier is None:
+        logger.error("catboost not available")
+        return {}
+
+    if model_type == "rf" and RandomForestClassifier is None:
+        logger.error("RandomForest not available")
+        return {}
+
+    splitter = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    aucs: list[float] = []
+    f1s: list[float] = []
+    train_aucs: list[float] = []
+
+    for train_idx, val_idx in splitter.split(X, y):
+        X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
+        y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
+
+        if model_type == "catboost":
+            params = {
+                "depth": depth,
+                "verbose": False,
+                "random_seed": random_state,
+                "eval_metric": "AUC",
+            }
+            if l2_leaf_reg is not None:
+                params["l2_leaf_reg"] = l2_leaf_reg
+            if early_stopping_rounds is not None:
+                params["early_stopping_rounds"] = early_stopping_rounds
+            model = CatBoostClassifier(**params)
+            model.fit(X_train, y_train, eval_set=(X_val, y_val), use_best_model=True)
+        else:
+            model = RandomForestClassifier(random_state=random_state, max_depth=depth)
+            model.fit(X_train, y_train)
+
+        train_prob = model.predict_proba(X_train)[:, 1]
+        val_prob = model.predict_proba(X_val)[:, 1]
+        train_auc = roc_auc_score(y_train, train_prob) if len(np.unique(y_train)) > 1 else float("nan")
+        val_auc = roc_auc_score(y_val, val_prob) if len(np.unique(y_val)) > 1 else float("nan")
+        train_aucs.append(train_auc)
+        aucs.append(val_auc)
+        preds = (val_prob >= 0.5).astype(int)
+        f1s.append(f1_score(y_val, preds))
+
+    avg_auc = float(np.nanmean(aucs)) if aucs else float("nan")
+    avg_f1 = float(np.nanmean(f1s)) if f1s else float("nan")
+    for t_auc, v_auc in zip(train_aucs, aucs):
+        if t_auc > 0.95 and v_auc < 0.65:
+            logger.warning("Overfitting detected: train AUC %.3f vs val AUC %.3f", t_auc, v_auc)
+            break
+
+    return {"auc": avg_auc, "f1": avg_f1}
 
 
 def train_lightgbm_mtf(m1_path: str, m15_path: str, output_dir: str, auc_threshold: float = 0.7) -> dict | None:
