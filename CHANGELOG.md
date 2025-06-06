@@ -1,3 +1,13 @@
+### 2025-06-06
+- [Patch v5.9.9] Increase coverage of trade_logger to 100%
+- New/Updated unit tests added for tests.test_trade_logger
+- QA: pytest -q passed (600 tests)
+
+
+### 2025-06-06
+- [Patch v5.9.9] ปรับปรุง update_config_from_dict
+- New/Updated unit tests added for tests.test_config_loader
+- QA: pytest -q passed (13 tests)
 
 ### 2025-06-06
 
@@ -1106,7 +1116,9 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for none (behavioral patch)
 - QA: pytest -q passed (existing tests)
 
+
 ### 2025-06-08
 - [Patch v5.9.9] Add settings loader tests
 - New/Updated unit tests added for tests.test_settings
 - QA: pytest -q tests/test_settings.py passed
+
