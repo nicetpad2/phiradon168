@@ -1,3 +1,7 @@
+### 2025-10-20
+- [Patch v5.8.5] Sync features_main.json version and update documentation links
+- QA: pytest -q passed (462 tests)
+
 ### 2025-06-06
 - [Patch v5.8.6] Save equity curve with timestamp
 - New/Updated unit tests added for tests.test_strategy_modules
