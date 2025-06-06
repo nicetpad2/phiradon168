@@ -68,7 +68,7 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/strategy.py", "run_backtest_simulation_v34", 1888),
+    ("src/strategy.py", "run_backtest_simulation_v34", 1885),
 
     ("src/strategy.py", "initialize_time_series_split", 4517),
     ("src/strategy.py", "calculate_forced_entry_logic", 4520),

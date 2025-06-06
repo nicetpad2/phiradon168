@@ -996,3 +996,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests for trade logger and hyperparameter sweep
 - QA: pytest -q passed (429 tests)
 
+
+### 2025-06-08
+- [Patch v5.8.3] Add parameter stability analysis utilities
+- New/Updated unit tests added for tests.test_param_stability
+- QA: pytest -q passed
