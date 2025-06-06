@@ -998,6 +998,8 @@ QA: pytest -q passed (219 tests)
 
 
 ### 2025-06-08
-- [Patch v5.8.3] Add parameter stability analysis utilities
-- New/Updated unit tests added for tests.test_param_stability
-- QA: pytest -q passed
+
+- [Patch v5.9.0] Add signal classifier utilities and basic ML workflow
+- New/Updated unit tests added for tests/test_signal_classifier.py
+- QA: pytest -q passed (existing + new tests)
+
