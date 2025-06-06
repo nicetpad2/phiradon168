@@ -1,3 +1,8 @@
+### 2025-06-23
+- [Patch v5.10.3] Ensure config defaults imported under pytest
+- New/Updated unit tests added for tests/test_config_defaults.py
+- QA: pytest -q tests/test_config_defaults.py passed (1 test)
+
 ### 2025-06-06
 
 - [Patch v5.10.2] Clarify lazy imports in profile_backtest
@@ -1197,6 +1202,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for none (package init)
 - QA: pytest -q tests/test_threshold_optimization.py::test_parse_args_defaults passed (1 test)
 ### 2025-06-06
+
 - [Patch v5.10.3] Improve GPU library import error handling
 - New/Updated unit tests added for none (config exception log)
 - QA: pytest -q failed (import errors)
+
