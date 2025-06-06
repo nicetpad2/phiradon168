@@ -136,6 +136,18 @@ def run_full_pipeline() -> None:
     run_report()
 
 
+def release_gpu_resources(handle, use_gpu: bool) -> None:
+    """Release NVML handle and log the result."""
+    if use_gpu and "pynvml" in globals() and handle:
+        try:
+            pynvml.nvmlShutdown()
+            logging.info("GPU resources released")
+        except Exception as exc:  # pragma: no cover - unlikely NVML failure
+            logging.warning(f"Failed to shut down NVML: {exc}")
+    else:
+        logging.info("GPU not available, running on CPU")
+
+
 def run_mode(mode):
     """Run the selected mode."""
     if mode == "preprocess":
@@ -200,11 +212,4 @@ if __name__ == "__main__":
         # [Patch v5.0.23] Respect USE_GPU_ACCELERATION flag when logging GPU status
         main_mod = sys.modules.get("src.main")
         use_gpu = getattr(main_mod, "USE_GPU_ACCELERATION", False)
-        if use_gpu and "pynvml" in globals() and nvml_handle:
-            try:
-                pynvml.nvmlShutdown()
-                logging.info("GPU resources released")
-            except Exception as e:
-                logging.warning(f"Failed to shut down NVML: {e}")
-        else:
-            logging.info("GPU not available, running on CPU")
+        release_gpu_resources(nvml_handle, use_gpu)

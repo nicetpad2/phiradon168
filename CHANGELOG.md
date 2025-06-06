@@ -1138,3 +1138,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_model_utils_new
 - QA: pytest -q tests/test_model_utils_new.py passed (13 tests)
 
+### 2025-06-06
+- [Patch v5.9.12] Refactor GPU release logic in ProjectP
+- New/Updated unit tests added for tests.test_projectp_nvml
+- QA: pytest -q tests/test_projectp_nvml.py::test_projectp_logs_gpu_release passed
+
