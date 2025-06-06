@@ -99,7 +99,8 @@
   - Track model drift and notify when retraining is required
   - Provide evaluation utility `evaluate_meta_classifier` in src.evaluation
   - Record daily/weekly AUC metrics using `src.monitor`
-- **Modules:** `src/evaluation.py`, `src/monitor.py`
+  - Evaluate parameter stability across folds
+- **Modules:** `src/evaluation.py`, `src/monitor.py`, `src/param_stability.py`
 
 
 ### [RL_Scalper_AI](src/adaptive.py)

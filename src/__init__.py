@@ -15,6 +15,7 @@ from src.money_management import (
 )
 from src.evaluation import evaluate_meta_classifier
 from src.wfv import walk_forward_grid_search, prune_features_by_importance
+from src.param_stability import save_fold_params, analyze_param_stability
 
 __all__ = [
     "adaptive_sl_tp",
@@ -29,4 +30,6 @@ __all__ = [
     "evaluate_meta_classifier",
     "walk_forward_grid_search",
     "prune_features_by_importance",
+    "save_fold_params",
+    "analyze_param_stability",
 ]
