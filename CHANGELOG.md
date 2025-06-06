@@ -1,9 +1,8 @@
 
-
 ### 2025-10-20
-- [Patch v5.8.7] Add per-fold Optuna WFV and overlap check
-- New/Updated unit tests added for tests.test_optuna_wfv
-- QA: pytest -q passed (pending)
+- [Patch v5.8.7] Add risk management helpers
+- New/Updated unit tests added for tests.test_strategy_new_modules
+- QA: pytest -q passed (466 tests)
 
 ### 2025-10-19
 - [Patch v5.8.6] Add CI workflow and update badges
