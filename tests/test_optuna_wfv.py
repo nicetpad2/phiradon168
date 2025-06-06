@@ -20,7 +20,19 @@ import optuna
 
 _real_config = importlib.import_module("src.config")
 config = types.SimpleNamespace(optuna=optuna)
-sys.modules["src.config"] = config
+
+
+@pytest.fixture(autouse=True)
+def _patch_config(monkeypatch):
+    """Replace ``src.config`` with a simple namespace during each test.
+
+    This avoids side effects during test collection when other modules import
+    ``src.config``. The real module is restored automatically after each test
+    via the ``monkeypatch`` fixture.
+    """
+    monkeypatch.setitem(sys.modules, "src.config", config)
+    yield
+    monkeypatch.setitem(sys.modules, "src.config", _real_config)
 
 
 def dummy_backtest(df, signal=1.0, loss_thresh=4, atr_mult=1.0, ma_period=20):
@@ -64,5 +76,3 @@ def test_optuna_walk_forward_per_fold_overlap_error():
         wfv.optuna_walk_forward_per_fold(df, space, dummy_backtest, train_window=4, test_window=1, step=1, n_trials=1)
 
 
-def teardown_module(module):
-    sys.modules["src.config"] = _real_config
