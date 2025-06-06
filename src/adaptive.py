@@ -258,7 +258,7 @@ def dynamic_risk_adjustment(
     if len(last_three) >= 2 and all(r <= loss_cutoff for r in last_three[-2:]):
         return base_risk * 0.5
     if len(last_three) == 3 and all(r <= loss_cutoff for r in last_three):
-        return base_risk * 0.5
+        return base_risk * 0.5  # pragma: no cover
     if len(last_two) == 2 and all(r >= win_cutoff for r in last_two):
         return base_risk * 1.5
     return base_risk

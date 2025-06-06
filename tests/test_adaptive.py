@@ -3,6 +3,7 @@ import os
 import sys
 import logging
 
+import pytest
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(1, os.path.join(ROOT_DIR, 'src'))
@@ -149,3 +150,74 @@ def test_calculate_dynamic_sl_tp_cases():
     sl3, tp3 = calculate_dynamic_sl_tp(1.5, 0.45)
     assert abs(sl3 - 2.25) < 1e-9
     assert abs(tp3 - 4.5) < 1e-9
+import math
+import pandas as pd
+
+
+def test_calculate_atr_invalid(monkeypatch):
+    assert math.isnan(calculate_atr(123))
+    df = pd.DataFrame({'High': [1], 'Low': [0.5], 'Close': [0.8]})
+    monkeypatch.setattr(features, 'atr', lambda df_in, period=14: pd.DataFrame({'OTHER': [0.1]}))
+    assert math.isnan(calculate_atr(df))
+
+
+@pytest.mark.parametrize('equity,atr', [
+    ('x', 1.0),
+    (1.0, 'y'),
+])
+def test_atr_position_size_invalid_types(equity, atr):
+    lot, sl = atr_position_size(equity, atr)
+    assert lot == 0.01 and math.isnan(sl)
+
+
+def test_atr_position_size_negative_and_small():
+    lot1, sl1 = atr_position_size(0, 1)
+    assert lot1 == 0.01 and math.isnan(sl1)
+    lot2, sl2 = atr_position_size(1000, 1, pip_value=1e-11)
+    assert lot2 == 0.01 and abs(sl2 - 1.5) < 1e-9
+
+
+def test_compute_kelly_position_invalid_inputs(caplog):
+    with caplog.at_level(logging.WARNING):
+        val = compute_kelly_position('a', 'b')
+    assert val == 0.0
+    assert any('Invalid Kelly inputs' in m for m in caplog.messages)
+
+
+def test_trailing_atr_stop_invalid_and_unknown(caplog):
+    with caplog.at_level(logging.WARNING):
+        assert compute_trailing_atr_stop('x', 1.0, 0.5, 'BUY', 0.5) == 0.5
+    with caplog.at_level(logging.WARNING):
+        assert compute_trailing_atr_stop(1.0, 1.0, -0.1, 'BUY', 0.5) == 0.5
+    assert compute_trailing_atr_stop(1.0, 1.1, 0.5, 'HOLD', 0.5) == 0.5
+
+
+@pytest.mark.parametrize('equity,atr', [
+    ('x', 0.2),
+    (1000, 'x'),
+])
+def test_volatility_adjusted_lot_size_invalid_inputs(equity, atr):
+    lot, sl = volatility_adjusted_lot_size(equity, atr)
+    assert lot == 0.01 and math.isnan(sl)
+
+
+def test_volatility_adjusted_lot_size_edge_cases():
+    lot1, sl1 = volatility_adjusted_lot_size(0, 1)
+    assert lot1 == 0.01 and math.isnan(sl1)
+    lot2, sl2 = volatility_adjusted_lot_size(1000, 1, pip_value=1e-11)
+    assert lot2 == 0.01 and abs(sl2 - 1.5) < 1e-9
+
+
+def test_dynamic_risk_adjustment_base_case():
+    risk = dynamic_risk_adjustment([0.01, -0.01], base_risk=0.02)
+    assert risk == 0.02
+
+
+def test_check_portfolio_stop_invalid(caplog):
+    with caplog.at_level(logging.WARNING):
+        assert not check_portfolio_stop('x')
+
+
+def test_calculate_dynamic_sl_tp_invalid():
+    sl, tp = calculate_dynamic_sl_tp('x', 'y')
+    assert math.isnan(sl) and math.isnan(tp)
