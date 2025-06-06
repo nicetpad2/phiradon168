@@ -1,5 +1,7 @@
 # === START OF PART 5/12 ===
 
+"""Feature engineering helpers and technical indicator calculations."""
+
 # ==============================================================================
 # === PART 5: Feature Engineering & Indicator Calculation (v4.8.12) ===
 # ==============================================================================
@@ -1605,5 +1607,31 @@ def merge_wave_pattern_labels(df, log_path):
     )
     df_out['Wave_Pattern'] = merged['pattern_label'].fillna('Unknown').astype('category')
     return df_out
+
+
+__all__ = [
+    "ema",
+    "sma",
+    "rsi",
+    "atr",
+    "calculate_sma",
+    "calculate_rsi",
+    "macd",
+    "detect_macd_divergence",
+    "calculate_order_flow_imbalance",
+    "calculate_relative_volume",
+    "calculate_momentum_divergence",
+    "rolling_zscore",
+    "tag_price_structure_patterns",
+    "calculate_m15_trend_zone",
+    "get_mtf_sma_trend",
+    "engineer_m1_features",
+    "clean_m1_data",
+    "calculate_m1_entry_signals",
+    "select_top_shap_features",
+    "check_model_overfit",
+    "check_feature_noise_shap",
+    "analyze_feature_importance_shap",
+]
 
 

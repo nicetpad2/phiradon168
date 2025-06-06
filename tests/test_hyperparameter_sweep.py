@@ -6,9 +6,10 @@ sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'src'))
 
 import pandas as pd
+import logging
 from src.strategy import run_hyperparameter_sweep, run_optuna_catboost_sweep
 
-def test_run_hyperparameter_sweep_basic(tmp_path, capsys):
+def test_run_hyperparameter_sweep_basic(tmp_path, caplog):
     calls = []
     def dummy_train_func(**kwargs):
         calls.append(kwargs)
@@ -17,11 +18,11 @@ def test_run_hyperparameter_sweep_basic(tmp_path, capsys):
     output_dir = tmp_path / "out"
     base_params = {"output_dir": str(output_dir)}
     grid = {"p1": [1, 2], "p2": [0.1, 0.2]}
-    results = run_hyperparameter_sweep(base_params, grid, train_func=dummy_train_func)
-    captured = capsys.readouterr().out
+    with caplog.at_level(logging.INFO):
+        results = run_hyperparameter_sweep(base_params, grid, train_func=dummy_train_func)
     assert output_dir.is_dir()
-    assert "เริ่มพารามิเตอร์ run 1" in captured
-    assert "Run 1:" in captured
+    assert "เริ่มพารามิเตอร์ run 1" in caplog.text
+    assert "Run 1:" in caplog.text
     assert len(results) == 4
     assert len(calls) == 4
     for res in results:

@@ -39,6 +39,8 @@ from src.config import (
 )
 from src.utils.env_utils import get_env_float
 
+logger = logging.getLogger(__name__)
+
 # อ่านเวอร์ชันจากไฟล์ VERSION
 VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
 with open(VERSION_FILE, 'r', encoding='utf-8') as vf:
@@ -4397,10 +4399,10 @@ def run_hyperparameter_sweep(base_params: dict, grid: dict, train_func):
         params = base_params.copy()
         for k, v in zip(keys, combo):
             params[k] = v
-        print(f"เริ่มพารามิเตอร์ run {idx}: {params}")
+        logger.info("เริ่มพารามิเตอร์ run %s: %s", idx, params)
         model_path, feature_list = train_func(**params)
         result_entry = {"params": params, "model_path": model_path, "features": feature_list}
-        print(f"Run {idx}: {result_entry}")
+        logger.info("Run %s: %s", idx, result_entry)
         results.append(result_entry)
 
     return results

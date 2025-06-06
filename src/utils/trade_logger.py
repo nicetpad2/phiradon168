@@ -171,5 +171,17 @@ def print_qa_summary(output_dir: str) -> str:
                 logger.error("[QA-WARNING] Failed reading %s: %s", path, e, exc_info=True)
     summary_text = "\n".join(summaries)
     if summary_text:
-        print(summary_text)
+        logger.info(summary_text)
     return summary_text
+
+
+__all__ = [
+    "Order",
+    "setup_trade_logger",
+    "export_trade_log",
+    "aggregate_trade_logs",
+    "log_open_order",
+    "log_close_order",
+    "print_qa_summary",
+    "save_trade_snapshot",
+]

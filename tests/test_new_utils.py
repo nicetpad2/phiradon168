@@ -4,6 +4,7 @@ import types
 import pandas as pd
 import builtins
 import importlib
+import logging
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
@@ -11,14 +12,14 @@ sys.path.insert(0, ROOT_DIR)
 import utils
 
 
-def test_print_qa_summary_empty_df(capsys):
+def test_print_qa_summary_empty_df(caplog):
     trades = pd.DataFrame()
     equity = pd.DataFrame()
-    res = utils.print_qa_summary(trades, equity)
-    captured = capsys.readouterr().out
+    with caplog.at_level(logging.WARNING):
+        res = utils.print_qa_summary(trades, equity)
     assert res["total_trades"] == 0
     assert res["winrate"] == 0.0
-    assert "ไม่มีไม้ที่ถูกเทรด" in captured
+    assert "ไม่มีไม้ที่ถูกเทรด" in caplog.text
 
 
 def test_convert_thai_datetime_invalid(tmp_path):

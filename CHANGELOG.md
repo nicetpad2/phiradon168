@@ -940,3 +940,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for existing features modules
 - QA: pytest -q passed (420 tests)
 
+### 2025-06-05
+- [Patch v5.8.2] Replace print statements with logging and added __all__ sections
+- New/Updated unit tests for trade logger and hyperparameter sweep
+- QA: pytest -q passed (429 tests)
+
