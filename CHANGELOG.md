@@ -1,9 +1,8 @@
 
-### 2025-06-24
-- [Patch v5.10.6] Auto-create placeholder trade log if missing
-- New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
-- QA: pytest -q passed (732 tests)
-
+### 2025-06-06
+- [Patch v5.10.4] Increase coverage for data loader
+- New/Updated unit tests added for tests/unit/test_data_loader_full.py
+- QA: pytest -q passed (767 tests)
 
 ### 2025-06-23
 - [Patch v5.10.3] Ensure config defaults imported under pytest
