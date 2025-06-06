@@ -11,3 +11,12 @@ def atr_stop_loss(close: pd.Series, period: int = 14) -> pd.Series:
     return close.diff().abs().rolling(period).mean().fillna(method="bfill")
 
 __all__ = ["atr_stop_loss"]
+
+def atr_sl_tp_wrapper(price: float, atr: float, side: str) -> tuple[float, float]:
+    """Return basic SL/TP pair based on ATR distance."""
+    if side == "BUY":
+        return price - atr, price + atr
+    else:
+        return price + atr, price - atr
+
+__all__.append("atr_sl_tp_wrapper")

@@ -14,6 +14,6 @@ def plot_equity_curve(equity: Sequence[float], filepath: Optional[str] = None):
     ax.set_title("Equity Curve")
     if filepath:
         fig.savefig(filepath)
-    return fig
+    return ax
 
 __all__ = ["plot_equity_curve"]
