@@ -10,6 +10,11 @@
 - New/Updated unit tests added for tests.test_strategy_modules
 - QA: pytest -q passed (433 tests)
 
+### 2025-10-19
+- [Patch v5.8.6] Thread-safe order & risk managers with config settings
+- New/Updated unit tests added for tests.test_order_manager_extended, tests.test_strategy_modules
+- QA: pytest -q passed (460 tests)
+
 ### 2025-10-17
 
 
