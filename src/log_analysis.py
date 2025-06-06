@@ -134,6 +134,38 @@ def calculate_drawdown_stats(df: pd.DataFrame) -> dict[str, float]:
     }
 
 
+def calculate_expectancy(df: pd.DataFrame, pnl_col: str = "PnL") -> float:
+    """Return expectancy from a series of trade PnL values.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame ที่มีคอลัมน์กำไรขาดทุน
+    pnl_col : str, optional
+        ชื่อคอลัมน์ PnL ภายใน DataFrame
+
+    Returns
+    -------
+    float
+        ค่าคาดหวัง (Expectancy) ตามสูตร Win% * AvgWin - Loss% * AvgLoss
+    """
+
+    if df.empty or pnl_col not in df:
+        return 0.0
+
+    pnl = pd.to_numeric(df[pnl_col], errors="coerce").dropna()
+    if pnl.empty:
+        return 0.0
+
+    wins = pnl[pnl > 0]
+    losses = pnl[pnl <= 0]
+    win_pct = len(wins) / len(pnl)
+    loss_pct = len(losses) / len(pnl)
+    avg_win = wins.mean() if not wins.empty else 0.0
+    avg_loss = abs(losses.mean()) if not losses.empty else 0.0
+    return float(win_pct * avg_win - loss_pct * avg_loss)
+
+
 def parse_alerts(log_path: str) -> pd.DataFrame:
     """[Patch] Extract warning/error/critical messages from a log file."""
     entries = []

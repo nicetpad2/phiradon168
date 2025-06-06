@@ -1,4 +1,9 @@
 
+### 2025-06-07
+- [Patch v5.8.7] Add expectancy metric calculation in log_analysis
+- New/Updated unit tests added for tests.test_log_analysis
+- QA: pytest -q failed (14 failed)
+
 ### 2025-10-20
 - [Patch v5.8.5] Sync features_main.json version and update documentation links
 - QA: pytest -q passed (462 tests)

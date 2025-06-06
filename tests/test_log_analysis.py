@@ -14,6 +14,7 @@ from src.log_analysis import (
     calculate_reason_summary,
     calculate_duration_stats,
     calculate_drawdown_stats,
+    calculate_expectancy,
     parse_alerts,
     calculate_alert_summary,
     export_summary_to_csv,
@@ -96,4 +97,11 @@ def test_export_and_plot(tmp_path):
     assert "hour" in reloaded.columns
     fig = plot_summary(summary)
     assert hasattr(fig, "savefig")
+
+
+def test_calculate_expectancy():
+    df = pd.DataFrame({"PnL": [2.0, -1.0, 3.0, -2.0]})
+    exp = calculate_expectancy(df)
+    # Win% = 0.5, AvgWin = 2.5, Loss% = 0.5, AvgLoss = 1.5 -> Expectancy = 0.5
+    assert exp == pytest.approx(0.5)
 
