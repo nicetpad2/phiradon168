@@ -10,6 +10,9 @@
 - ติดตั้งไลบรารีด้วย `pip install -r requirements.txt`
 - กำหนดตัวแปรสภาพแวดล้อมผ่านไฟล์ `.env` (ดูตัวอย่าง `.env.example`)
 
+## Features
+- ระบบมีตัวกรอง ATR และ Median เพื่อช่วยลด Noise ในกรอบเวลา M1
+
 ## Installation
 ```bash
 git clone <repo-url>
