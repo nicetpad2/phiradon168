@@ -4069,7 +4069,7 @@ def run_all_folds_with_threshold(
         logging.info(f"   -- Running SELL Simulation Fold {fold+1} ({fund_name}) --")
         label_sell = f"Fold{fold}_SELL_{fund_name}"
         (df_sell_res, log_sell, eq_sell, hist_sell, dd_sell, costs_sell, blocked_sell, type_l1_s, type_l2_s, final_ks_state_sell, final_losses_sell, ib_lot_sell) = run_backtest_simulation_v34(
-            df_buy_res, label_sell, start_cap_sell, "SELL",
+            df_test_fold, label_sell, start_cap_sell, "SELL",
             fund_profile=fund_profile, fold_config=cfg_sell,
             available_models=available_models, model_switcher_func=model_switcher_func,
             pattern_label_map=pattern_label_map, meta_min_proba_thresh_override=l1_thresh_to_use,
@@ -4105,7 +4105,7 @@ def run_all_folds_with_threshold(
                 initial_consecutive_losses=current_fold_consecutive_losses,
             )
             (df_sell_res, log_sell, eq_sell, hist_sell, dd_sell, costs_sell, blocked_sell, type_l1_s, type_l2_s, final_ks_state_sell, final_losses_sell, ib_lot_sell) = run_backtest_simulation_v34(
-                df_buy_res, label_sell + "_FB", start_cap_sell, "SELL",
+                df_test_fold, label_sell + "_FB", start_cap_sell, "SELL",
                 fund_profile=fund_profile, fold_config=cfg_sell,
                 available_models=available_models, model_switcher_func=model_switcher_func,
                 pattern_label_map=pattern_label_map, meta_min_proba_thresh_override=fb_thresh,
