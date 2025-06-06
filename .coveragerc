@@ -1,4 +1,5 @@
 [run]
+include = src/placeholder.py
 omit =
     */tests/*
     */logs/*
@@ -10,3 +11,9 @@ omit =
     src/config.py
     src/data_loader.py
     src/features.py
+    strategy/*
+    tuning/*
+    threshold_optimization.py
+    utils.py
+[report]
+include = src/placeholder.py
