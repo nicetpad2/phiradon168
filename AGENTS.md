@@ -218,7 +218,7 @@
 - **Main Role:** Trade Log Analysis
 - **Key Responsibilities:**
   - Parse raw trade logs and compute hourly win rates
-  - Provide utilities for risk sizing and TSL statistics
+  - Provide utilities for risk sizing, TSL statistics, and expectancy metrics
 - **Modules:** `src/log_analysis.py`
 
 ## 📌 Process & Collaboration Guidelines
