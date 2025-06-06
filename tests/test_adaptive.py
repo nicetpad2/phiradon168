@@ -5,7 +5,7 @@ import logging
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'src'))
+sys.path.insert(1, os.path.join(ROOT_DIR, 'src'))
 
 from src.adaptive import (
     adaptive_sl_tp,

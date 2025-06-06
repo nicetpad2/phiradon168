@@ -1,6 +1,6 @@
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pytest
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -19,7 +19,7 @@ from src.utils import Settings
 def test_order_manager_cooldown_block():
     settings = Settings(cooldown_secs=2, kill_switch_pct=1.0)
     om = OrderManager(settings=settings)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     assert om.place_order({}, now) is OrderStatusOM.OPEN
     status = om.place_order({}, now + timedelta(seconds=1))
     assert status is OrderStatusOM.BLOCKED_COOLDOWN
@@ -28,7 +28,7 @@ def test_order_manager_cooldown_block():
 def test_order_manager_kill_switch():
     settings = Settings(cooldown_secs=0, kill_switch_pct=0.5)
     om = OrderManager(settings=settings)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     assert om.place_order({}, now) is OrderStatusOM.OPEN
     om.update_drawdown(0.6)
     status = om.place_order({}, now + timedelta(seconds=1))

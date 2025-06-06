@@ -4,7 +4,7 @@ import os
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'src'))
+sys.path.insert(1, os.path.join(ROOT_DIR, 'src'))
 
 
 def test_prepare_train_data_calls_main(monkeypatch):

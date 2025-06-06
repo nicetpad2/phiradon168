@@ -8,7 +8,7 @@ def atr_stop_loss(close: pd.Series, period: int = 14) -> pd.Series:
     """Return a naive ATR-based stop loss series."""
     if len(close) < period:
         raise ValueError("close length must be >= period")
-    return close.diff().abs().rolling(period).mean().fillna(method="bfill")
+    return close.diff().abs().rolling(period).mean().bfill()
 
 __all__ = ["atr_stop_loss"]
 

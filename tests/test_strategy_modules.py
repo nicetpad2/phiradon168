@@ -1,7 +1,7 @@
 import os
 import sys
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
@@ -18,7 +18,7 @@ from strategy import (
 
 def test_order_manager_place_order():
     om = OrderManager()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     status = om.place_order({}, now)
     assert status.name == "OPEN"
 
