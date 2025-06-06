@@ -1163,3 +1163,7 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for none (revert docstring change)
 - QA: pytest -q passed (691 tests)
 
+### 2025-06-07
+- [Patch v5.9.15] เพิ่ม unit tests ครอบคลุมโมดูล strategy
+- New/Updated unit tests added for tests/unit/test_strategy_additional_coverage.py
+- QA: pytest -q passed (700+ tests)
