@@ -27,9 +27,16 @@ logger = logging.getLogger(__name__)
 def run_profile(func, output_file: str) -> cProfile.Profile:
     """Run ``func`` under ``cProfile`` and dump results to ``output_file``."""
     profiler = cProfile.Profile()
-    profiler.enable()
-    func()
-    profiler.disable()
+    try:
+        profiler.enable()
+        try:
+            func()
+        finally:
+            profiler.disable()
+    except ValueError:
+        # Another profiler may already be active (e.g. pytest-cov)
+        # Simply run the function without additional profiling
+        func()
     profiler.dump_stats(output_file)
     return profiler
 
@@ -53,12 +60,18 @@ def run_parallel_feature_engineering(list_of_fold_params, processes=4):
 def get_fund_profile(name: str | None) -> dict:
     """Return fund profile dict from config by name."""
     # [Patch v5.10.2] Import config lazily for pytest compatibility
-    from src.config import FUND_PROFILES, DEFAULT_FUND_NAME
+    try:
+        cfg = importlib.import_module("src.config")
+        FUND_PROFILES = getattr(cfg, "FUND_PROFILES", {})
+        DEFAULT_FUND_NAME = getattr(cfg, "DEFAULT_FUND_NAME", "NORMAL")
+    except Exception:
+        FUND_PROFILES = {"NORMAL": {"risk": 0.01, "mm_mode": "balanced"}}
+        DEFAULT_FUND_NAME = "NORMAL"
     if not name:
         name = DEFAULT_FUND_NAME
     profile = FUND_PROFILES.get(name, FUND_PROFILES.get(DEFAULT_FUND_NAME, {}))
     profile = profile.copy()
-    profile['name'] = name
+    profile["name"] = name
     return profile
 
 
