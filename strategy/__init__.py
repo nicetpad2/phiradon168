@@ -14,6 +14,12 @@ from .cooldown import (
 from .metrics import calculate_metrics
 from .drift_observer import DriftObserver
 from .trend_filter import apply_trend_filter
+from .strategy import apply_strategy
+from .order_management import create_order
+from .risk_management import calculate_position_size
+from .stoploss_utils import atr_stop_loss
+from .trade_executor import execute_order
+from .plots import plot_equity_curve
 
 __all__ = [
     'generate_open_signals',
@@ -30,4 +36,10 @@ __all__ = [
     'calculate_metrics',
     'DriftObserver',
     'apply_trend_filter',
+    'apply_strategy',
+    'create_order',
+    'calculate_position_size',
+    'atr_stop_loss',
+    'execute_order',
+    'plot_equity_curve',
 ]

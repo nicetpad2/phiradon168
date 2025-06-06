@@ -282,5 +282,7 @@
 - Added `wfv_monitor` module for KPI-driven Walk-Forward validation.
 - Added `tuning.joint_optuna` module for joint model + strategy optimization.
 - Added `config` package for environment-based directory paths.
+- Added `strategy.strategy`, `strategy.order_management`, `strategy.risk_management`,
+  `strategy.stoploss_utils`, `strategy.trade_executor`, and `strategy.plots` modules.
 
 
