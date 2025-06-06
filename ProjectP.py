@@ -80,8 +80,14 @@ def _run_script(relative_path: str) -> None:
 def run_hyperparameter_sweep(params: Dict[str, List[float]]) -> None:
     """รันการค้นหาค่าพารามิเตอร์."""
     logger.debug(f"Starting sweep with params: {params}")
-    from tuning.hyperparameter_sweep import run_sweep as _sweep
-    _sweep("sweep_results", params, seed=42, resume=True)
+    from tuning.hyperparameter_sweep import run_sweep as _sweep, DEFAULT_TRADE_LOG
+    _sweep(
+        "sweep_results",
+        params,
+        seed=42,
+        resume=True,
+        trade_log_path=DEFAULT_TRADE_LOG,
+    )
 
 
 def run_sweep():
