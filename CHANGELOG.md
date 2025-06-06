@@ -1,8 +1,10 @@
 ### 2025-10-17
 
+
 - [Patch v5.8.4] Update setup.py packaging metadata
 - New/Updated unit tests added for none (packaging update)
 - QA: pytest -q passed (429 tests)
+
 
 ### 2025-10-16
 
