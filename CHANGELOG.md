@@ -1,4 +1,9 @@
 
+### 2025-10-21
+- [Patch v5.8.8] Add function to compare in/out-sample feature distributions
+- New/Updated unit tests added for tests.test_feature_analysis::test_compare_in_out_distribution_basic
+- QA: pytest tests/test_feature_analysis.py -q passed (8 tests)
+
 ### 2025-10-20
 - [Patch v5.8.7] Add risk management helpers
 - New/Updated unit tests added for tests.test_strategy_new_modules
