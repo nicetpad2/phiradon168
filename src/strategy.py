@@ -1250,6 +1250,52 @@ POST_TRADE_COOLDOWN_BARS = safe_get_global("POST_TRADE_COOLDOWN_BARS", 2)
 OMS_ENABLED = safe_get_global("OMS_ENABLED", True)
 OUTPUT_DIR = safe_get_global('OUTPUT_DIR', DEFAULT_OUTPUT_DIR)
 
+# [Patch v5.9.3] Add attempt_order helper with block reason logging
+def attempt_order(side: str, price: float, params: dict) -> tuple[bool, list[str]]:
+    """Attempt to execute an order and log all block reasons."""
+    can_execute = True
+    block_reasons: list[str] = []
+
+    if not OMS_ENABLED:
+        block_reasons.append("OMS_DISABLED")
+
+    if params.get("kill_switch_active"):
+        block_reasons.append("KILL_SWITCH_ACTIVE")
+
+    if params.get("soft_cooldown_active"):
+        block_reasons.append("SOFT_COOLDOWN_ACTIVE")
+
+    if params.get("spike_guard_active"):
+        block_reasons.append("SPIKE_GUARD_ACTIVE")
+
+    if not params.get("meta_filter_passed", True):
+        block_reasons.append("META_FILTER_BLOCKED")
+
+    if params.get("require_m15_trend") and not params.get("m15_trend_ok", True):
+        block_reasons.append("M15_TREND_UNMATCHED")
+
+    if params.get("paper_mode"):
+        block_reasons.append("PAPER_MODE_SIMULATION")
+
+    if block_reasons:
+        can_execute = False
+        primary_reason = block_reasons[0]
+        logger.warning(
+            "Order Blocked | Side=%s, Reason=%s, All_Reasons=%s",
+            side,
+            primary_reason,
+            block_reasons,
+        )
+        return False, block_reasons
+
+    logger.info(
+        "Order Executed | Side=%s, Price=%s, Params=%s",
+        side,
+        price,
+        params,
+    )
+    return True, []
+
 
 # --- Backtesting Helper Functions ---
 # safe_set_datetime is now in Part 3
