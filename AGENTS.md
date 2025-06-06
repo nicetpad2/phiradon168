@@ -101,7 +101,10 @@
   - Detect overfit on walk-forward splits via `walk_forward_yearly_validation`
     and `detect_overfit_wfv`
   - Record daily/weekly AUC metrics using `src.monitor`
-- **Modules:** `src/evaluation.py`, `src/monitor.py`
+
+  - Evaluate parameter stability across folds
+- **Modules:** `src/evaluation.py`, `src/monitor.py`, `src/param_stability.py`
+
 
 
 ### [RL_Scalper_AI](src/adaptive.py)
@@ -212,7 +215,9 @@
   - Use Matplotlib (no seaborn) for static plots; export PNG/HTML for reports
   - Develop HTML/JavaScript dashboards (e.g., with Plotly or Dash) for executive summaries
   - New module `src.dashboard` generates Plotly HTML dashboards for WFV results
+  - New module `src/realtime_dashboard.py` provides Streamlit-based real-time monitoring
 - **Modules:** `src/dashboard.py`
+  `src/realtime_dashboard.py`
 
 ---
 
@@ -288,3 +293,4 @@
   `strategy.stoploss_utils`, `strategy.trade_executor`, and `strategy.plots` modules.
 
 
+- Added `signal_classifier` module for simple ML signal classification and threshold tuning.

@@ -161,6 +161,46 @@ def calculate_correlation_matrix(
     return corr_matrix
 
 
+def compare_in_out_distribution(
+    df_is: pd.DataFrame,
+    df_oos: pd.DataFrame,
+    feature_list: List[str],
+) -> Dict[str, Dict[str, float]]:
+    """เปรียบเทียบสถิติเบื้องต้นของฟีเจอร์ระหว่างชุด In-Sample และ Out-of-Sample.
+
+    Parameters
+    ----------
+    df_is : pd.DataFrame
+        DataFrame ของข้อมูล In-Sample
+    df_oos : pd.DataFrame
+        DataFrame ของข้อมูล Out-of-Sample
+    feature_list : List[str]
+        รายชื่อฟีเจอร์ที่ต้องการเปรียบเทียบ
+
+    Returns
+    -------
+    Dict[str, Dict[str, float]]
+        ค่าสถิติ mean, std และ skewness ของแต่ละชุดข้อมูล
+    """
+
+    stats: Dict[str, Dict[str, float]] = {}
+    for feature in feature_list:
+        if feature not in df_is.columns or feature not in df_oos.columns:
+            logger.error("Feature %s not found in both DataFrames", feature)
+            continue
+        series_is = pd.to_numeric(df_is[feature], errors="coerce")
+        series_oos = pd.to_numeric(df_oos[feature], errors="coerce")
+        stats[feature] = {
+            "mean_is": float(series_is.mean()),
+            "mean_oos": float(series_oos.mean()),
+            "std_is": float(series_is.std()),
+            "std_oos": float(series_oos.std()),
+            "skew_is": float(series_is.skew()),
+            "skew_oos": float(series_oos.skew()),
+        }
+    return stats
+
+
 def main(sample_rows: int = 5000):  # pragma: no cover - CLI helper
     """Run feature distribution analysis on a sample of the M1 dataset.
 
@@ -169,18 +209,32 @@ def main(sample_rows: int = 5000):  # pragma: no cover - CLI helper
     Tuple[Dict[str, Dict[str, float]], List[str], pd.DataFrame]
         สถิติฟีเจอร์, รายชื่อฟีเจอร์ variance ต่ำ และ correlation matrix
     """
-    data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "XAUUSD_M1.csv")
+    data_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "XAUUSD_M1.csv"
+    )
     df = pd.read_csv(data_path, nrows=sample_rows)
-    df.index = pd.to_datetime(df["Date"].astype(str) + " " + df["Timestamp"], errors="coerce")
+    df.index = pd.to_datetime(
+        df["Date"].astype(str) + " " + df["Timestamp"], errors="coerce"
+    )
     df_feat = feat.engineer_m1_features(df)
 
     timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_dir = os.path.join("reports", "feature_analysis", timestamp_str)
 
-    features_to_analyze = ["spike_score", "cluster", "RSI", "MACD_line", "ATR_14_Rolling_Avg"]
-    stats = analyze_feature_distribution(df_feat, features_to_analyze, output_dir=output_dir)
+    features_to_analyze = [
+        "spike_score",
+        "cluster",
+        "RSI",
+        "MACD_line",
+        "ATR_14_Rolling_Avg",
+    ]
+    stats = analyze_feature_distribution(
+        df_feat, features_to_analyze, output_dir=output_dir
+    )
     low_var = detect_low_variance_features(df_feat, features_to_analyze)
-    corr = calculate_correlation_matrix(df_feat, features_to_analyze, output_dir=output_dir)
+    corr = calculate_correlation_matrix(
+        df_feat, features_to_analyze, output_dir=output_dir
+    )
 
     logger.info("Feature statistics: %s", stats)
     logger.info("Low variance features: %s", low_var)
