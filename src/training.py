@@ -58,9 +58,13 @@ def real_train_func(
     np.random.seed(seed)  # [Patch v5.3.4] Ensure deterministic training
 
     if trade_log_path and m1_path and os.path.exists(trade_log_path) and os.path.exists(m1_path):
-        # [Patch v5.4.3] Allow using real trade data when paths are provided
+        # [Patch v5.9.1] Validate that trade log and M1 data are not empty
         trade_df = pd.read_csv(trade_log_path)
         m1_df = pd.read_csv(m1_path)
+        if trade_df.empty:
+            raise ValueError("trade_log file is empty")
+        if m1_df.empty:
+            raise ValueError("m1 data file is empty")
         feature_cols = m1_df.select_dtypes(include=[np.number]).columns.tolist()
         if not feature_cols:
             raise ValueError("No numeric columns found in m1 data")
