@@ -4,6 +4,11 @@
 - QA: pytest tests/test_feature_analysis.py -q passed (8 tests)
 
 
+### 2025-10-21
+- [Patch v5.8.8] Implement basic noise filters (ATR, median, range, volume)
+- New/Updated unit tests added for tests.test_noise_filters
+- QA: pytest -q failed (environment limitations)
+
 ### 2025-10-20
 - [Patch v5.8.7] Add risk management helpers
 - New/Updated unit tests added for tests.test_strategy_new_modules
