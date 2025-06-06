@@ -24,12 +24,12 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "validate_csv_data", 1030),
 
 
-    ("src/features.py", "calculate_trend_zone", 1516),
-    ("src/features.py", "tag_price_structure_patterns", 460),
-    ("src/features.py", "create_session_column", 1523),
-    ("src/features.py", "fill_missing_feature_values", 1529),
-    ("src/features.py", "load_feature_config", 1534),
-    ("src/features.py", "calculate_ml_features", 1539),
+    ("src/features.py", "calculate_trend_zone", 1529),
+    ("src/features.py", "tag_price_structure_patterns", 473),
+    ("src/features.py", "create_session_column", 1536),
+    ("src/features.py", "fill_missing_feature_values", 1542),
+    ("src/features.py", "load_feature_config", 1547),
+    ("src/features.py", "calculate_ml_features", 1552),
 
 
 
