@@ -1,3 +1,8 @@
+### 2025-10-18
+- [Patch v5.8.5] Add strategy submodules and documentation
+- New/Updated unit tests added for tests.test_strategy_modules
+- QA: pytest -q passed (433 tests)
+
 ### 2025-10-17
 
 
