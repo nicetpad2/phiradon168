@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, UTC
 import re
 from typing import Iterable
 
@@ -63,7 +63,11 @@ def _parse_events(lines: Iterable[str]) -> list[dict]:
             m = pattern.search(line)
             if m:
                 ts_str = m.groupdict().get("time")
-                ts = datetime.fromisoformat(ts_str) if ts_str else datetime.utcnow()
+                ts = (
+                    datetime.fromisoformat(ts_str)
+                    if ts_str
+                    else datetime.now(UTC)
+                )
                 events.append({"timestamp": ts, "event_type": etype, "detail": line.strip()})
                 break
     return events
