@@ -709,10 +709,12 @@ PARTIAL_TP_LEVELS = [           # Define partial TP levels
     {"r_multiple": 0.5, "close_pct": 0.5},   # Close remaining at 1 ATR
 ]
 PARTIAL_TP_MOVE_SL_TO_ENTRY = True # Move SL to entry after first partial TP?
+OMS_ENABLED = True  # Global switch to enable/disable OMS
 ENABLE_KILL_SWITCH = True       # Enable/disable kill switch mechanism
 KILL_SWITCH_MAX_DD_THRESHOLD = 0.25 # [Patch v5.3.5] Max drawdown % before activating kill switch
 KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 5 # [Patch] Lower threshold for earlier soft cooldown
 MAX_DRAWDOWN_THRESHOLD = 0.15   # [Patch] Reduce drawdown threshold to block orders sooner
+logging.info(f"OMS Enabled: {OMS_ENABLED}")
 logging.info(f"Kill Switch Enabled: {ENABLE_KILL_SWITCH} (DD > {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%, Losses > {KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD})")
 logging.info(f"Max Drawdown Threshold (Block New Orders): {MAX_DRAWDOWN_THRESHOLD*100:.0f}%")
 
@@ -720,9 +722,11 @@ logging.info(f"Max Drawdown Threshold (Block New Orders): {MAX_DRAWDOWN_THRESHOL
 logging.debug("Setting Spike Guard & Recovery Mode Configuration...")
 ENABLE_SPIKE_GUARD = True       # Enable/disable spike guard filter (mainly London session)
 ENABLE_SOFT_COOLDOWN = True     # Enable/disable soft cooldown logic
+POST_TRADE_COOLDOWN_BARS = 2  # Bars after closing trade before allowing new entry
 RECOVERY_MODE_CONSECUTIVE_LOSSES = 4 # Consecutive losses to enter recovery mode
 RECOVERY_MODE_LOT_MULTIPLIER = 0.5 # Lot size multiplier during recovery mode
 logging.info(f"Spike Guard Enabled: {ENABLE_SPIKE_GUARD}")
+logging.info(f"Post-Trade Cooldown: {POST_TRADE_COOLDOWN_BARS} bars")
 logging.info(f"Soft Cooldown Enabled: {ENABLE_SOFT_COOLDOWN}")
 logging.info(f"Recovery Mode Enabled: Losses >= {RECOVERY_MODE_CONSECUTIVE_LOSSES}, Lot Multiplier: {RECOVERY_MODE_LOT_MULTIPLIER}")
 
