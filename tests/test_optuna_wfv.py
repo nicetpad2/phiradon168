@@ -18,6 +18,7 @@ def load_wfv():
 
 import optuna
 
+_real_config = importlib.import_module("src.config")
 config = types.SimpleNamespace(optuna=optuna)
 sys.modules["src.config"] = config
 
@@ -61,3 +62,7 @@ def test_optuna_walk_forward_per_fold_overlap_error():
     space = {'signal': (0.5, 1.0, 0.5)}
     with pytest.raises(AssertionError):
         wfv.optuna_walk_forward_per_fold(df, space, dummy_backtest, train_window=4, test_window=1, step=1, n_trials=1)
+
+
+def teardown_module(module):
+    sys.modules["src.config"] = _real_config
