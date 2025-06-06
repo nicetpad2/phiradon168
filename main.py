@@ -95,8 +95,14 @@ def run_threshold(config: PipelineConfig, runner=subprocess.run) -> None:
 
 
 def run_backtest_pipeline(features_df, price_df, model_path, threshold) -> None:
-    """[Patch] Placeholder backtest pipeline"""
+    """[Patch v5.9.12] Execute simple backtest pipeline."""
     logger.info("Running backtest with model=%s threshold=%s", model_path, threshold)
+    try:
+        from src.main import run_pipeline_stage
+        run_pipeline_stage("backtest")
+    except Exception:
+        logger.exception("Internal backtest error")
+        raise
 
 
 def run_backtest(config: PipelineConfig, pipeline_func=run_backtest_pipeline) -> None:
@@ -126,6 +132,12 @@ def run_backtest(config: PipelineConfig, pipeline_func=run_backtest_pipeline) ->
 def run_report(config: PipelineConfig) -> None:
     """Generate report stage."""
     logger.info("[Stage] report")
+    try:
+        from src.main import run_pipeline_stage
+        run_pipeline_stage("report")
+    except Exception as exc:
+        logger.error("Report failed", exc_info=True)
+        raise PipelineError("report stage failed") from exc
 
 
 def run_all(config: PipelineConfig) -> None:
