@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests.test_strategy_new_modules
 - QA: pytest -q passed (467 tests)
 
+### 2025-10-21
+- [Patch v5.8.8] Add Streamlit realtime dashboard module
+- New/Updated unit tests added for tests.test_realtime_dashboard
+ - QA: pytest -q failed (15 failed)
+
 ### 2025-10-20
 - [Patch v5.8.7] Add risk management helpers
 - New/Updated unit tests added for tests.test_strategy_new_modules
