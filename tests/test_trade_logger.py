@@ -85,14 +85,14 @@ def test_setup_trade_logger(tmp_path):
     assert any(isinstance(h, logging.handlers.RotatingFileHandler) for h in trade_log.handlers)
 
 
-def test_print_qa_summary(tmp_path, capsys):
+def test_print_qa_summary(tmp_path, caplog):
     qa_dir = tmp_path / 'qa_logs'
     qa_dir.mkdir(parents=True)
     summary_file = qa_dir / 'qa_summary_X.log'
     summary_file.write_text('OK', encoding='utf-8')
-    text = print_qa_summary(str(tmp_path))
-    captured = capsys.readouterr()
-    assert 'OK' in captured.out
+    with caplog.at_level(logging.INFO):
+        text = print_qa_summary(str(tmp_path))
+    assert 'OK' in caplog.text
     assert text.strip() == 'OK'
 
 

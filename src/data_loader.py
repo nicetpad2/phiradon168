@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # <<< เพิ่ม Encoding declaration สำหรับอักษรไทย (ควรอยู่บรรทัดแรกสุด) >>>
+"""Utility helpers for loading CSV files and preparing dataframes."""
 
 # ==============================================================================
 # === START OF PART 3/12 ===
@@ -1115,4 +1116,37 @@ def check_data_quality(df, dropna=True, fillna_method=None, subset_dupes=None):
             df.drop_duplicates(subset=subset_dupes, keep="first", inplace=True)
 
     return df
+
+
+__all__ = [
+    "safe_get_global",
+    "setup_output_directory",
+    "set_thai_font",
+    "install_thai_fonts_colab",
+    "configure_matplotlib_fonts",
+    "setup_fonts",
+    "safe_load_csv_auto",
+    "load_app_config",
+    "safe_set_datetime",
+    "load_data",
+    "load_data_cached",
+    "preview_datetime_format",
+    "parse_datetime_safely",
+    "prepare_datetime",
+    "inspect_file_exists",
+    "read_csv_with_date_parse",
+    "check_nan_percent",
+    "check_duplicates",
+    "check_price_jumps",
+    "convert_thai_years",
+    "convert_thai_datetime",
+    "prepare_datetime_index",
+    "validate_m1_data_path",
+    "load_raw_data_m1",
+    "load_raw_data_m15",
+    "write_test_file",
+    "validate_csv_data",
+    "load_final_m1_data",
+    "check_data_quality",
+]
 
