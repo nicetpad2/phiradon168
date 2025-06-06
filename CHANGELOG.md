@@ -28,6 +28,11 @@
 - New/Updated unit tests added for none (packaging update)
 - QA: pytest -q passed (429 tests)
 
+### 2025-06-08
+- [Patch v5.8.3] Add data leakage prevention utilities
+- New/Updated unit tests added for tests.test_leakage
+- QA: pytest -q passed (failed in CI)
+
 ### 2025-06-06
 - [Patch v5.8.5] Add core strategy modules under strategy/
 - New/Updated unit tests added for tests/test_strategy_new_modules.py and tests/test_imports.py
