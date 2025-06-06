@@ -1,5 +1,5 @@
 # Phiradon168
-[![CI](https://github.com/yourname/Phiradon168/actions/workflows/ci.yml/badge.svg)](https://github.com/yourname/Phiradon168/actions) [![Coverage](https://codecov.io/gh/yourname/Phiradon168/branch/main/graph/badge.svg)](https://codecov.io/gh/yourname/Phiradon168) [![PyPI version](https://img.shields.io/pypi/v/phiradon168.svg)](https://pypi.org/project/phiradon168/)
+[![CI](https://github.com/nicetpad2/Phiradon168/actions/workflows/ci.yml/badge.svg)](https://github.com/nicetpad2/Phiradon168/actions) [![Coverage](https://codecov.io/gh/nicetpad2/Phiradon168/branch/main/graph/badge.svg)](https://codecov.io/gh/nicetpad2/Phiradon168) [![PyPI version](https://img.shields.io/pypi/v/phiradon168.svg)](https://pypi.org/project/phiradon168/)
 
 ## Overview
 ระบบ NICEGOLD Enterprise ใช้เทรดและวิเคราะห์ XAUUSD บนกรอบเวลา M1 รองรับทั้งการทดสอบย้อนหลังและ Walk-Forward Validation
