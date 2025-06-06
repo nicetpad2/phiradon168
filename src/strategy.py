@@ -1123,7 +1123,7 @@ DEFAULT_ADAPTIVE_TSL_LOW_VOL_STEP_R = 0.3
 DEFAULT_ADAPTIVE_TSL_START_ATR_MULT = 1.5
 DEFAULT_ENABLE_SPIKE_GUARD = True
 DEFAULT_ENABLE_SOFT_COOLDOWN = True
-DEFAULT_MIN_SIGNAL_SCORE_ENTRY = 1.0
+DEFAULT_MIN_SIGNAL_SCORE_ENTRY = 0.6  # [Patch] ลด Threshold เริ่มต้น ลงเหลือ 0.60
 DEFAULT_ADAPTIVE_SIGNAL_SCORE_WINDOW = 1000
 DEFAULT_ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.7
 DEFAULT_MIN_SIGNAL_SCORE_ENTRY_MIN = 0.5
@@ -1148,7 +1148,7 @@ DEFAULT_OMS_MARGIN_PIPS = 20.0
 DEFAULT_OMS_MAX_DISTANCE_PIPS = 1000.0
 DEFAULT_MAX_DRAWDOWN_THRESHOLD = 0.30
 DEFAULT_ENABLE_FORCED_ENTRY = True
-DEFAULT_FORCED_ENTRY_BAR_THRESHOLD = 100
+DEFAULT_FORCED_ENTRY_BAR_THRESHOLD = 30     # [Patch] ลดจำนวน Bars สำหรับ Forced Entry ลงเหลือ 30
 DEFAULT_FORCED_ENTRY_MIN_SIGNAL_SCORE = 0.5
 DEFAULT_FORCED_ENTRY_LOOKBACK_PERIOD = 500
 DEFAULT_FORCED_ENTRY_CHECK_MARKET_COND = True
@@ -1175,11 +1175,12 @@ DEFAULT_FUND_NAME = "NORMAL"
 DEFAULT_USE_META_CLASSIFIER = True
 DEFAULT_META_MIN_PROBA_THRESH = 0.25
 DEFAULT_REENTRY_MIN_PROBA_THRESH = 0.5
-DEFAULT_META_FILTER_THRESHOLD = 0.6
-DEFAULT_META_FILTER_RELAXED_THRESHOLD = 0.5
-DEFAULT_META_FILTER_RELAX_BLOCKS = 5
+DEFAULT_META_FILTER_THRESHOLD = 0.5    # [Patch] ผ่อน Meta Filter ให้ต่ำลง
+DEFAULT_META_FILTER_RELAXED_THRESHOLD = 0.4
+DEFAULT_META_FILTER_RELAX_BLOCKS = 3
+# [Patch] ยอมรับทั้ง UP และ NEUTRAL
+M15_TREND_ALLOWED = ["UP", "NEUTRAL"]
 DEFAULT_OUTPUT_DIR = "./output_default"
-
 # Access globals safely using safe_get_global (defined in Part 3)
 SESSION_TIMES_UTC = safe_get_global('SESSION_TIMES_UTC', DEFAULT_SESSION_TIMES_UTC)
 BASE_TP_MULTIPLIER = safe_get_global('BASE_TP_MULTIPLIER', DEFAULT_BASE_TP_MULTIPLIER)
@@ -1554,9 +1555,9 @@ def spike_guard_london(row, session, consecutive_losses):
 def is_mtf_trend_confirmed(m15_trend, side):
     """Validate entry direction using M15 trend zone."""
     trend = str(m15_trend).upper() if isinstance(m15_trend, str) else "NEUTRAL"
-    if side == "BUY" and trend != "UP":
+    if side == "BUY" and trend not in M15_TREND_ALLOWED:
         return False
-    if side == "SELL" and trend != "DOWN":
+    if side == "SELL" and trend not in ["DOWN", "NEUTRAL"]:
         return False
     return True
 
@@ -1932,7 +1933,6 @@ def _resolve_close_index(df_sim, entry_idx, close_timestamp):
         f"(Warning) entry index {entry_idx} not in df_sim.index. ใช้ nearest_idx {resolved_idx} แทน."
     )
     return resolved_idx
-
 # <<< [Patch] MODIFIED v4.8.8 (Patch 26.5.1): Applied [PATCH C - Unified] for error handling and logging fix. >>>
 def run_backtest_simulation_v34(
     df_m1_segment_pd,

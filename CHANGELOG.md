@@ -1061,7 +1061,9 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_trade_logger
 - QA: pytest -q passed (518 tests)
 
-### 2025-06-07
-- [Patch v5.10.0] Add log event ETL and DB table
-- New/Updated unit tests added for tests.test_event_etl
-- QA: pytest -q passed (565 tests)
+### 2025-06-06
+- [Patch vX.Y.Z] ปรับพารามิเตอร์ Entry ให้มีโอกาสเกิด Trade เพิ่มขึ้น
+- New/Updated unit tests added for tests/test_mtf_trend_confirmed.py
+- QA: pytest -q passed (566 tests)
+
+
