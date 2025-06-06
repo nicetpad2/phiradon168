@@ -1,8 +1,16 @@
 import os
 import argparse
 import pandas as pd
+import logging
 
-from src.config import logger, optuna
+try:  # [Patch v5.10.2] fallback when heavy config import fails
+    from src.config import logger, optuna
+except Exception:  # pragma: no cover - optional dependency
+    logger = logging.getLogger("threshold_optimization")
+    try:
+        import optuna
+    except Exception:
+        optuna = None
 
 # [Patch v5.5.14] Improved threshold optimization with Optuna
 
