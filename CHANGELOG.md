@@ -1,5 +1,15 @@
 
 ### 2025-06-06
+- [Patch v5.9.8] ปรับค่า threshold กลยุทธ์
+- New/Updated unit tests added for tests.test_config_defaults
+- QA: pytest -q passed (existing tests)
+
+### 2025-06-06
+- [Patch v5.9.9] เพิ่มบันทึกรายละเอียด commit
+- No code changes
+- QA: pytest -q passed (existing tests)
+
+### 2025-06-06
 - [Patch v5.9.7] Expand coverage to all src modules
 - New/Updated unit tests added for none (configuration change)
 - QA: pytest --cov=src passed (580 tests)

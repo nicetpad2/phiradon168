@@ -673,8 +673,9 @@ M1_ENTRY_MACD_HIST_THRESH = -0.1  # (Not directly used in current logic, kept fo
 M15_TREND_EMA_FAST = 50         # Fast EMA period for M15 Trend Filter
 M15_TREND_EMA_SLOW = 200        # Slow EMA period for M15 Trend Filter
 M15_TREND_RSI_PERIOD = 14       # RSI period for M15 Trend Filter
-M15_TREND_RSI_UP = 51           # [Patch v5.6.4] Relaxed M15 trend zone thresholds
-M15_TREND_RSI_DOWN = 49         # [Patch v5.6.4] Relaxed M15 trend zone thresholds
+# ↓↑ เพิ่มพื้นที่ให้สีเขียว/แดงบน M15 มากขึ้น เพื่อให้กรองเทรนด์ไม่เข้มงวดจนเกินไป
+M15_TREND_RSI_UP = 60           # [Patch v5.6.4] Relaxed M15 trend zone thresholds
+M15_TREND_RSI_DOWN = 40         # [Patch v5.6.4] Relaxed M15 trend zone thresholds
 
 session_env = os.getenv("SESSION_TIMES_UTC")
 try:
@@ -713,7 +714,7 @@ OMS_DEFAULT = True  # Default OMS state when not overridden
 OMS_ENABLED = OMS_DEFAULT  # Global switch to enable/disable OMS
 PAPER_MODE = False  # When True, bypass OMS block checks for paper trading
 ENABLE_KILL_SWITCH = True       # Enable/disable kill switch mechanism
-KILL_SWITCH_MAX_DD_THRESHOLD = 0.25 # [Patch v5.3.5] Max drawdown % before activating kill switch
+KILL_SWITCH_MAX_DD_THRESHOLD = 0.30 # ↑ Relax kill switch ให้เลิก block ช้าลง (30% drawdown)
 KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 5 # [Patch] Lower threshold for earlier soft cooldown
 MAX_DRAWDOWN_THRESHOLD = 0.15   # [Patch] Reduce drawdown threshold to block orders sooner
 logging.info(f"OMS Enabled: {OMS_ENABLED}")
@@ -736,13 +737,14 @@ logging.info(f"Recovery Mode Enabled: Losses >= {RECOVERY_MODE_CONSECUTIVE_LOSSE
 logging.debug("Setting Re-Entry Configuration...")
 USE_REENTRY = True              # Enable/disable re-entry logic
 REENTRY_COOLDOWN_BARS = 1       # Cooldown (in bars) after TP before allowing re-entry
-REENTRY_MIN_PROBA_THRESH = 0.45 # Minimum ML probability threshold for re-entry (uses META_MIN_PROBA_THRESH)
+REENTRY_MIN_PROBA_THRESH = 0.40 # ↓ ลดเงื่อนไขให้ยอมรับ ML probability ที่ต่ำกว่า (เพื่อ Re-entry บ่อยขึ้น)
 logging.info(f"Re-Entry Enabled: {USE_REENTRY} (Cooldown: {REENTRY_COOLDOWN_BARS} bars, Threshold: {REENTRY_MIN_PROBA_THRESH})")
 
 # --- Meta Filter Configuration ---
 logging.debug("Setting Meta Filter Configuration...")
-META_FILTER_THRESHOLD = get_env_float("META_FILTER_THRESHOLD", 0.6)
-META_FILTER_RELAXED_THRESHOLD = get_env_float("META_FILTER_RELAXED_THRESHOLD", 0.5)
+META_FILTER_THRESHOLD = get_env_float("META_FILTER_THRESHOLD", 0.5)
+# ↓ ลดค่า Meta Filter เพื่อให้ผ่านโลจิก Meta-Model บ่อยขึ้น
+META_FILTER_RELAXED_THRESHOLD = get_env_float("META_FILTER_RELAXED_THRESHOLD", 0.45)
 META_FILTER_RELAX_BLOCKS = int(get_env_float("META_FILTER_RELAX_BLOCKS", 5))
 logging.info(
     f"Meta Filter Threshold: {META_FILTER_THRESHOLD} (Relaxed: {META_FILTER_RELAXED_THRESHOLD}, Blocks: {META_FILTER_RELAX_BLOCKS})"
@@ -783,9 +785,10 @@ TIMEFRAME_MINUTES_M15 = 15
 TIMEFRAME_MINUTES_M1 = 1
 ROLLING_Z_WINDOW_M1 = 300       # Window for M1 Gain Rolling Z-Score
 ATR_ROLLING_AVG_PERIOD = 50     # Window for M1 ATR Rolling Average
-PATTERN_BREAKOUT_Z_THRESH = 2.0 # Z-Score threshold for 'Breakout' pattern
+# ↓ ทดลองลด Z-Score threshold จาก 2.0 → 1.5 เพื่อให้เกิดสัญญาณ Breakout บ่อยขึ้น
+PATTERN_BREAKOUT_Z_THRESH = 1.5 # ↓ ลดสองเท่า เพื่อกรองสัญญาณ Breakout เบาลง
 PATTERN_REVERSAL_BODY_RATIO = 0.5 # Current/Previous body ratio for 'Reversal' pattern
-PATTERN_STRONG_TREND_Z_THRESH = 1.0 # Z-Score threshold for 'StrongTrend' pattern
+PATTERN_STRONG_TREND_Z_THRESH = 0.8 # ↓ ลดเพื่อกรองแนวโน้มแรงเบาลงเล็กน้อย
 PATTERN_CHOPPY_CANDLE_RATIO = 0.3 # Min candle ratio for 'Choppy' pattern
 PATTERN_CHOPPY_WICK_RATIO = 0.6 # Max wick ratio for 'Choppy' pattern
 
