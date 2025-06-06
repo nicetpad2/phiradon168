@@ -1,8 +1,10 @@
 import os, sys
+# [Patch] Added empty input test for coverage
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, "src"))
 from src.param_stability import analyze_param_stability, save_fold_params
+import pytest
 
 
 
@@ -27,4 +29,9 @@ def test_analyze_param_stability_stable():
     ]
     df = analyze_param_stability(params, threshold=0.3)
     assert not df["unstable"].any()
+
+
+def test_analyze_param_stability_empty():
+    with pytest.raises(ValueError):
+        analyze_param_stability([])
 

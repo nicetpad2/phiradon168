@@ -1,4 +1,5 @@
 import os
+# [Patch] Additional tests for quick_qa_output
 import sys
 import pandas as pd
 import gzip
@@ -8,6 +9,7 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
 
 from src import qa_tools
+import pytest
 
 quick_qa_output = qa_tools.quick_qa_output
 
@@ -27,6 +29,24 @@ def test_quick_qa_output(tmp_path):
     assert any('No trades' in i or 'Missing columns' in i for i in issues)
     report_path = Path(tmp_path) / 'report.txt'
     assert report_path.exists()
+
+
+def test_quick_qa_output_missing_columns(tmp_path):
+    f_bad = tmp_path / 'fold_missing.csv.gz'
+    df_bad = pd.DataFrame({'pnl': [1, 2]})
+    with gzip.open(f_bad, 'wt') as fh:
+        df_bad.to_csv(fh, index=False)
+
+    issues = quick_qa_output(str(tmp_path), 'missing_report.txt')
+    assert any('Missing columns' in i for i in issues)
+
+
+def test_quick_qa_output_error(tmp_path):
+    corrupt_file = tmp_path / 'corrupt.csv.gz'
+    corrupt_file.write_bytes(b'invalid')
+
+    issues = quick_qa_output(str(tmp_path), 'error_report.txt')
+    assert any('Error' in i for i in issues)
 
 
 def test_run_noise_backtest_calls_backtest(monkeypatch):
