@@ -1244,6 +1244,8 @@ REENTRY_MIN_PROBA_THRESH = safe_get_global('REENTRY_MIN_PROBA_THRESH', DEFAULT_R
 META_FILTER_THRESHOLD = safe_get_global('META_FILTER_THRESHOLD', DEFAULT_META_FILTER_THRESHOLD)
 META_FILTER_RELAXED_THRESHOLD = safe_get_global('META_FILTER_RELAXED_THRESHOLD', DEFAULT_META_FILTER_RELAXED_THRESHOLD)
 META_FILTER_RELAX_BLOCKS = int(safe_get_global('META_FILTER_RELAX_BLOCKS', DEFAULT_META_FILTER_RELAX_BLOCKS))
+POST_TRADE_COOLDOWN_BARS = safe_get_global("POST_TRADE_COOLDOWN_BARS", 2)
+OMS_ENABLED = safe_get_global("OMS_ENABLED", True)
 OUTPUT_DIR = safe_get_global('OUTPUT_DIR', DEFAULT_OUTPUT_DIR)
 
 
@@ -1918,7 +1920,7 @@ def run_backtest_simulation_v34(
         raise ValueError(
             f"Missing required columns in input DataFrame for backtest: {missing}"
         )
-    global meta_model_type_used, meta_meta_model_type_used, USE_REENTRY, REENTRY_COOLDOWN_BARS, TIMEFRAME_MINUTES_M1, POINT_VALUE, MAX_CONCURRENT_ORDERS, MAX_HOLDING_BARS, COMMISSION_PER_001_LOT, SPREAD_POINTS, MIN_SLIPPAGE_POINTS, MAX_SLIPPAGE_POINTS, MAX_DRAWDOWN_THRESHOLD, ENABLE_FORCED_ENTRY, FORCED_ENTRY_BAR_THRESHOLD, FORCED_ENTRY_MIN_SIGNAL_SCORE, FORCED_ENTRY_LOOKBACK_PERIOD, FORCED_ENTRY_CHECK_MARKET_COND, FORCED_ENTRY_MAX_ATR_MULT, FORCED_ENTRY_MIN_GAIN_Z_ABS, FORCED_ENTRY_ALLOWED_REGIMES, FE_ML_FILTER_THRESHOLD, forced_entry_max_consecutive_losses, OUTPUT_DIR, USE_META_CLASSIFIER, BASE_BE_SL_R_THRESHOLD, DYNAMIC_BE_ATR_THRESHOLD_HIGH, DYNAMIC_BE_R_ADJUST_HIGH, META_MIN_PROBA_THRESH, REENTRY_MIN_PROBA_THRESH, META_FILTER_THRESHOLD, META_FILTER_RELAXED_THRESHOLD, META_FILTER_RELAX_BLOCKS
+    global meta_model_type_used, meta_meta_model_type_used, USE_REENTRY, REENTRY_COOLDOWN_BARS, TIMEFRAME_MINUTES_M1, POINT_VALUE, MAX_CONCURRENT_ORDERS, MAX_HOLDING_BARS, COMMISSION_PER_001_LOT, SPREAD_POINTS, MIN_SLIPPAGE_POINTS, MAX_SLIPPAGE_POINTS, MAX_DRAWDOWN_THRESHOLD, ENABLE_FORCED_ENTRY, FORCED_ENTRY_BAR_THRESHOLD, FORCED_ENTRY_MIN_SIGNAL_SCORE, FORCED_ENTRY_LOOKBACK_PERIOD, FORCED_ENTRY_CHECK_MARKET_COND, FORCED_ENTRY_MAX_ATR_MULT, FORCED_ENTRY_MIN_GAIN_Z_ABS, FORCED_ENTRY_ALLOWED_REGIMES, FE_ML_FILTER_THRESHOLD, forced_entry_max_consecutive_losses, OUTPUT_DIR, USE_META_CLASSIFIER, BASE_BE_SL_R_THRESHOLD, DYNAMIC_BE_ATR_THRESHOLD_HIGH, DYNAMIC_BE_R_ADJUST_HIGH, META_MIN_PROBA_THRESH, REENTRY_MIN_PROBA_THRESH, META_FILTER_THRESHOLD, META_FILTER_RELAXED_THRESHOLD, META_FILTER_RELAX_BLOCKS, POST_TRADE_COOLDOWN_BARS, OMS_ENABLED
 
     meta_proba_tp_for_log = np.nan; meta2_proba_tp_for_log = np.nan; meta_proba_tp_for_fe_log = np.nan; total_ib_lot_accumulator = 0.0
     equity = initial_capital_segment; peak_equity = initial_capital_segment; max_drawdown_pct = 0.0
@@ -2300,9 +2302,15 @@ def run_backtest_simulation_v34(
             if open_new_order or order_closed_this_bar_flag or active_orders:
                 if bars_since_last_trade > 0: logging.debug(f"   Resetting bars_since_last_trade from {bars_since_last_trade} due to activity.")
                 bars_since_last_trade = 0
+                if order_closed_this_bar_flag and POST_TRADE_COOLDOWN_BARS > 0 and cd_state.cooldown_bars_remaining < POST_TRADE_COOLDOWN_BARS:
+                    cd_state.cooldown_bars_remaining = POST_TRADE_COOLDOWN_BARS
+                    logging.info(f"[OMS_Guardian] Post-trade cooldown started ({POST_TRADE_COOLDOWN_BARS} bars)")
             elif not active_orders: bars_since_last_trade += 1
             if open_new_order:
                 entry_type_str = 'Forced' if is_forced_entry else ('Re-Entry' if is_reentry_trade else 'Standard'); logging.info(f"   Attempting to Open New Order ({entry_type_str}) for {side} at {now}..."); can_open_order = True; block_reason = None
+                if not OMS_ENABLED:
+                    can_open_order = False
+                    block_reason = "OMS_DISABLED"
                 current_equity_check = equity_at_start_of_bar + current_equity_change_this_bar; potential_peak_check = max(peak_equity, current_equity_check); current_dd_check = (potential_peak_check - current_equity_check) / potential_peak_check if potential_peak_check > 1e-9 else 0.0; min_equity_level = initial_capital_segment * min_equity_threshold_pct
                 if current_equity_check < min_equity_level: can_open_order = False; block_reason = f"LOW_EQUITY ({current_equity_check:.2f} < {min_equity_level:.2f})"
                 if can_open_order and current_dd_check > MAX_DRAWDOWN_THRESHOLD: can_open_order = False; block_reason = f"MAX_DD ({current_dd_check*100:.1f}% > {MAX_DRAWDOWN_THRESHOLD*100:.0f}%)"; orders_blocked_by_drawdown += 1
@@ -2471,6 +2479,8 @@ def run_backtest_simulation_v34(
 
             if equity <= 0 and not kill_switch_activated:
                 logging.warning(f"[Patch] Margin Call triggered. Equity = {equity:.2f}."); kill_switch_activated = True; kill_switch_trigger_time = now; equity = 0
+                OMS_ENABLED = False
+                logging.error(f"Equity Drawdown – Kill Switch Activated: Equity down {current_dd_final*100:.1f}% from Peak")
                 if active_orders:
                     logging.warning(f"      Force closing {len(active_orders)} orders due to Margin Call at {now}.")
                     for mc_order in active_orders: trade_log_entry_mc = {"period": label, "side": mc_order.get("side"), "entry_idx": mc_order.get("entry_idx"), "entry_time": mc_order.get("entry_time"), "entry_price": mc_order.get("entry_price"), "close_time": now, "exit_price": current_close, "exit_reason": "MARGIN_CALL", "lot": mc_order.get("lot", 0.0), "pnl_usd_net": 0.0, "is_partial_tp": False, "partial_tp_level": len(mc_order.get("partial_tp_processed_levels", set())), "risk_mode_at_entry": mc_order.get("risk_mode_at_entry", "N/A"), "active_model_at_entry": mc_order.get("active_model_at_entry", "N/A")}; trade_log.append(trade_log_entry_mc)
@@ -2510,6 +2520,8 @@ def run_backtest_simulation_v34(
                     )
                     kill_switch_activated = True
                     kill_switch_trigger_time = now
+                    OMS_ENABLED = False
+                    logging.error(f"Equity Drawdown – Kill Switch Activated: Equity down {current_dd_final*100:.1f}% from Peak")
                     break
                 elif consecutive_losses >= kill_switch_consecutive_losses_config:
                     logging.warning("[Patch] Kill Switch triggered due to consecutive losses.")
@@ -2518,6 +2530,8 @@ def run_backtest_simulation_v34(
                     )
                     kill_switch_activated = True
                     kill_switch_trigger_time = now
+                    OMS_ENABLED = False
+                    logging.error(f"Equity Drawdown – Kill Switch Activated: Equity down {current_dd_final*100:.1f}% from Peak")
                     break
                 else:
                     if should_warn_drawdown(cd_state, KILL_SWITCH_WARNING_MAX_DD_THRESHOLD):
