@@ -1,3 +1,8 @@
+### 2025-06-06
+- [Patch v5.9.9] Increase coverage of trade_logger to 100%
+- New/Updated unit tests added for tests.test_trade_logger
+- QA: pytest -q passed (600 tests)
+
 
 ### 2025-06-06
 - [Patch v5.9.9] ปรับปรุง update_config_from_dict
