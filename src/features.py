@@ -45,6 +45,19 @@ _atr_cache = {}  # [Patch v4.8.12] Cache AverageTrueRange per period
 _sma_cache = {}  # [Patch v4.8.12] Cache SMA results
 _m15_trend_cache = {}
 
+
+def reset_indicator_caches() -> None:
+    """Clear cached indicator objects before each fold.
+
+    ใช้เรียกก่อนเริ่มแต่ละ fold ของ Walk-Forward Validation เพื่อป้องกัน
+    การปนเปื้อนข้อมูลข้ามรอบ (data leakage) จากตัวชี้วัดที่มี state ภายใน.
+    """
+
+    _rsi_cache.clear()
+    _atr_cache.clear()
+    _sma_cache.clear()
+    _m15_trend_cache.clear()
+
 # Ensure global configurations are accessible if run independently
 DEFAULT_ROLLING_Z_WINDOW_M1 = 300; DEFAULT_ATR_ROLLING_AVG_PERIOD = 50
 DEFAULT_PATTERN_BREAKOUT_Z_THRESH = 2.0; DEFAULT_PATTERN_REVERSAL_BODY_RATIO = 0.5
@@ -1669,6 +1682,7 @@ __all__ = [
     "median_filter",
     "bar_range_filter",
     "volume_filter",
+    "reset_indicator_caches",
     "rolling_zscore",
     "tag_price_structure_patterns",
     "calculate_m15_trend_zone",

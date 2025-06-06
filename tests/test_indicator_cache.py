@@ -30,3 +30,13 @@ def test_atr_cache_reuse():
     features.atr(df2, period=14)
     obj_second = features._atr_cache.get(14)
     assert obj_first is obj_second
+
+
+def test_reset_indicator_caches():
+    series = pd.Series(range(20), dtype='float32')
+    features.rsi(series, period=14)
+    assert 14 in features._rsi_cache
+    features.reset_indicator_caches()
+    assert features._rsi_cache == {}
+    assert features._atr_cache == {}
+    assert features._sma_cache == {}

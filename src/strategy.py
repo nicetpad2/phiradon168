@@ -32,6 +32,8 @@ from itertools import product
 from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
 from src.utils import get_env_float, load_json_with_comments
 from src.log_analysis import summarize_block_reasons  # [Patch v5.7.3]
+from src.utils.leakage import assert_no_overlap
+from src.features import reset_indicator_caches
 from src.config import (
     print_gpu_utilization,  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
     USE_MACD_SIGNALS,
@@ -3867,6 +3869,8 @@ def run_all_folds_with_threshold(
 
         df_train_fold = df_m1_final.iloc[train_index]
         df_test_fold = df_m1_final.iloc[test_index].copy()
+        assert_no_overlap(df_train_fold, df_test_fold)
+        reset_indicator_caches()
         logging.info(f"          Train period size: {len(df_train_fold)}")
         logging.info(f"          Test period: {df_test_fold.index.min()} to {df_test_fold.index.max()} (Size: {len(df_test_fold)})")
 
