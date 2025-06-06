@@ -1,3 +1,8 @@
+### 2025-06-09
+- [Patch v5.9.11] Increase coverage of trend_filter
+- New/Updated unit tests added for tests.test_trend_filter
+- QA: pytest -q reported failures (5 failed, 641 passed)
+
 ### 2025-06-06
 - [Patch v5.9.9] Increase coverage of trade_logger to 100%
 - New/Updated unit tests added for tests.test_trade_logger
@@ -1128,7 +1133,9 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q reported failures (5 failed, 635 passed)
 
 ### 2025-06-08
+
 - [Patch v5.9.11] เพิ่ม unit test utils.py ครอบคลุม 100%
 - New/Updated unit tests added for tests.test_new_utils
 - QA: pytest -q passed (642 tests)
+
 
