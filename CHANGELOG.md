@@ -1148,3 +1148,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_projectp_nvml
 - QA: pytest -q tests/test_projectp_nvml.py::test_projectp_logs_gpu_release passed
 
+### 2025-06-06
+- [Patch v5.9.14] Verify feature helper stability
+- New/Updated unit tests added for none (revert docstring change)
+- QA: pytest -q passed (691 tests)
+
