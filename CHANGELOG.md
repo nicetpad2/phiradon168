@@ -1105,3 +1105,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.9.8] Preserve OMS state during kill switch events
 - New/Updated unit tests added for none (behavioral patch)
 - QA: pytest -q passed (existing tests)
+
+### 2025-06-06
+- [Patch v5.7.5] เพิ่ม unit test trade_splitter ครบทุกกรณี
+- Updated unit tests for tests.test_trade_splitter
+- QA: pytest -q passed (605 tests)
