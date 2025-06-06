@@ -482,41 +482,42 @@ cudf = None; cuml = None; cuStandardScaler = None; pynvml = None; nvml_handle = 
 logging.info("   (Checking) กำลังตรวจสอบความพร้อมใช้งาน GPU...")
 try:
     import torch
-    if torch.cuda.is_available():
-        gpu_name = torch.cuda.get_device_name(0)
-        logging.info(f"   (Success) พบ GPU: {gpu_name}")
-        try:  # [Patch v5.10.2] handle pynvml import errors
-            import pynvml
-            pynvml.nvmlInit()
-            nvml_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-            logging.info("   (Success) เริ่มต้น pynvml สำหรับการตรวจสอบ GPU สำเร็จ.")
-        except Exception as e_nvml:
-            logging.warning(
-                "   ไลบรารี 'pynvml' ไม่ถูกติดตั้ง หรือไม่สามารถโหลดได้ -- ข้ามการตรวจสอบ GPU"
-            )
-            logging.debug(f"pynvml error: {e_nvml}")
-            pynvml = None
-            if nvml_handle:
-                try:
-                    pynvml.nvmlShutdown()
-                except Exception:
-                    pass
-                nvml_handle = None
-    else:
-        logging.info("   (Info) PyTorch ไม่พบ GPU. การเร่งความเร็วด้วย GPU จะถูกปิด.")
+    try:
+        if torch.cuda.is_available():
+            gpu_name = torch.cuda.get_device_name(0)
+            logging.info(f"   (Success) พบ GPU: {gpu_name}")
+            try:  # [Patch v5.10.2] handle pynvml import errors
+                import pynvml
+                pynvml.nvmlInit()
+                nvml_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+                logging.info("   (Success) เริ่มต้น pynvml สำหรับการตรวจสอบ GPU สำเร็จ.")
+            except Exception as e_nvml:
+                logging.warning(
+                    "   ไลบรารี 'pynvml' ไม่ถูกติดตั้ง หรือไม่สามารถโหลดได้ -- ข้ามการตรวจสอบ GPU"
+                )
+                logging.debug(f"pynvml error: {e_nvml}")
+                pynvml = None
+                if nvml_handle:
+                    try:
+                        pynvml.nvmlShutdown()
+                    except Exception:
+                        pass
+                    nvml_handle = None
+        else:
+            logging.info("   (Info) PyTorch ไม่พบ GPU หรือ CUDA ไม่พร้อม. การเร่งความเร็วด้วย GPU จะถูกปิด.")
+            USE_GPU_ACCELERATION = False
+    except Exception as e_cuda:
+        logging.warning(
+            "   (Warning) ไม่สามารถใช้งาน CUDA ได้ -- ปิด GPU Acceleration."
+        )
+        logging.debug(f"CUDA check error: {e_cuda}")
         USE_GPU_ACCELERATION = False
 except Exception as e_torch_import:
-    logging.info("   (Info) ไม่พบ PyTorch หรือไม่สามารถโหลดได้. การเร่งความเร็วด้วย GPU จะถูกปิด.")
-    logging.debug(f"PyTorch import/load error: {e_torch_import}")
-    USE_GPU_ACCELERATION = False
-except Exception as e_gpu:
-    logging.error(f"   (Error) การตั้งค่า GPU ล้มเหลว: {e_gpu}", exc_info=True)
-    if pynvml and nvml_handle:
-        try:
-            pynvml.nvmlShutdown()
-        except Exception:
-            pass
-        nvml_handle = None
+    # [Patch v5.10.5] ป้องกันโค้ดล้มเมื่อไม่สามารถนำเข้า torch ได้
+    logging.warning(
+        "   (Warning) ไม่พบ 'torch' หรือไม่สามารถโหลดได้ -- ปิด GPU Acceleration."
+    )
+    logging.debug(f"PyTorch import error: {e_torch_import}")
     USE_GPU_ACCELERATION = False
 logging.info(f"   สถานะการเร่งความเร็วด้วย GPU: {USE_GPU_ACCELERATION}")
 # pragma: cover
@@ -876,3 +877,11 @@ ENABLE_BEST_PARAM_LOGGING = True  # Save best params per fold
 
 logging.info("Part 2: Core Parameters & Strategy Settings Loaded.")
 # === END OF PART 2/12 ===
+
+# ------------------------------------------------------------------------------
+# ถ้าเรียก get_fund_profile(...) ใน profile_backtest.py จะไม่ Error
+# ------------------------------------------------------------------------------
+if 'DEFAULT_FUND_NAME' not in globals():
+    DEFAULT_FUND_NAME = "DEFAULT"
+if 'FUND_PROFILES' not in globals():
+    FUND_PROFILES = {DEFAULT_FUND_NAME: {}}

@@ -1212,3 +1212,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.10.4] Update function registry line numbers
 - New/Updated unit tests added for tests/test_function_registry.py
 - QA: pytest tests/test_function_registry.py -q passed (46 tests)
+### 2025-06-06
+- [Patch v5.10.5] เพิ่มการจัดการ import torch และค่าเริ่มต้น FUND_PROFILES
+- New/Updated unit tests added for none (config fallback)
+- QA: pytest -q failed (import errors)
