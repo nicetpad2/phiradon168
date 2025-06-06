@@ -9,9 +9,11 @@
 - QA: pytest -q passed (506 tests)
 
 ### 2025-06-06
-- [Patch vX.Y.Z] Log threshold changes for adaptive signal score
-- New/Updated unit tests added for tests.test_signal_threshold_update
-- QA: pytest -q passed (selected tests)
+
+- [Patch v5.9.4] Improve hyperparameter sweep with real trade log and metric export
+- New/Updated unit tests added for tests.test_hyperparameter_sweep_cli
+- QA: pytest -q passed (tests count TBD)
+
 
 ### 2025-06-06
 - [Patch v5.9.2] Add unit tests for dashboard and evaluation
