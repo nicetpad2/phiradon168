@@ -24,7 +24,20 @@ def test_fallback_files_created(monkeypatch, tmp_path):
         "trade_log_NORMAL.csv",
     ]
     for name in files:
-        assert (out_dir / name).exists()
+        fpath = out_dir / name
+        assert fpath.exists()
+        if name.endswith('.csv'):
+            with open(fpath, encoding='utf-8') as fh:
+                header = fh.readline().strip().split(',')
+            assert header == [
+                "timestamp",
+                "symbol",
+                "side",
+                "price",
+                "size",
+                "order_type",
+                "status",
+            ]
     with open(out_dir / "features_main.json", "r", encoding="utf-8") as fh:
         data = json.load(fh)
-    assert data.get("status") == "not_generated"
+    assert data == {}
