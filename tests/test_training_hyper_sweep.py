@@ -13,6 +13,7 @@ import src.training as training
 def test_run_hyperparameter_sweep_single_row(monkeypatch, caplog):
     df = pd.DataFrame({'f': [1], 'target': [1]})
     grid = [{'a': 1}, {'a': 2}]
+
     calls = []
 
     def dummy_train_full(_):
@@ -24,34 +25,32 @@ def test_run_hyperparameter_sweep_single_row(monkeypatch, caplog):
     res = training.run_hyperparameter_sweep(
         df,
         grid,
-        '5.8.14',
+        '5.9.1',
         train_full_fn=dummy_train_full,
         compute_fallback_fn=dummy_metrics,
         train_eval_fn=lambda d, p: {},
         select_best_fn=lambda r: {},
     )
-    assert calls == ['full']
+    assert calls == []
     assert res == {'accuracy': -1.0}
 
 
 def test_run_hyperparameter_sweep_multi_row():
     df = pd.DataFrame({'f': [1, 2, 3], 'target': [1, 0, 1]})
     grid = [{'a': 1}, {'a': 2}]
-    results = []
-
     def dummy_eval(_df, params):
-        results.append(params)
         return {'params': params, 'metrics': {'accuracy': params['a']}}
 
     def dummy_best(res):
+        assert len(res) == 2
+        assert sorted(r['params']['a'] for r in res) == [1, 2]
         return res[-1]
 
     res = training.run_hyperparameter_sweep(
         df,
         grid,
-        '5.8.14',
+        '5.9.1',
         train_eval_fn=dummy_eval,
         select_best_fn=dummy_best,
     )
-    assert results == [{'a': 1}, {'a': 2}]
     assert res == {'params': {'a': 2}, 'metrics': {'accuracy': 2}}

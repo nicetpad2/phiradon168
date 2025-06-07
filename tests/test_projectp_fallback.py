@@ -3,6 +3,7 @@ import types
 import sys
 import os
 import json
+import src.config as config
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
@@ -12,6 +13,7 @@ def test_fallback_files_created(monkeypatch, tmp_path):
     """Script should generate dummy files when outputs are missing."""
     out_dir = tmp_path / "output_default"
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(config, "OUTPUT_DIR", out_dir)
     dummy_main = lambda: None
     monkeypatch.setitem(sys.modules, "src.main", types.SimpleNamespace(main=dummy_main))
     monkeypatch.setattr(sys, "argv", ["ProjectP.py"])

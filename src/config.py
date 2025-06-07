@@ -58,6 +58,10 @@ AUTO_INSTALL_LIBS = True  # If False, skip auto-installation of libraries
 VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
 with open(VERSION_FILE, 'r', encoding='utf-8') as vf:
     __version__ = vf.read().strip()
+from pathlib import Path
+# [Patch v5.9.1] Unified output directory constant
+OUTPUT_DIR = Path(__file__).parent.parent / "output_default"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 from sklearn.model_selection import TimeSeriesSplit, train_test_split
 from sklearn.preprocessing import StandardScaler, OrdinalEncoder # Added OrdinalEncoder back as it might be used by some logic
 from sklearn.metrics import (

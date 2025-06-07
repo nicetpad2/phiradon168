@@ -4,11 +4,12 @@ import pandas as pd
 import numpy as np
 import logging
 from src import strategy
+from src.config import OUTPUT_DIR
 
 logger = logging.getLogger(__name__)
 
 
-def quick_qa_output(output_dir: str = "output_default", report_file: str = "qa_report.txt"):
+def quick_qa_output(output_dir: str = str(OUTPUT_DIR), report_file: str = "qa_report.txt"):
     """Scan output files and report folds without trades or missing columns."""
     issues = []
     p = Path(output_dir)

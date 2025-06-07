@@ -5,7 +5,7 @@ import logging
 import numpy as np
 import pandas as pd
 from joblib import dump
-from src.config import logger, USE_GPU_ACCELERATION
+from src.config import logger, USE_GPU_ACCELERATION, OUTPUT_DIR
 from src.utils.model_utils import evaluate_model
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, TimeSeriesSplit, StratifiedKFold
@@ -225,7 +225,7 @@ def optuna_sweep(
     X: pd.DataFrame,
     y: pd.Series,
     n_trials: int = 20,
-    output_path: str = "output_default/meta_classifier_optuna.pkl",
+    output_path: str = str(OUTPUT_DIR / "meta_classifier_optuna.pkl"),
 ) -> dict:
     """ปรับ Hyperparameter ด้วย Optuna และบันทึกโมเดล"""
     import importlib
@@ -449,29 +449,22 @@ def run_hyperparameter_sweep(
 ) -> dict:
     """Run grid search, skipping sweep if the dataset has <=1 row."""
 
-    results: list[dict] = []
-
-    # กรณีข้อมูลน้อยกว่า 2 แถว ให้ข้าม sweep ทั้งหมด
+    # [Patch v5.9.1] Single-row fallback and parallel sweep
     if len(df) <= 1:
         logger.warning(
-            "[Patch %s] Only %d row(s): skipping hyperparameter sweep, using fallback metrics",
+            "[Patch %s] Single-row data detected: applying fallback metrics only once",
             patch_version,
-            len(df),
         )
-        train_full_fn(df)
-        metrics = compute_fallback_fn(df)
-        return metrics
-
-    # ถ้าข้อมูลเพียงพอ รัน sweep ตามปกติ
-    for params in param_grid:
-        res = train_eval_fn(df, params)
-        results.append(res)
-
-    # เล่น hyperparameter sweep เสร็จ
-    best = select_best_fn(results)
-    logger.info(
-        "[Patch %s] Hyperparameter sweep complete: best params %s",
-        patch_version,
-        best,
-    )
+        best = compute_fallback_fn(df)
+    else:
+        from joblib import Parallel, delayed
+        results = Parallel(n_jobs=-1)(
+            delayed(train_eval_fn)(df, params) for params in param_grid
+        )
+        best = select_best_fn(results)
+        logger.info(
+            "[Patch %s] Sweep complete: best params %s",
+            patch_version,
+            best,
+        )
     return best

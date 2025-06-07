@@ -79,6 +79,7 @@ def test_projectp_output_audit(monkeypatch, caplog, tmp_path):
 
     dummy_main = lambda: None
     monkeypatch.setitem(sys.modules, "src.main", types.SimpleNamespace(main=dummy_main))
+    monkeypatch.setattr(config, "OUTPUT_DIR", out_dir)
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", ["ProjectP.py"])
     config.logger.setLevel(logging.INFO)

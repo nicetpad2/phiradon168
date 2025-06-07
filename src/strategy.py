@@ -38,6 +38,7 @@ from src.config import (
     print_gpu_utilization,  # [Patch v5.2.0] นำเข้า helper สำหรับแสดงการใช้งาน GPU/RAM (print_gpu_utilization)
     USE_MACD_SIGNALS,
     USE_RSI_SIGNALS,
+    OUTPUT_DIR as CFG_OUTPUT_DIR,
 )
 from src.utils.env_utils import get_env_float
 
@@ -1180,7 +1181,7 @@ DEFAULT_META_FILTER_RELAXED_THRESHOLD = 0.4
 DEFAULT_META_FILTER_RELAX_BLOCKS = 3
 # [Patch] ยอมรับทั้ง UP และ NEUTRAL
 M15_TREND_ALLOWED = ["UP", "NEUTRAL"]
-DEFAULT_OUTPUT_DIR = "./output_default"
+DEFAULT_OUTPUT_DIR = str(CFG_OUTPUT_DIR)
 # Access globals safely using safe_get_global (defined in Part 3)
 SESSION_TIMES_UTC = safe_get_global('SESSION_TIMES_UTC', DEFAULT_SESSION_TIMES_UTC)
 BASE_TP_MULTIPLIER = safe_get_global('BASE_TP_MULTIPLIER', DEFAULT_BASE_TP_MULTIPLIER)
