@@ -174,12 +174,14 @@ def run_mode(mode):
     elif mode == "all":
         # [Patch] Sweep then update config and run WFV
         run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
-        # อ่านไฟล์ที่ sweep สร้าง (ชื่อตรงกับ tuning: best_param.json)
-        best_params_path = OUTPUT_DIR / "best_param.json"
-        if os.path.exists(best_params_path):
-            with open(best_params_path, "r", encoding="utf-8") as fh:
-                best_params = json.load(fh)
-            update_config_from_dict(best_params)
+        # อ่านไฟล์ที่ sweep สร้าง (รองรับชื่อ best_param.json และ best_params.json)
+        candidates = [OUTPUT_DIR / "best_param.json", OUTPUT_DIR / "best_params.json"]
+        for cand in candidates:
+            if os.path.exists(cand):
+                with open(cand, "r", encoding="utf-8") as fh:
+                    best_params = json.load(fh)
+                update_config_from_dict(best_params)
+                break
         run_walkforward()
     else:
         raise ValueError(f"Unknown mode: {mode}")

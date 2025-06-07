@@ -1,5 +1,10 @@
 
 ### 2025-06-07
+- [Patch v5.9.2] Support both best_param.json and best_params.json in CLI
+- New/Updated unit tests added for tests/test_projectp_cli.py
+- QA: pytest -q passed (856 tests)
+
+### 2025-06-07
 - [Patch v5.9.1] Unify OUTPUT_DIR constant and parallelize hyperparameter sweep
 - New/Updated unit tests added for tests/test_training_hyper_sweep.py
 - QA: pytest -q passed (854 tests)
