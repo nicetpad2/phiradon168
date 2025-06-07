@@ -202,13 +202,14 @@ def run_sweep(
         logger.info(
             f"Best param: {dict(best_row[param_names + ['seed']])} -> {best_row[metric_col]}"
         )
+        logger.info(f"best_param.json saved to {best_param_path}")
     else:
         logger.warning("ไม่มีคอลัมน์ metric หรือไม่มีข้อมูลสำหรับ export best_param")
 
 
 def parse_args(args=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output_dir', default='sweep_results')
+    parser.add_argument('--output_dir', default=DefaultConfig.OUTPUT_DIR)
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--resume', action='store_true')
     parser.add_argument('--param_learning_rate', default='0.01,0.05')

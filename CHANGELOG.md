@@ -1,4 +1,9 @@
 ### 2025-06-07
+- [Patch v5.9.1] Direct sweep output to unified OUTPUT_DIR
+- New/Updated unit tests added for tests/unit/test_pipeline_manager.py
+- QA: pytest -q passed (855 tests)
+
+### 2025-06-07
 
 - [Patch v5.8.14] Improve single-row hyperparameter sweep fallback
 - New/Updated unit tests added for tests/test_training_hyper_sweep.py

@@ -59,13 +59,14 @@
   - Validate that no tests fail before any Pull Request is merged
 - **Modules:** `run_tests.py`, `tests/`, `src/qa_tools.py`
 
-### [Pipeline_Manager](src/main.py)
+### [Pipeline_Manager](src/pipeline_manager.py)
 - **Main Role:** Pipeline Orchestration
 - **Key Responsibilities:**
   - Manage CLI pipeline stages and configuration loading
   - Detect GPU availability and adjust runtime logging
   - Raise `PipelineError` when stages fail
-- **Modules:** `src/utils/pipeline_config.py`, `src/main.py`
+  - Provide `PipelineManager` class for sweep and WFV orchestration
+- **Modules:** `src/utils/pipeline_config.py`, `src/main.py`, `src/pipeline_manager.py`
 
 
 ### [GoldSurvivor_RnD](strategy/)

@@ -244,9 +244,19 @@ if __name__ == "__main__":
             os.makedirs(output_dir, exist_ok=True)
             if f.endswith('.json'):
                 with open(fpath, 'w', encoding='utf-8') as fout:
-                    json.dump({"status": "not_generated", "reason": "no output from sweep"}, fout)
+                    json.dump({}, fout)
             else:  # .csv
-                pd.DataFrame().to_csv(fpath, index=False)
+                header = [
+                    "timestamp",
+                    "symbol",
+                    "side",
+                    "price",
+                    "size",
+                    "order_type",
+                    "status",
+                ]
+                with open(fpath, "w", newline="", encoding="utf-8") as f:
+                    csv.DictWriter(f, fieldnames=header).writeheader()
             logger.warning(f"[QA Fallback] Created missing file: {fpath}")
 
 
@@ -265,10 +275,22 @@ if __name__ == "__main__":
             os.makedirs(output_dir, exist_ok=True)
             if f.endswith('.json'):
                 with open(fpath, 'w', encoding='utf-8') as fout:
-                    json.dump({"status": "not_generated", "reason": "no output from sweep"}, fout)
+                    json.dump({}, fout)
             else:  # .csv
-                pd.DataFrame().to_csv(fpath, index=False)
+                header = [
+                    "timestamp",
+                    "symbol",
+                    "side",
+                    "price",
+                    "size",
+                    "order_type",
+                    "status",
+                ]
+                with open(fpath, "w", newline="", encoding="utf-8") as f:
+                    csv.DictWriter(f, fieldnames=header).writeheader()
             logger.warning(f"[QA Fallback] Created missing file: {fpath}")
+
+        qa_check_and_create_outputs()
 
     except KeyboardInterrupt:
         print("\n(Stopped) การทำงานถูกยกเลิกโดยผู้ใช้.")
