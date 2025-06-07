@@ -1281,3 +1281,7 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/unit/test_strategy_orchestration_edge.py
 - QA: pytest -q passed (825 tests)
 
+### 2025-06-07
+- [Patch v6.1.0] เพิ่มชุดทดสอบ main.py ครอบคลุมมากขึ้น
+- New/Updated unit tests added for tests/test_main_cli_new.py
+- QA: pytest -q passed (829 tests)
