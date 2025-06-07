@@ -1,5 +1,7 @@
 [run]
-source = src
+source =
+    src
+    main
 omit =
     */tests/*
     */logs/*
