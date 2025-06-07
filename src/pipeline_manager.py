@@ -1,3 +1,4 @@
+"""PipelineManager orchestrates all stages: data load, sweep, WFV, output, QA."""
 import logging
 import os
 

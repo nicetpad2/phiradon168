@@ -23,6 +23,9 @@ from tqdm import tqdm
 
 from src.config import logger, DefaultConfig
 
+# [Patch v5.9.1] Default sweep results under configured OUTPUT_DIR
+DEFAULT_SWEEP_DIR = DefaultConfig.OUTPUT_DIR
+
 
 def _create_placeholder_trade_log(path: str) -> None:
     """Create a minimal trade log so the sweep can run."""
@@ -72,7 +75,7 @@ def _filter_kwargs(func: Callable, kwargs: Dict[str, object]) -> Dict[str, objec
 
 
 def run_sweep(
-    output_dir: str,
+    output_dir: str | None,
     params_grid: Dict[str, List],
     seed: int = 42,
     resume: bool = True,
@@ -80,6 +83,8 @@ def run_sweep(
     m1_path: str | None = None,
 ) -> None:
     """รัน hyperparameter sweep พร้อมคุณสมบัติ resume และ QA log"""
+    if not output_dir:
+        output_dir = DEFAULT_SWEEP_DIR
     os.makedirs(output_dir, exist_ok=True)
 
     # [Patch v5.9.4] Load and validate trade log before running
@@ -202,13 +207,17 @@ def run_sweep(
         logger.info(
             f"Best param: {dict(best_row[param_names + ['seed']])} -> {best_row[metric_col]}"
         )
+        if os.path.exists(best_param_path):
+            logger.info("[Patch v5.9.1] best_param.json saved to %s", best_param_path)
+        else:
+            logger.error("[Patch v5.9.1] best_param.json missing at %s", best_param_path)
     else:
         logger.warning("ไม่มีคอลัมน์ metric หรือไม่มีข้อมูลสำหรับ export best_param")
 
 
 def parse_args(args=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output_dir', default='sweep_results')
+    parser.add_argument('--output_dir', default=DEFAULT_SWEEP_DIR)
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--resume', action='store_true')
     parser.add_argument('--param_learning_rate', default='0.01,0.05')
