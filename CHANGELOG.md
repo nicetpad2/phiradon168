@@ -1231,3 +1231,9 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.10.6] Improve update_signal_threshold test coverage
 - New/Updated unit tests added for tests/test_signal_threshold_update.py
 - QA: pytest --cov=src.adaptive -q passed (733 tests)
+
+### 2025-06-07
+- [Patch v5.10.7] Improve metric fallback in hyperparameter sweep
+- New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
+- QA: pytest -q passed (existing tests)
+
