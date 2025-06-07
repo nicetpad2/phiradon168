@@ -88,6 +88,24 @@ def test_run_sweep_no_log(tmp_path):
 def test_parse_args_defaults():
     args = hs.parse_args([])
     assert args.trade_log_path == hs.DEFAULT_TRADE_LOG
+    assert args.output_dir == hs.DEFAULT_SWEEP_DIR
+
+
+def test_run_sweep_default_output_dir(tmp_path, monkeypatch):
+    monkeypatch.setattr(hs, 'DEFAULT_SWEEP_DIR', str(tmp_path))
+
+    def dummy_train(output_dir, trade_log_path=None, m1_path=None, seed=0):
+        return {
+            'model_path': {'model': str(tmp_path / 'm.joblib')},
+            'features': [],
+            'metrics': {'acc': 1.0},
+        }
+
+    monkeypatch.setattr(hs, 'real_train_func', dummy_train)
+    trade_log = tmp_path / 'log.csv'
+    pd.DataFrame({'profit': [1, -1]}).to_csv(trade_log, index=False)
+    hs.run_sweep(None, {'lr': [0.1]}, resume=False, trade_log_path=str(trade_log))
+    assert (tmp_path / 'best_param.json').exists()
 
 
 def test_filter_kwargs():
