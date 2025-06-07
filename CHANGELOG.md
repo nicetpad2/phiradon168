@@ -1124,7 +1124,7 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed
 
 
-\n
+
 ### 2025-06-04
 - [Patch v5.6.4] Add dashboard module and alert when MDD exceeds 10%
 - New/Updated unit tests added for tests.test_dashboard
@@ -1285,3 +1285,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.1.0] เพิ่มชุดทดสอบ main.py ครอบคลุมมากขึ้น
 - New/Updated unit tests added for tests/test_main_cli_new.py
 - QA: pytest -q passed (829 tests)
+### 2025-06-07
+- [Patch v6.1.1] เพิ่ม coverage สำหรับ src.config SESSION_TIMES_UTC
+- New/Updated unit tests added for tests/test_config_session_times.py
+- QA: pytest -q passed (842 tests)
