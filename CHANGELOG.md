@@ -1294,7 +1294,12 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (829 tests)
 
 ### 2025-06-07
-- [Patch v6.1.1] เพิ่ม coverage สำหรับ src.config SESSION_TIMES_UTC
-- New/Updated unit tests added for tests/test_config_session_times.py
-- QA: pytest -q passed (842 tests)
+
+- [Patch v6.1.1] เพิ่ม coverage tests สำหรับ training.py
+- New/Updated unit tests added for tests/test_lightgbm_training_features.py
+- QA: pytest -q passed (841 tests)
+### 2025-06-07
+- [Patch v6.1.2] ปรับ config coverage ให้ครอบคลุม main.py
+- New/Updated unit tests added for tests/test_main_cli_extended.py
+- QA: pytest -q passed (844 tests)
 
