@@ -1,8 +1,8 @@
 ### 2025-06-07
 
-- [Patch v6.1.1] เพิ่ม coverage main.py
-- New/Updated unit tests added for tests/test_main_cli_additional.py
-- QA: pytest -q passed (843 tests)
+- [Patch v5.8.14] Improve single-row hyperparameter sweep fallback
+- New/Updated unit tests added for tests/test_training_hyper_sweep.py
+- QA: pytest -q passed (842 tests)
 
 
 ### 2025-06-07

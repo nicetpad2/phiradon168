@@ -45,6 +45,45 @@ except Exception:  # pragma: no cover - fallback if catboost missing
     CatBoostClassifier = None
 
 
+# Helper functions for hyperparameter sweep
+def train_full(df: pd.DataFrame):
+    """Train a simple logistic regression model on all rows."""
+    if "target" not in df.columns:
+        raise ValueError("'target' column required")
+    X = df.drop(columns=["target"])
+    y = df["target"]
+    model = LogisticRegression(max_iter=1000)
+    model.fit(X, y)
+    return model
+
+
+def compute_fallback_metrics(df: pd.DataFrame) -> dict:
+    """Return metrics used when dataset is too small."""
+    return {"accuracy": -1.0, "auc": float("nan")}
+
+
+def train_and_evaluate(df: pd.DataFrame, params: dict) -> dict:
+    """Train and evaluate using a simple hold-out split."""
+    if "target" not in df.columns:
+        raise ValueError("'target' column required")
+    X = df.drop(columns=["target"])
+    y = df["target"]
+    if len(df) <= 1:
+        return compute_fallback_metrics(df)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.25, random_state=params.get("seed", 42)
+    )
+    model = LogisticRegression(max_iter=1000)
+    model.fit(X_train, y_train)
+    acc, auc = evaluate_model(model, X_test, y_test)
+    return {"params": params, "metrics": {"accuracy": acc, "auc": auc}}
+
+
+def select_best(results: list[dict]) -> dict:
+    """Select the best result by accuracy."""
+    return max(results, key=lambda r: r.get("metrics", {}).get("accuracy", -1.0))
+
+
 # [Patch v5.3.4] Add seed argument for deterministic behavior
 # [Patch v1.1.0] Real training function using CatBoost (or logistic regression fallback)
 def real_train_func(
@@ -397,3 +436,42 @@ def train_lightgbm_mtf(
         "features": features,
         "metrics": {"auc": avg_auc},
     }
+
+
+def run_hyperparameter_sweep(
+    df: pd.DataFrame,
+    param_grid: list[dict],
+    patch_version: str,
+    train_full_fn=train_full,
+    compute_fallback_fn=compute_fallback_metrics,
+    train_eval_fn=train_and_evaluate,
+    select_best_fn=select_best,
+) -> dict:
+    """Run grid search, skipping sweep if the dataset has <=1 row."""
+
+    results: list[dict] = []
+
+    # กรณีข้อมูลน้อยกว่า 2 แถว ให้ข้าม sweep ทั้งหมด
+    if len(df) <= 1:
+        logger.warning(
+            "[Patch %s] Only %d row(s): skipping hyperparameter sweep, using fallback metrics",
+            patch_version,
+            len(df),
+        )
+        train_full_fn(df)
+        metrics = compute_fallback_fn(df)
+        return metrics
+
+    # ถ้าข้อมูลเพียงพอ รัน sweep ตามปกติ
+    for params in param_grid:
+        res = train_eval_fn(df, params)
+        results.append(res)
+
+    # เล่น hyperparameter sweep เสร็จ
+    best = select_best_fn(results)
+    logger.info(
+        "[Patch %s] Hyperparameter sweep complete: best params %s",
+        patch_version,
+        best,
+    )
+    return best
