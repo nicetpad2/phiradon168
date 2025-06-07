@@ -1,8 +1,8 @@
 ### 2025-06-07
 
-- [Patch v6.1.1] เพิ่ม coverage main.py
-- New/Updated unit tests added for tests/test_main_cli_additional.py
-- QA: pytest -q passed (843 tests)
+- [Patch v5.8.14] Improve single-row hyperparameter sweep fallback
+- New/Updated unit tests added for tests/test_training_hyper_sweep.py
+- QA: pytest -q passed (842 tests)
 
 
 ### 2025-06-07
@@ -1131,7 +1131,7 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed
 
 
-\n
+
 ### 2025-06-04
 - [Patch v5.6.4] Add dashboard module and alert when MDD exceeds 10%
 - New/Updated unit tests added for tests.test_dashboard
@@ -1292,12 +1292,26 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.1.0] เพิ่มชุดทดสอบ main.py ครอบคลุมมากขึ้น
 - New/Updated unit tests added for tests/test_main_cli_new.py
 - QA: pytest -q passed (829 tests)
+
 ### 2025-06-07
+
 - [Patch v6.1.1] เพิ่ม coverage tests สำหรับ training.py
 - New/Updated unit tests added for tests/test_lightgbm_training_features.py
 - QA: pytest -q passed (841 tests)
+<<<
 
 ### 2025-06-07
 - [Patch v6.1.2] เพิ่ม coverage ให้ strategy.py
 - New/Updated unit tests added for tests/test_strategy_force_coverage.py
 - QA: pytest -q passed (847 tests)
+
+### 2025-06-07
+
+- [Patch v6.1.2] เพิ่มฟิกซ์เจอร์และชุดทดสอบใหม่
+- New/Updated unit tests added for tests/test_other_suites.py
+- QA: pytest -q passed (847 tests)
+- [Patch v6.1.2] ปรับ config coverage ให้ครอบคลุม main.py
+- New/Updated unit tests added for tests/test_main_cli_extended.py
+- QA: pytest -q passed (844 tests)
+
+
