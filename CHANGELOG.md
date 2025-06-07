@@ -1,3 +1,8 @@
+### 2025-06-07
+- [Patch v5.10.8] Add coverage for config module
+- New/Updated unit tests added for tests/test_config_extended.py
+- QA: pytest -q passed (792 tests)
+
 
 ### 2025-06-07
 - [Patch v5.10.7] Replace deprecated fillna method
