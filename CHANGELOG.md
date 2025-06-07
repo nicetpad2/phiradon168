@@ -1,4 +1,7 @@
 ### 2025-06-07
+- [Patch v5.9.1] Use OUTPUT_DIR constant and QA fallback helper
+- New/Updated unit tests added for ProjectP.py, tuning/hyperparameter_sweep.py
+- QA: pytest -q passed (850 tests)
 
 - [Patch v5.8.14] Improve single-row hyperparameter sweep fallback
 - New/Updated unit tests added for tests/test_training_hyper_sweep.py

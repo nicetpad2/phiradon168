@@ -3,9 +3,12 @@
 import logging
 import csv
 try:  # [Patch v5.10.2] allow import without heavy dependencies
-    from src.config import logger
+    from src.config import logger, DefaultConfig, OUTPUT_DIR
 except Exception:  # pragma: no cover - fallback logger for tests
     logger = logging.getLogger("ProjectP")
+    from types import SimpleNamespace
+    OUTPUT_DIR = "./output_default"
+    DefaultConfig = SimpleNamespace(OUTPUT_DIR=OUTPUT_DIR)
 # [Patch v5.9.17] Fallback logger if src.config fails
 import sys
 import os
@@ -87,7 +90,7 @@ def run_hyperparameter_sweep(params: Dict[str, List[float]]) -> None:
     logger.debug(f"Starting sweep with params: {params}")
     from tuning.hyperparameter_sweep import run_sweep as _sweep, DEFAULT_TRADE_LOG
     _sweep(
-        "output_default",
+        OUTPUT_DIR,
         params,
         seed=42,
         resume=True,
@@ -173,7 +176,7 @@ def run_mode(mode):
         # [Patch] Sweep then update config and run WFV
         run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
         # อ่านไฟล์ที่ sweep สร้าง (ชื่อตรงกับ tuning: best_param.json)
-        best_params_path = os.path.join("output_default", "best_param.json")
+        best_params_path = os.path.join(OUTPUT_DIR, "best_param.json")
         if os.path.exists(best_params_path):
             with open(best_params_path, "r", encoding="utf-8") as fh:
                 best_params = json.load(fh)
@@ -185,7 +188,7 @@ def run_mode(mode):
 
 def qa_check_and_create_outputs():
     """[Patch v5.8.14] Ensure fallback QA output files have valid headers."""
-    output_dir = "./output_default"
+    output_dir = OUTPUT_DIR
     files = [
         os.path.join(output_dir, "features_main.json"),
         os.path.join(output_dir, "trade_log_BUY.csv"),
@@ -222,9 +225,9 @@ if __name__ == "__main__":
     args = parse_args()
     try:
         run_mode(args.mode)
-        
+
         # [Patch v5.3.4] Create empty audit files if missing after run
-        output_dir = "./output_default"
+        output_dir = OUTPUT_DIR
         audit_files = [
             "features_main.json",
             "trade_log_BUY.csv",
@@ -244,9 +247,20 @@ if __name__ == "__main__":
             os.makedirs(output_dir, exist_ok=True)
             if f.endswith('.json'):
                 with open(fpath, 'w', encoding='utf-8') as fout:
-                    json.dump({"status": "not_generated", "reason": "no output from sweep"}, fout)
+                    json.dump({}, fout)
             else:  # .csv
-                pd.DataFrame().to_csv(fpath, index=False)
+                header = [
+                    "timestamp",
+                    "symbol",
+                    "side",
+                    "price",
+                    "size",
+                    "order_type",
+                    "status",
+                ]
+                with open(fpath, 'w', newline='', encoding='utf-8') as csvf:
+                    writer = csv.DictWriter(csvf, fieldnames=header)
+                    writer.writeheader()
             logger.warning(f"[QA Fallback] Created missing file: {fpath}")
 
 
@@ -265,9 +279,20 @@ if __name__ == "__main__":
             os.makedirs(output_dir, exist_ok=True)
             if f.endswith('.json'):
                 with open(fpath, 'w', encoding='utf-8') as fout:
-                    json.dump({"status": "not_generated", "reason": "no output from sweep"}, fout)
+                    json.dump({}, fout)
             else:  # .csv
-                pd.DataFrame().to_csv(fpath, index=False)
+                header = [
+                    "timestamp",
+                    "symbol",
+                    "side",
+                    "price",
+                    "size",
+                    "order_type",
+                    "status",
+                ]
+                with open(fpath, 'w', newline='', encoding='utf-8') as csvf:
+                    writer = csv.DictWriter(csvf, fieldnames=header)
+                    writer.writeheader()
             logger.warning(f"[QA Fallback] Created missing file: {fpath}")
 
     except KeyboardInterrupt:

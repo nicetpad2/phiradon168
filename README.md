@@ -61,6 +61,7 @@ python ProjectP.py --mode all
 - `tests/` ชุดทดสอบอัตโนมัติ
 - `docs/` เอกสารประกอบ
 - `logs/<date>/<fold>/` โฟลเดอร์บันทึก log แยกตามวันที่และ fold
+- `output_default/` โฟลเดอร์ผลลัพธ์เริ่มต้น กำหนดผ่านตัวแปร `OUTPUT_DIR` ใน `src.config`
 
 ## การใช้งานสคริปต์หลัก
 - `python ProjectP.py` เตรียมข้อมูลพื้นฐานและรันขั้นตอนหลัก

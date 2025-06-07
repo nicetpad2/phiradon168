@@ -208,7 +208,7 @@ def run_sweep(
 
 def parse_args(args=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output_dir', default='sweep_results')
+    parser.add_argument('--output_dir', default=DefaultConfig.OUTPUT_DIR)
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--resume', action='store_true')
     parser.add_argument('--param_learning_rate', default='0.01,0.05')

@@ -620,6 +620,7 @@ logging.debug("Global warnings filtered and pandas options set.")
 logging.info("Loading Global Configuration Settings...")
 OUTPUT_BASE_DIR = DEFAULT_LOG_DIR
 OUTPUT_DIR_NAME = f"outputgpt_v{__version__}"
+OUTPUT_DIR = "./output_default"
 DATA_FILE_PATH_M15 = DEFAULT_CSV_PATH_M15
 DATA_FILE_PATH_M1 = DEFAULT_CSV_PATH_M1
 TRAIN_META_MODEL_BEFORE_RUN = True
@@ -661,7 +662,7 @@ from dataclasses import dataclass
 
 @dataclass
 class DefaultConfig:
-    OUTPUT_DIR: str = DEFAULT_LOG_DIR
+    OUTPUT_DIR: str = OUTPUT_DIR
     DATA_FILE_PATH_M1: str = DEFAULT_CSV_PATH_M1
     DATA_FILE_PATH_M15: str = DEFAULT_CSV_PATH_M15
     DEFAULT_RISK_PER_TRADE: float = FUND_PROFILES.get(DEFAULT_FUND_NAME, {}).get("risk", 0.01)
