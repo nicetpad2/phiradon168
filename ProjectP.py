@@ -2,10 +2,12 @@
 
 import logging
 import csv
+from pathlib import Path
 try:  # [Patch v5.10.2] allow import without heavy dependencies
-    from src.config import logger
+    from src.config import logger, OUTPUT_DIR
 except Exception:  # pragma: no cover - fallback logger for tests
     logger = logging.getLogger("ProjectP")
+    OUTPUT_DIR = Path("output_default")
 # [Patch v5.9.17] Fallback logger if src.config fails
 import sys
 import os
@@ -173,7 +175,7 @@ def run_mode(mode):
         # [Patch] Sweep then update config and run WFV
         run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
         # อ่านไฟล์ที่ sweep สร้าง (ชื่อตรงกับ tuning: best_param.json)
-        best_params_path = os.path.join("output_default", "best_param.json")
+        best_params_path = OUTPUT_DIR / "best_param.json"
         if os.path.exists(best_params_path):
             with open(best_params_path, "r", encoding="utf-8") as fh:
                 best_params = json.load(fh)
@@ -224,16 +226,16 @@ if __name__ == "__main__":
         run_mode(args.mode)
         
         # [Patch v5.3.4] Create empty audit files if missing after run
-        output_dir = "./output_default"
+        output_dir = OUTPUT_DIR
         audit_files = [
             "features_main.json",
             "trade_log_BUY.csv",
             "trade_log_SELL.csv",
             "trade_log_NORMAL.csv",
         ]
-        for f in audit_files:
-            fpath = os.path.join(output_dir, f)
-            if os.path.exists(fpath):
+        for fname in audit_files:
+            fpath = OUTPUT_DIR / fname
+            if fpath.exists():
                 msg = f"[QA] Output present: {fpath}"
                 logger.info(msg)
                 logging.getLogger().info(msg)
@@ -241,12 +243,14 @@ if __name__ == "__main__":
             msg = f"[QA] Output missing: {fpath}"
             logger.error(msg)
             logging.getLogger().error(msg)
-            os.makedirs(output_dir, exist_ok=True)
-            if f.endswith('.json'):
+            os.makedirs(OUTPUT_DIR, exist_ok=True)
+            if fname.endswith('.csv'):
+                pd.DataFrame(columns=[
+                    "timestamp", "symbol", "side", "price", "size", "order_type", "status"
+                ]).to_csv(fpath, index=False)
+            else:
                 with open(fpath, 'w', encoding='utf-8') as fout:
-                    json.dump({"status": "not_generated", "reason": "no output from sweep"}, fout)
-            else:  # .csv
-                pd.DataFrame().to_csv(fpath, index=False)
+                    json.dump({}, fout)
             logger.warning(f"[QA Fallback] Created missing file: {fpath}")
 
 
@@ -258,16 +262,18 @@ if __name__ == "__main__":
             "trade_log_NORMAL.csv",
         ]
 
-        for f in fallback_files:
-            fpath = os.path.join(output_dir, f)
-            if os.path.exists(fpath):
+        for fname in fallback_files:
+            fpath = OUTPUT_DIR / fname
+            if fpath.exists():
                 continue
-            os.makedirs(output_dir, exist_ok=True)
-            if f.endswith('.json'):
+            os.makedirs(OUTPUT_DIR, exist_ok=True)
+            if fname.endswith('.csv'):
+                pd.DataFrame(columns=[
+                    "timestamp", "symbol", "side", "price", "size", "order_type", "status"
+                ]).to_csv(fpath, index=False)
+            else:
                 with open(fpath, 'w', encoding='utf-8') as fout:
-                    json.dump({"status": "not_generated", "reason": "no output from sweep"}, fout)
-            else:  # .csv
-                pd.DataFrame().to_csv(fpath, index=False)
+                    json.dump({}, fout)
             logger.warning(f"[QA Fallback] Created missing file: {fpath}")
 
     except KeyboardInterrupt:
