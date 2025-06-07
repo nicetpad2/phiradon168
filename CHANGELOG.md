@@ -1,4 +1,8 @@
 ### 2025-06-07
+- [Patch v5.8.13] เพิ่ม unit tests สำหรับ main.py ให้ครอบคลุมมากขึ้น
+- New/Updated unit tests added for tests/test_main_cli_extended.py
+- QA: pytest -q passed (819 tests)
+### 2025-06-07
 - [Patch v5.10.8] Add coverage for config module
 - New/Updated unit tests added for tests/test_config_extended.py
 - QA: pytest -q passed (792 tests)
