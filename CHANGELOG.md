@@ -5,6 +5,14 @@
 - QA: pytest -q passed (854 tests)
 
 ### 2025-06-07
+
+- [Patch v5.9.1] Use OUTPUT_DIR constant for hyper-sweep and QA fallback
+- New/Updated unit tests added for tests/test_projectp_fallback.py
+- QA: pytest -q passed (854 tests)
+
+### 2025-06-07
+
+
 - [Patch v5.8.14] Improve single-row hyperparameter sweep fallback
 - New/Updated unit tests added for tests/test_training_hyper_sweep.py
 - QA: pytest -q passed (842 tests)
@@ -1319,4 +1327,9 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_main_cli_extended.py
 - QA: pytest -q passed (844 tests)
 
+
+### 2025-06-07
+- [Patch v5.9.1] Introduce PipelineManager class to structure mode-all flow into discrete, testable stages
+- New/Updated unit tests added for tests/test_pipeline_manager.py, tests/test_main_pipeline_cli.py, tests/test_main_cli_extended.py
+- QA: pytest -q passed
 

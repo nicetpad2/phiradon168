@@ -89,7 +89,7 @@ def run_hyperparameter_sweep(params: Dict[str, List[float]]) -> None:
     logger.debug(f"Starting sweep with params: {params}")
     from tuning.hyperparameter_sweep import run_sweep as _sweep, DEFAULT_TRADE_LOG
     _sweep(
-        "output_default",
+        str(OUTPUT_DIR),
         params,
         seed=42,
         resume=True,
@@ -187,7 +187,7 @@ def run_mode(mode):
 
 def qa_check_and_create_outputs():
     """[Patch v5.8.14] Ensure fallback QA output files have valid headers."""
-    output_dir = "./output_default"
+    output_dir = str(OUTPUT_DIR)
     files = [
         os.path.join(output_dir, "features_main.json"),
         os.path.join(output_dir, "trade_log_BUY.csv"),
