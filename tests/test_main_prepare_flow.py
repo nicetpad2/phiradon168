@@ -15,7 +15,7 @@ def test_main_prepare_train_data_flow(monkeypatch, tmp_path):
     if hasattr(main, 'OUTPUT_DIR'):
         main.OUTPUT_DIR = ''
 
-    dates = pd.date_range('2024-01-01', periods=3, freq='T')
+    dates = pd.date_range('2024-01-01', periods=3, freq='min')
     df_base = pd.DataFrame({
         'Open': [1.0, 1.1, 1.2],
         'High': [1.0, 1.1, 1.2],
