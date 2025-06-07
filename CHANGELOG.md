@@ -1298,3 +1298,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_config_session_times.py
 - QA: pytest -q passed (842 tests)
 
+### 2025-06-07
+- [Patch v5.9.1] Introduce PipelineManager class to structure mode-all flow into discrete, testable stages
+- New/Updated unit tests added for tests/test_pipeline_manager.py, tests/test_main_pipeline_cli.py, tests/test_main_cli_extended.py
+- QA: pytest -q passed
+
