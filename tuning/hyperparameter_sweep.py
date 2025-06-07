@@ -96,10 +96,10 @@ def run_sweep(
             _create_placeholder_trade_log(trade_log_path)
     try:
         df_log = pd.read_csv(trade_log_path)
-        # [Patch v5.10.9] Ensure trade log has at least 2 rows for train/test
-        if len(df_log) < 2:
+        # [Patch v5.8.13] Allow single-row trade logs with fallback metrics
+        if len(df_log) < 1:
             logger.warning(
-                "trade log มีข้อมูลน้อยกว่า 2 แถว - สร้างไฟล์ตัวอย่างเพิ่ม"
+                "trade log มีข้อมูลน้อยกว่า 1 แถว - สร้างไฟล์ตัวอย่างเพิ่ม"
             )
             _create_placeholder_trade_log(trade_log_path)
             df_log = pd.read_csv(trade_log_path)
