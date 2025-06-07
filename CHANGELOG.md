@@ -4,6 +4,11 @@
 - New/Updated unit tests added for tests/unit/test_data_loader_full.py
 - QA: pytest -q passed (779 tests)
 
+### 2025-06-07
+- [Patch v5.10.8] Improve placeholder trade log generation
+- New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
+- QA: pytest -q passed (788 tests)
+
 ### 2025-06-06
 - [Patch v5.10.4] Increase coverage for data loader
 - New/Updated unit tests added for tests/unit/test_data_loader_full.py
