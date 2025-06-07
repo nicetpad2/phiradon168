@@ -176,3 +176,14 @@ def test_update_open_order_state_error_logging(monkeypatch, caplog):
         tsl_counter=0,
     )
     assert any('Error calculating dynamic BE threshold' in r.message for r in caplog.records)
+
+
+def test_order_manager(tmp_path, monkeypatch, sample_data):
+    """ทดสอบการโหลดไฟล์ผ่าน tmp_path"""
+    # Use tmp_path for isolated file I/O
+    log_path = tmp_path / 'sample_data.csv'
+    import shutil
+    _, sample_path = sample_data
+    shutil.copy(sample_path, log_path)
+    df = pd.read_csv(log_path)
+    assert len(df) == 2

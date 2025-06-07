@@ -1296,3 +1296,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.1.1] เพิ่ม coverage tests สำหรับ training.py
 - New/Updated unit tests added for tests/test_lightgbm_training_features.py
 - QA: pytest -q passed (841 tests)
+### 2025-06-07
+- [Patch v6.1.2] เพิ่มฟิกซ์เจอร์และชุดทดสอบใหม่
+- New/Updated unit tests added for tests/test_other_suites.py
+- QA: pytest -q passed (847 tests)

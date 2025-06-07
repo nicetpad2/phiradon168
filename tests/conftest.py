@@ -21,6 +21,25 @@ def simple_m1_df():
     return df
 
 
+@pytest.fixture(scope='session')
+def sample_data(tmp_path_factory):
+    """DataFrame ขนาดเล็กสำหรับทดสอบ"""
+    data = pd.DataFrame(
+        {
+            'timestamp': ['2025-06-07 00:00:00', '2025-06-07 00:01:00'],
+            'symbol': ['XAUUSD', 'XAUUSD'],
+            'side': ['BUY', 'SELL'],
+            'price': [2000.0, 2001.0],
+            'size': [0.01, 0.01],
+            'order_type': ['LIMIT', 'LIMIT'],
+            'status': ['FILLED', 'FILLED'],
+        }
+    )
+    path = tmp_path_factory.mktemp('data') / 'sample_data.csv'
+    data.to_csv(path, index=False)
+    return data, path
+
+
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
     passed = len(terminalreporter.stats.get('passed', []))
     failed = len(terminalreporter.stats.get('failed', []))

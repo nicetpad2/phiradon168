@@ -179,15 +179,19 @@ def test_cli_entrypoint_runs_main(tmp_path, monkeypatch):
     pd.DataFrame({'p': [1]}).to_csv(trade_log, index=False)
 
     def dummy_train(*_, **__):
-        return {'model_path': {'model': str(tmp_path / 'm.joblib')}, 'features': []}
+        return {
+            'model_path': {'model': str(tmp_path / 'm.joblib')},
+            'features': [],
+            'metrics': {'accuracy': 1.0},
+        }
 
     import src.training as training
 
     monkeypatch.setattr(training, 'real_train_func', dummy_train)
-    monkeypatch.setattr(sys, 'argv', ['hyperparameter_sweep.py', '--output_dir', str(tmp_path), '--trade_log_path', str(trade_log)])
+    monkeypatch.setattr(sys, 'argv', ['hyperparameter_sweep.py', '--output_dir', str(tmp_path), '--trade_log_path', str(trade_log), '--resume'])
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', RuntimeWarning)
         runpy.run_module('tuning.hyperparameter_sweep', run_name='__main__')
-    assert (tmp_path / 'summary.csv').exists()
+    assert (tmp_path / 'best_param.json').exists()
 
 

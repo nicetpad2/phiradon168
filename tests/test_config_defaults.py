@@ -1,9 +1,10 @@
 import importlib
+import pytest
 
 
 def test_default_parameters():
     cfg = importlib.import_module('src.config')
-    assert cfg.MIN_SIGNAL_SCORE_ENTRY == 0.3
+    assert cfg.MIN_SIGNAL_SCORE_ENTRY == pytest.approx(0.3, rel=1e-6)
     assert cfg.M15_TREND_RSI_UP == 60
     assert cfg.M15_TREND_RSI_DOWN == 40
     assert cfg.FORCED_ENTRY_MIN_GAIN_Z_ABS == 0.5
