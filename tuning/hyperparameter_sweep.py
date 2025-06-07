@@ -95,7 +95,14 @@ def run_sweep(
             logger.warning(f"ไม่พบไฟล์ trade log: {trade_log_path} จะสร้างไฟล์ตัวอย่าง")
             _create_placeholder_trade_log(trade_log_path)
     try:
-        pd.read_csv(trade_log_path)
+        df_log = pd.read_csv(trade_log_path)
+        # [Patch v5.10.9] Ensure trade log has at least 2 rows for train/test
+        if len(df_log) < 2:
+            logger.warning(
+                "trade log มีข้อมูลน้อยกว่า 2 แถว - สร้างไฟล์ตัวอย่างเพิ่ม"
+            )
+            _create_placeholder_trade_log(trade_log_path)
+            df_log = pd.read_csv(trade_log_path)
     except Exception as e:  # pragma: no cover - unexpected read failure
         logger.error(f"อ่านไฟล์ trade log ไม่สำเร็จ: {e}")
         raise SystemExit(1)
