@@ -1231,3 +1231,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.10.6] Improve update_signal_threshold test coverage
 - New/Updated unit tests added for tests/test_signal_threshold_update.py
 - QA: pytest --cov=src.adaptive -q passed (733 tests)
+### 2025-06-07
+- [Patch v5.10.7] เพิ่มชุดทดสอบ run_pipeline_stage
+- New/Updated unit tests added for tests/test_main_pipeline_stage.py
+- QA: pytest --cov=src.main -q passed (786 tests)
