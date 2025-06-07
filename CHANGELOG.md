@@ -1,4 +1,9 @@
 ### 2025-06-07
+- [Patch v6.1.1] เพิ่ม coverage main.py
+- New/Updated unit tests added for tests/test_main_cli_additional.py
+- QA: pytest -q passed (843 tests)
+
+### 2025-06-07
 - [Patch v5.8.13] เพิ่ม unit tests สำหรับ main.py ให้ครอบคลุมมากขึ้น
 - New/Updated unit tests added for tests/test_main_cli_extended.py
 - QA: pytest -q passed (819 tests)
