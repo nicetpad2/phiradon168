@@ -1,4 +1,5 @@
 import os
+import logging
 import ProjectP as proj
 import pytest
 
@@ -108,3 +109,19 @@ def test_run_mode_all(monkeypatch, tmp_path):
     monkeypatch.setattr(proj, 'run_walkforward', lambda: calls.append('wfv'))
     proj.run_mode('all')
     assert calls == ['sweep', 'update', 'wfv']
+
+
+def test_run_mode_all_missing_best_param(monkeypatch, tmp_path, caplog):
+    """run_mode('all') should warn and continue when best_param.json is absent."""
+    monkeypatch.setattr(proj, 'run_hyperparameter_sweep', lambda params: None)
+    monkeypatch.setattr(proj, 'OUTPUT_DIR', tmp_path)
+    called = {}
+    monkeypatch.setattr(proj, 'run_walkforward', lambda: called.setdefault('wfv', True))
+    captured = {}
+    def fake_warning(msg, *args, **kwargs):
+        captured['msg'] = msg % args
+    monkeypatch.setattr(proj.logger, 'warning', fake_warning)
+    proj.run_mode('all')
+    assert called.get('wfv') is True
+    assert 'best_param.json not found' in captured.get('msg', '')
+

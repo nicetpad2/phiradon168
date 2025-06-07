@@ -180,6 +180,11 @@ def run_mode(mode):
             with open(best_params_path, "r", encoding="utf-8") as fh:
                 best_params = json.load(fh)
             update_config_from_dict(best_params)
+        else:
+            logger.warning(
+                "[Patch v6.1.3] best_param.json not found at %s",
+                best_params_path,
+            )
         run_walkforward()
     else:
         raise ValueError(f"Unknown mode: {mode}")
