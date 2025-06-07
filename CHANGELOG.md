@@ -1279,3 +1279,7 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_main_cli_more.py
 - QA: pytest -q passed (826 tests)
 
+### 2025-06-07
+- [Patch v6.1.0] เพิ่มชุดทดสอบ main.py ครอบคลุมมากขึ้น
+- New/Updated unit tests added for tests/test_main_cli_new.py
+- QA: pytest -q passed (829 tests)
