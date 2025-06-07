@@ -276,3 +276,9 @@ def test_check_data_quality_generic_fill():
     df = pd.DataFrame({'A':[1, None]})
     res = dl.check_data_quality(df.copy(), dropna=False, fillna_method='pad')
     assert res.loc[1, 'A'] == 1
+
+
+def test_check_data_quality_invalid_method():
+    df = pd.DataFrame({"A": [1, None], "Datetime": [1, 2]})
+    with pytest.raises(ValueError):
+        dl.check_data_quality(df.copy(), dropna=False, fillna_method="invalid")
