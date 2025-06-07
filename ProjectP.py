@@ -1,6 +1,7 @@
 """Bootstrap script for running the main entry point."""
 
 import logging
+import csv
 try:  # [Patch v5.10.2] allow import without heavy dependencies
     from src.config import logger
 except Exception:  # pragma: no cover - fallback logger for tests
@@ -182,6 +183,40 @@ def run_mode(mode):
         raise ValueError(f"Unknown mode: {mode}")
 
 
+def qa_check_and_create_outputs():
+    """[Patch v5.8.14] Ensure fallback QA output files have valid headers."""
+    output_dir = "./output_default"
+    files = [
+        os.path.join(output_dir, "features_main.json"),
+        os.path.join(output_dir, "trade_log_BUY.csv"),
+        os.path.join(output_dir, "trade_log_SELL.csv"),
+        os.path.join(output_dir, "trade_log_NORMAL.csv"),
+    ]
+    missing = [p for p in files if not os.path.exists(p) or os.path.getsize(p) == 0]
+    for path in missing:
+        logger.warning("[QA Fallback] Created missing file: %s", path)
+        dirpath = os.path.dirname(path)
+        if not os.path.exists(dirpath):
+            os.makedirs(dirpath)
+        if path.endswith("features_main.json"):
+            with open(path, "w", encoding="utf-8") as fh:
+                fh.write("{}")  # JSON เปล่าแต่ valid
+        else:
+            header = [
+                "timestamp",
+                "symbol",
+                "side",
+                "price",
+                "size",
+                "order_type",
+                "status",
+            ]
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=header)
+                writer.writeheader()
+        logger.debug("[QA Fallback] Wrote header to %s", path)
+
+
 if __name__ == "__main__":
     configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
     args = parse_args()
@@ -214,6 +249,7 @@ if __name__ == "__main__":
                 pd.DataFrame().to_csv(fpath, index=False)
             logger.warning(f"[QA Fallback] Created missing file: {fpath}")
 
+
         # [Patch v5.8.13] Ensure fallback QA output files always exist
         fallback_files = [
             "features_main.json",
@@ -233,6 +269,7 @@ if __name__ == "__main__":
             else:  # .csv
                 pd.DataFrame().to_csv(fpath, index=False)
             logger.warning(f"[QA Fallback] Created missing file: {fpath}")
+
     except KeyboardInterrupt:
         print("\n(Stopped) การทำงานถูกยกเลิกโดยผู้ใช้.")
     except Exception as e:
