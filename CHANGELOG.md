@@ -1292,3 +1292,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.1.0] เพิ่มชุดทดสอบ main.py ครอบคลุมมากขึ้น
 - New/Updated unit tests added for tests/test_main_cli_new.py
 - QA: pytest -q passed (829 tests)
+### 2025-06-07
+- [Patch v6.1.1] เพิ่ม coverage tests สำหรับ training.py
+- New/Updated unit tests added for tests/test_lightgbm_training_features.py
+- QA: pytest -q passed (841 tests)
