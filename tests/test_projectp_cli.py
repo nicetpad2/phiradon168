@@ -108,3 +108,14 @@ def test_run_mode_all(monkeypatch, tmp_path):
     monkeypatch.setattr(proj, 'run_walkforward', lambda: calls.append('wfv'))
     proj.run_mode('all')
     assert calls == ['sweep', 'update', 'wfv']
+
+
+def test_run_mode_all_no_best_param(monkeypatch, tmp_path):
+    """run_mode('all') should skip config update if best_param.json missing."""
+    calls = []
+    monkeypatch.setattr(proj, 'run_hyperparameter_sweep', lambda params: calls.append('sweep'))
+    monkeypatch.setattr(proj, 'update_config_from_dict', lambda d: calls.append('update'))
+    monkeypatch.setattr(proj, 'run_walkforward', lambda: calls.append('wfv'))
+    monkeypatch.setattr(proj.os.path, 'exists', lambda p: False)
+    proj.run_mode('all')
+    assert calls == ['sweep', 'wfv']

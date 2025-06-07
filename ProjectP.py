@@ -176,10 +176,17 @@ def run_mode(mode):
         run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
         # อ่านไฟล์ที่ sweep สร้าง (ชื่อตรงกับ tuning: best_param.json)
         best_params_path = OUTPUT_DIR / "best_param.json"
-        if os.path.exists(best_params_path):
-            with open(best_params_path, "r", encoding="utf-8") as fh:
-                best_params = json.load(fh)
-            update_config_from_dict(best_params)
+        if best_params_path.exists():
+            try:
+                with open(best_params_path, "r", encoding="utf-8") as fh:
+                    best_params = json.load(fh)
+            except FileNotFoundError:  # pragma: no cover - race condition safety
+                logger.warning(
+                    "best_param.json not found at %s; skipping update",
+                    best_params_path,
+                )
+            else:
+                update_config_from_dict(best_params)
         run_walkforward()
     else:
         raise ValueError(f"Unknown mode: {mode}")
