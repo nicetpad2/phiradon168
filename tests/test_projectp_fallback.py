@@ -3,6 +3,7 @@ import types
 import sys
 import os
 import json
+import src.config as config
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
@@ -11,6 +12,7 @@ sys.path.insert(0, ROOT_DIR)
 def test_fallback_files_created(monkeypatch, tmp_path):
     """Script should generate dummy files when outputs are missing."""
     out_dir = tmp_path / "output_default"
+    monkeypatch.setattr(config, "OUTPUT_DIR", out_dir, raising=False)
     monkeypatch.chdir(tmp_path)
     dummy_main = lambda: None
     monkeypatch.setitem(sys.modules, "src.main", types.SimpleNamespace(main=dummy_main))
@@ -40,4 +42,4 @@ def test_fallback_files_created(monkeypatch, tmp_path):
             ]
     with open(out_dir / "features_main.json", "r", encoding="utf-8") as fh:
         data = json.load(fh)
-    assert data == {}
+    assert data["status"] == "not_generated"

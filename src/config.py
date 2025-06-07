@@ -117,6 +117,11 @@ LOG_DIR = os.path.join(BASE_LOG_DIR, LOG_DATE, FOLD_ID)
 os.makedirs(LOG_DIR, exist_ok=True)
 LOG_FILENAME = os.path.join(LOG_DIR, f'gold_ai_v{__version__}_qa.log')
 
+# Unified output directory for all stages
+from pathlib import Path
+OUTPUT_DIR = Path(__file__).parent.parent / "output_default"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
 # ตั้งค่า Logger กลางเพื่อให้โมดูลอื่น ๆ ใช้งานร่วมกัน
 logger = logging.getLogger('NiceGold')
 # [Patch v5.5.6] Force COMPACT_LOG when running under pytest

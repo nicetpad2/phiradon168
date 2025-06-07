@@ -18,16 +18,25 @@ if 'pytest' in sys.modules:
     cfg = sys.modules.get('src.config')
     if cfg is not None and getattr(cfg, '__file__', None) is None and hasattr(cfg, 'ENTRY_CONFIG_PER_FOLD'):
         DEFAULT_ENTRY_CONFIG_PER_FOLD = cfg.ENTRY_CONFIG_PER_FOLD
-        logger = getattr(cfg, 'logger', logging.getLogger(__name__)); CFG_FUND_PROFILES = getattr(cfg, 'FUND_PROFILES', {}); CFG_MULTI_FUND_MODE = getattr(cfg, 'MULTI_FUND_MODE', True); CFG_DEFAULT_FUND_NAME = getattr(cfg, 'DEFAULT_FUND_NAME', 'NORMAL'); DEFAULT_FUND_PROFILES = CFG_FUND_PROFILES; DEFAULT_MULTI_FUND_MODE = CFG_MULTI_FUND_MODE; DEFAULT_FUND_NAME = CFG_DEFAULT_FUND_NAME
+        logger = getattr(cfg, 'logger', logging.getLogger(__name__)); CFG_FUND_PROFILES = getattr(cfg, 'FUND_PROFILES', {}); CFG_MULTI_FUND_MODE = getattr(cfg, 'MULTI_FUND_MODE', True); CFG_DEFAULT_FUND_NAME = getattr(cfg, 'DEFAULT_FUND_NAME', 'NORMAL'); CFG_OUTPUT_DIR = getattr(cfg, 'OUTPUT_DIR', "./output_default"); DEFAULT_FUND_PROFILES = CFG_FUND_PROFILES; DEFAULT_MULTI_FUND_MODE = CFG_MULTI_FUND_MODE; DEFAULT_FUND_NAME = CFG_DEFAULT_FUND_NAME
     else:
         DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
         logger = logging.getLogger(__name__)
+        CFG_OUTPUT_DIR = "./output_default"
 else:
     try:
-        from src.config import logger, ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD, FUND_PROFILES as CFG_FUND_PROFILES, MULTI_FUND_MODE as CFG_MULTI_FUND_MODE, DEFAULT_FUND_NAME as CFG_DEFAULT_FUND_NAME
+        from src.config import (
+            logger,
+            ENTRY_CONFIG_PER_FOLD as DEFAULT_ENTRY_CONFIG_PER_FOLD,
+            FUND_PROFILES as CFG_FUND_PROFILES,
+            MULTI_FUND_MODE as CFG_MULTI_FUND_MODE,
+            DEFAULT_FUND_NAME as CFG_DEFAULT_FUND_NAME,
+            OUTPUT_DIR as CFG_OUTPUT_DIR,
+        )
     except Exception:  # pragma: no cover - fallback for tests
         logger = logging.getLogger(__name__)
         DEFAULT_ENTRY_CONFIG_PER_FOLD = {}
+        CFG_OUTPUT_DIR = "./output_default"
 
 # --------------------------------------------
 # =============================================================================
@@ -63,12 +72,18 @@ from src.features import (
     calculate_m1_entry_signals,
     load_features_for_model,
 )
-from src.strategy import (
-    run_all_folds_with_threshold,
-    train_and_export_meta_model,
-    DriftObserver,
-    plot_equity_curve,  # [Patch v5.7.3] import plotting helper
-)
+try:
+    from src.strategy import (
+        run_all_folds_with_threshold,
+        train_and_export_meta_model,
+        DriftObserver,
+        plot_equity_curve,  # [Patch v5.7.3] import plotting helper
+    )
+except Exception:  # pragma: no cover - allow minimal test import
+    run_all_folds_with_threshold = None
+    train_and_export_meta_model = None
+    DriftObserver = None
+    plot_equity_curve = None
 from src.utils import (
     export_trade_log,
     download_model_if_missing,
@@ -97,7 +112,7 @@ except Exception:  # pragma: no cover - allow running without NVML
 
 # Ensure global configurations are accessible if run independently
 # Define defaults if globals are not found
-DEFAULT_OUTPUT_DIR = "./output_default"
+DEFAULT_OUTPUT_DIR = str(CFG_OUTPUT_DIR)
 DEFAULT_META_CLASSIFIER_PATH = "meta_classifier.pkl"
 DEFAULT_SPIKE_MODEL_PATH = "meta_classifier_spike.pkl"
 DEFAULT_CLUSTER_MODEL_PATH = "meta_classifier_cluster.pkl"

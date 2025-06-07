@@ -18,6 +18,8 @@ def test_fund_profiles_loaded_from_config(monkeypatch):
     dummy.DEFAULT_FUND_NAME = 'X'
     dummy.logger = logging.getLogger('x')
     dummy.print_gpu_utilization = lambda *_: None
+    dummy.USE_MACD_SIGNALS = True
+    dummy.USE_RSI_SIGNALS = True
     monkeypatch.setitem(sys.modules, 'src.config', dummy)
     if 'src' in sys.modules:
         monkeypatch.setattr(sys.modules['src'], 'config', dummy, raising=False)

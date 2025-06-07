@@ -17,6 +17,7 @@ from typing import Dict, List
 import main as pipeline
 from config_loader import update_config_from_dict  # [Patch] dynamic config update
 from wfv_runner import run_walkforward  # [Patch] walk-forward helper
+from src.config import OUTPUT_DIR
 
 # Default grid for hyperparameter sweep
 DEFAULT_SWEEP_PARAMS: Dict[str, List[float]] = {
@@ -87,7 +88,7 @@ def run_hyperparameter_sweep(params: Dict[str, List[float]]) -> None:
     logger.debug(f"Starting sweep with params: {params}")
     from tuning.hyperparameter_sweep import run_sweep as _sweep, DEFAULT_TRADE_LOG
     _sweep(
-        "output_default",
+        str(OUTPUT_DIR),
         params,
         seed=42,
         resume=True,
@@ -173,7 +174,7 @@ def run_mode(mode):
         # [Patch] Sweep then update config and run WFV
         run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
         # อ่านไฟล์ที่ sweep สร้าง (ชื่อตรงกับ tuning: best_param.json)
-        best_params_path = os.path.join("output_default", "best_param.json")
+        best_params_path = os.path.join(str(OUTPUT_DIR), "best_param.json")
         if os.path.exists(best_params_path):
             with open(best_params_path, "r", encoding="utf-8") as fh:
                 best_params = json.load(fh)
@@ -185,7 +186,7 @@ def run_mode(mode):
 
 def qa_check_and_create_outputs():
     """[Patch v5.8.14] Ensure fallback QA output files have valid headers."""
-    output_dir = "./output_default"
+    output_dir = str(OUTPUT_DIR)
     files = [
         os.path.join(output_dir, "features_main.json"),
         os.path.join(output_dir, "trade_log_BUY.csv"),
@@ -224,7 +225,7 @@ if __name__ == "__main__":
         run_mode(args.mode)
         
         # [Patch v5.3.4] Create empty audit files if missing after run
-        output_dir = "./output_default"
+        output_dir = str(OUTPUT_DIR)
         audit_files = [
             "features_main.json",
             "trade_log_BUY.csv",
@@ -246,7 +247,16 @@ if __name__ == "__main__":
                 with open(fpath, 'w', encoding='utf-8') as fout:
                     json.dump({"status": "not_generated", "reason": "no output from sweep"}, fout)
             else:  # .csv
-                pd.DataFrame().to_csv(fpath, index=False)
+                columns = [
+                    "timestamp",
+                    "symbol",
+                    "side",
+                    "price",
+                    "size",
+                    "order_type",
+                    "status",
+                ]
+                pd.DataFrame(columns=columns).to_csv(fpath, index=False)
             logger.warning(f"[QA Fallback] Created missing file: {fpath}")
 
 
@@ -267,8 +277,19 @@ if __name__ == "__main__":
                 with open(fpath, 'w', encoding='utf-8') as fout:
                     json.dump({"status": "not_generated", "reason": "no output from sweep"}, fout)
             else:  # .csv
-                pd.DataFrame().to_csv(fpath, index=False)
+                columns = [
+                    "timestamp",
+                    "symbol",
+                    "side",
+                    "price",
+                    "size",
+                    "order_type",
+                    "status",
+                ]
+                pd.DataFrame(columns=columns).to_csv(fpath, index=False)
             logger.warning(f"[QA Fallback] Created missing file: {fpath}")
+
+        qa_check_and_create_outputs()
 
     except KeyboardInterrupt:
         print("\n(Stopped) การทำงานถูกยกเลิกโดยผู้ใช้.")

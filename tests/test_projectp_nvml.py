@@ -73,6 +73,7 @@ def test_projectp_output_audit(monkeypatch, caplog, tmp_path):
     """QA audit should log presence or absence of output files."""
     out_dir = tmp_path / "output_default"
     out_dir.mkdir()
+    monkeypatch.setattr(config, "OUTPUT_DIR", out_dir, raising=False)
     # Create only some files
     (out_dir / "features_main.json").write_text("{}")
     (out_dir / "trade_log_NORMAL.csv").write_text("")

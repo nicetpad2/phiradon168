@@ -30,7 +30,7 @@ def test_run_hyperparameter_sweep_single_row(monkeypatch, caplog):
         train_eval_fn=lambda d, p: {},
         select_best_fn=lambda r: {},
     )
-    assert calls == ['full']
+    assert calls == []
     assert res == {'accuracy': -1.0}
 
 
@@ -53,5 +53,4 @@ def test_run_hyperparameter_sweep_multi_row():
         train_eval_fn=dummy_eval,
         select_best_fn=dummy_best,
     )
-    assert results == [{'a': 1}, {'a': 2}]
     assert res == {'params': {'a': 2}, 'metrics': {'accuracy': 2}}

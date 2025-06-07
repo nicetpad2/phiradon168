@@ -6,8 +6,8 @@ FUNCTIONS_INFO = [
     ("src/config.py", "log_library_version", 153),
     ("src/config.py", "_ensure_ta_installed", 198),
     ("src/config.py", "is_colab", 429),
-    ("src/config.py", "print_gpu_utilization", 526),
-    ("src/config.py", "show_system_status", 578),
+    ("src/config.py", "print_gpu_utilization", 532),
+    ("src/config.py", "show_system_status", 584),
 
 
     ("src/data_loader.py", "inspect_file_exists", 906),
@@ -40,13 +40,13 @@ FUNCTIONS_INFO = [
 
 # [Patch v5.5.3] Updated expected line numbers
 
-    ("src/main.py", "parse_arguments", 1890),
-    ("src/main.py", "setup_output_directory", 1895),
-    ("src/main.py", "load_features_from_file", 1900),
-    ("src/main.py", "drop_nan_rows", 1905),
-    ("src/main.py", "convert_to_float32", 1910),
-    ("src/main.py", "run_initial_backtest", 1915),
-    ("src/main.py", "save_final_data", 1920),
+    ("src/main.py", "parse_arguments", 1905),
+    ("src/main.py", "setup_output_directory", 1910),
+    ("src/main.py", "load_features_from_file", 1915),
+    ("src/main.py", "drop_nan_rows", 1920),
+    ("src/main.py", "convert_to_float32", 1925),
+    ("src/main.py", "run_initial_backtest", 1930),
+    ("src/main.py", "save_final_data", 1935),
 
 
 
@@ -54,13 +54,13 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/main.py", "parse_arguments", 1890),
-    ("src/main.py", "setup_output_directory", 1895),
-    ("src/main.py", "load_features_from_file", 1900),
-    ("src/main.py", "drop_nan_rows", 1905),
-    ("src/main.py", "convert_to_float32", 1910),
-    ("src/main.py", "run_initial_backtest", 1915),
-    ("src/main.py", "save_final_data", 1920),
+    ("src/main.py", "parse_arguments", 1905),
+    ("src/main.py", "setup_output_directory", 1910),
+    ("src/main.py", "load_features_from_file", 1915),
+    ("src/main.py", "drop_nan_rows", 1920),
+    ("src/main.py", "convert_to_float32", 1925),
+    ("src/main.py", "run_initial_backtest", 1930),
+    ("src/main.py", "save_final_data", 1935),
 
 
 
