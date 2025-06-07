@@ -1,4 +1,9 @@
 
+### 2025-06-07
+- [Patch v5.10.7] Replace deprecated fillna method
+- New/Updated unit tests added for tests/unit/test_data_loader_full.py
+- QA: pytest -q passed (779 tests)
+
 ### 2025-06-06
 - [Patch v5.10.4] Increase coverage for data loader
 - New/Updated unit tests added for tests/unit/test_data_loader_full.py

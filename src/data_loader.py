@@ -1100,9 +1100,10 @@ def check_data_quality(df, dropna=True, fillna_method=None, subset_dupes=None):
 
     if fillna_method:
         # [Patch v5.6.2] Replace deprecated fillna(method=...) usage
-        if fillna_method.lower() == "ffill":
+        method = fillna_method.lower()
+        if method in ("ffill", "pad"):
             df.ffill(inplace=True)
-        elif fillna_method.lower() == "bfill":
+        elif method in ("bfill", "backfill"):
             df.bfill(inplace=True)
         else:
             df.fillna(method=fillna_method, inplace=True)
