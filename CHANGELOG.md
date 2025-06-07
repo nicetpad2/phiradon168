@@ -1238,7 +1238,14 @@ QA: pytest -q passed (219 tests)
 - QA: pytest --cov=src.adaptive -q passed (733 tests)
 
 ### 2025-06-07
+- [Patch v5.10.7] เพิ่มชุดทดสอบ run_pipeline_stage
+- New/Updated unit tests added for tests/test_main_pipeline_stage.py
+- QA: pytest --cov=src.main -q passed (786 tests)
+=======
+
+### 2025-06-07
 - [Patch v5.10.7] Improve metric fallback in hyperparameter sweep
 - New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
 - QA: pytest -q passed (existing tests)
+
 
