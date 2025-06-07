@@ -140,14 +140,13 @@ def run_report(config: PipelineConfig) -> None:
         raise PipelineError("report stage failed") from exc
 
 
+from src.pipeline_manager import PipelineManager
+
+
 def run_all(config: PipelineConfig) -> None:
-    """Run all pipeline stages sequentially."""
+    """Run full pipeline via :class:`PipelineManager`."""
     logger.info("[Stage] all")
-    run_preprocess(config)
-    run_sweep(config)
-    run_threshold(config)
-    run_backtest(config)
-    run_report(config)
+    PipelineManager(config).run_all()
 
 
 def main(args=None) -> int:

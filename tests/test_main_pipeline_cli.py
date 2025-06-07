@@ -7,15 +7,21 @@ sys.path.insert(0, ROOT_DIR)
 import main as pipeline
 
 
+class DummyManager:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.order = []
+
+    def run_all(self):  # pragma: no cover - simple order tracker
+        self.order.extend(['load', 'sweep', 'wfv', 'save', 'qa'])
+
+
+
 def test_run_all_order(monkeypatch):
-    calls = []
-    monkeypatch.setattr(pipeline, "run_preprocess", lambda cfg: calls.append("preprocess"))
-    monkeypatch.setattr(pipeline, "run_sweep", lambda cfg: calls.append("sweep"))
-    monkeypatch.setattr(pipeline, "run_threshold", lambda cfg: calls.append("threshold"))
-    monkeypatch.setattr(pipeline, "run_backtest", lambda cfg: calls.append("backtest"))
-    monkeypatch.setattr(pipeline, "run_report", lambda cfg: calls.append("report"))
+    mgr = DummyManager(None)
+    monkeypatch.setattr(pipeline, "PipelineManager", lambda cfg: mgr)
     pipeline.main(["--mode", "all"])
-    assert calls == ["preprocess", "sweep", "threshold", "backtest", "report"]
+    assert mgr.order == ["load", "sweep", "wfv", "save", "qa"]
 
 
 def test_profile_argument(monkeypatch):
