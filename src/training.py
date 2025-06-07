@@ -98,15 +98,31 @@ def real_train_func(
     # [Patch v5.4.5] Use stratified split when possible to avoid ROC AUC warnings
     unique, counts = np.unique(y, return_counts=True)
     stratify_arg = y if (len(unique) > 1 and counts.min() >= 2) else None
-    X_train, X_test, y_train, y_test = train_test_split(
-        df_X,
-        y,
-        test_size=0.25,
-        random_state=seed,
-        stratify=stratify_arg,
-    )
 
-    if CatBoostClassifier:
+    # [Patch v5.8.13] Ultra-Robust train/test split
+    if len(df_X) == 1:
+        logger.warning(
+            "[Patch v5.8.13] Only 1 row: training on full data and using fallback metrics"
+        )
+        X_train, X_test, y_train, y_test = df_X, df_X, y, y
+        fallback_metric = True
+    else:
+        train_size = max(1, int(len(df_X) * 0.75))
+        test_size = len(df_X) - train_size
+        if test_size == 0:
+            test_size = 1
+            train_size = len(df_X) - 1
+        X_train, X_test, y_train, y_test = train_test_split(
+            df_X,
+            y,
+            train_size=train_size,
+            test_size=test_size,
+            random_state=seed,
+            stratify=stratify_arg,
+        )
+        fallback_metric = False
+
+    if CatBoostClassifier and not fallback_metric:
         cat_params = {
             "iterations": iterations,
             "learning_rate": learning_rate,
@@ -127,20 +143,32 @@ def real_train_func(
             :, 1
         ]  # pragma: no cover - optional catboost path
         y_pred = (y_prob > 0.5).astype(int)  # pragma: no cover - optional catboost path
-    else:  # pragma: no cover - logistic fallback
-        model = LogisticRegression(max_iter=1000, random_state=seed)
-        model.fit(X_train, y_train)  # pragma: no cover - sklearn deterministic
-        y_prob = model.predict_proba(X_test)[
-            :, 1
-        ]  # pragma: no cover - sklearn deterministic
-        y_pred = model.predict(X_test)  # pragma: no cover - sklearn deterministic
+    else:  # pragma: no cover - logistic or dummy fallback
+        if fallback_metric:
+            from sklearn.dummy import DummyClassifier
 
-    acc = accuracy_score(y_test, y_pred)
-    # [Patch v5.4.5] Avoid UndefinedMetricWarning when only one class present
-    if len(np.unique(y_test)) > 1:
-        auc = roc_auc_score(y_test, y_prob)
-    else:
+            model = DummyClassifier(strategy="most_frequent")
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
+            y_prob = np.full(len(y_test), 0.0)
+        else:
+            model = LogisticRegression(max_iter=1000, random_state=seed)
+            model.fit(X_train, y_train)  # pragma: no cover - sklearn deterministic
+            y_prob = model.predict_proba(X_test)[
+                :, 1
+            ]  # pragma: no cover - sklearn deterministic
+            y_pred = model.predict(X_test)  # pragma: no cover - sklearn deterministic
+
+    if fallback_metric:
+        acc = -1.0
         auc = float("nan")
+    else:
+        acc = accuracy_score(y_test, y_pred)
+        # [Patch v5.4.5] Avoid UndefinedMetricWarning when only one class present
+        if len(np.unique(y_test)) > 1:
+            auc = roc_auc_score(y_test, y_prob)
+        else:
+            auc = float("nan")
 
     param_suffix = f"_l2{l2_leaf_reg}" if l2_leaf_reg is not None else ""
     model_filename = f"model_lr{learning_rate}_depth{depth}{param_suffix}"

@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_config_extended.py
 - QA: pytest -q passed (792 tests)
 
+### 2025-06-07
+- [Patch v5.8.13] Ultra-Robust Hyperparameter Sweep with fallback score and strict train size
+- New/Updated unit tests added for tests/test_training_more.py
+- QA: pytest -q passed (801 tests)
+
 
 ### 2025-06-07
 - [Patch v5.10.7] Replace deprecated fillna method

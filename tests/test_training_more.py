@@ -224,3 +224,19 @@ def test_train_lightgbm_mtf_low_auc(tmp_path, monkeypatch, caplog):
         res = training.train_lightgbm_mtf(str(tmp_path/'m1.csv'), str(tmp_path/'m15.csv'), str(tmp_path))
     assert res is None
     assert any('AUC below threshold' in m for m in caplog.messages)
+
+
+def test_real_train_func_single_row(tmp_path, monkeypatch, caplog):
+    trade_path = tmp_path / 'trade.csv'
+    m1_path = tmp_path / 'm1.csv'
+    pd.DataFrame({'profit': [1]}).to_csv(trade_path, index=False)
+    pd.DataFrame({
+        'Open': [1],
+        'High': [2],
+        'Low': [0],
+        'Close': [1.5]
+    }).to_csv(m1_path, index=False)
+    monkeypatch.setattr(training, 'CatBoostClassifier', None, raising=False)
+    res = training.real_train_func(output_dir=str(tmp_path), trade_log_path=str(trade_path), m1_path=str(m1_path))
+    assert res['metrics']['accuracy'] == -1.0
+    assert np.isnan(res['metrics']['auc'])
