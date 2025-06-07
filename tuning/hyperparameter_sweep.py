@@ -175,6 +175,16 @@ def run_sweep(
     logger.info(f"Sweep summary saved to {summary_path}")
 
     metric_col = 'metric' if 'metric' in df.columns else None
+    if metric_col is None or df[metric_col].dropna().empty:
+        numeric_cols = df.select_dtypes(include='number').columns.tolist()
+        numeric_cols = [
+            c for c in numeric_cols if c not in {'run_id', 'seed', *param_names}
+        ]
+        if numeric_cols:
+            metric_col = numeric_cols[0]
+            df['metric'] = df[metric_col]
+            df.to_csv(summary_path, index=False)
+            logger.info(f"ใช้คอลัมน์ {metric_col} เป็น metric")
     if metric_col and not df[metric_col].dropna().empty:
         best_row = df.sort_values(metric_col, ascending=False).iloc[0]
         best_param_path = os.path.join(output_dir, 'best_param.json')
