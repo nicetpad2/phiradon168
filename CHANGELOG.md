@@ -1,7 +1,9 @@
 ### 2025-06-07
+
 - [Patch v5.8.14] Improve single-row hyperparameter sweep fallback
 - New/Updated unit tests added for tests/test_training_hyper_sweep.py
 - QA: pytest -q passed (842 tests)
+
 
 ### 2025-06-07
 - [Patch v5.8.13] เพิ่ม unit tests สำหรับ main.py ให้ครอบคลุมมากขึ้น
@@ -1290,3 +1292,10 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.1.0] เพิ่มชุดทดสอบ main.py ครอบคลุมมากขึ้น
 - New/Updated unit tests added for tests/test_main_cli_new.py
 - QA: pytest -q passed (829 tests)
+
+
+### 2025-06-07
+- [Patch v6.1.1] ปรับเส้นทาง output sweep และไฟล์ best_param
+- New/Updated unit tests added for none
+- QA: pytest -q passed (existing tests)
+
