@@ -207,6 +207,23 @@ if __name__ == "__main__":
                 logging.getLogger().error(msg)
                 os.makedirs(output_dir, exist_ok=True)
                 open(fpath, "w", encoding="utf-8").close()
+
+        # [Patch v5.8.13] Ensure fallback QA output files always exist
+        fallback_files = [
+            "./output_default/features_main.json",
+            "./output_default/trade_log_BUY.csv",
+            "./output_default/trade_log_SELL.csv",
+            "./output_default/trade_log_NORMAL.csv",
+        ]
+
+        for f in fallback_files:
+            if not os.path.exists(f) or os.path.getsize(f) == 0:
+                if f.endswith('.json'):
+                    with open(f, 'w') as fout:
+                        json.dump({"status": "not_generated", "reason": "no output from sweep"}, fout)
+                elif f.endswith('.csv'):
+                    pd.DataFrame().to_csv(f, index=False)
+                logger.warning(f"[QA Fallback] Created missing file: {f}")
     except KeyboardInterrupt:
         print("\n(Stopped) การทำงานถูกยกเลิกโดยผู้ใช้.")
     except Exception as e:
