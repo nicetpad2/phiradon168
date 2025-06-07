@@ -1,8 +1,18 @@
+### 2025-06-07
+- [Patch v5.10.8] Add coverage for config module
+- New/Updated unit tests added for tests/test_config_extended.py
+- QA: pytest -q passed (792 tests)
+
 
 ### 2025-06-07
 - [Patch v5.10.7] Replace deprecated fillna method
 - New/Updated unit tests added for tests/unit/test_data_loader_full.py
 - QA: pytest -q passed (779 tests)
+
+### 2025-06-07
+- [Patch v5.10.8] Improve placeholder trade log generation
+- New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
+- QA: pytest -q passed (788 tests)
 
 ### 2025-06-06
 - [Patch v5.10.4] Increase coverage for data loader
@@ -1238,12 +1248,20 @@ QA: pytest -q passed (219 tests)
 - QA: pytest --cov=src.adaptive -q passed (733 tests)
 
 ### 2025-06-07
+- [Patch v5.10.7] เพิ่มชุดทดสอบ run_pipeline_stage
+- New/Updated unit tests added for tests/test_main_pipeline_stage.py
+- QA: pytest --cov=src.main -q passed (786 tests)
+=======
+
+### 2025-06-07
 - [Patch v5.10.7] Improve metric fallback in hyperparameter sweep
 - New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
 - QA: pytest -q passed (existing tests)
+
 
 ### 2025-06-07
 - [Patch v5.10.8] Add test for invalid fill method coverage
 - New/Updated unit tests added for tests/unit/test_data_loader_full.py
 - QA: pytest -q passed (788 tests)
+
 

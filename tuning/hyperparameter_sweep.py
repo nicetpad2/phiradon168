@@ -26,7 +26,9 @@ from src.config import logger, DefaultConfig
 
 def _create_placeholder_trade_log(path: str) -> None:
     """Create a minimal trade log so the sweep can run."""
-    df = pd.DataFrame({"profit": [1.0]})
+    # [Patch v5.10.8] Ensure sample size > 1 to avoid train_test_split errors
+    profits = [1.0, -1.0, 0.8, -0.8, 0.6, -0.6, 0.4, -0.4]
+    df = pd.DataFrame({"profit": profits})
     os.makedirs(os.path.dirname(path), exist_ok=True)
     compression = "gzip" if path.endswith(".gz") else None
     df.to_csv(path, index=False, compression=compression)
