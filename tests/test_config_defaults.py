@@ -16,3 +16,7 @@ def test_default_parameters():
     assert cfg.OMS_DEFAULT is True
     assert cfg.PAPER_MODE is False
     assert cfg.POST_TRADE_COOLDOWN_BARS == 2
+    # [Patch v5.9.3] New hyperparameter defaults
+    assert cfg.LEARNING_RATE == pytest.approx(0.01, rel=1e-6)
+    assert cfg.DEPTH == 6
+    assert cfg.L2_LEAF_REG is None
