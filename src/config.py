@@ -21,6 +21,11 @@ OMS_DEFAULT = True
 PAPER_MODE = False
 POST_TRADE_COOLDOWN_BARS = 2
 
+# [Patch v5.9.3] Default hyperparameters used in training
+LEARNING_RATE = 0.01
+DEPTH = 6
+L2_LEAF_REG = None
+
 # ==============================================================================
 # ป้องกันกรณีที่ pytest import แค่ SimpleNamespace เดิม (fallback) โดยตรวจสอบสภาพแวดล้อม
 # ==============================================================================
@@ -669,6 +674,10 @@ class DefaultConfig:
     DATA_FILE_PATH_M1: str = DEFAULT_CSV_PATH_M1
     DATA_FILE_PATH_M15: str = DEFAULT_CSV_PATH_M15
     DEFAULT_RISK_PER_TRADE: float = FUND_PROFILES.get(DEFAULT_FUND_NAME, {}).get("risk", 0.01)
+    # [Patch v5.9.3] Default hyperparameters for CatBoost training
+    LEARNING_RATE: float = 0.01
+    DEPTH: int = 6
+    L2_LEAF_REG: float | None = None
 logging.info(f"Multi-Fund Mode: {MULTI_FUND_MODE}")
 if MULTI_FUND_MODE:
     logging.info(f"Fund Profiles: {list(FUND_PROFILES.keys())}")

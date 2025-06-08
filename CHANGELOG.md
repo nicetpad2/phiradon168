@@ -1,3 +1,7 @@
+### 2025-06-08
+- [Patch v5.9.3] Add default CatBoost hyperparameters to src.config
+- New/Updated unit tests added for tests/test_config_defaults.py
+- QA: pytest -q passed
 
 ### 2025-06-07
 - [Patch v5.9.2] Support both best_param.json and best_params.json in CLI
