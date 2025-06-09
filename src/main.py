@@ -761,9 +761,24 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             data_file_target_gz = os.path.join(OUTPUT_DIR, "final_data_m1_v32_walkforward.csv.gz")
             if os.path.exists(log_file_generated_gz) and os.path.exists(data_file_generated_gz):
                 if os.path.exists(trade_log_target_gz):
-                    os.remove(trade_log_target_gz)
+                    # [Patch] Ensure safe removal only within DATA_DIR
+                    import logging
+                    from src import config as cfg
+                    logger = logging.getLogger(__name__)
+                    if str(trade_log_target_gz).startswith(str(cfg.DATA_DIR)):
+                        os.remove(trade_log_target_gz)
+                    else:
+                        logger.warning(
+                            f"Ignoring removal of {trade_log_target_gz}: outside DATA_DIR"
+                        )
                 if os.path.exists(data_file_target_gz):
-                    os.remove(data_file_target_gz)
+                    # [Patch] Same safety check for data file deletion
+                    if str(data_file_target_gz).startswith(str(cfg.DATA_DIR)):
+                        os.remove(data_file_target_gz)
+                    else:
+                        logger.warning(
+                            f"Ignoring removal of {data_file_target_gz}: outside DATA_DIR"
+                        )
                 shutil.move(log_file_generated_gz, trade_log_target_gz)
                 shutil.move(data_file_generated_gz, data_file_target_gz)
             else:

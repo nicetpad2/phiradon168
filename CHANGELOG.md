@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_config_defaults.py
 - QA: pytest -q passed
 
+### 2025-06-21
+- [Patch v6.3.2] Add safety checks before removing trade and data files in main
+- New/Updated unit tests added for tests/test_main_safe_remove.py
+- QA: pytest -q passed
+
 ### 2025-06-20
 - [Patch v6.3.1] Fix reload issue and simplify GPU fallback
 - New/Updated unit tests added for tests/test_config_mkl_error.py
