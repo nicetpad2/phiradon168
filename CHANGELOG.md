@@ -1,3 +1,8 @@
+### 2025-06-15
+- [Patch v6.2.3] Handle getcwd and MKL errors
+- New/Updated unit tests added for tests/test_projectp_getcwd.py, tests/test_config_mkl_error.py
+- QA: pytest -q passed (2 tests)
+
 ### 2025-06-14
 - [Patch v6.2.2] เพิ่ม monitor_auc_drop เพื่อตรวจจับ AUC ต่ำกว่าค่ากำหนด
 - New/Updated unit tests added for tests/test_wfv_monitor.py

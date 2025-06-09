@@ -548,10 +548,16 @@ try:
         logging.debug(f"CUDA check error: {e_cuda}")
         USE_GPU_ACCELERATION = False
 except Exception as e_torch_import:
-    # [Patch v5.10.5] ป้องกันโค้ดล้มเมื่อไม่สามารถนำเข้า torch ได้
-    logging.warning(
-        "   (Warning) ไม่พบ 'torch' หรือไม่สามารถโหลดได้ -- ปิด GPU Acceleration."
-    )
+    # [Patch v6.2.3] Handle Intel MKL errors during PyTorch import
+    msg = str(e_torch_import)
+    if "mkl" in msg.lower():
+        logging.warning(
+            "   (Warning) Intel MKL error detected -- ปิด GPU Acceleration."
+        )
+    else:
+        logging.warning(
+            "   (Warning) ไม่พบ 'torch' หรือไม่สามารถโหลดได้ -- ปิด GPU Acceleration."
+        )
     logging.debug(f"PyTorch import error: {e_torch_import}")
     USE_GPU_ACCELERATION = False
 logging.info(f"   สถานะการเร่งความเร็วด้วย GPU: {USE_GPU_ACCELERATION}")
