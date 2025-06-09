@@ -2,6 +2,11 @@
 - [Patch v6.2.4] Add CPU-only fallback for missing CUDA libraries and Colab test script
 - QA: pytest -q passed
 
+### 2025-06-17
+- [Patch v6.2.5] Add CPU-only fallback for missing CUDA libraries in src/adaptive.py
+- New/Updated unit tests added for none (user skipped)
+- QA: Skipped tests per user request
+
 ### 2025-06-15
 - [Patch v6.2.3] Handle getcwd and MKL errors
 - New/Updated unit tests added for tests/test_projectp_getcwd.py, tests/test_config_mkl_error.py

@@ -4,15 +4,14 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 import warnings
+# [Patch v6.2.5] CPU-only fallback for missing CUDA libraries
 try:
     import torch
-except OSError as e:  # pragma: no cover - optional GPU
-    warnings.warn(
-        f"CUDA libraries not found ({e}), defaulting to CPU-only mode"
-    )
+except OSError as e:
+    warnings.warn(f"CUDA libraries not found ({e}), defaulting to CPU-only mode")
 
     class _DummyCuda:
-        def is_available(self) -> bool:
+        def is_available(self):
             return False
 
     class _DummyTorch:
