@@ -1,6 +1,6 @@
-### 2025-06-19
-- [Patch v6.3.1] Ensure script-only cwd fix and GPU helper comment update
-- New/Updated unit tests added for none
+- [Patch v6.3.1] Improve run_mode('all') and working directory fallback
+- New/Updated unit tests added for tests/test_projectp_getcwd.py, tests/test_projectp_cli.py
+
 - QA: pytest -q passed
 
 ### 2025-06-18
