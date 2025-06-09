@@ -1,4 +1,7 @@
 ### 2025-06-09
+- [Patch v6.1.3] Implement sample walk-forward execution in wfv_runner
+- New/Updated unit tests added for tests/test_wfv_runner.py
+- QA: pytest -q passed
 - [Patch v5.9.5] เรียก qa_check_and_create_outputs ก่อนเริ่ม run_mode เพื่อลด error log ที่ไม่จำเป็น
 - New/Updated unit tests added for none (script patch)
 - QA: pytest -q passed
