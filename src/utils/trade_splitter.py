@@ -1,8 +1,8 @@
-try:
-    from src.config import logger
-except Exception:
-    import logging
-    logger = logging.getLogger(__name__)
+import logging
+
+# Use a local logger to prevent circular import with ``src.config`` during test
+# collection.
+logger = logging.getLogger(__name__)
 
 import os
 import pandas as pd

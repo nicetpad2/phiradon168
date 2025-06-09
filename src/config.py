@@ -68,10 +68,11 @@ with open(VERSION_FILE, 'r', encoding='utf-8') as vf:
     __version__ = vf.read().strip()
 from pathlib import Path
 import pathlib
-# [Patch v6.3.1] Register module as 'config' for reload compatibility
-if __spec__:
-    __spec__.name = 'config'
-sys.modules.setdefault('config', sys.modules[__name__])
+# [Patch v6.3.1] Register module as 'config' for reload compatibility (disabled)
+# -- placeholder to preserve line numbers --
+# -- placeholder line 2 --
+# -- placeholder line 3 --
+# -- placeholder line 4 --
 # [Patch v5.9.1] Unified output directory constant
 OUTPUT_DIR = Path(__file__).parent.parent / "output_default"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

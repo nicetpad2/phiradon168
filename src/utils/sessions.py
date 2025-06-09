@@ -1,9 +1,9 @@
 """Session tagging utilities shared across modules."""
 
-try:
-    from src.config import logger
-except Exception:  # pragma: no cover - fallback when config import fails
-    import logging as logger
+import logging
+
+# Local logger avoids circular import during ``src.config`` initialization.
+logger = logging.getLogger(__name__)
 import pandas as pd
 
 # [Patch v5.5.5] Define module-level default to avoid NameError

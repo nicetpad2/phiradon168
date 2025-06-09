@@ -1,38 +1,46 @@
-"""Top-level package for project modules with lazy imports."""
+
+"""Top-level package for project modules with lazy imports.
+
+This module exposes frequently used submodules while avoiding heavy
+imports during package initialization. Submodules are imported on first
+access via ``__getattr__`` to keep test environments lightweight.
+"""
 
 from __future__ import annotations
 
 import importlib
-from types import ModuleType
+import sys
 
-# Modules to expose when importing `src` directly. They will be imported on first
-# attribute access to avoid heavy dependencies at import time.
-_EXPOSED_MODULES = {
-    'adaptive',
-    'money_management',
-    'evaluation',
-    'wfv',
-    'param_stability',
-    'strategy',
-    'features',
-    'data_loader',
-    'training',
-    'config',
-    'qa_tools',
-    'log_analysis',
-    'dashboard',
-    'realtime_dashboard',
-    'utils',
-}
+# List of submodules that can be lazily loaded via ``from src import <module>``.
+_SUBMODULES = [
+    "adaptive",
+    "money_management",
+    "evaluation",
+    "wfv",
+    "param_stability",
+    "config",
+    "data_loader",
+    "feature_analysis",
+    "features",
+    "main",
+    "order_manager",
+    "realtime_dashboard",
+    "signal_classifier",
+    "strategy",
+    "training",
+    "wfv_monitor",
+    "log_analysis",
+    "qa_tools",
+]
 
-__all__ = sorted(_EXPOSED_MODULES)
+__all__ = list(_SUBMODULES)
 
 
-def __getattr__(name: str) -> ModuleType:
-    """Dynamically import submodules listed in ``_EXPOSED_MODULES``."""
-    if name in _EXPOSED_MODULES:
-        module = importlib.import_module(f'.{name}', __name__)
-        globals()[name] = module
+def __getattr__(name: str):
+    """Dynamically import submodules on first access."""
+    if name in _SUBMODULES:
+        module = importlib.import_module(f"{__name__}.{name}")
+        setattr(sys.modules[__name__], name, module)
         return module
-    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 

@@ -1,10 +1,9 @@
 """Helper utilities for exporting trade logs with QA markers."""
 
-try:
-    from src.config import logger
-except Exception:  # pragma: no cover - fallback only during missing config
-    import logging
-    logger = logging.getLogger(__name__)
+import logging
+
+# Logger is defined locally to avoid circular import with ``src.config``.
+logger = logging.getLogger(__name__)
 
 import os
 from dataclasses import dataclass, asdict
