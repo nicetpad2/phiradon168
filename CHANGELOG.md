@@ -1,3 +1,8 @@
+### 2025-06-19
+- [Patch v6.3.1] Improve run_mode('all') and working directory fallback
+- New/Updated unit tests added for tests/test_projectp_getcwd.py, tests/test_projectp_cli.py
+- QA: pytest -q passed
+
 ### 2025-06-18
 
 - [Patch v6.2.6] Update test_data_cache to use tmp_path and safe removal logic
