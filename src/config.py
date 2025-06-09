@@ -68,11 +68,27 @@ with open(VERSION_FILE, 'r', encoding='utf-8') as vf:
     __version__ = vf.read().strip()
 from pathlib import Path
 import pathlib
-# [Patch v6.3.1] Register module as 'config' for reload compatibility (disabled)
-# -- placeholder to preserve line numbers --
-# -- placeholder line 2 --
-# -- placeholder line 3 --
-# -- placeholder line 4 --
+# [Patch v6.3.1] Register module as 'config' for reload compatibility
+if 'src.config' not in sys.modules:
+    sys.modules['src.config'] = sys.modules[__name__]
+
+class _ReloadSpecProxy:
+    """Proxy __spec__ to ensure `src.config` is registered before reload."""
+
+    def __init__(self, real_spec, module):
+        self._spec = real_spec
+        self._module = module
+
+    @property
+    def name(self):
+        if self._spec.name not in sys.modules:
+            sys.modules[self._spec.name] = self._module
+        return self._spec.name
+
+    def __getattr__(self, attr):
+        return getattr(self._spec, attr)
+
+__spec__ = _ReloadSpecProxy(__spec__, sys.modules.get(__name__))
 # [Patch v5.9.1] Unified output directory constant
 OUTPUT_DIR = Path(__file__).parent.parent / "output_default"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
