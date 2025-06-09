@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
+from sklearn.metrics import roc_auc_score
 
 logger = logging.getLogger(__name__)
 
@@ -166,4 +167,35 @@ def monitor_drift_summary(
     if not res.empty and res["drift"].any():
         feats = sorted(res.loc[res["drift"], "feature"].unique())
         logger.warning("Data drift summary detected for features: %s", feats)
+    return res
+
+
+# [Patch v6.2.2] Monitor AUC drop by period
+def monitor_auc_drop(
+    df: pd.DataFrame,
+    threshold: float,
+    period: str = "D",
+    proba_col: str = "proba",
+    target_col: str = "target",
+) -> pd.DataFrame:
+    """Compute AUC per period and warn when below threshold."""
+
+    if not isinstance(df.index, pd.DatetimeIndex):
+        raise ValueError("df must have DatetimeIndex")
+    if proba_col not in df.columns or target_col not in df.columns:
+        raise ValueError("missing required columns")
+
+    rows = []
+    for p, g in df.groupby(df.index.to_period(period)):
+        if g[target_col].nunique() < 2:
+            continue
+        auc = roc_auc_score(g[target_col], g[proba_col])
+        rows.append(
+            {"period": str(p), "auc": float(auc), "below_threshold": bool(auc < threshold)}
+        )
+
+    res = pd.DataFrame(rows)
+    if not res.empty and res["below_threshold"].any():
+        periods = res.loc[res["below_threshold"], "period"].tolist()
+        logger.warning("AUC drop detected: %s", periods)
     return res

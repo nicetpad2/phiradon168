@@ -1,3 +1,8 @@
+### 2025-06-14
+- [Patch v6.2.2] เพิ่ม monitor_auc_drop เพื่อตรวจจับ AUC ต่ำกว่าค่ากำหนด
+- New/Updated unit tests added for tests/test_wfv_monitor.py
+- QA: pytest -q passed
+
 ### 2025-06-09
 - [Patch v6.2.0] เพิ่มรายงาน drift รายวัน/สัปดาห์ และกราฟ trade log
 - New/Updated unit tests added for tests/test_evaluation_drift_summary.py, tests/test_log_analysis_report.py, tests/test_projectp_sweep_defaults.py

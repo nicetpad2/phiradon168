@@ -115,3 +115,33 @@ def test_monitor_drift_summary_warning(caplog):
         res = wfv_monitor.monitor_drift_summary(train_df, test_df, threshold=0.0)
     assert not res.empty
     assert res['drift'].any()
+
+
+def test_monitor_auc_drop_warning(caplog):
+    idx = pd.to_datetime(
+        [
+            '2024-01-01 00:00', '2024-01-01 12:00',
+            '2024-01-02 00:00', '2024-01-02 12:00',
+            '2024-01-03 00:00', '2024-01-03 12:00',
+            '2024-01-04 00:00', '2024-01-04 12:00',
+        ]
+    )
+    df = pd.DataFrame(
+        {
+            'proba': [0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.4, 0.6],
+            'target': [1, 0, 1, 0, 0, 0, 1, 0],
+        },
+        index=idx,
+    )
+    with caplog.at_level('WARNING', logger='src.wfv_monitor'):
+        res = wfv_monitor.monitor_auc_drop(df, threshold=0.8)
+    assert res['below_threshold'].any()
+
+
+def test_monitor_auc_drop_errors():
+    df = pd.DataFrame({'proba': [0.5], 'target': [1]}, index=[0])
+    with pytest.raises(ValueError):
+        wfv_monitor.monitor_auc_drop(df, threshold=0.5)
+    df.index = pd.to_datetime(['2024-01-01'])
+    with pytest.raises(ValueError):
+        wfv_monitor.monitor_auc_drop(df.drop(columns=['proba']), threshold=0.5)
