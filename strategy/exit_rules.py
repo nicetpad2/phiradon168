@@ -37,5 +37,5 @@ def precompute_tp_array(df: pd.DataFrame) -> np.ndarray:
     """คำนวณ Take-Profit ล่วงหน้าตาม ATR"""
     if "ATR_14" not in df.columns:
         df = atr(df, 14)
-    tp = pd.to_numeric(df.get("ATR_14"), errors="coerce") * 2.5
+    tp = pd.to_numeric(df.get("ATR_14"), errors="coerce") * 3.0
     return tp.fillna(0.0).to_numpy(dtype=np.float64)
