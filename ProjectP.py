@@ -16,14 +16,15 @@ import argparse
 import subprocess
 import json
 
-# [Patch v6.3.0] Ensure working directory is valid only when executed directly
-if __name__ == "__main__":
-    try:
-        os.getcwd()
-    except Exception:
-        project_root = Path(__file__).resolve().parent
-        os.chdir(project_root)
-        print(f"[Info] Changed working directory to project root: {project_root}")
+
+# [Patch v6.3.1] Ensure working directory fallback on import
+try:
+    os.getcwd()
+except Exception:
+    project_root = Path(__file__).resolve().parent
+    os.chdir(project_root)
+    print(f"[Info] Changed working directory to project root: {project_root}")
+
 import pandas as pd
 from typing import Dict, List
 import main as pipeline
@@ -205,8 +206,11 @@ def run_mode(mode):
     elif mode == "all":
         # [Patch] Sweep then update config and run WFV
         run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
-        # อ่านไฟล์ที่ sweep สร้าง (รองรับชื่อ best_param.json และ best_params.json)
-        candidates = [OUTPUT_DIR / "best_param.json", OUTPUT_DIR / "best_params.json"]
+        # [Patch v6.3.1] Use os.path.join to support test monkeypatch for best_params
+        candidates = [
+            os.path.join(str(OUTPUT_DIR), "best_param.json"),
+            os.path.join(str(OUTPUT_DIR), "best_params.json"),
+        ]
         for cand in candidates:
             if os.path.exists(cand):
                 with open(cand, "r", encoding="utf-8") as fh:
