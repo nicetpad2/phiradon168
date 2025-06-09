@@ -762,9 +762,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             if os.path.exists(log_file_generated_gz) and os.path.exists(data_file_generated_gz):
                 if os.path.exists(trade_log_target_gz):
                     # [Patch] Ensure safe removal only within DATA_DIR
-                    import logging
                     from src import config as cfg
-                    logger = logging.getLogger(__name__)
                     if str(trade_log_target_gz).startswith(str(cfg.DATA_DIR)):
                         os.remove(trade_log_target_gz)
                     else:
