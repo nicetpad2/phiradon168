@@ -1,3 +1,8 @@
+### 2025-06-09
+- [Patch v5.9.4] Increase TP multiplier to 3x ATR
+- New/Updated unit tests added for tests/unit/test_strategy_additional_coverage.py
+- QA: pytest -q passed (856 tests)
+
 ### 2025-06-08
 - [Patch v5.9.3] Add default CatBoost hyperparameters to src.config
 - New/Updated unit tests added for tests/test_config_defaults.py
