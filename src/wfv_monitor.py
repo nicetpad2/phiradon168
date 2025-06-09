@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import logging
 from typing import Callable, Dict, Iterable
+
+from src.evaluation import calculate_drift_by_period
 from pathlib import Path
 
 import pandas as pd
@@ -132,3 +134,19 @@ def walk_forward_loop(
         fold += 1
 
     return pd.DataFrame(rows)
+
+
+# [Patch v6.1.8] Drift monitoring helper
+def monitor_drift(
+    train_df: pd.DataFrame,
+    test_df: pd.DataFrame,
+    period: str = "D",
+    threshold: float | None = None,
+) -> pd.DataFrame:
+    """Calculate drift by period and log warnings if exceeded."""
+
+    res = calculate_drift_by_period(train_df, test_df, period=period, threshold=threshold)
+    if not res.empty and res["drift"].any():
+        features = sorted(res.loc[res["drift"], "feature"].unique())
+        logger.warning("Data drift detected for features: %s", features)
+    return res

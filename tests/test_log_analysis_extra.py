@@ -15,6 +15,7 @@ from src.log_analysis import (
     calculate_alert_summary,
     compile_log_summary,
     summarize_block_reasons,
+    plot_expectancy_by_period,
 )
 
 
@@ -71,3 +72,9 @@ def test_summarize_block_reasons():
 def test_calculate_expectancy_all_nan():
     df = pd.DataFrame({"PnL": [float('nan'), None]})
     assert calculate_expectancy(df) == 0.0
+
+
+def test_plot_expectancy_by_period():
+    exp = pd.Series([0.1, -0.2], index=['a', 'b'])
+    fig = plot_expectancy_by_period(exp)
+    assert hasattr(fig, 'savefig')

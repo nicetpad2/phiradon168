@@ -265,6 +265,18 @@ def plot_equity_curve(curve: pd.Series):
     return fig
 
 
+# [Patch v6.1.8] Plot expectancy by period
+def plot_expectancy_by_period(exp: pd.Series):
+    """Return a matplotlib Figure of expectancy by period."""
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    exp.plot(kind="bar", ax=ax)
+    ax.set_xlabel("period")
+    ax.set_ylabel("expectancy")
+    return fig
+
+
 # [Patch v6.1.7] Full trade log summarization helper
 def summarize_trade_log(log_path: str) -> dict[str, object]:
     """Parse log and return summary with equity curve."""

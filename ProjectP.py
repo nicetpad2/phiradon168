@@ -27,6 +27,8 @@ DEFAULT_SWEEP_PARAMS: Dict[str, List[float]] = {
     "l2_leaf_reg": [1, 3, 5],
     "subsample": [0.8, 1.0],
     "colsample_bylevel": [0.8, 1.0],
+    "bagging_temperature": [0.0, 1.0],
+    "random_strength": [0.0, 1.0],
 }
 
 # [Patch] Initialize pynvml for GPU status detection
@@ -43,7 +45,6 @@ except Exception:  # pragma: no cover - NVML failure fallback
 
 from src.main import main
 
-
 def configure_logging():
     """Set up consistent logging configuration."""
     logging.basicConfig(
@@ -51,7 +52,6 @@ def configure_logging():
         format="%(asctime)s [%(levelname)s][%(filename)s:%(lineno)d] - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
-
 
 def custom_helper_function():
     """Stubbed helper for tests."""
