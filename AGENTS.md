@@ -19,6 +19,7 @@
   - [Colab_Navigator](#colab_navigator)
   - [API_Sentinel](#api_sentinel)
   - [Coverage_Placeholder](#coverage_placeholder)
+  - [Reload_Helper](#reload_helper)
 - [📊 Analytics & Drift](#-analytics--drift)
   - [Pattern_Learning_AI](#pattern_learning_ai)
   - [Session_Research_Unit](#session_research_unit)
@@ -192,6 +193,13 @@
   - Calculate required lines to reach target coverage
 - **Modules:** `src/placeholder.py`
 - **Status:** Example module for test coverage
+
+### [Reload_Helper](src/utils/module_utils.py)
+- **Main Role:** Module Reloading Utility
+- **Key Responsibilities:**
+  - Provide `safe_reload` for robust re-importing when tests modify `sys.modules`
+- **Modules:** `src/utils/module_utils.py`
+- **Status:** New helper module
 
 ---
 
