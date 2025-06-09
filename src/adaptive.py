@@ -3,6 +3,23 @@ import logging
 from pathlib import Path
 from typing import Optional, Tuple
 
+import warnings
+try:
+    import torch
+except OSError as e:  # pragma: no cover - optional GPU
+    warnings.warn(
+        f"CUDA libraries not found ({e}), defaulting to CPU-only mode"
+    )
+
+    class _DummyCuda:
+        def is_available(self) -> bool:
+            return False
+
+    class _DummyTorch:
+        cuda = _DummyCuda()
+
+    torch = _DummyTorch()
+
 import pandas as pd
 from src import features
 
