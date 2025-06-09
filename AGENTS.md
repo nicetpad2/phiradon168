@@ -104,6 +104,7 @@
   - Detect overfit on walk-forward splits via `walk_forward_yearly_validation`
     and `detect_overfit_wfv`
   - Record daily/weekly AUC metrics using `src.monitor`
+  - Provide `calculate_drift_summary` for daily/weekly drift reporting
 
   - Evaluate parameter stability across folds
 - **Modules:** `src/evaluation.py`, `src/monitor.py`, `src/param_stability.py`
