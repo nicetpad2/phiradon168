@@ -150,3 +150,20 @@ def monitor_drift(
         features = sorted(res.loc[res["drift"], "feature"].unique())
         logger.warning("Data drift detected for features: %s", features)
     return res
+
+
+# [Patch v6.2.1] Daily/weekly drift monitoring summary
+def monitor_drift_summary(
+    train_df: pd.DataFrame,
+    test_df: pd.DataFrame,
+    threshold: float | None = None,
+) -> pd.DataFrame:
+    """Calculate daily and weekly drift summary and log warnings."""
+
+    from src.evaluation import calculate_drift_summary
+
+    res = calculate_drift_summary(train_df, test_df, threshold=threshold)
+    if not res.empty and res["drift"].any():
+        feats = sorted(res.loc[res["drift"], "feature"].unique())
+        logger.warning("Data drift summary detected for features: %s", feats)
+    return res

@@ -224,6 +224,8 @@ def parse_args(args=None) -> argparse.Namespace:
     parser.add_argument('--param_learning_rate', default='0.01,0.05')
     parser.add_argument('--param_depth', default='6,8')
     parser.add_argument('--param_l2_leaf_reg', default='1,3,5')
+    parser.add_argument('--param_subsample', default='0.8,1.0')  # [Patch v6.2.1] new CLI option
+    parser.add_argument('--param_colsample_bylevel', default='0.8,1.0')  # [Patch v6.2.1] new CLI option
     parser.add_argument(
         '--trade_log_path', '--trade-log',
         dest='trade_log_path',

@@ -105,3 +105,13 @@ def test_monitor_drift_warning(caplog):
         res = wfv_monitor.monitor_drift(train_df, test_df, threshold=0.0)
     assert not res.empty
     assert res['drift'].any()
+
+
+def test_monitor_drift_summary_warning(caplog):
+    idx = pd.date_range('2024-01-01', periods=3, freq='D')
+    train_df = pd.DataFrame({'feat': [1.0, 2.0, 3.0]}, index=idx)
+    test_df = pd.DataFrame({'feat': [10.0, 11.0, 12.0]}, index=idx)
+    with caplog.at_level('WARNING', logger='src.wfv_monitor'):
+        res = wfv_monitor.monitor_drift_summary(train_df, test_df, threshold=0.0)
+    assert not res.empty
+    assert res['drift'].any()
