@@ -64,9 +64,30 @@ VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
 with open(VERSION_FILE, 'r', encoding='utf-8') as vf:
     __version__ = vf.read().strip()
 from pathlib import Path
+import pathlib
 # [Patch v5.9.1] Unified output directory constant
 OUTPUT_DIR = Path(__file__).parent.parent / "output_default"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+# [Patch v6.2.1] Define default data directory and naming for walk-forward data
+BASE_DIR = pathlib.Path(__file__).parent
+DATA_DIR = BASE_DIR.parent / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+# Defaults for data file naming
+SYMBOL = globals().get("SYMBOL", "XAUUSD")
+TIMEFRAME = globals().get("TIMEFRAME", "M1")
+
+# [Patch v6.2.1] Default hyperparameters to prevent missing attribute warnings
+for _attr in [
+    "subsample",
+    "colsample_bylevel",
+    "bagging_temperature",
+    "random_strength",
+    "seed",
+]:
+    if _attr not in globals():
+        globals()[_attr] = None
 from sklearn.model_selection import TimeSeriesSplit, train_test_split
 from sklearn.preprocessing import StandardScaler, OrdinalEncoder # Added OrdinalEncoder back as it might be used by some logic
 from sklearn.metrics import (
