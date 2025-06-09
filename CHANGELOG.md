@@ -1,4 +1,7 @@
 ### 2025-06-09
+- [Patch v6.1.4] เพิ่ม walk_forward_loop และบันทึกผลเป็น CSV
+- New/Updated unit tests added for tests/test_wfv_monitor.py, tests/test_wfv_runner.py
+- QA: pytest -q passed (859 tests)
 - [Patch v6.1.3] Implement sample walk-forward execution in wfv_runner
 - New/Updated unit tests added for tests/test_wfv_runner.py
 - QA: pytest -q passed
