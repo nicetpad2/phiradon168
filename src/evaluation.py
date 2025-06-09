@@ -197,3 +197,23 @@ def calculate_drift_by_period(
                 }
             )
     return pd.DataFrame(records)
+
+
+# [Patch] Daily/weekly drift summary helper
+def calculate_drift_summary(
+    train_df: pd.DataFrame, test_df: pd.DataFrame, threshold: float | None = None
+) -> pd.DataFrame:
+    """Return combined daily and weekly drift report."""
+    daily = calculate_drift_by_period(
+        train_df, test_df, period="D", threshold=threshold
+    )
+    daily["period_type"] = "D"
+    weekly = calculate_drift_by_period(
+        train_df, test_df, period="W", threshold=threshold
+    )
+    weekly["period_type"] = "W"
+    report = pd.concat([daily, weekly], ignore_index=True)
+    if not report.empty and report["drift"].any():
+        drift_feats = sorted(report.loc[report["drift"], "feature"].unique())
+        logger.warning("Drift detected: %s", drift_feats)
+    return report

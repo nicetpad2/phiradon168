@@ -286,3 +286,25 @@ def summarize_trade_log(log_path: str) -> dict[str, object]:
     summary["expectancy_H"] = calculate_expectancy_by_period(df)
     return summary
 
+
+# [Patch] Generate combined equity and expectancy plot
+def plot_trade_log_metrics(log_path: str):
+    """Return figure with equity curve and hourly expectancy."""
+    df = parse_trade_logs(log_path)
+    curve = calculate_equity_curve(df)
+    exp = calculate_expectancy_by_period(df)
+
+    import matplotlib.pyplot as plt
+
+    fig, axes = plt.subplots(2, 1, figsize=(8, 6))
+    curve.plot(ax=axes[0])
+    axes[0].set_xlabel("trade")
+    axes[0].set_ylabel("equity")
+
+    exp.plot(kind="bar", ax=axes[1])
+    axes[1].set_xlabel("period")
+    axes[1].set_ylabel("expectancy")
+
+    plt.tight_layout()
+    return fig
+
