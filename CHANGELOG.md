@@ -1,3 +1,8 @@
+### 2025-06-12
+- [Patch v6.1.7] เพิ่ม LSTM, ฟีเจอร์ Engulfing และตรวจจับ Drift รายช่วงเวลา
+- New/Updated unit tests added for tests/test_training_lstm.py, tests/test_features_engulfing.py, tests/test_drift_calc.py, tests/test_log_summary.py
+- QA: pytest -q passed (867 tests)
+
 ### 2025-06-10
 - [Patch v6.1.5] ปรับ run_walkforward ให้อ่านข้อมูลจริงจาก CSV
 - New/Updated unit tests added for tests/test_wfv_runner.py

@@ -157,3 +157,42 @@ def detect_overfit_wfv(results: pd.DataFrame, threshold: float = 0.2) -> bool:
         return False
     drop_ratio = (train_avg - test_avg) / (abs(train_avg) + 1e-9)
     return drop_ratio > threshold and test_avg <= 0
+
+
+# [Patch v6.1.7] Calculate Wasserstein drift by time period
+def calculate_drift_by_period(
+    train_df: pd.DataFrame,
+    test_df: pd.DataFrame,
+    period: str = "D",
+    threshold: float | None = None,
+) -> pd.DataFrame:
+    """Return per-period Wasserstein distances for numeric features."""
+    if not isinstance(train_df.index, pd.DatetimeIndex) or not isinstance(
+        test_df.index, pd.DatetimeIndex
+    ):
+        raise ValueError("DataFrames must have DatetimeIndex")
+    if threshold is None:
+        from src.config import DRIFT_WASSERSTEIN_THRESHOLD as _thr
+
+        threshold = _thr
+
+    records = []
+    common = [
+        c
+        for c in train_df.columns
+        if c in test_df.columns and pd.api.types.is_numeric_dtype(train_df[c])
+    ]
+    for col in common:
+        train_grp = train_df[col].groupby(train_df.index.to_period(period)).mean()
+        test_grp = test_df[col].groupby(test_df.index.to_period(period)).mean()
+        for p in train_grp.index.intersection(test_grp.index):
+            w = wasserstein_distance([train_grp[p]], [test_grp[p]])
+            records.append(
+                {
+                    "period": str(p),
+                    "feature": col,
+                    "wasserstein": float(w),
+                    "drift": bool(w > threshold),
+                }
+            )
+    return pd.DataFrame(records)

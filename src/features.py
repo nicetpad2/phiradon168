@@ -1690,6 +1690,41 @@ def merge_wave_pattern_labels(df, log_path):
     return df_out
 
 
+# [Patch v6.1.7] Engulfing candlestick pattern tagging
+def tag_engulfing_patterns(df: pd.DataFrame) -> pd.DataFrame:
+    """Label bullish/bearish engulfing patterns."""
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be DataFrame")
+    df_out = df.copy()
+    if not {"Open", "Close"}.issubset(df_out.columns):
+        logging.warning("(Warning) Missing Open/Close for engulfing pattern")
+        df_out["Engulfing"] = "None"
+        df_out["Engulfing"] = df_out["Engulfing"].astype("category")
+        return df_out
+
+    open_p = pd.to_numeric(df_out["Open"], errors="coerce")
+    close_p = pd.to_numeric(df_out["Close"], errors="coerce")
+    prev_open = open_p.shift(1)
+    prev_close = close_p.shift(1)
+    bullish = (
+        (prev_close < prev_open)
+        & (close_p > open_p)
+        & (close_p >= prev_open)
+        & (open_p <= prev_close)
+    )
+    bearish = (
+        (prev_close > prev_open)
+        & (close_p < open_p)
+        & (close_p <= prev_open)
+        & (open_p >= prev_close)
+    )
+    df_out["Engulfing"] = np.select(
+        [bullish, bearish], ["Bullish", "Bearish"], default="None"
+    )
+    df_out["Engulfing"] = df_out["Engulfing"].astype("category")
+    return df_out
+
+
 __all__ = [
     "ema",
     "sma",
@@ -1709,6 +1744,7 @@ __all__ = [
     "reset_indicator_caches",
     "rolling_zscore",
     "tag_price_structure_patterns",
+    "tag_engulfing_patterns",
     "calculate_m15_trend_zone",
     "get_mtf_sma_trend",
     "engineer_m1_features",
