@@ -65,6 +65,10 @@ with open(VERSION_FILE, 'r', encoding='utf-8') as vf:
     __version__ = vf.read().strip()
 from pathlib import Path
 import pathlib
+# [Patch v6.3.1] Register module as 'config' for reload compatibility
+if __spec__:
+    __spec__.name = 'config'
+sys.modules.setdefault('config', sys.modules[__name__])
 # [Patch v5.9.1] Unified output directory constant
 OUTPUT_DIR = Path(__file__).parent.parent / "output_default"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -547,20 +551,11 @@ try:
         )
         logging.debug(f"CUDA check error: {e_cuda}")
         USE_GPU_ACCELERATION = False
+# [Patch v6.2.3] Handle PyTorch import errors concisely
 except Exception as e_torch_import:
-    # [Patch v6.2.3] Handle Intel MKL errors during PyTorch import
-    msg = str(e_torch_import)
-    if "mkl" in msg.lower():
-        logging.warning(
-            "   (Warning) Intel MKL error detected -- ปิด GPU Acceleration."
-        )
-    else:
-        logging.warning(
-            "   (Warning) ไม่พบ 'torch' หรือไม่สามารถโหลดได้ -- ปิด GPU Acceleration."
-        )
-    logging.debug(f"PyTorch import error: {e_torch_import}")
+    logging.warning(f"(Warning) GPU acceleration disabled due to import error: {e_torch_import}")
     USE_GPU_ACCELERATION = False
-logging.info(f"   สถานะการเร่งความเร็วด้วย GPU: {USE_GPU_ACCELERATION}")
+logging.info(f"(Info) GPU acceleration status: {USE_GPU_ACCELERATION}")
 # pragma: cover
 
 # --- GPU/RAM Utilization Helper Function ---

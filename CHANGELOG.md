@@ -1,3 +1,7 @@
+### 2025-06-20
+- [Patch v6.3.1] Fix reload issue and simplify GPU fallback
+- New/Updated unit tests added for tests/test_config_mkl_error.py
+- QA: pytest -q failed due to missing torch
 ### 2025-06-18
 
 - [Patch v6.2.6] Update test_data_cache to use tmp_path and safe removal logic
