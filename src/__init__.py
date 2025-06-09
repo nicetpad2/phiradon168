@@ -1,41 +1,38 @@
-"""Top-level package for project modules."""
+"""Top-level package for project modules with lazy imports."""
 
-from src.adaptive import (
-    adaptive_sl_tp,
-    adaptive_risk,
-    log_best_params,
-    calculate_atr,
-    atr_position_size,
-)
-from src.money_management import (
-    atr_sl_tp,
-    update_be_trailing,
-    adaptive_position_size,
-    portfolio_hard_stop,
-)
-from src.evaluation import (
-    evaluate_meta_classifier,
-    walk_forward_yearly_validation,
-    detect_overfit_wfv,
-)
-from src.wfv import walk_forward_grid_search, prune_features_by_importance
-from src.param_stability import save_fold_params, analyze_param_stability
+from __future__ import annotations
 
-__all__ = [
-    "adaptive_sl_tp",
-    "adaptive_risk",
-    "log_best_params",
-    "calculate_atr",
-    "atr_position_size",
-    "atr_sl_tp",
-    "update_be_trailing",
-    "adaptive_position_size",
-    "portfolio_hard_stop",
-    "evaluate_meta_classifier",
-    "walk_forward_yearly_validation",
-    "detect_overfit_wfv",
-    "walk_forward_grid_search",
-    "prune_features_by_importance",
-    "save_fold_params",
-    "analyze_param_stability",
-]
+import importlib
+from types import ModuleType
+
+# Modules to expose when importing `src` directly. They will be imported on first
+# attribute access to avoid heavy dependencies at import time.
+_EXPOSED_MODULES = {
+    'adaptive',
+    'money_management',
+    'evaluation',
+    'wfv',
+    'param_stability',
+    'strategy',
+    'features',
+    'data_loader',
+    'training',
+    'config',
+    'qa_tools',
+    'log_analysis',
+    'dashboard',
+    'realtime_dashboard',
+    'utils',
+}
+
+__all__ = sorted(_EXPOSED_MODULES)
+
+
+def __getattr__(name: str) -> ModuleType:
+    """Dynamically import submodules listed in ``_EXPOSED_MODULES``."""
+    if name in _EXPOSED_MODULES:
+        module = importlib.import_module(f'.{name}', __name__)
+        globals()[name] = module
+        return module
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+
