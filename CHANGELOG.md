@@ -3,10 +3,12 @@
 - New/Updated unit tests added for tests/test_evaluation_drift_summary.py, tests/test_log_analysis_report.py, tests/test_projectp_sweep_defaults.py
 - QA: pytest -q passed
 
+
 ### 2025-06-14
 - [Patch v6.2.1] สร้าง DATA_DIR และกำหนด SYMBOL/TIMEFRAME พร้อมค่า hyperparameter เริ่มต้น
 - New/Updated unit tests added for tests/test_config_defaults.py, tests/test_config_data_dir.py
 - QA: pytest -q passed (874 tests)
+
 
 ### 2025-06-13
 - [Patch v6.1.8] เพิ่มฟังก์ชัน monitor_drift และ plot_expectancy_by_period

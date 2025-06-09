@@ -89,6 +89,8 @@ def test_parse_args_defaults():
     args = hs.parse_args([])
     assert args.trade_log_path == hs.DEFAULT_TRADE_LOG
     assert args.output_dir == hs.DEFAULT_SWEEP_DIR
+    assert args.param_subsample == '0.8,1.0'
+    assert args.param_colsample_bylevel == '0.8,1.0'
 
 
 def test_run_sweep_default_output_dir(tmp_path, monkeypatch):
@@ -233,5 +235,14 @@ def test_cli_entrypoint_runs_main(tmp_path, monkeypatch):
         warnings.simplefilter('ignore', RuntimeWarning)
         runpy.run_module('tuning.hyperparameter_sweep', run_name='__main__')
     assert (tmp_path / 'best_param.json').exists()
+
+
+def test_parse_args_custom_params():
+    args = hs.parse_args([
+        '--param_subsample', '0.7,1.0',
+        '--param_colsample_bylevel', '0.6,0.9',
+    ])
+    assert args.param_subsample == '0.7,1.0'
+    assert args.param_colsample_bylevel == '0.6,0.9'
 
 
