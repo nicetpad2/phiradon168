@@ -21,6 +21,10 @@ OMS_DEFAULT = True
 PAPER_MODE = False
 POST_TRADE_COOLDOWN_BARS = 2
 
+# [Patch] Expose simple signal toggles for strategy modules
+USE_MACD_SIGNALS = True   # Enable MACD conditions in simple signal functions
+USE_RSI_SIGNALS = True    # Enable RSI conditions in simple signal functions
+
 # [Patch v5.9.3] Default hyperparameters used in training
 LEARNING_RATE = 0.01
 DEPTH = 6
@@ -40,7 +44,6 @@ import sys
 # <<< MODIFIED v4.7.9: Implemented logging, added basic docstrings/comments >>>
 # <<< MODIFIED v4.8.1: Updated versioning for comprehensive fixes based on prompt >>>
 # <<< MODIFIED v4.8.4: Updated paths for Colab/VPS compatibility and versioning >>>
-import logging
 import subprocess
 import importlib
 import sys
@@ -111,6 +114,12 @@ import gzip
 import requests  # For Font Download
 from src.utils import get_env_float
 
+import logging
+
+# [Patch] Ensure a module-level logger is always available for imports
+logger = logging.getLogger('NiceGold')
+logger.setLevel(logging.INFO)
+
 # -----------------------------------------------------------------------------
 # Fallback defaults for key constants used across the project.
 # These are defined up-front so that even when pytest imports this module in a
@@ -152,7 +161,6 @@ os.makedirs(LOG_DIR, exist_ok=True)
 LOG_FILENAME = os.path.join(LOG_DIR, f'gold_ai_v{__version__}_qa.log')
 
 # ตั้งค่า Logger กลางเพื่อให้โมดูลอื่น ๆ ใช้งานร่วมกัน
-logger = logging.getLogger('NiceGold')
 # [Patch v5.5.6] Force COMPACT_LOG when running under pytest
 if os.environ.get('PYTEST_CURRENT_TEST'):
     os.environ['COMPACT_LOG'] = '1'
@@ -798,8 +806,7 @@ except Exception:
 logging.debug(f"Session Times (UTC): {SESSION_TIMES_UTC}")
 
 # --- Signal Toggle Configuration ---
-USE_MACD_SIGNALS = True  # Enable MACD conditions in simple signal functions
-USE_RSI_SIGNALS = True   # Enable RSI conditions in simple signal functions
+# (Deprecated: moved to module top-level)
 
 # --- Fold-Specific Configuration ---
 # Allows overriding parameters for specific walk-forward folds
