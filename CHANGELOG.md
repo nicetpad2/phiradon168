@@ -1,3 +1,8 @@
+### 2025-06-14
+- [Patch v6.2.2] เพิ่ม monitor_auc_drop เพื่อตรวจจับ AUC ต่ำกว่าค่ากำหนด
+- New/Updated unit tests added for tests/test_wfv_monitor.py
+- QA: pytest -q passed
+
 ### 2025-06-09
 - [Patch v6.2.1] Resolve relative data_path in wfv_runner
 - New/Updated unit tests added for tests/test_wfv_runner.py
