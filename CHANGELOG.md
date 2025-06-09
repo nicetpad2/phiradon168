@@ -1,3 +1,7 @@
+### 2025-06-21
+- [Patch v6.3.2] Expose module-level logger and signal flags
+- New/Updated unit tests added for tests/test_config_defaults.py
+- QA: pytest -q passed
 
 ### 2025-06-20
 - [Patch v6.3.1] Fix reload issue and simplify GPU fallback

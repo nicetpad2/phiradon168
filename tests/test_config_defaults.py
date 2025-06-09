@@ -1,4 +1,5 @@
 import importlib
+import logging
 import pytest
 
 
@@ -32,3 +33,8 @@ def test_default_parameters():
     ]:
         assert hasattr(cfg, attr)
         assert getattr(cfg, attr) is None
+
+    # [Patch] Ensure exposed logger and signal toggles exist
+    assert isinstance(cfg.logger, logging.Logger)
+    assert cfg.USE_MACD_SIGNALS is True
+    assert cfg.USE_RSI_SIGNALS is True
