@@ -1,3 +1,14 @@
+### 2025-06-16
+- [Patch v6.2.4] Add CPU-only fallback for missing CUDA libraries and Colab test script
+- QA: pytest -q passed
+
+
+### 2025-06-16
+- [Patch v6.2.5] Guard file removal in data_loader to avoid accidental deletion outside DATA_DIR
+- New/Updated unit tests added for tests/test_loader_main_functions.py
+- QA: pytest -q failed (environment issues)
+
+
 ### 2025-06-15
 - [Patch v6.2.3] Handle getcwd and MKL errors
 - New/Updated unit tests added for tests/test_projectp_getcwd.py, tests/test_config_mkl_error.py

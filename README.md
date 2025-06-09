@@ -127,6 +127,22 @@ python run_tests.py
 ```
 ผลลัพธ์จะแสดงเฉพาะคำเตือนและสรุปจำนวนการทดสอบทั้งหมด
 
+#### Google Colab Setup
+
+Before running tests in Colab:
+1. Ensure Google Drive is mounted:
+   ```python
+   from google.colab import drive; drive.mount('/content/drive')
+   ```
+2. Navigate to project folder:
+   ```bash
+   %cd /content/drive/MyDrive/Phiradon168
+   ```
+3. Execute the Colab test runner script:
+   ```bash
+   bash scripts/run_tests_colab.sh
+   ```
+
 ## การปรับค่า Drift Override
 สามารถกำหนดระดับ Drift ที่จะปิดการใช้คะแนน RSI ได้ที่ตัวแปร
 `RSI_DRIFT_OVERRIDE_THRESHOLD` ในไฟล์ `src/config.py` (ค่าเริ่มต้น 0.65)
