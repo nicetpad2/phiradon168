@@ -61,6 +61,8 @@ def test_get_session_tag_end_boundary_asia():
 
 
 def test_get_session_tag_warn_once(caplog):
+    from src.utils.sessions import _WARNED_OUT_OF_RANGE
+    _WARNED_OUT_OF_RANGE.clear()
     ts1 = pd.Timestamp('2024-01-01 03:00', tz='UTC')
     ts2 = ts1 + pd.Timedelta(minutes=15)
     custom = {'Test': (0, 1)}
@@ -76,6 +78,8 @@ def test_get_session_tag_missing_global(monkeypatch, caplog):
     # ลบตัวแปร SESSION_TIMES_UTC ชั่วคราวเพื่อทดสอบ path fallback
     backup = utils.sessions.SESSION_TIMES_UTC
     monkeypatch.delattr(utils.sessions, 'SESSION_TIMES_UTC', raising=False)
+    from src.utils import sessions
+    sessions._WARNED_OUT_OF_RANGE.clear()
     ts = pd.Timestamp('2024-01-01 01:00', tz='UTC')
     with caplog.at_level('WARNING'):
         tag = get_session_tag(ts)

@@ -36,6 +36,7 @@ def test_get_session_tag_missing_global(monkeypatch, caplog):
     monkeypatch.delattr(features, 'SESSION_TIMES_UTC', raising=False)
     from src import utils
     monkeypatch.delattr(utils.sessions, 'SESSION_TIMES_UTC', raising=False)
+    utils.sessions._WARNED_OUT_OF_RANGE.clear()
     ts = pd.Timestamp('2024-01-01 05:00', tz='UTC')
     with caplog.at_level(logging.WARNING):
         tag = utils.sessions.get_session_tag(ts)

@@ -91,6 +91,7 @@ def test_clean_test_file_guard(tmp_path, caplog, monkeypatch):
     monkeypatch.setenv('DATA_DIR', str(tmp_path))
     import importlib
     import src.config as config
+    sys.modules['src.config'] = config
     importlib.reload(config)
     import src.data_loader as dl_reload
     importlib.reload(dl_reload)
