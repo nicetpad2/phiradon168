@@ -1029,6 +1029,20 @@ def write_test_file(path):
     return path
 
 
+def clean_test_file(test_file_path: str) -> None:
+    """Remove a test file if it's inside ``cfg.DATA_DIR``."""
+    # [Patch] Guard against accidental deletion outside DATA_DIR
+    import logging
+    from src import config as cfg
+    logger = logging.getLogger(__name__)
+    if str(test_file_path).startswith(str(cfg.DATA_DIR)):
+        os.remove(test_file_path)
+    else:
+        logger.warning(
+            f"Ignoring removal of {test_file_path}: outside DATA_DIR"
+        )
+
+
 # [Patch v5.7.3] Validate DataFrame for required columns and non-emptiness
 def validate_csv_data(df, required_cols=None):
     """Ensure ``df`` is non-empty and contains required columns.
@@ -1148,6 +1162,7 @@ __all__ = [
     "load_raw_data_m1",
     "load_raw_data_m15",
     "write_test_file",
+    "clean_test_file",
     "validate_csv_data",
     "load_final_m1_data",
     "check_data_quality",
