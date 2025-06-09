@@ -3,6 +3,24 @@ import logging
 from pathlib import Path
 from typing import Optional, Tuple
 
+import warnings
+# [Patch] Add CPU-only fallback for missing CUDA libraries
+try:
+    import torch
+except OSError as e:  # pragma: no cover - env-specific
+    warnings.warn(
+        f"CUDA libraries not found ({e}), defaulting to CPU-only mode"
+    )
+
+    class _DummyCuda:
+        def is_available(self):
+            return False
+
+    class _DummyTorch:
+        cuda = _DummyCuda()
+
+    torch = _DummyTorch()
+
 import pandas as pd
 from src import features
 
