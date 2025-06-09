@@ -1,7 +1,19 @@
 import logging
 import pandas as pd
 import pytest
+import importlib
 import wfv_runner
+
+
+def _reload_runner_env(monkeypatch, data_dir, symbol, timeframe):
+    """Reload wfv_runner with env variables set."""
+    monkeypatch.setenv("DATA_DIR", str(data_dir))
+    monkeypatch.setenv("SYMBOL", symbol)
+    monkeypatch.setenv("TIMEFRAME", timeframe)
+    cfg = importlib.import_module("src.config")
+    importlib.reload(cfg)
+    importlib.reload(wfv_runner)
+    return wfv_runner
 
 
 def test_run_walkforward_logs(caplog):
@@ -24,6 +36,23 @@ def test_run_walkforward_output_csv(tmp_path):
     assert path.exists()
     df = pd.read_csv(path)
     assert len(df) == len(res)
+
+
+def test_run_walkforward_resolve_relative(tmp_path, monkeypatch):
+    data_dir = tmp_path / 'data'
+    data_dir.mkdir()
+    df = pd.DataFrame({'Close': range(50)})
+    csv_path = data_dir / 'BTCUSD_M5.csv'
+    df.to_csv(csv_path, index=False)
+    runner = _reload_runner_env(monkeypatch, data_dir, 'BTCUSD', 'M5')
+    result = runner.run_walkforward(nrows=20)
+    assert not result.empty
+
+
+def test_run_walkforward_file_not_found(tmp_path, monkeypatch):
+    runner = _reload_runner_env(monkeypatch, tmp_path, 'ETHUSD', 'M1')
+    with pytest.raises(FileNotFoundError):
+        runner.run_walkforward(data_path='missing.csv', nrows=5)
 
 
 def test_run_walkforward_missing_close(tmp_path):

@@ -483,6 +483,11 @@ DEFAULT_CSV_PATH_M1 = os.path.join(FILE_BASE, "XAUUSD_M1.csv")
 DEFAULT_CSV_PATH_M15 = os.path.join(FILE_BASE, "XAUUSD_M15.csv")
 DEFAULT_LOG_DIR = BASE_LOG_DIR
 
+# [Patch v6.2.1] provide base data directory and default symbol/timeframe
+DATA_DIR = Path(os.getenv("DATA_DIR", FILE_BASE))
+SYMBOL = os.getenv("SYMBOL", "XAUUSD")
+TIMEFRAME = os.getenv("TIMEFRAME", "M1")
+
 
 # --- GPU Acceleration Setup (Optional) ---
 # pragma: no cover

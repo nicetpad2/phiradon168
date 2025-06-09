@@ -2,7 +2,9 @@ import logging
 from typing import Dict
 
 import pandas as pd
+import os
 
+from src.config import DATA_DIR, SYMBOL, TIMEFRAME
 from src.wfv_monitor import walk_forward_loop
 
 
@@ -16,11 +18,23 @@ def _simple_backtest(train: pd.DataFrame, test: pd.DataFrame) -> Dict[str, float
 
 def run_walkforward(
     output_path: str | None = None,
-    data_path: str = "XAUUSD_M1.csv",
+    data_path: str | None = None,
     nrows: int = 20,
 ) -> pd.DataFrame:
-    """[Patch v6.1.5] Run walk-forward validation on a real dataset."""
-    logging.info("[Patch v6.1.5] Starting walk-forward on %s", data_path)
+    """[Patch v6.2.1] Run walk-forward validation on a real dataset."""
+    if not data_path:
+        data_path = f"{SYMBOL}_{TIMEFRAME}.csv"
+
+    # resolve to DATA_DIR if path is relative
+    if not os.path.isabs(data_path):
+        candidate = os.path.join(DATA_DIR, data_path)
+        if os.path.exists(candidate):
+            data_path = candidate
+
+    logging.info("[Patch v6.2.1] Starting walk-forward on %s", data_path)
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f"Data file not found: {data_path}")
+
     df = pd.read_csv(data_path, nrows=nrows)
     if "Close" not in df.columns:
         raise KeyError("'Close' column missing from dataset")
