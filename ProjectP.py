@@ -224,6 +224,8 @@ def qa_check_and_create_outputs():
 if __name__ == "__main__":
     configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
     args = parse_args()
+    # [Patch v5.9.5] สร้างไฟล์ QA พื้นฐานก่อนเริ่มการทำงานลดข้อความ error
+    qa_check_and_create_outputs()
     try:
         run_mode(args.mode)
         
