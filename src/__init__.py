@@ -1,3 +1,4 @@
+
 """Top-level package for project modules with lazy imports.
 
 This module exposes frequently used submodules while avoiding heavy
@@ -42,3 +43,4 @@ def __getattr__(name: str):
         setattr(sys.modules[__name__], name, module)
         return module
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+

@@ -1,7 +1,11 @@
 import pandas as pd
 import numpy as np
 from src.features import macd, rsi, atr
-from src.config import USE_MACD_SIGNALS, USE_RSI_SIGNALS
+try:
+    from src.config import USE_MACD_SIGNALS, USE_RSI_SIGNALS
+except Exception:  # pragma: no cover - fallback for missing config
+    USE_MACD_SIGNALS = True
+    USE_RSI_SIGNALS = True
 
 
 def generate_close_signals(
