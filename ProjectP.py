@@ -14,6 +14,12 @@ import os
 import argparse
 import subprocess
 import json
+
+# [Patch v6.2.3] Auto-fallback to project root if current working dir is invalid
+try:
+    os.getcwd()
+except Exception:
+    os.chdir(Path(__file__).resolve().parent)
 import pandas as pd
 from typing import Dict, List
 import main as pipeline
