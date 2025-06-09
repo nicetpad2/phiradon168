@@ -29,4 +29,4 @@ def test_mkl_error_fallback(monkeypatch, caplog):
     with caplog.at_level(logging.WARNING):
         cfg = _import_config(monkeypatch)
     assert cfg.USE_GPU_ACCELERATION is False
-    assert any('Intel MKL error' in m for m in caplog.messages)
+    assert any('GPU acceleration disabled due to import error' in m for m in caplog.messages)

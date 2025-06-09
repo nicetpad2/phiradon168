@@ -1,7 +1,8 @@
-- [Patch v6.3.1] Improve run_mode('all') and working directory fallback
-- New/Updated unit tests added for tests/test_projectp_getcwd.py, tests/test_projectp_cli.py
 
-- QA: pytest -q passed
+### 2025-06-20
+- [Patch v6.3.1] Fix reload issue and simplify GPU fallback
+- New/Updated unit tests added for tests/test_config_mkl_error.py
+- QA: pytest -q failed due to missing torch
 
 ### 2025-06-18
 
