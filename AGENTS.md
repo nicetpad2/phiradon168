@@ -87,6 +87,7 @@
   - Explore and integrate SHAP, Optuna, and MetaClassifier pipelines
   - Design new feature engineering and reinforcement learning (RL) frameworks
   - Prototype and validate novel ML architectures (e.g., LSTM, CNN, Transformers) for TP2 prediction
+  - Maintain lightweight LSTM/CNN helpers for quick experimentation
   - Ensure no data leakage, perform early-warning model drift checks
 - **Modules:** `src/training.py`, `src/features.py`
 
@@ -237,6 +238,7 @@
 - **Key Responsibilities:**
   - Parse raw trade logs and compute hourly win rates
   - Provide utilities for risk sizing, TSL statistics, and expectancy metrics
+  - Generate equity curves and expectancy-by-period summaries
 - **Modules:** `src/log_analysis.py`
 
 ### [Event_ETL_Manager](src/event_etl.py)

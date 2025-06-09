@@ -25,6 +25,8 @@ DEFAULT_SWEEP_PARAMS: Dict[str, List[float]] = {
     "learning_rate": [0.01, 0.05],
     "depth": [6, 8],
     "l2_leaf_reg": [1, 3, 5],
+    "subsample": [0.8, 1.0],
+    "colsample_bylevel": [0.8, 1.0],
 }
 
 # [Patch] Initialize pynvml for GPU status detection

@@ -468,3 +468,40 @@ def run_hyperparameter_sweep(
             best,
         )
     return best
+
+
+# [Patch v6.1.7] Minimal LSTM/CNN training for time series inputs
+def train_lstm_sequence(
+    X: np.ndarray,
+    y: np.ndarray,
+    epochs: int = 1,
+    use_cnn: bool = False,
+) -> object:
+    """Train a simple LSTM (or 1D CNN) model.
+
+    Falls back to ``LogisticRegression`` if TensorFlow is unavailable.
+    """
+    try:  # pragma: no cover - tensorflow optional
+        import tensorflow as tf
+
+        if X.ndim != 3:
+            raise ValueError("X must have shape (samples, timesteps, features)")
+
+        model = tf.keras.Sequential()
+        model.add(tf.keras.layers.Input(shape=(X.shape[1], X.shape[2])))
+        if use_cnn:
+            model.add(tf.keras.layers.Conv1D(8, 2, activation="relu"))
+            model.add(tf.keras.layers.GlobalAveragePooling1D())
+        else:
+            model.add(tf.keras.layers.LSTM(8))
+        model.add(tf.keras.layers.Dense(1, activation="sigmoid"))
+        model.compile(optimizer="adam", loss="binary_crossentropy")
+        model.fit(X, y, epochs=epochs, verbose=0)
+        return model
+    except Exception:  # pragma: no cover - fallback path
+        logger.warning("tensorflow not available, falling back to logistic")
+        X_flat = X.reshape(X.shape[0], -1)
+        clf = LogisticRegression(max_iter=1000)
+        clf.fit(X_flat, y)
+        return clf
+

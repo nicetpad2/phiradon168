@@ -264,3 +264,13 @@ def plot_equity_curve(curve: pd.Series):
     ax.set_ylabel("equity")
     return fig
 
+
+# [Patch v6.1.7] Full trade log summarization helper
+def summarize_trade_log(log_path: str) -> dict[str, object]:
+    """Parse log and return summary with equity curve."""
+    df = parse_trade_logs(log_path)
+    summary = compile_log_summary(df, log_path)
+    summary["equity_curve"] = calculate_equity_curve(df)
+    summary["expectancy_H"] = calculate_expectancy_by_period(df)
+    return summary
+
