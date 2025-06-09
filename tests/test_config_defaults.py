@@ -20,3 +20,15 @@ def test_default_parameters():
     assert cfg.LEARNING_RATE == pytest.approx(0.01, rel=1e-6)
     assert cfg.DEPTH == 6
     assert cfg.L2_LEAF_REG is None
+    # [Patch v6.2.1] New placeholders and defaults
+    assert cfg.SYMBOL == "XAUUSD"
+    assert cfg.TIMEFRAME == "M1"
+    for attr in [
+        "subsample",
+        "colsample_bylevel",
+        "bagging_temperature",
+        "random_strength",
+        "seed",
+    ]:
+        assert hasattr(cfg, attr)
+        assert getattr(cfg, attr) is None
