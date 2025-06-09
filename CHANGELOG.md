@@ -1,3 +1,8 @@
+### 2025-06-17
+- [Patch v6.2.5] ปรับ logic เปลี่ยนไดเรกทอรีใน ProjectP และเพิ่มฟังก์ชันตรวจสอบ GPU
+- New/Updated unit tests added for tests/test_projectp_getcwd.py
+- QA: pytest -q passed
+
 ### 2025-06-16
 - [Patch v6.2.4] Add CPU-only fallback for missing CUDA libraries and Colab test script
 - QA: pytest -q passed

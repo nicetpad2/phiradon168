@@ -15,11 +15,14 @@ import argparse
 import subprocess
 import json
 
-# [Patch v6.2.3] Auto-fallback to project root if current working dir is invalid
-try:
-    os.getcwd()
-except Exception:
-    os.chdir(Path(__file__).resolve().parent)
+# [Patch v6.2.5] Auto-fallback to project root only when executed as a script
+if __name__ == "__main__":
+    try:
+        os.getcwd()
+    except Exception:
+        project_root = Path(__file__).resolve().parent
+        os.chdir(project_root)
+        print(f"[Info] Changed working directory to project root: {project_root}")
 import pandas as pd
 from typing import Dict, List
 import main as pipeline

@@ -647,6 +647,20 @@ def show_system_status(context=""):  # pragma: no cover
 
     logging.info(f"[{context}] RAM: {ram_str} | {' | '.join(gpu_str_list)}")
 
+# [Patch v6.2.5] Utility to check GPU availability via PyTorch
+def check_gpu_availability():
+    """Return number of GPUs available via PyTorch."""
+    try:
+        import torch
+        gpu_count = torch.cuda.device_count()
+        logger.info(f"(Info) ตรวจสอบจำนวน GPU สำหรับ PyTorch: {gpu_count}")
+    except Exception as e:
+        logger.warning(
+            f"(Warning) ไม่สามารถโหลด PyTorch หรือ MKL module: {e} — ใช้ CPU เท่านั้น"
+        )
+        gpu_count = 0
+    return gpu_count
+
 
 # === Global Settings and Warnings ===
 warnings.filterwarnings("ignore", category=FutureWarning)

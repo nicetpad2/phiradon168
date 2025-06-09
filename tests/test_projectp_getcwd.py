@@ -6,7 +6,7 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
 
 
-def test_projectp_getcwd_fallback(monkeypatch):
+def test_projectp_getcwd_no_chdir_on_import(monkeypatch):
     def bad_getcwd():
         raise OSError("bad cwd")
 
@@ -19,4 +19,4 @@ def test_projectp_getcwd_fallback(monkeypatch):
     monkeypatch.setattr(os, 'chdir', fake_chdir)
     monkeypatch.delitem(sys.modules, 'ProjectP', raising=False)
     importlib.import_module('ProjectP')
-    assert str(recorded['path']) == ROOT_DIR
+    assert 'path' not in recorded
