@@ -12,8 +12,6 @@ def test_config_data_dir(tmp_path, monkeypatch):
 
     monkeypatch.delenv('SYMBOL', raising=False)
     monkeypatch.delenv('TIMEFRAME', raising=False)
-    if 'src.config' in sys.modules:
-        monkeypatch.delitem(sys.modules, 'src.config', raising=False)
     importlib.reload(cfg)
 
     assert cfg.DATA_DIR.is_dir()

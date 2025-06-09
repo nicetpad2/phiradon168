@@ -3,11 +3,11 @@ import os
 import pytest
 
 FUNCTIONS_INFO = [
-    ("src/config.py", "log_library_version", 183),
-    ("src/config.py", "_ensure_ta_installed", 228),
-    ("src/config.py", "is_colab", 459),
-    ("src/config.py", "print_gpu_utilization", 557),
-    ("src/config.py", "show_system_status", 609),
+    ("src/config.py", "log_library_version", 196),
+    ("src/config.py", "_ensure_ta_installed", 241),
+    ("src/config.py", "is_colab", 472),
+    ("src/config.py", "print_gpu_utilization", 572),
+    ("src/config.py", "show_system_status", 624),
 
 
     ("src/data_loader.py", "inspect_file_exists", 906),
@@ -21,7 +21,7 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "load_raw_data_m1", 1006),
     ("src/data_loader.py", "load_raw_data_m15", 1017),
     ("src/data_loader.py", "write_test_file", 1022),
-    ("src/data_loader.py", "validate_csv_data", 1030),
+    ("src/data_loader.py", "validate_csv_data", 1047),
 
 
     ("src/features.py", "calculate_trend_zone", 1529),
@@ -40,13 +40,13 @@ FUNCTIONS_INFO = [
 
 # [Patch v5.5.3] Updated expected line numbers
 
-    ("src/main.py", "parse_arguments", 1890),
-    ("src/main.py", "setup_output_directory", 1895),
-    ("src/main.py", "load_features_from_file", 1900),
-    ("src/main.py", "drop_nan_rows", 1905),
-    ("src/main.py", "convert_to_float32", 1910),
-    ("src/main.py", "run_initial_backtest", 1915),
-    ("src/main.py", "save_final_data", 1920),
+    ("src/main.py", "parse_arguments", 1903),
+    ("src/main.py", "setup_output_directory", 1908),
+    ("src/main.py", "load_features_from_file", 1913),
+    ("src/main.py", "drop_nan_rows", 1918),
+    ("src/main.py", "convert_to_float32", 1923),
+    ("src/main.py", "run_initial_backtest", 1928),
+    ("src/main.py", "save_final_data", 1933),
 
 
 
@@ -54,13 +54,13 @@ FUNCTIONS_INFO = [
 
 
 
-    ("src/main.py", "parse_arguments", 1890),
-    ("src/main.py", "setup_output_directory", 1895),
-    ("src/main.py", "load_features_from_file", 1900),
-    ("src/main.py", "drop_nan_rows", 1905),
-    ("src/main.py", "convert_to_float32", 1910),
-    ("src/main.py", "run_initial_backtest", 1915),
-    ("src/main.py", "save_final_data", 1920),
+    ("src/main.py", "parse_arguments", 1903),
+    ("src/main.py", "setup_output_directory", 1908),
+    ("src/main.py", "load_features_from_file", 1913),
+    ("src/main.py", "drop_nan_rows", 1918),
+    ("src/main.py", "convert_to_float32", 1923),
+    ("src/main.py", "run_initial_backtest", 1928),
+    ("src/main.py", "save_final_data", 1933),
 
 
 
@@ -87,7 +87,7 @@ FUNCTIONS_INFO = [
 
 
 
-    ("ProjectP.py", "custom_helper_function", 51),
+    ("ProjectP.py", "custom_helper_function", 67),
 ]
 
 
