@@ -1458,3 +1458,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_pipeline_manager.py, tests/test_main_pipeline_cli.py, tests/test_main_cli_extended.py
 - QA: pytest -q passed
 
+### 2025-06-08
+- [Patch v6.1.3] Refactor function registry test numbers
+- New/Updated unit tests added for tests/test_function_registry.py
+- QA: pytest -q passed (38 tests)
+
