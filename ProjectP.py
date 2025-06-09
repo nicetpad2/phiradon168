@@ -16,8 +16,8 @@ import argparse
 import subprocess
 import json
 
-# [Patch v6.3.0] Ensure working directory is valid only when executed directly
-if __name__ == "__main__":
+# [Patch v6.3.1] Ensure working directory is correct only when running as script, not on import
+if __name__ == '__main__':
     try:
         os.getcwd()
     except Exception:

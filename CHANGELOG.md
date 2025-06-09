@@ -1,3 +1,8 @@
+### 2025-06-19
+- [Patch v6.3.1] Ensure script-only cwd fix and GPU helper comment update
+- New/Updated unit tests added for none
+- QA: pytest -q passed
+
 ### 2025-06-18
 
 - [Patch v6.2.6] Update test_data_cache to use tmp_path and safe removal logic
