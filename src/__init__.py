@@ -1,41 +1,44 @@
-"""Top-level package for project modules."""
+"""Top-level package for project modules with lazy imports.
 
-from src.adaptive import (
-    adaptive_sl_tp,
-    adaptive_risk,
-    log_best_params,
-    calculate_atr,
-    atr_position_size,
-)
-from src.money_management import (
-    atr_sl_tp,
-    update_be_trailing,
-    adaptive_position_size,
-    portfolio_hard_stop,
-)
-from src.evaluation import (
-    evaluate_meta_classifier,
-    walk_forward_yearly_validation,
-    detect_overfit_wfv,
-)
-from src.wfv import walk_forward_grid_search, prune_features_by_importance
-from src.param_stability import save_fold_params, analyze_param_stability
+This module exposes frequently used submodules while avoiding heavy
+imports during package initialization. Submodules are imported on first
+access via ``__getattr__`` to keep test environments lightweight.
+"""
 
-__all__ = [
-    "adaptive_sl_tp",
-    "adaptive_risk",
-    "log_best_params",
-    "calculate_atr",
-    "atr_position_size",
-    "atr_sl_tp",
-    "update_be_trailing",
-    "adaptive_position_size",
-    "portfolio_hard_stop",
-    "evaluate_meta_classifier",
-    "walk_forward_yearly_validation",
-    "detect_overfit_wfv",
-    "walk_forward_grid_search",
-    "prune_features_by_importance",
-    "save_fold_params",
-    "analyze_param_stability",
+from __future__ import annotations
+
+import importlib
+import sys
+
+# List of submodules that can be lazily loaded via ``from src import <module>``.
+_SUBMODULES = [
+    "adaptive",
+    "money_management",
+    "evaluation",
+    "wfv",
+    "param_stability",
+    "config",
+    "data_loader",
+    "feature_analysis",
+    "features",
+    "main",
+    "order_manager",
+    "realtime_dashboard",
+    "signal_classifier",
+    "strategy",
+    "training",
+    "wfv_monitor",
+    "log_analysis",
+    "qa_tools",
 ]
+
+__all__ = list(_SUBMODULES)
+
+
+def __getattr__(name: str):
+    """Dynamically import submodules on first access."""
+    if name in _SUBMODULES:
+        module = importlib.import_module(f"{__name__}.{name}")
+        setattr(sys.modules[__name__], name, module)
+        return module
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
