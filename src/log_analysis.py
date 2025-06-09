@@ -233,7 +233,7 @@ def calculate_equity_curve(df: pd.DataFrame, pnl_col: str = "PnL") -> pd.Series:
 
 
 def calculate_expectancy_by_period(
-    df: pd.DataFrame, period: str = "H", pnl_col: str = "PnL"
+    df: pd.DataFrame, period: str = "h", pnl_col: str = "PnL"
 ) -> pd.Series:
     """Return expectancy grouped by time period (e.g., hourly)."""
     if df.empty or pnl_col not in df or "EntryTime" not in df:
@@ -250,7 +250,7 @@ def calculate_expectancy_by_period(
         avg_loss = abs(losses.mean()) if not losses.empty else 0.0
         return float(win_rate * avg_win - (1 - win_rate) * avg_loss)
 
-    grouped = df.groupby(df["EntryTime"].dt.to_period(period))[pnl_col]
+    grouped = df.groupby(df["EntryTime"].dt.to_period(period.lower()))[pnl_col]
     return grouped.apply(_exp)
 
 
