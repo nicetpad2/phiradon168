@@ -115,13 +115,13 @@ def setup_output_directory(base_dir, dir_name):
         logging.info(f"      -> Directory exists or was created.")
         # Test write permissions
         test_file_path = os.path.join(output_path, ".write_test")
-        with open(test_file_path, "w", encoding='utf-8') as f:
+        with open(test_file_path, "w", encoding="utf-8") as f:
             f.write("test")
-        from src import config as cfg  # local import to avoid circular imports in tests
-        if str(test_file_path).startswith(str(cfg.DATA_DIR)):
+        # Remove the temporary file quietly regardless of location
+        try:
             os.remove(test_file_path)
-        else:
-            logging.warning(f"Ignoring removal of {test_file_path}: outside DATA_DIR")
+        except OSError:
+            logging.debug(f"Unable to remove test file {test_file_path}")
         logging.info(f"      -> การเขียนไฟล์ทดสอบสำเร็จ.")
         return output_path
     except OSError as e:
@@ -1039,14 +1039,15 @@ def clean_test_file(test_file_path: str) -> None:
     import logging
     from src import config as cfg
     logger = logging.getLogger(__name__)
-    if str(test_file_path).startswith(str(cfg.DATA_DIR)):
+    abs_path = os.path.realpath(test_file_path)
+    data_dir = os.path.realpath(str(cfg.DATA_DIR))
+    if abs_path.startswith(data_dir):
         os.remove(test_file_path)
     else:
+# noinspection PyUnresolvedReferences
         logger.warning(
             f"Ignoring removal of {test_file_path}: outside DATA_DIR"
         )
-
-
 # [Patch v5.7.3] Validate DataFrame for required columns and non-emptiness
 def validate_csv_data(df, required_cols=None):
     """Ensure ``df`` is non-empty and contains required columns.

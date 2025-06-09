@@ -10,6 +10,8 @@ import pandas as pd
 SESSION_TIMES_UTC = {"Asia": (22, 8), "London": (7, 16), "NY": (13, 21)}
 # [Patch v5.6.3] Track warned ranges to prevent log spam
 _WARNED_OUT_OF_RANGE = set()
+# Track warnings separately for custom session mappings
+_WARNED_OUT_OF_RANGE_CUSTOM = {}
 
 
 def get_session_tag(
@@ -47,13 +49,21 @@ def get_session_tag(
         global SESSION_TIMES_UTC
         try:
             session_times_utc_local = SESSION_TIMES_UTC
+            warned_set = _WARNED_OUT_OF_RANGE
         except NameError:
             logger.warning(
                 "get_session_tag: Global SESSION_TIMES_UTC not found, using default.")
             SESSION_TIMES_UTC = {"Asia": (22, 8), "London": (7, 16), "NY": (13, 21)}
             session_times_utc_local = SESSION_TIMES_UTC
+            warned_set = _WARNED_OUT_OF_RANGE
     else:
         session_times_utc_local = session_times_utc
+        key = id(session_times_utc)
+        entry = _WARNED_OUT_OF_RANGE_CUSTOM.get(key)
+        if entry is None or entry[0] is not session_times_utc:
+            entry = (session_times_utc, set())
+            _WARNED_OUT_OF_RANGE_CUSTOM[key] = entry
+        warned_set = entry[1]
 
     if pd.isna(timestamp):
         return "N/A"
@@ -87,13 +97,13 @@ def get_session_tag(
                     if hour >= start or hour <= end:
                         sessions.append(name)
         if not sessions:
-            hour_key = ts_utc.floor('h')
-            # ลดการ spam warning: ถ้า warn_once=True ให้เตือนแค่ครั้งเดียวสำหรับค่าชั่วโมงนั้น
-            if not warn_once or hour_key not in _WARNED_OUT_OF_RANGE:
-                # (1) **ถ้าต้องการปิด warning* ให้ comment บรรทัดต่อไปนี้ออก***
-                logger.warning(f"Timestamp {timestamp} is out of all session ranges")
+            hour_key = ts_utc.floor("h")
+            if not warn_once or hour_key not in warned_set:
+                logger.warning(
+                    f"Timestamp {timestamp} is out of all session ranges"
+                )
                 if warn_once:
-                    _WARNED_OUT_OF_RANGE.add(hour_key)
+                    warned_set.add(hour_key)
             return "N/A"
         return "/".join(sorted(sessions))
     except Exception as e:  # pragma: no cover - unexpected failures

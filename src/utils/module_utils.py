@@ -29,4 +29,21 @@ def safe_reload(module: ModuleType) -> ModuleType:
     if sys.modules.get(name) is not module:
         module = importlib.import_module(name)
 
-    return importlib.reload(module)
+    try:
+        orig_reload = getattr(importlib, "_orig_reload", importlib.reload)
+        return orig_reload(module)
+    except ModuleNotFoundError:
+        return importlib.import_module(name)
+
+
+# Expose a safer reload globally
+if not hasattr(importlib, "_orig_reload"):
+    importlib._orig_reload = importlib.reload
+
+    def _reload_wrapper(module: ModuleType) -> ModuleType:
+        try:
+            return importlib._orig_reload(module)
+        except ImportError:
+            return safe_reload(module)
+
+    importlib.reload = _reload_wrapper
