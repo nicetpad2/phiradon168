@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_wfv_monitor.py, tests/test_log_analysis_extra.py, tests/test_projectp_sweep_defaults.py
 - QA: pytest -q passed (870 tests)
 
+### 2025-06-13
+- [Patch v5.10.9] รองรับ resume เมื่อ summary.csv ขาดคอลัมน์ใน hyperparameter_sweep
+- New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
+- QA: pytest -q passed (871 tests)
+
 ### 2025-06-12
 
 - [Patch v6.1.7] เพิ่ม LSTM, ฟีเจอร์ Engulfing และตรวจจับ Drift รายช่วงเวลา
