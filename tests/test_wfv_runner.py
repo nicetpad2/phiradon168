@@ -1,4 +1,5 @@
 import logging
+import pandas as pd
 import wfv_runner
 
 
@@ -14,3 +15,11 @@ def test_run_walkforward_return_frame(caplog):
     assert result.shape[0] == 5
     assert 'failed' in result.columns
     assert any('walk-forward completed' in r.message for r in caplog.records)
+
+
+def test_run_walkforward_output_csv(tmp_path):
+    path = tmp_path / 'out.csv'
+    res = wfv_runner.run_walkforward(output_path=str(path))
+    assert path.exists()
+    df = pd.read_csv(path)
+    assert len(df) == len(res)

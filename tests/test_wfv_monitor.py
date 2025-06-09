@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 from src.wfv_monitor import walk_forward_validate
+import src.wfv_monitor as wfv_monitor
 
 
 def backtest_pass(train, test):
@@ -66,3 +67,31 @@ def test_threshold_boundary_pass():
 
     res = walk_forward_validate(df, bt, metrics, n_splits=2)
     assert not res["failed"].any()
+
+
+def test_walk_forward_loop_basic(tmp_path):
+    df = pd.DataFrame({"Close": range(10)}, index=pd.RangeIndex(10))
+    kpi = {"profit": 0.0, "winrate": 0.5, "maxdd": 0.2, "auc": 0.5}
+
+    out = tmp_path / "wfv.csv"
+
+    res = wfv_monitor.walk_forward_loop(
+        df,
+        backtest_pass,
+        kpi,
+        train_window=3,
+        test_window=2,
+        step=2,
+        output_path=str(out),
+    )
+
+    assert len(res) == 3
+    assert out.exists()
+    df_out = pd.read_csv(out)
+    assert len(df_out) == 3
+
+
+def test_walk_forward_loop_unsorted():
+    df = pd.DataFrame({"Close": range(5)}, index=[2, 1, 3, 4, 0])
+    with pytest.raises(ValueError):
+        wfv_monitor.walk_forward_loop(df, backtest_pass, {"profit": 0}, 2, 1, 1)

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import logging
 from typing import Callable, Dict, Iterable
+from pathlib import Path
 
 import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
@@ -67,3 +68,67 @@ def walk_forward_validate(
         results.append({"fold": fold, **metrics, "failed": fail})
 
     return pd.DataFrame(results)
+
+
+def walk_forward_loop(
+    df: pd.DataFrame,
+    backtest_func: Callable[[pd.DataFrame, pd.DataFrame], MetricDict],
+    kpi: Dict[str, float],
+    train_window: int,
+    test_window: int,
+    step: int,
+    output_path: str | None = None,
+) -> pd.DataFrame:
+    """Run sliding-window walk-forward validation and log each fold.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame ที่จัดเรียงตามเวลา
+    backtest_func : Callable
+        ฟังก์ชัน backtest ที่รับ ``train_df`` และ ``test_df``
+    kpi : dict
+        เกณฑ์ KPI ที่ใช้ตรวจสอบเช่น ``profit`` และ ``winrate``
+    train_window : int
+        ขนาดหน้าต่างข้อมูลสำหรับฝึก
+    test_window : int
+        ขนาดหน้าต่างข้อมูลสำหรับทดสอบ
+    step : int
+        จำนวนแถวที่เลื่อนไปในแต่ละรอบ
+    output_path : str, optional
+        หากระบุจะบันทึกผลแต่ละ fold ลง CSV
+
+    Returns
+    -------
+    pd.DataFrame
+        สรุปผลลัพธ์ของแต่ละ fold
+    """
+
+    if not df.index.is_monotonic_increasing:
+        raise ValueError("DataFrame index must be sorted")
+
+    rows = []
+    start = 0
+    fold = 0
+    while start + train_window + test_window <= len(df):
+        train_df = df.iloc[start : start + train_window]
+        test_df = df.iloc[start + train_window : start + train_window + test_window]
+        metrics = backtest_func(train_df, test_df)
+
+        failed = (
+            metrics.get("pnl", 0.0) < kpi.get("profit", float("-inf"))
+            or metrics.get("winrate", 0.0) < kpi.get("winrate", 0.0)
+            or metrics.get("maxdd", 0.0) > kpi.get("maxdd", float("inf"))
+            or metrics.get("auc", 0.0) < kpi.get("auc", 0.0)
+        )
+        row = {"fold": fold, **metrics, "failed": failed}
+        rows.append(row)
+
+        if output_path is not None:
+            df_out = pd.DataFrame([row])
+            df_out.to_csv(output_path, mode="a", header=not Path(output_path).exists(), index=False)
+
+        start += step
+        fold += 1
+
+    return pd.DataFrame(rows)
