@@ -222,3 +222,45 @@ def summarize_block_reasons(blocked_logs: list[dict]) -> pd.Series:
     reasons = [b.get("reason", "UNKNOWN") for b in blocked_logs if isinstance(b, dict)]
     return pd.Series(reasons).value_counts()
 
+
+# [Patch v6.1.6] Equity curve and expectancy analysis utilities
+def calculate_equity_curve(df: pd.DataFrame, pnl_col: str = "PnL") -> pd.Series:
+    """Return cumulative equity from trade PnL."""
+    if df.empty or pnl_col not in df:
+        return pd.Series(dtype=float)
+    pnl = pd.to_numeric(df[pnl_col], errors="coerce").fillna(0)
+    return pnl.cumsum()
+
+
+def calculate_expectancy_by_period(
+    df: pd.DataFrame, period: str = "H", pnl_col: str = "PnL"
+) -> pd.Series:
+    """Return expectancy grouped by time period (e.g., hourly)."""
+    if df.empty or pnl_col not in df or "EntryTime" not in df:
+        return pd.Series(dtype=float)
+    df = df.dropna(subset=["EntryTime"]).copy()
+    df[pnl_col] = pd.to_numeric(df[pnl_col], errors="coerce")
+    df = df.dropna(subset=[pnl_col])
+
+    def _exp(x: pd.Series) -> float:
+        wins = x[x > 0]
+        losses = x[x <= 0]
+        win_rate = (wins.count() / len(x)) if len(x) else 0.0
+        avg_win = wins.mean() if not wins.empty else 0.0
+        avg_loss = abs(losses.mean()) if not losses.empty else 0.0
+        return float(win_rate * avg_win - (1 - win_rate) * avg_loss)
+
+    grouped = df.groupby(df["EntryTime"].dt.to_period(period))[pnl_col]
+    return grouped.apply(_exp)
+
+
+def plot_equity_curve(curve: pd.Series):
+    """Return a matplotlib Figure of the equity curve."""
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    curve.plot(ax=ax)
+    ax.set_xlabel("trade")
+    ax.set_ylabel("equity")
+    return fig
+
