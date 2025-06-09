@@ -1,3 +1,8 @@
+### 2025-06-22
+- [Patch v6.3.3] Add optuna stub module for offline testing
+- New/Updated unit tests added for tests/test_optuna_stub.py
+- QA: pytest -q failed due to missing torch
+
 ### 2025-06-21
 - [Patch v6.3.2] Expose module-level logger and signal flags
 - New/Updated unit tests added for tests/test_config_defaults.py
