@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_wfv_runner.py
 - QA: pytest -q passed
 
+### 2025-06-11
+- [Patch v6.1.6] เพิ่มเครื่องมือวิเคราะห์ equity curve และทดสอบ WFV เพิ่มเติม
+- New/Updated unit tests added for tests/test_log_analysis_equity.py, tests/test_wfv_runner.py
+- QA: pytest -q passed (863 tests)
+
 ### 2025-06-09
 - [Patch v6.1.4] เพิ่ม walk_forward_loop และบันทึกผลเป็น CSV
 - New/Updated unit tests added for tests/test_wfv_monitor.py, tests/test_wfv_runner.py

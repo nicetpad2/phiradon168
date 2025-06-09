@@ -787,7 +787,7 @@ PAPER_MODE = False  # When True, bypass OMS block checks for paper trading
 ENABLE_KILL_SWITCH = True       # Enable/disable kill switch mechanism
 KILL_SWITCH_MAX_DD_THRESHOLD = 0.30 # ↑ Relax kill switch ให้เลิก block ช้าลง (30% drawdown)
 KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD = 5 # [Patch] Lower threshold for earlier soft cooldown
-MAX_DRAWDOWN_THRESHOLD = 0.15   # [Patch] Reduce drawdown threshold to block orders sooner
+MAX_DRAWDOWN_THRESHOLD = 0.10   # [Patch v6.1.6] Tighter drawdown block threshold
 logging.info(f"OMS Enabled: {OMS_ENABLED}")
 logging.info(f"Kill Switch Enabled: {ENABLE_KILL_SWITCH} (DD > {KILL_SWITCH_MAX_DD_THRESHOLD*100:.0f}%, Losses > {KILL_SWITCH_CONSECUTIVE_LOSSES_THRESHOLD})")
 logging.info(f"Max Drawdown Threshold (Block New Orders): {MAX_DRAWDOWN_THRESHOLD*100:.0f}%")
@@ -798,7 +798,7 @@ ENABLE_SPIKE_GUARD = True       # Enable/disable spike guard filter (mainly Lond
 ENABLE_SOFT_COOLDOWN = True     # Enable/disable soft cooldown logic
 POST_TRADE_COOLDOWN_BARS = 2  # Bars after closing trade before allowing new entry
 RECOVERY_MODE_CONSECUTIVE_LOSSES = 4 # Consecutive losses to enter recovery mode
-RECOVERY_MODE_LOT_MULTIPLIER = 0.5 # Lot size multiplier during recovery mode
+RECOVERY_MODE_LOT_MULTIPLIER = 0.3 # [Patch v6.1.6] Reduce lot size in recovery mode
 logging.info(f"Spike Guard Enabled: {ENABLE_SPIKE_GUARD}")
 logging.info(f"Post-Trade Cooldown: {POST_TRADE_COOLDOWN_BARS} bars")
 logging.info(f"Soft Cooldown Enabled: {ENABLE_SOFT_COOLDOWN}")

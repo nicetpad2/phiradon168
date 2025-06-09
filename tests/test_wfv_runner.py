@@ -1,5 +1,6 @@
 import logging
 import pandas as pd
+import pytest
 import wfv_runner
 
 
@@ -23,3 +24,10 @@ def test_run_walkforward_output_csv(tmp_path):
     assert path.exists()
     df = pd.read_csv(path)
     assert len(df) == len(res)
+
+
+def test_run_walkforward_missing_close(tmp_path):
+    path = tmp_path / 'data.csv'
+    pd.DataFrame({'Open': [1,2,3]}).to_csv(path, index=False)
+    with pytest.raises(KeyError):
+        wfv_runner.run_walkforward(data_path=str(path), nrows=3)
