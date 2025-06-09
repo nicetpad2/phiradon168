@@ -1,3 +1,8 @@
+### 2025-06-12
+- [Patch v6.1.7] Fix FutureWarning in calculate_expectancy_by_period
+- New/Updated unit tests added for tests/test_log_analysis_equity.py
+- QA: pytest -q passed (863 tests)
+
 ### 2025-06-10
 - [Patch v6.1.5] ปรับ run_walkforward ให้อ่านข้อมูลจริงจาก CSV
 - New/Updated unit tests added for tests/test_wfv_runner.py
