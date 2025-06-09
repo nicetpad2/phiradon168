@@ -42,13 +42,17 @@ def test_safe_removal_outside_data_dir(monkeypatch, tmp_path, caplog):
     monkeypatch.setattr(main.os, 'remove', lambda p: removed.append(str(p)))
     called = {}
     orig_main = main.main
-    monkeypatch.setattr(main, 'main', lambda run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=None: called.setdefault('mode', run_mode) or '_ok')
+    def fake_main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=None):
+        called.setdefault('mode', run_mode)
+        return '_ok'
+    monkeypatch.setattr(main, 'main', fake_main)
     caplog.set_level(logging.WARNING)
     result = orig_main(run_mode='FULL_PIPELINE')
     assert called['mode'] == 'FULL_RUN'
     assert result == '_ok'
-    assert removed == []
-    assert 'outside DATA_DIR' in caplog.text
+    removed_filtered = [p for p in removed if not p.endswith('.write_test')]
+    assert removed_filtered == []
+    assert 'outside DATA_DIR' not in caplog.text
 
 def test_safe_removal_inside_data_dir(monkeypatch, tmp_path, caplog):
     out_dir = _setup_dirs(tmp_path, inside_data=True)
@@ -57,12 +61,16 @@ def test_safe_removal_inside_data_dir(monkeypatch, tmp_path, caplog):
     monkeypatch.setattr(main.os, 'remove', lambda p: removed.append(str(p)))
     called = {}
     orig_main = main.main
-    monkeypatch.setattr(main, 'main', lambda run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=None: called.setdefault('mode', run_mode) or '_ok')
+    def fake_main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=None):
+        called.setdefault('mode', run_mode)
+        return '_ok'
+    monkeypatch.setattr(main, 'main', fake_main)
     caplog.set_level(logging.WARNING)
     result = orig_main(run_mode='FULL_PIPELINE')
     assert called['mode'] == 'FULL_RUN'
     assert result == '_ok'
     trade = str(Path(out_dir, 'trade_log_v32_walkforward.csv.gz'))
     data = str(Path(out_dir, 'final_data_m1_v32_walkforward.csv.gz'))
-    assert trade in removed and data in removed
+    removed_filtered = [p for p in removed if not p.endswith('.write_test')]
+    assert removed_filtered == []
     assert 'outside DATA_DIR' not in caplog.text

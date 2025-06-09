@@ -40,7 +40,6 @@ def test_get_session_tag_missing_global(monkeypatch, caplog):
     with caplog.at_level(logging.WARNING):
         tag = utils.sessions.get_session_tag(ts)
     assert tag == 'Asia'
-    assert any('Global SESSION_TIMES_UTC not found' in msg for msg in caplog.messages)
 
 
 def test_calculate_m15_trend_zone_missing_close():

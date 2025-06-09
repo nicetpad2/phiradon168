@@ -91,7 +91,10 @@ def test_clean_test_file_guard(tmp_path, caplog, monkeypatch):
     monkeypatch.setenv('DATA_DIR', str(tmp_path))
     import importlib
     import src.config as config
-    importlib.reload(config)
+    if 'src.config' not in sys.modules:
+        config = importlib.import_module('src.config')
+    else:
+        importlib.reload(config)
     import src.data_loader as dl_reload
     importlib.reload(dl_reload)
     inside_file = tmp_path / 'y.txt'
