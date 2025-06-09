@@ -8,6 +8,10 @@
 - New/Updated unit tests added for tests/test_config_defaults.py
 - QA: pytest -q passed
 
+### 2025-06-09
+- [Patch v6.3.3] Adjust safe removal logic and test shim
+- QA: pytest -q failed (test_main_safe_remove)
+
 ### 2025-06-21
 - [Patch v6.3.2] Add safety checks before removing trade and data files in main
 - New/Updated unit tests added for tests/test_main_safe_remove.py
