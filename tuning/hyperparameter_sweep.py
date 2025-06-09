@@ -117,10 +117,11 @@ def run_sweep(
     existing = set()
     if resume and os.path.exists(summary_path):
         df_exist = pd.read_csv(summary_path)
-        existing = set(
-            tuple(getattr(row, param) for param in params_grid)
-            for row in df_exist.itertuples(index=False)
-        )
+        # [Patch v5.10.9] Handle missing columns when resuming
+        for row in df_exist.itertuples(index=False):
+            row_dict = row._asdict()
+            combo = tuple(row_dict.get(param) for param in params_grid)
+            existing.add(combo)
 
     param_names = list(params_grid.keys())
     param_values = [params_grid[k] for k in param_names]
