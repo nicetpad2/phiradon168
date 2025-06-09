@@ -16,6 +16,7 @@ import argparse
 import subprocess
 import json
 
+
 # [Patch v6.3.1] Ensure working directory fallback on import
 try:
     os.getcwd()
@@ -23,6 +24,7 @@ except Exception:
     project_root = Path(__file__).resolve().parent
     os.chdir(project_root)
     print(f"[Info] Changed working directory to project root: {project_root}")
+
 import pandas as pd
 from typing import Dict, List
 import main as pipeline

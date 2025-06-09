@@ -647,7 +647,7 @@ def show_system_status(context=""):  # pragma: no cover
 
     logging.info(f"[{context}] RAM: {ram_str} | {' | '.join(gpu_str_list)}")
 
-# [Patch v6.3.0] Provide helper to check GPU availability via PyTorch
+# [Patch v6.3.1] ตรวจสอบจำนวน GPU สำหรับ PyTorch และจับข้อผิดพลาด MKL
 def check_gpu_availability():
     """Return the number of GPUs available or 0 if unavailable."""
     try:
