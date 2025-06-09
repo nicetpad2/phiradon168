@@ -5,6 +5,7 @@ import csv
 from pathlib import Path
 try:  # [Patch v5.10.2] allow import without heavy dependencies
     from src.config import logger, OUTPUT_DIR
+    import src.config as config
 except Exception:  # pragma: no cover - fallback logger for tests
     logger = logging.getLogger("ProjectP")
     OUTPUT_DIR = Path("output_default")
@@ -148,7 +149,26 @@ def run_report() -> None:
 def run_full_pipeline() -> None:
     """รันทุกโหมดต่อเนื่องกัน."""
     run_preprocess()
+    # Step 2: Hyperparameter Sweep
     run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
+    # Step 3: Auto-apply best hyperparameters from sweep
+    summary_file = os.path.join(config.OUTPUT_DIR, 'hyperparameter_summary.csv')
+    if os.path.exists(summary_file):
+        df = pd.read_csv(summary_file)
+        # Assumes 'metric' column indicates performance; sort descending
+        best = df.sort_values(by='metric', ascending=False).iloc[0]
+        config.LEARNING_RATE = best['learning_rate']
+        config.DEPTH = int(best['depth'])
+        config.L2_LEAF_REG = int(best['l2_leaf_reg'])
+        logger.info(
+            f"Applied best hyperparameters: lr={config.LEARNING_RATE}, "
+            f"depth={config.DEPTH}, l2={config.L2_LEAF_REG}"
+        )
+    else:
+        logger.warning(
+            f"Hyperparameter summary not found at {summary_file}, using default parameters."
+        )
+
     run_threshold_optimization()
     run_backtest()
     run_report()

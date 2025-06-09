@@ -1,0 +1,5 @@
+[Patch v6.2.6] Apply best hyperparams in full pipeline
+- Read hyperparameter_summary.csv after sweep
+- Update config.LEARNING_RATE, DEPTH, L2_LEAF_REG
+- Log applied parameters or warn when summary missing
+- QA: Skipped tests per user request
