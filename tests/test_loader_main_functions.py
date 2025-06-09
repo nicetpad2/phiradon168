@@ -4,7 +4,9 @@ import numpy as np
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+import types
 import pytest
+sys.modules.setdefault("torch", types.SimpleNamespace())
 import src.data_loader as dl
 import src.main as main
 
@@ -74,3 +76,25 @@ def test_convert_to_float32_dtype():
 def test_write_test_file_creates(tmp_path):
     path = dl.write_test_file(str(tmp_path / 'w.txt'))
     assert os.path.exists(path)
+
+
+def test_clean_test_file_guard(tmp_path, caplog, monkeypatch):
+    """Ensure files outside DATA_DIR are not deleted."""
+    caplog.set_level('WARNING')
+    outside_file = tmp_path / 'x.txt'
+    outside_file.write_text('hi', encoding='utf-8')
+    dl.clean_test_file(str(outside_file))
+    assert outside_file.exists()
+    assert 'outside DATA_DIR' in caplog.text
+
+    # Inside DATA_DIR should be removed
+    monkeypatch.setenv('DATA_DIR', str(tmp_path))
+    import importlib
+    import src.config as config
+    importlib.reload(config)
+    import src.data_loader as dl_reload
+    importlib.reload(dl_reload)
+    inside_file = tmp_path / 'y.txt'
+    inside_file.write_text('hi', encoding='utf-8')
+    dl_reload.clean_test_file(str(inside_file))
+    assert not inside_file.exists()
