@@ -1,3 +1,8 @@
+### 2025-06-18
+- [Patch v6.2.6] Update test_data_cache to use tmp_path and safe removal logic
+- New/Updated unit tests added for tests/test_data_cache.py
+- QA: Skipped tests per user request
+
 ### 2025-06-16
 - [Patch v6.2.4] Add CPU-only fallback for missing CUDA libraries and Colab test script
 - QA: pytest -q passed
