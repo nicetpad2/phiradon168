@@ -1,4 +1,8 @@
 ### 2025-06-09
+- [Patch v5.9.5] เรียก qa_check_and_create_outputs ก่อนเริ่ม run_mode เพื่อลด error log ที่ไม่จำเป็น
+- New/Updated unit tests added for none (script patch)
+- QA: pytest -q passed
+-
 - [Patch v5.9.4] Increase TP multiplier to 3x ATR
 - New/Updated unit tests added for tests/unit/test_strategy_additional_coverage.py
 - QA: pytest -q passed (856 tests)
