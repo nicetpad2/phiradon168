@@ -239,6 +239,7 @@
   - Parse raw trade logs and compute hourly win rates
   - Provide utilities for risk sizing, TSL statistics, and expectancy metrics
   - Generate equity curves and expectancy-by-period summaries
+  - Provide `plot_expectancy_by_period` for visualizing expectancy trends
 - **Modules:** `src/log_analysis.py`
 
 ### [Event_ETL_Manager](src/event_etl.py)

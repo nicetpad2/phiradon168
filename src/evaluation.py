@@ -11,6 +11,7 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
 )
+from scipy.stats import wasserstein_distance
 from src.config import logger
 from src.utils import load_json_with_comments
 
