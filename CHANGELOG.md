@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_evaluation_drift_summary.py, tests/test_log_analysis_report.py, tests/test_projectp_sweep_defaults.py
 - QA: pytest -q passed
 
+### 2025-06-09
+- [Patch v6.2.1] ปรับปรุง hyperparameter sweep และฟังก์ชัน drift summary
+- New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py, tests/test_wfv_monitor.py
+- QA: pytest -q passed
+
 ### 2025-06-13
 - [Patch v6.1.8] เพิ่มฟังก์ชัน monitor_drift และ plot_expectancy_by_period
 - New/Updated unit tests added for tests/test_wfv_monitor.py, tests/test_log_analysis_extra.py, tests/test_projectp_sweep_defaults.py
