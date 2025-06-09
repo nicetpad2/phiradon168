@@ -25,6 +25,7 @@ from src.utils.data_utils import convert_thai_datetime, prepare_csv_auto
 from src.utils.resource_plan import get_resource_plan, save_resource_plan
 from src.utils.hardware import estimate_resource_plan
 from src.utils.json_utils import load_json_with_comments
+from src.utils.module_utils import safe_reload
 from src.utils.settings import load_settings, Settings
 from src.utils.leakage import hash_df, timestamp_split, assert_no_overlap
 
@@ -55,4 +56,5 @@ __all__ = [
     "assert_no_overlap",
     "load_settings",
     "Settings",
+    "safe_reload",
 ]
