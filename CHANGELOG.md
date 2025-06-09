@@ -1,3 +1,8 @@
+### 2025-06-18
+- [Patch v6.2.6] Apply best hyperparameters after sweep in run_full_pipeline
+- New/Updated unit tests added for none (user skipped)
+- QA: Skipped tests per user request
+
 ### 2025-06-16
 - [Patch v6.2.4] Add CPU-only fallback for missing CUDA libraries and Colab test script
 - QA: pytest -q passed
