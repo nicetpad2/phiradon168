@@ -3,10 +3,10 @@
 - QA: pytest -q passed
 
 
-### 2025-06-16
-- [Patch v6.2.5] Guard file removal in data_loader to avoid accidental deletion outside DATA_DIR
-- New/Updated unit tests added for tests/test_loader_main_functions.py
-- QA: pytest -q failed (environment issues)
+### 2025-06-17
+- [Patch v6.2.5] Add CPU-only fallback for missing CUDA libraries in src/adaptive.py
+- New/Updated unit tests added for none (user skipped)
+- QA: Skipped tests per user request
 
 
 ### 2025-06-15
