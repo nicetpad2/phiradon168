@@ -1,4 +1,5 @@
-
+# [Patch] package marker for src/
+# Enables imports like `import src.config` under pytest
 """Top-level package for project modules with lazy imports.
 
 This module exposes frequently used submodules while avoiding heavy

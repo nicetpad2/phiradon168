@@ -1,3 +1,7 @@
+### 2025-06-22
+- [Patch v6.3.3] Add package marker comments in src/__init__.py
+- QA: pytest -q passed
+
 ### 2025-06-21
 - [Patch v6.3.2] Expose module-level logger and signal flags
 - New/Updated unit tests added for tests/test_config_defaults.py
