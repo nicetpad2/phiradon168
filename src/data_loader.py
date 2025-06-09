@@ -117,7 +117,11 @@ def setup_output_directory(base_dir, dir_name):
         test_file_path = os.path.join(output_path, ".write_test")
         with open(test_file_path, "w", encoding='utf-8') as f:
             f.write("test")
-        os.remove(test_file_path)
+        from src import config as cfg  # local import to avoid circular imports in tests
+        if str(test_file_path).startswith(str(cfg.DATA_DIR)):
+            os.remove(test_file_path)
+        else:
+            logging.warning(f"Ignoring removal of {test_file_path}: outside DATA_DIR")
         logging.info(f"      -> การเขียนไฟล์ทดสอบสำเร็จ.")
         return output_path
     except OSError as e:
