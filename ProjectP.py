@@ -266,9 +266,6 @@ if __name__ == "__main__":
     # [Patch v6.3.5] ตรวจสอบไฟล์ผลลัพธ์ก่อนและหลังการทำงาน
     output_dir = OUTPUT_DIR
     features_path = os.path.join(output_dir, "features_main.json")
-    trade_log_buy = os.path.join(output_dir, "trade_log_BUY.csv")
-    trade_log_sell = os.path.join(output_dir, "trade_log_SELL.csv")
-    trade_log_normal = os.path.join(output_dir, "trade_log_NORMAL.csv")
 
     if not os.path.exists(features_path):
         logger.warning(
@@ -276,6 +273,7 @@ if __name__ == "__main__":
         )
         try:
             from src import config as cfg
+            os.makedirs(output_dir, exist_ok=True)
             feature_catalog = build_feature_catalog(
                 data_dir=getattr(cfg, "DATA_DIR", output_dir),
                 output_dir=output_dir,
@@ -298,10 +296,20 @@ if __name__ == "__main__":
             os.path.getsize(features_path),
         )
 
-    ensure_output_files([features_path, trade_log_buy, trade_log_sell, trade_log_normal])
+    # [Patch v6.4.4] Dynamic trade log detection
+    import glob
+    trade_pattern = os.path.join(output_dir, "trade_log_*.csv")
+    log_files = glob.glob(trade_pattern)
+    if not log_files:
+        logger.error("No trade_log CSV found in %s; aborting.", output_dir)
+        sys.exit(1)
+    trade_log_file = log_files[0]
+    logger.info("Loaded trade log: %s", os.path.basename(trade_log_file))
+
+    ensure_output_files([features_path, trade_log_file])
     try:
         run_mode(args.mode)
-        ensure_output_files([features_path, trade_log_buy, trade_log_sell, trade_log_normal])
+        ensure_output_files([features_path, trade_log_file])
 
     except KeyboardInterrupt:
         print("\n(Stopped) การทำงานถูกยกเลิกโดยผู้ใช้.")

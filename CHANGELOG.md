@@ -13,6 +13,12 @@
 - New/Updated unit tests added for none (uses existing coverage)
 - QA: pytest -q passed (884 tests)
 
+### 2025-06-28
+- [Patch v6.4.4] Dynamic trade log detection and loading
+- Updated ProjectP.py with glob-based lookup for trade_log_*.csv
+- New/Updated unit tests added for tests/test_projectp_fallback.py, tests/test_projectp_nvml.py
+- QA: pytest -q passed (884 tests)
+
 ### 2025-06-26
 - [Patch v6.4.0] Ensure project modules importable by setting sys.path and working directory
 - QA: pytest -q failed (3 failures)
