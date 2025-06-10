@@ -250,7 +250,12 @@ def calculate_expectancy_by_period(
         avg_loss = abs(losses.mean()) if not losses.empty else 0.0
         return float(win_rate * avg_win - (1 - win_rate) * avg_loss)
 
-    grouped = df.groupby(df["EntryTime"].dt.to_period(period.lower()))[pnl_col]
+    entry_time = df["EntryTime"]
+    if entry_time.dt.tz is not None:
+        entry_time = entry_time.dt.tz_localize(None)
+    grouped = df.groupby(
+        entry_time.dt.to_period(period.lower())
+    )[pnl_col]  # [Patch] handle timezone to avoid warning
     return grouped.apply(_exp)
 
 
