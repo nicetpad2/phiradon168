@@ -25,6 +25,7 @@ python profile_backtest.py XAUUSD_M1.csv --rows 1000 --console_level WARNING
 ## การใช้งานสคริปต์
 - `python ProjectP.py` เตรียมข้อมูลและเรียก pipeline หลัก
 - `python tuning/hyperparameter_sweep.py` ทดสอบค่า hyperparameter
+- ก่อนรัน sweep ต้องทำ Walk-Forward Validation ให้สร้างไฟล์ `logs/trade_log_<DATE>.csv` ให้เรียบร้อย
 - `python main.py --stage backtest` รัน backtest ตามค่าใน `config/pipeline.yaml`
 - `python profile_backtest.py <CSV>` ตรวจสอบ bottleneck
 - ระบบมีตัวกรองความผันผวน (Volatility Filter) ไม่เปิดออร์เดอร์หากค่า `Volatility_Index` ต่ำกว่า 1.0
@@ -38,3 +39,6 @@ flowchart TD
     C --> D[Meta-Model Training]
     D --> E[Export Artifacts]
 ```
+
+## การสรุป Metrics หลัง Sweep
+หลังจากจบการรัน `tuning/hyperparameter_sweep.py` ให้นำผล AUC/K-Fold จากทุกรอบมาเก็บในไฟล์ `metrics_summary.csv` และแสดงคอนฟิกอันดับสูงสุด 5 รายการบนหน้าจอ

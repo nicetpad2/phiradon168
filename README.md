@@ -65,6 +65,7 @@ python ProjectP.py --mode all
 ## การใช้งานสคริปต์หลัก
 - `python ProjectP.py` เตรียมข้อมูลพื้นฐานและรันขั้นตอนหลัก
 - `python tuning/hyperparameter_sweep.py` รันฝึกโมเดลหลายค่าพารามิเตอร์
+- ก่อนรัน sweep ควรสั่ง `python main.py --stage all` เพื่อสร้างไฟล์ `logs/trade_log_<DATE>.csv` ให้ครบถ้วน
 - `python threshold_optimization.py` หา threshold ที่ดีที่สุดด้วย Optuna
 - `python main.py --stage backtest` รัน backtest พร้อม config ใน `config/pipeline.yaml`
 - `python main.py --stage all` ทำ Walk-Forward Validation ทั้งชุด
@@ -225,7 +226,7 @@ fig.savefig('summary.png')
 Updated for patch 5.8.5.
 
 Patch 5.7.8 resolves font configuration parsing errors when plotting.
-
-
+## สรุป Metrics หลัง Hyperparameter Sweep
+เมื่อรัน `python tuning/hyperparameter_sweep.py` จนครบทุกค่าแล้ว ให้นำผล AUC/K-Fold จากแต่ละรอบมาเขียนลงไฟล์ `metrics_summary.csv` และแสดงคอนฟิกที่มีค่า AUC สูงสุด 5 อันดับแรกบนหน้าจอ
 ## Vendored Libraries
 โฟลเดอร์ `vendor/ta/` นำโค้ดไลบรารี ta เวอร์ชัน 0.11.0 มารวมไว้เป็นสำรอง หากไม่ต้องการสามารถติดตั้ง `ta` จาก PyPI และลบโฟลเดอร์นี้ได้
