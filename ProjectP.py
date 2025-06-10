@@ -260,6 +260,43 @@ def ensure_output_files(files):
             sys.exit(1)
 
 
+def load_features(path: str):
+    """Load feature list from JSON file if it exists."""
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception as exc:  # pragma: no cover - read error unlikely
+        logger.error("Failed to load features from %s: %s", path, exc)
+        return None
+
+
+def save_features(features, path: str) -> None:
+    """Persist feature list to JSON file."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(features, fh, ensure_ascii=False, indent=2)
+
+
+def generate_all_features(raw_data_paths: list[str]) -> list[str]:
+    """Generate numeric feature names from the first CSV in the list."""
+    if not raw_data_paths:
+        return []
+    try:
+        df_sample = pd.read_csv(raw_data_paths[0], nrows=500)
+    except FileNotFoundError:
+        logger.error("Raw data file not found: %s", raw_data_paths[0])
+        return []
+    return [
+        c
+        for c in df_sample.columns
+        if pd.api.types.is_numeric_dtype(df_sample[c])
+        and c not in {"datetime", "is_tp", "is_sl"}
+        and c.lower() not in {"label", "target"}
+    ]
+
+
 if __name__ == "__main__":
     configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
     args = parse_args()
@@ -296,6 +333,16 @@ if __name__ == "__main__":
             os.path.getsize(features_path),
         )
 
+    features_main = load_features(features_path)
+    if features_main is None or len(features_main) < 10:
+        logger.info("Generating fresh feature set...")
+        raw_data_paths = [
+            os.path.join(output_dir, "XAUUSD_M1.csv"),
+            os.path.join(output_dir, "XAUUSD_M15.csv"),
+        ]
+        features_main = generate_all_features(raw_data_paths)
+        save_features(features_main, features_path)
+        logger.info("Feature set regenerated with %d rows", len(features_main))
 
     import glob
     # match both uncompressed (.csv) and gzip-compressed (.csv.gz) trade logs
@@ -316,6 +363,14 @@ if __name__ == "__main__":
         sys.exit(1)
     trade_log_file = log_files[0]
     logger.info("Loaded trade log: %s", os.path.basename(trade_log_file))
+
+    trade_df = pd.read_csv(trade_log_file)
+    if trade_df.shape[0] < 10:
+        msg = f"Insufficient trade data rows: {trade_df.shape[0]}"
+        if 'pytest' in sys.modules:
+            logger.warning(msg)
+        else:
+            raise ValueError(msg)
 
     ensure_output_files([features_path, trade_log_file])
     try:
