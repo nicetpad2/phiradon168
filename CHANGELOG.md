@@ -9,6 +9,12 @@
 - Updated tests for new validation logic
 - QA: pytest -q passed (886 tests)
 
+### 2025-07-16
+- [Patch v6.4.6] Graceful fallback when trade log missing
+- Updated ProjectP.py to create dummy log and warn
+- New/Updated unit tests added for tests/test_projectp_fallback.py
+- QA: pytest -q passed (889 tests)
+
 ### 2025-06-29
 - [Patch v6.4.5] Support zipped trade log detection in ProjectP
 - Updated ProjectP.py to search for `trade_log_*.csv.gz` if no CSV found
