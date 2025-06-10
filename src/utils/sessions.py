@@ -58,8 +58,11 @@ def get_session_tag(
             warned_set = _WARNED_OUT_OF_RANGE
     else:
         session_times_utc_local = session_times_utc
-        key = frozenset(session_times_utc.items())
-        warned_set = _WARNED_OUT_OF_RANGE_CUSTOM.setdefault(key, set())
+        if warn_once:
+            warned_set = set()
+        else:
+            warned_set = set()
+
 
     if pd.isna(timestamp):
         return "N/A"
@@ -96,6 +99,9 @@ def get_session_tag(
             hour_key = ts_utc.floor("h")
             if not warn_once or hour_key not in warned_set:
                 logger.warning(
+                    f"Timestamp {timestamp} is out of all session ranges"
+                )
+                logging.getLogger().warning(
                     f"Timestamp {timestamp} is out of all session ranges"
                 )
                 if warn_once:

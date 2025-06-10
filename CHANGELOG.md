@@ -1463,3 +1463,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_function_registry.py
 - QA: pytest -q passed (38 tests)
 
+
+### 2025-06-09
+- [Patch v6.3.4] Fix cleanup guards and session warnings
+- New/Updated unit tests added for src.data_loader, src.utils.sessions
+- QA: pytest -q passed (partial)
