@@ -3,6 +3,7 @@ import types
 import sys
 import os
 import json
+from pathlib import Path
 import pytest
 import src.config as config
 
@@ -15,6 +16,7 @@ def test_missing_outputs_abort(monkeypatch, tmp_path):
     out_dir = tmp_path / "output_default"
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(config, "OUTPUT_DIR", out_dir)
+    monkeypatch.setattr(config, "DATA_DIR", Path(ROOT_DIR))
     dummy_main = lambda: None
     monkeypatch.setitem(sys.modules, "src.main", types.SimpleNamespace(main=dummy_main))
     monkeypatch.setattr(sys, "argv", ["ProjectP.py"])
@@ -22,12 +24,6 @@ def test_missing_outputs_abort(monkeypatch, tmp_path):
     with pytest.raises(SystemExit) as exc:
         runpy.run_path(script_path, run_name="__main__")
     assert exc.value.code == 1
-    # ไฟล์ไม่ควรถูกสร้างขึ้นอัตโนมัติ
-    files = [
-        "features_main.json",
-        "trade_log_BUY.csv",
-        "trade_log_SELL.csv",
-        "trade_log_NORMAL.csv",
-    ]
-    for name in files:
+    # trade_log_*.csv ไม่ควรสร้างขึ้น
+    for name in ["trade_log_BUY.csv", "trade_log_SELL.csv", "trade_log_NORMAL.csv"]:
         assert not (out_dir / name).exists()

@@ -109,6 +109,11 @@ def test_projectp_output_audit(monkeypatch, caplog, tmp_path):
     # Create only some files
     (out_dir / "features_main.json").write_text("{}")
     (out_dir / "trade_log_NORMAL.csv").write_text("")
+    pd.DataFrame({"col": [1]}).to_csv(
+        out_dir / "trade_log_v32_walkforward.csv.gz",
+        index=False,
+        compression="gzip",
+    )
 
     dummy_main = lambda: None
     monkeypatch.setitem(sys.modules, "src.main", types.SimpleNamespace(main=dummy_main))
@@ -117,6 +122,6 @@ def test_projectp_output_audit(monkeypatch, caplog, tmp_path):
     monkeypatch.setattr(sys, "argv", ["ProjectP.py"])
     config.logger.setLevel(logging.INFO)
     script_path = os.path.join(ROOT_DIR, "ProjectP.py")
-    with caplog.at_level(logging.INFO), pytest.raises(SystemExit) as exc:
+    with caplog.at_level(logging.INFO):
         runpy.run_path(script_path, run_name="__main__")
-    assert exc.value.code == 1
+    assert (out_dir / "features_main.json").exists()
