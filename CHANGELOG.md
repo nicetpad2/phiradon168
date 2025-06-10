@@ -1,3 +1,9 @@
+### 2025-06-29
+- [Patch v6.4.5] Support zipped trade log detection in ProjectP
+- Updated ProjectP.py to search for `trade_log_*.csv.gz` if no CSV found
+- New/Updated unit tests added for tests/test_projectp_nvml.py
+- QA: pytest -q passed
+
 ### 2025-06-26
 - [Patch v6.4.1] Fix meta-classifier auto-training invocation
 - Load walk-forward trade log before calling auto_train_meta_classifiers
