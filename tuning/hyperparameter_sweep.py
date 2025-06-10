@@ -38,19 +38,42 @@ def _create_placeholder_trade_log(path: str) -> None:
     logger.warning(f"สร้าง trade log ตัวอย่างที่ {path}")
 from src.training import real_train_func
 
-# [Patch v5.9.4] Default trade log path under configured OUTPUT_DIR
+# [Patch v6.3.0] Default trade log path under configured OUTPUT_DIR
 DEFAULT_TRADE_LOG = os.path.join(
     DefaultConfig.OUTPUT_DIR, "trade_log_v32_walkforward.csv.gz"
 )
-# [Patch v5.9.5] Fallback to alternative trade log locations
+
+# [Patch v6.3.0] Dynamic fallback: หากไฟล์ DEFAULT_TRADE_LOG ไม่พบ
 if not os.path.exists(DEFAULT_TRADE_LOG):
-    alt_path = os.path.join(DefaultConfig.OUTPUT_DIR, "trade_log_v32_walkforward.csv")
-    if os.path.exists(alt_path):
-        DEFAULT_TRADE_LOG = alt_path
+    import glob
+    pattern = os.path.join(
+        DefaultConfig.OUTPUT_DIR, "trade_log_*walkforward*.csv*"
+    )
+    candidates = glob.glob(pattern)
+    if candidates:
+        # เลือกไฟล์ล่าสุดตามการ sort
+        DEFAULT_TRADE_LOG = sorted(candidates)[-1]
+        logger.info(
+            "[Patch v6.3.0] Found dynamic DEFAULT_TRADE_LOG: %s", DEFAULT_TRADE_LOG
+        )
     else:
-        simple_path = os.path.join(DefaultConfig.OUTPUT_DIR, "trade_log_NORMAL.csv")
-        if os.path.exists(simple_path):
-            DEFAULT_TRADE_LOG = simple_path
+        # fallback เดิม กรณีที่ไม่พบไฟล์ pattern เดิม
+        alt_gz = os.path.join(
+            DefaultConfig.OUTPUT_DIR, "trade_log_v32_walkforward.csv"
+        )
+        if os.path.exists(alt_gz):
+            DEFAULT_TRADE_LOG = alt_gz
+        else:
+            simple_path = os.path.join(
+                DefaultConfig.OUTPUT_DIR, "trade_log_NORMAL.csv"
+            )
+            if os.path.exists(simple_path):
+                DEFAULT_TRADE_LOG = simple_path
+            else:
+                logger.warning(
+                    "[Patch v6.3.0] No walk-forward trade log found in %s; "
+                    "will require --trade_log_path", DefaultConfig.OUTPUT_DIR
+                )
 
 
 def _parse_csv_list(text: str, cast: Callable) -> List:
