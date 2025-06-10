@@ -38,3 +38,7 @@ def test_default_parameters():
     assert isinstance(cfg.logger, logging.Logger)
     assert cfg.USE_MACD_SIGNALS is True
     assert cfg.USE_RSI_SIGNALS is True
+    assert hasattr(cfg, "AUTO_THRESHOLD_TUNING")
+    assert cfg.AUTO_THRESHOLD_TUNING is False
+    assert hasattr(cfg, "MODELS_DIR")
+    assert cfg.MODELS_DIR.exists()
