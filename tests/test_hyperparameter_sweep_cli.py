@@ -242,3 +242,16 @@ def test_parse_args_custom_params():
     assert args.param_colsample_bylevel == '0.6,0.9'
 
 
+def test_default_trade_log_dynamic_lookup(monkeypatch, tmp_path):
+    """DEFAULT_TRADE_LOG ควรค้นหาไฟล์ walk-forward ที่มีอยู่แบบไดนามิก"""
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    dynamic_log = out_dir / "trade_log_v33_walkforward_custom.csv.gz"
+    pd.DataFrame({"profit": [1]}).to_csv(dynamic_log, index=False, compression="gzip")
+
+    import importlib, sys
+    monkeypatch.setattr(sys.modules['src.config'].DefaultConfig, 'OUTPUT_DIR', str(out_dir))
+    hs_reload = importlib.reload(hs)
+    assert hs_reload.DEFAULT_TRADE_LOG == str(dynamic_log)
+
+

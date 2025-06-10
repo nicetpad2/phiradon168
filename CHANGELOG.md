@@ -1,3 +1,8 @@
+### 2025-07-14
+- [Patch v6.3.0] Dynamic walk-forward trade log lookup in hyperparameter_sweep
+- New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
+- QA: pytest -q passed (886 tests)
+
 ### 2025-06-29
 - [Patch v6.4.5] Support zipped trade log detection in ProjectP
 - Updated ProjectP.py to search for `trade_log_*.csv.gz` if no CSV found
