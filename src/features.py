@@ -1725,6 +1725,22 @@ def tag_engulfing_patterns(df: pd.DataFrame) -> pd.DataFrame:
     return df_out
 
 
+# [Patch v6.4.3] Build feature catalog from sample M1 data
+def build_feature_catalog(data_dir: str, output_dir: str) -> list:
+    """Generate numeric feature list from the raw M1 CSV."""
+    m1_path = os.path.join(data_dir, "XAUUSD_M1.csv")
+    if not os.path.exists(m1_path):
+        raise FileNotFoundError(f"M1 data not found: {m1_path}")
+    df_sample = pd.read_csv(m1_path, nrows=500)
+    features = [
+        c
+        for c in df_sample.columns
+        if c not in {"datetime", "is_tp", "is_sl"}
+        and pd.api.types.is_numeric_dtype(df_sample[c])
+    ]
+    return features
+
+
 __all__ = [
     "ema",
     "sma",
@@ -1756,6 +1772,7 @@ __all__ = [
     "analyze_feature_importance_shap",
     "save_features_parquet",
     "load_features_parquet",
+    "build_feature_catalog",
 ]
 
 

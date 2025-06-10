@@ -8,6 +8,11 @@
 - New/Updated unit tests added for src/utils/auto_train_meta_classifiers.py
 - QA: pytest -q passed (883 tests)
 
+### 2025-06-27
+- [Patch v6.4.3] Auto-generate features_main.json if missing
+- New/Updated unit tests added for none (uses existing coverage)
+- QA: pytest -q passed (884 tests)
+
 ### 2025-06-26
 - [Patch v6.4.0] Ensure project modules importable by setting sys.path and working directory
 - QA: pytest -q failed (3 failures)

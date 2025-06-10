@@ -58,6 +58,7 @@ from typing import Dict, List
 import main as pipeline
 from config_loader import update_config_from_dict  # [Patch] dynamic config update
 from wfv_runner import run_walkforward  # [Patch] walk-forward helper
+from src.features import build_feature_catalog
 
 # Default grid for hyperparameter sweep
 DEFAULT_SWEEP_PARAMS: Dict[str, List[float]] = {
@@ -268,6 +269,35 @@ if __name__ == "__main__":
     trade_log_buy = os.path.join(output_dir, "trade_log_BUY.csv")
     trade_log_sell = os.path.join(output_dir, "trade_log_SELL.csv")
     trade_log_normal = os.path.join(output_dir, "trade_log_NORMAL.csv")
+
+    if not os.path.exists(features_path):
+        logger.warning(
+            f"features_main.json not found in {output_dir}; attempting to generate it."
+        )
+        try:
+            from src import config as cfg
+            feature_catalog = build_feature_catalog(
+                data_dir=getattr(cfg, "DATA_DIR", output_dir),
+                output_dir=output_dir,
+            )
+            with open(features_path, "w", encoding="utf-8") as fp:
+                json.dump(feature_catalog, fp, ensure_ascii=False, indent=2)
+            logger.info(
+                "Generated features_main.json with %d entries.",
+                len(feature_catalog),
+            )
+        except ImportError as ie:
+            logger.error("Cannot import feature builder: %s. Aborting.", ie)
+            sys.exit(1)
+        except Exception as ex:
+            logger.error("Failed to generate features_main.json: %s. Aborting.", ex)
+            sys.exit(1)
+    else:
+        logger.info(
+            "Loaded existing features_main.json (%d bytes)",
+            os.path.getsize(features_path),
+        )
+
     ensure_output_files([features_path, trade_log_buy, trade_log_sell, trade_log_normal])
     try:
         run_mode(args.mode)
