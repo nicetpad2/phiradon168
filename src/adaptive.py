@@ -8,7 +8,9 @@ import warnings
 try:
     import torch
 except Exception as e:  # ModuleNotFoundError or OSError
-    warnings.warn(f"torch unavailable ({e}), defaulting to CPU-only mode")
+    logging.warning(
+        "torch unavailable (%s), defaulting to CPU-only mode", e
+    )  # [Patch] use logging to avoid runtime warning
 
     class _DummyCuda:
         def is_available(self):
