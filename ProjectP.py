@@ -296,12 +296,16 @@ if __name__ == "__main__":
             os.path.getsize(features_path),
         )
 
-    # [Patch v6.4.4] Dynamic trade log detection
+    # [Patch v6.4.5] Dynamic trade log detection: support .csv and .csv.gz
     import glob
-    trade_pattern = os.path.join(output_dir, "trade_log_*.csv")
+    # match both uncompressed (.csv) and gzip-compressed (.csv.gz) trade logs
+    trade_pattern = os.path.join(output_dir, "trade_log_*.csv*")
     log_files = glob.glob(trade_pattern)
     if not log_files:
-        logger.error("No trade_log CSV found in %s; aborting.", output_dir)
+        logger.error(
+            "[Patch v6.4.5] No trade_log CSV or CSV.GZ found in %s; aborting.",
+            output_dir,
+        )
         sys.exit(1)
     trade_log_file = log_files[0]
     logger.info("Loaded trade log: %s", os.path.basename(trade_log_file))
