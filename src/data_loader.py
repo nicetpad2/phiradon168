@@ -1039,9 +1039,8 @@ def clean_test_file(test_file_path: str) -> None:
     import logging
     from src import config as cfg
     logger = logging.getLogger(__name__)
-    abs_path = os.path.realpath(test_file_path)
-    data_dir = os.path.realpath(str(cfg.DATA_DIR))
-    if abs_path.startswith(data_dir):
+    abs_path = os.path.realpath(test_file_path); data_dir = os.path.realpath(str(cfg.DATA_DIR))
+    if abs_path.startswith(data_dir) or os.path.commonpath([abs_path, data_dir]) == data_dir:
         os.remove(test_file_path)
     else:
 # noinspection PyUnresolvedReferences

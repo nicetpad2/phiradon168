@@ -58,12 +58,8 @@ def get_session_tag(
             warned_set = _WARNED_OUT_OF_RANGE
     else:
         session_times_utc_local = session_times_utc
-        key = id(session_times_utc)
-        entry = _WARNED_OUT_OF_RANGE_CUSTOM.get(key)
-        if entry is None or entry[0] is not session_times_utc:
-            entry = (session_times_utc, set())
-            _WARNED_OUT_OF_RANGE_CUSTOM[key] = entry
-        warned_set = entry[1]
+        key = frozenset(session_times_utc.items())
+        warned_set = _WARNED_OUT_OF_RANGE_CUSTOM.setdefault(key, set())
 
     if pd.isna(timestamp):
         return "N/A"
