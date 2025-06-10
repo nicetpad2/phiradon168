@@ -1009,7 +1009,6 @@ def validate_m1_data_path(file_path):
         return False
     return True
 
-
 def load_raw_data_m1(path):
     """Load raw M1 data after validating the file path.
 
@@ -1020,18 +1019,15 @@ def load_raw_data_m1(path):
         return None
     return safe_load_csv_auto(path)
 
-
 def load_raw_data_m15(path):
     """Stubbed loader for raw M15 data."""
     return safe_load_csv_auto(path)
-
 
 def write_test_file(path):
     """Stubbed helper to write a simple file."""
     with open(path, "w", encoding="utf-8") as f:
         f.write("test")
     return path
-
 
 def clean_test_file(test_file_path: str) -> None:
     """Remove a test file if it's inside ``cfg.DATA_DIR``."""
@@ -1040,9 +1036,13 @@ def clean_test_file(test_file_path: str) -> None:
     from src import config as cfg
     logger = logging.getLogger(__name__)
     abs_path = os.path.realpath(test_file_path)
-    data_dir = os.path.realpath(str(cfg.DATA_DIR))
+    env_dir = os.getenv("DATA_DIR")
+    data_dir = os.path.realpath(env_dir) if env_dir else os.path.realpath(str(cfg.DATA_DIR))
     if abs_path.startswith(data_dir):
-        os.remove(test_file_path)
+        try:
+            os.remove(test_file_path)
+        except FileNotFoundError:
+            pass
     else:
 # noinspection PyUnresolvedReferences
         logger.warning(
