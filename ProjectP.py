@@ -1,6 +1,23 @@
 """Bootstrap script for running the main entry point."""
 
 import logging
+
+# [Patch v6.3.0] Stub imports for missing features
+try:
+    from src.utils.auto_train_meta_classifiers import auto_train_meta_classifiers
+except ImportError:  # pragma: no cover - fallback when module missing
+    def auto_train_meta_classifiers(*args, **kwargs):
+        logging.getLogger().warning(
+            "[Patch v6.2.3] auto_train_meta_classifiers stub invoked; skipping."
+        )
+
+try:
+    from reporting.dashboard import generate_dashboard
+except ImportError:  # pragma: no cover - fallback when module missing
+    def generate_dashboard(*args, **kwargs):
+        logging.getLogger().warning(
+            "[Patch v6.2.3] generate_dashboard stub invoked; skipping."
+        )
 import csv
 from pathlib import Path
 try:  # [Patch v5.10.2] allow import without heavy dependencies
