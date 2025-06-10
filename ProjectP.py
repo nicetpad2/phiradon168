@@ -222,98 +222,28 @@ def run_mode(mode):
         raise ValueError(f"Unknown mode: {mode}")
 
 
-def qa_check_and_create_outputs():
-    """[Patch v5.8.14] Ensure fallback QA output files have valid headers."""
-    output_dir = str(OUTPUT_DIR)
-    files = [
-        os.path.join(output_dir, "features_main.json"),
-        os.path.join(output_dir, "trade_log_BUY.csv"),
-        os.path.join(output_dir, "trade_log_SELL.csv"),
-        os.path.join(output_dir, "trade_log_NORMAL.csv"),
-    ]
-    missing = [p for p in files if not os.path.exists(p) or os.path.getsize(p) == 0]
-    for path in missing:
-        logger.warning("[QA Fallback] Created missing file: %s", path)
-        dirpath = os.path.dirname(path)
-        if not os.path.exists(dirpath):
-            os.makedirs(dirpath)
-        if path.endswith("features_main.json"):
-            with open(path, "w", encoding="utf-8") as fh:
-                fh.write("{}")  # JSON เปล่าแต่ valid
-        else:
-            header = [
-                "timestamp",
-                "symbol",
-                "side",
-                "price",
-                "size",
-                "order_type",
-                "status",
-            ]
-            with open(path, "w", newline="", encoding="utf-8") as f:
-                writer = csv.DictWriter(f, fieldnames=header)
-                writer.writeheader()
-        logger.debug("[QA Fallback] Wrote header to %s", path)
+def ensure_output_files(files):
+    """[Patch v6.3.5] ตรวจสอบว่าไฟล์ผลลัพธ์จำเป็นมีครบ หากขาดให้หยุดการทำงาน"""
+    for file in files:
+        if not os.path.exists(file):
+            logger.error("Required output file missing: %s. Aborting.", file)
+            # Abort to prevent downstream dummy placeholders
+            sys.exit(1)
 
 
 if __name__ == "__main__":
     configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
     args = parse_args()
-    # [Patch v5.9.5] สร้างไฟล์ QA พื้นฐานก่อนเริ่มการทำงานลดข้อความ error
-    qa_check_and_create_outputs()
+    # [Patch v6.3.5] ตรวจสอบไฟล์ผลลัพธ์ก่อนและหลังการทำงาน
+    output_dir = OUTPUT_DIR
+    features_path = os.path.join(output_dir, "features_main.json")
+    trade_log_buy = os.path.join(output_dir, "trade_log_BUY.csv")
+    trade_log_sell = os.path.join(output_dir, "trade_log_SELL.csv")
+    trade_log_normal = os.path.join(output_dir, "trade_log_NORMAL.csv")
+    ensure_output_files([features_path, trade_log_buy, trade_log_sell, trade_log_normal])
     try:
         run_mode(args.mode)
-        
-        # [Patch v5.3.4] Create empty audit files if missing after run
-        output_dir = OUTPUT_DIR
-        audit_files = [
-            "features_main.json",
-            "trade_log_BUY.csv",
-            "trade_log_SELL.csv",
-            "trade_log_NORMAL.csv",
-        ]
-        for fname in audit_files:
-            fpath = OUTPUT_DIR / fname
-            if fpath.exists():
-                msg = f"[QA] Output present: {fpath}"
-                logger.info(msg)
-                logging.getLogger().info(msg)
-                continue
-            msg = f"[QA] Output missing: {fpath}"
-            logger.error(msg)
-            logging.getLogger().error(msg)
-            os.makedirs(OUTPUT_DIR, exist_ok=True)
-            if fname.endswith('.csv'):
-                pd.DataFrame(columns=[
-                    "timestamp", "symbol", "side", "price", "size", "order_type", "status"
-                ]).to_csv(fpath, index=False)
-            else:
-                with open(fpath, 'w', encoding='utf-8') as fout:
-                    json.dump({}, fout)
-            logger.warning(f"[QA Fallback] Created missing file: {fpath}")
-
-
-        # [Patch v5.8.13] Ensure fallback QA output files always exist
-        fallback_files = [
-            "features_main.json",
-            "trade_log_BUY.csv",
-            "trade_log_SELL.csv",
-            "trade_log_NORMAL.csv",
-        ]
-
-        for fname in fallback_files:
-            fpath = OUTPUT_DIR / fname
-            if fpath.exists():
-                continue
-            os.makedirs(OUTPUT_DIR, exist_ok=True)
-            if fname.endswith('.csv'):
-                pd.DataFrame(columns=[
-                    "timestamp", "symbol", "side", "price", "size", "order_type", "status"
-                ]).to_csv(fpath, index=False)
-            else:
-                with open(fpath, 'w', encoding='utf-8') as fout:
-                    json.dump({}, fout)
-            logger.warning(f"[QA Fallback] Created missing file: {fpath}")
+        ensure_output_files([features_path, trade_log_buy, trade_log_sell, trade_log_normal])
 
     except KeyboardInterrupt:
         print("\n(Stopped) การทำงานถูกยกเลิกโดยผู้ใช้.")
