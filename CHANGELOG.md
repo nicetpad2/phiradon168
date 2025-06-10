@@ -1,7 +1,7 @@
 ### 2025-06-25
 
-- [Patch v6.3.0] Create auto_train_meta_classifiers stub
-- New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py
+- [Patch v6.3.0] Create reporting.dashboard.generate_dashboard stub
+- New/Updated unit tests added for tests/test_reporting_dashboard.py
 - QA: pytest -q passed
 
 

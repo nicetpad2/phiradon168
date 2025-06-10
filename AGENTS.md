@@ -238,8 +238,10 @@
   - Develop HTML/JavaScript dashboards (e.g., with Plotly or Dash) for executive summaries
   - New module `src.dashboard` generates Plotly HTML dashboards for WFV results
   - New module `src/realtime_dashboard.py` provides Streamlit-based real-time monitoring
+  - New module `reporting/dashboard.py` contains a stubbed result dashboard generator
 - **Modules:** `src/dashboard.py`
   `src/realtime_dashboard.py`
+  `reporting/dashboard.py`
 
 ---
 
