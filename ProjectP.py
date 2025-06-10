@@ -1,5 +1,16 @@
 """Bootstrap script for running the main entry point."""
 
+# [Patch v6.4.0] Ensure project modules are importable by setting sys.path and working directory
+import sys
+import os
+from pathlib import Path
+
+# Add project root to PYTHONPATH and set cwd
+project_root = Path(__file__).resolve().parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+os.chdir(project_root)
+
 import logging
 
 # [Patch v6.3.0] Stub imports for missing features
