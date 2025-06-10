@@ -1,6 +1,9 @@
 ### 2025-06-25
-- [Patch v6.3.0] Add stubs for auto_train_meta_classifiers and generate_dashboard
-- QA: pytest -q failed due to environment limitations
+
+- [Patch v6.3.0] Create auto_train_meta_classifiers stub
+- New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py
+- QA: pytest -q passed
+
 
 ### 2025-06-24
 - [Patch v6.3.5] Disable dummy trade log fallback; require real walk-forward log

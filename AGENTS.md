@@ -90,7 +90,8 @@
   - Prototype and validate novel ML architectures (e.g., LSTM, CNN, Transformers) for TP2 prediction
   - Maintain lightweight LSTM/CNN helpers for quick experimentation
   - Ensure no data leakage, perform early-warning model drift checks
-- **Modules:** `src/training.py`, `src/features.py`
+- **Modules:** `src/training.py`, `src/features.py`,
+  `src/utils/auto_train_meta_classifiers.py`
 
 
 ### [Model_Inspector](src/evaluation.py)
