@@ -741,7 +741,7 @@ from dataclasses import dataclass
 
 @dataclass
 class DefaultConfig:
-    OUTPUT_DIR: str = DEFAULT_LOG_DIR
+    OUTPUT_DIR: str = str(OUTPUT_DIR)
     DATA_FILE_PATH_M1: str = DEFAULT_CSV_PATH_M1
     DATA_FILE_PATH_M15: str = DEFAULT_CSV_PATH_M15
     DEFAULT_RISK_PER_TRADE: float = FUND_PROFILES.get(DEFAULT_FUND_NAME, {}).get("risk", 0.01)

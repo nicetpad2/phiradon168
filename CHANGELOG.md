@@ -4,6 +4,11 @@
 - New/Updated unit tests added for tests/test_projectp_nvml.py
 - QA: pytest -q passed
 
+### 2025-06-30
+- [Patch v6.4.6] Align DefaultConfig output path with global constant
+- Updated src/config to set DefaultConfig.OUTPUT_DIR to `OUTPUT_DIR`
+- QA: pytest -q passed (885 tests)
+
 ### 2025-06-26
 - [Patch v6.4.1] Fix meta-classifier auto-training invocation
 - Load walk-forward trade log before calling auto_train_meta_classifiers
