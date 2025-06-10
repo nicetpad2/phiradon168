@@ -1451,6 +1451,9 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
         except Exception as e:
             logging.warning(f"(Warning) เกิดข้อผิดพลาดขณะปิด pynvml: {e}")
 
+        # [Patch v6.2.4] Auto Threshold Optimization Stage
+        run_auto_threshold_stage()
+
     end_time_main = time.time()
     logging.info(f"\n--- ฟังก์ชัน Main (Mode: {run_mode}) เสร็จสิ้นใน {end_time_main - start_time_main:.2f} วินาที ---")
 
@@ -1936,6 +1939,24 @@ def run_initial_backtest():
 def save_final_data(df, path):
     """Stubbed data saver."""
     df.to_csv(path)
+
+
+# [Patch v6.2.4] Auto Threshold Optimization Helper
+def run_auto_threshold_stage():
+    """Run Optuna-based threshold tuning if enabled."""
+    from src.features import ENABLE_AUTO_THRESHOLD_TUNING
+
+    if ENABLE_AUTO_THRESHOLD_TUNING:
+        import threshold_optimization as topt
+        logger.info("[Patch v6.2.4] Starting Auto Threshold Optimization")
+        topt.run_threshold_optimization(
+            output_dir=OUTPUT_DIR,
+            trials=OPTUNA_N_TRIALS,
+            study_name="threshold_wfv",
+            direction=OPTUNA_DIRECTION,
+            timeout=None,
+        )
+        logger.info("[Patch v6.2.4] Auto Threshold Optimization Completed")
 
 
 # [Patch v5.5.9] Pipeline helper for discrete stages
