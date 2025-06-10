@@ -44,6 +44,9 @@ import argparse
 import subprocess
 import json
 
+# [Patch v6.4.8] Optional fallback directory for raw data and logs
+FALLBACK_DIR = os.getenv("PROJECTP_FALLBACK_DIR")
+
 
 # [Patch v6.3.1] Ensure working directory fallback on import
 try:
@@ -283,14 +286,26 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
     """Generate numeric feature names from the first CSV in the list."""
     if not raw_data_paths:
         return []
+    path = raw_data_paths[0]
+    if not os.path.exists(path) and FALLBACK_DIR:
+        fallback_path = os.path.join(FALLBACK_DIR, os.path.basename(path))
+        if os.path.exists(fallback_path):
+            logger.warning(
+                "Raw data file not found: %s; using fallback %s",
+                path,
+                fallback_path,
+            )
+            path = fallback_path
     try:
-        df_sample = pd.read_csv(raw_data_paths[0], nrows=500)
+        df_sample = pd.read_csv(path, nrows=500)
     except FileNotFoundError:
+
         logger.warning(
             "[Patch v6.4.6] Raw data file not found: %s. Proceeding with empty feature list.",
             raw_data_paths[0],
         )
         # Proceed with no features if raw data is unavailable
+
         return []
     return [
         c
@@ -361,6 +376,15 @@ if __name__ == "__main__":
 
         trade_pattern_gz = os.path.join(output_dir, "trade_log_*.csv.gz")
         log_files = glob.glob(trade_pattern_gz)
+    if not log_files and FALLBACK_DIR:
+        fallback_pattern = os.path.join(FALLBACK_DIR, "trade_log_*.csv*")
+        log_files = sorted(glob.glob(fallback_pattern))
+        if log_files:
+            logger.warning(
+                "Trade log not found in %s; using fallback directory %s",
+                output_dir,
+                FALLBACK_DIR,
+            )
     if not log_files:
         logger.warning(
             "[Patch v6.4.6] No trade_log CSV found in %s; initializing empty trade log.",
