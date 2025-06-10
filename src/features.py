@@ -939,7 +939,7 @@ if ENABLE_OPTUNA_TUNING:
     logging.info(f"  Optuna Metric: {OPTUNA_METRIC} ({OPTUNA_DIRECTION})")
 
 # --- Auto Threshold Tuning ---
-ENABLE_AUTO_THRESHOLD_TUNING = False # Keep this disabled for now
+ENABLE_AUTO_THRESHOLD_TUNING = True  # [Patch v5.10.4] เปิด Auto Threshold Tuning เพื่อให้ pipeline เรียก threshold optimization ต่อ
 logging.info(f"Auto Threshold Tuning Enabled: {ENABLE_AUTO_THRESHOLD_TUNING}")
 
 # --- Global variables to store model info ---
