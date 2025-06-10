@@ -1,3 +1,8 @@
+### 2025-06-25
+- [Patch v6.3.0] Create reporting.dashboard.generate_dashboard stub
+- New/Updated unit tests added for tests/test_reporting_dashboard.py
+- QA: pytest -q passed
+
 ### 2025-06-24
 - [Patch v6.3.5] Disable dummy trade log fallback; require real walk-forward log
 - New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
