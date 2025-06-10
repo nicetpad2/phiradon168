@@ -325,3 +325,42 @@ if __name__ == "__main__":
         main_mod = sys.modules.get("src.main")
         use_gpu = getattr(main_mod, "USE_GPU_ACCELERATION", False)
         release_gpu_resources(nvml_handle, use_gpu)
+
+        # [Patch v6.2.3] Auto Threshold Tuning, Meta-Classifier Training & Dashboard Generation
+        from src import config as cfg
+
+        if getattr(cfg, "AUTO_THRESHOLD_TUNING", False):
+            import threshold_optimization as topt
+            logger.info("[Patch v6.2.3] Starting Auto Threshold Optimization...")
+            topt.run_threshold_optimization(
+                summary_csv=os.path.join(cfg.OUTPUT_DIR, "summary.csv"),
+                output_csv=os.path.join(cfg.OUTPUT_DIR, "threshold_wfv_optuna_results.csv"),
+                cv_splits=getattr(cfg, "OPTUNA_CV_SPLITS", 5),
+                n_trials=getattr(cfg, "OPTUNA_N_TRIALS", 50),
+            )
+            logger.info("[Patch v6.2.3] Auto Threshold Optimization Completed.")
+
+        try:
+            from src.evaluation import auto_train_meta_classifiers
+            logger.info("[Patch v6.2.3] Auto-training missing meta-classifiers...")
+            auto_train_meta_classifiers(
+                trade_log=os.path.join(cfg.OUTPUT_DIR, "trade_log_v32_walkforward.csv.gz"),
+                models_dir=getattr(cfg, "MODELS_DIR", cfg.OUTPUT_DIR),
+                features_dir=cfg.OUTPUT_DIR,
+            )
+            logger.info("[Patch v6.2.3] Meta-Classifier Training Completed.")
+        except ImportError:
+            logger.warning("[Patch v6.2.3] auto_train_meta_classifiers not found; skipping.")
+
+        try:
+            from reporting.dashboard import generate_dashboard
+            dashboard_path = os.path.join(cfg.OUTPUT_DIR, "dashboard.html")
+            logger.info("[Patch v6.2.3] Generating Dashboard at %s...", dashboard_path)
+            generate_dashboard(
+                folds_dir=cfg.OUTPUT_DIR,
+                metrics_summary=os.path.join(cfg.OUTPUT_DIR, "metrics_summary_v32.csv"),
+                output_html=dashboard_path,
+            )
+            logger.info("[Patch v6.2.3] Dashboard Generated: %s", dashboard_path)
+        except ImportError:
+            logger.warning("[Patch v6.2.3] reporting.dashboard.generate_dashboard not found; skipping.")

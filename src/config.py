@@ -93,6 +93,11 @@ __spec__ = _ReloadSpecProxy(__spec__, sys.modules.get(__name__))
 OUTPUT_DIR = Path(__file__).parent.parent / "output_default"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+# [Patch v6.2.3] Define models directory and auto threshold flag
+MODELS_DIR = OUTPUT_DIR / "models"
+MODELS_DIR.mkdir(parents=True, exist_ok=True)
+AUTO_THRESHOLD_TUNING = os.getenv("AUTO_THRESHOLD_TUNING", "False").lower() in ("true", "1", "yes")
+
 # [Patch v6.2.1] Define default data directory and naming for walk-forward data
 BASE_DIR = pathlib.Path(__file__).parent
 DATA_DIR = BASE_DIR.parent / "data"
