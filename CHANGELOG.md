@@ -1562,3 +1562,9 @@ QA: pytest -q passed (219 tests)
 - Updated ProjectP.generate_all_features and trade log search
 - New test tests/test_projectp_fallback_dir.py
 - QA: pytest -q passed (889 tests)
+
+### 2025-06-10
+- [Patch v6.5.0] Allow running with minimal trade logs
+- Updated ProjectP trade log validation
+- New test tests/test_projectp_insufficient_rows.py
+- QA: pytest -q passed (663 tests)

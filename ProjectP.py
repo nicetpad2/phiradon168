@@ -423,12 +423,10 @@ if __name__ == "__main__":
     )
 
     trade_df = pd.read_csv(trade_log_file)
+    # [Patch v6.5.0] Allow running with minimal or empty trade logs
     if trade_df.shape[0] < 10:
         msg = f"Insufficient trade data rows: {trade_df.shape[0]}"
-        if 'pytest' in sys.modules:
-            logger.warning(msg)
-        else:
-            raise ValueError(msg)
+        logger.warning(msg)
 
     ensure_output_files([features_path, trade_log_file])
     try:
