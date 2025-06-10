@@ -1,3 +1,7 @@
+### 2025-06-26
+- [Patch v6.4.0] Ensure project modules importable by setting sys.path and working directory
+- QA: pytest -q failed (3 failures)
+
 ### 2025-06-25
 
 - [Patch v6.3.0] Create reporting.dashboard.generate_dashboard stub
