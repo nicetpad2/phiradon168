@@ -1,8 +1,11 @@
 import os
 import time
+import os
+import logging
 import pandas as pd
 from typing import Tuple
 from src.dashboard import create_dashboard
+import wfv_runner
 
 try:  # pragma: no cover - optional dependency
     import streamlit as st
@@ -11,9 +14,34 @@ except Exception:  # pragma: no cover - fallback when streamlit missing
 
 
 def load_trade_log(csv_path: str) -> pd.DataFrame:
-    """Load trade log CSV with required columns."""
+    """Load trade log CSV with required columns.
+
+    If the file is missing, auto-generate a placeholder trade log using
+    :func:`wfv_runner.run_walkforward` and save it to ``csv_path``.
+    """
     if not os.path.exists(csv_path):
-        raise FileNotFoundError(csv_path)
+        logging.info(
+            "[Patch v5.8.15] trade_log not found. Generating with wfv_runner..."
+        )
+        try:
+            res = wfv_runner.run_walkforward(nrows=20)
+            gen = pd.DataFrame(
+                {
+                    "entry_time": pd.date_range("2024-01-01", periods=len(res), freq="D"),
+                    "exit_time": pd.date_range("2024-01-02", periods=len(res), freq="D"),
+                    "pnl": res["pnl"],
+                }
+            )
+            gen.to_csv(csv_path, index=False)
+            logging.info(
+                "[Patch v5.8.15] Generated placeholder trade_log at %s", csv_path
+            )
+        except Exception as exc:
+            logging.error(
+                "[Patch v5.8.15] Failed to auto-generate trade_log: %s", exc, exc_info=True
+            )
+            raise FileNotFoundError(csv_path)
+
     df = pd.read_csv(csv_path, parse_dates=["entry_time", "exit_time"], low_memory=False)
     if "pnl" not in df.columns:
         raise ValueError("trade log missing 'pnl' column")

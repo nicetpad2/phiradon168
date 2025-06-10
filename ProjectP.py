@@ -347,7 +347,7 @@ if __name__ == "__main__":
     import glob
     # match both uncompressed (.csv) and gzip-compressed (.csv.gz) trade logs
     trade_pattern = os.path.join(output_dir, "trade_log_*.csv*")
-    log_files = glob.glob(trade_pattern)
+    log_files = sorted(glob.glob(trade_pattern))
     if not log_files:
 
         logger.error(
@@ -361,8 +361,12 @@ if __name__ == "__main__":
         logger.error("No trade_log CSV found in %s; aborting.", output_dir)
 
         sys.exit(1)
+    if log_files:
+        log_files = sorted(log_files, key=lambda f: ("walkforward" not in f, f))
     trade_log_file = log_files[0]
-    logger.info("Loaded trade log: %s", os.path.basename(trade_log_file))
+    logger.info(
+        "[Patch v5.8.15] Loaded trade log: %s", os.path.basename(trade_log_file)
+    )
 
     trade_df = pd.read_csv(trade_log_file)
     if trade_df.shape[0] < 10:

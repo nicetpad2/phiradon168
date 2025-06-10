@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import numpy as np
 import sys
+import pytest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import src.data_loader as dl
@@ -94,10 +95,13 @@ def test_validate_m1_data_path_wrong_name(tmp_path, caplog):
     assert 'Unexpected M1 data file' in caplog.text
 
 
-def test_load_raw_data_m1_bad_path(tmp_path):
+def test_load_raw_data_m1_bad_path(tmp_path, caplog):
     p = tmp_path / 'wrong.csv'
     pd.DataFrame({'A': [1]}).to_csv(p)
-    assert dl.load_raw_data_m1(str(p)) is None
+    with caplog.at_level('ERROR'):
+        res = dl.load_raw_data_m1(str(p))
+    assert res is None
+    assert 'Unexpected M1 data file' in caplog.text
 
 
 def test_load_final_m1_data_valid(tmp_path):

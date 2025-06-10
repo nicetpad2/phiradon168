@@ -18,8 +18,8 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "convert_thai_years", 945),
     ("src/data_loader.py", "convert_thai_datetime", 952),
     ("src/data_loader.py", "prepare_datetime_index", 980),
-    ("src/data_loader.py", "load_raw_data_m1", 1009),
-    ("src/data_loader.py", "load_raw_data_m15", 1020),
+    ("src/data_loader.py", "load_raw_data_m1", 1016),
+    ("src/data_loader.py", "load_raw_data_m15", 1026),
     ("src/data_loader.py", "write_test_file", 1025),
     ("src/data_loader.py", "validate_csv_data", 1054),
 

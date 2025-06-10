@@ -183,7 +183,8 @@ def test_validate_m1_data_path_invalid_type():
 
 def test_validate_m1_data_path_missing(tmp_path):
     p = tmp_path / 'XAUUSD_M1.csv'
-    assert not dl.validate_m1_data_path(str(p))
+    with pytest.raises(RuntimeError):
+        dl.validate_m1_data_path(str(p))
 
 
 def test_load_final_m1_data_validate_fail(monkeypatch):

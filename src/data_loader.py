@@ -1005,8 +1005,12 @@ def validate_m1_data_path(file_path):
         logging.error(f"(Error) Unexpected M1 data file '{fname}'. Expected one of {allowed}.")
         return False
     if not os.path.exists(file_path):
-        logging.error(f"(Error) File not found: {file_path}")
-        return False
+        msg = (
+            f"[Patch v5.8.15] Missing raw CSV: {file_path}. "
+            "กรุณาวางไฟล์ CSV ในไดเรกทอรีที่กำหนด"
+        )
+        logging.error(msg)
+        raise RuntimeError(msg)
     return True
 
 def load_raw_data_m1(path):

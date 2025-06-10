@@ -38,10 +38,13 @@ def test_load_trade_log(tmp_path):
     pd.testing.assert_frame_equal(loaded, df)
 
 
-def test_load_trade_log_errors(tmp_path):
-    with pytest.raises(FileNotFoundError):
-        realtime_dashboard.load_trade_log(str(tmp_path / "missing.csv"))
-
+def test_load_trade_log_auto_generate(tmp_path, monkeypatch):
+    df_res = pd.DataFrame({"pnl": [1.0, -1.0]})
+    monkeypatch.setattr(realtime_dashboard.wfv_runner, "run_walkforward", lambda nrows=20: df_res)
+    path = tmp_path / "missing.csv"
+    loaded = realtime_dashboard.load_trade_log(str(path))
+    assert path.exists()
+    assert "pnl" in loaded.columns
     df = pd.DataFrame({'entry_time': ['2020-01-01'], 'exit_time': ['2020-01-01']})
     bad_path = tmp_path / "bad.csv"
     df.to_csv(bad_path, index=False)
