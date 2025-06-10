@@ -5,6 +5,7 @@ import types
 import sys
 import logging
 import os
+import pytest
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
@@ -70,7 +71,7 @@ def test_projectp_logs_gpu_release(monkeypatch, caplog):
 
 
 def test_projectp_output_audit(monkeypatch, caplog, tmp_path):
-    """QA audit should log presence or absence of output files."""
+    """หากไฟล์บางส่วนหายไปต้องหยุดการทำงานและแจ้งเตือน"""
     out_dir = tmp_path / "output_default"
     out_dir.mkdir()
     # Create only some files
@@ -84,7 +85,6 @@ def test_projectp_output_audit(monkeypatch, caplog, tmp_path):
     monkeypatch.setattr(sys, "argv", ["ProjectP.py"])
     config.logger.setLevel(logging.INFO)
     script_path = os.path.join(ROOT_DIR, "ProjectP.py")
-    with caplog.at_level(logging.INFO):
+    with caplog.at_level(logging.INFO), pytest.raises(SystemExit) as exc:
         runpy.run_path(script_path, run_name="__main__")
-    # ควรแจ้งว่าไฟล์ทั้งหมดมีอยู่หลังสคริปต์รันเสร็จ
-    assert any("[QA] Output present" in m for m in caplog.messages)
+    assert exc.value.code == 1

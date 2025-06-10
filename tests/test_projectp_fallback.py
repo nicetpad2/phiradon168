@@ -3,14 +3,15 @@ import types
 import sys
 import os
 import json
+import pytest
 import src.config as config
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT_DIR)
 
 
-def test_fallback_files_created(monkeypatch, tmp_path):
-    """Script should generate dummy files when outputs are missing."""
+def test_missing_outputs_abort(monkeypatch, tmp_path):
+    """หากไม่มีไฟล์ผลลัพธ์สคริปต์ควรหยุดการทำงาน"""
     out_dir = tmp_path / "output_default"
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(config, "OUTPUT_DIR", out_dir)
@@ -18,7 +19,10 @@ def test_fallback_files_created(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules, "src.main", types.SimpleNamespace(main=dummy_main))
     monkeypatch.setattr(sys, "argv", ["ProjectP.py"])
     script_path = os.path.join(ROOT_DIR, "ProjectP.py")
-    runpy.run_path(script_path, run_name="__main__")
+    with pytest.raises(SystemExit) as exc:
+        runpy.run_path(script_path, run_name="__main__")
+    assert exc.value.code == 1
+    # ไฟล์ไม่ควรถูกสร้างขึ้นอัตโนมัติ
     files = [
         "features_main.json",
         "trade_log_BUY.csv",
@@ -26,21 +30,4 @@ def test_fallback_files_created(monkeypatch, tmp_path):
         "trade_log_NORMAL.csv",
     ]
     for name in files:
-        fpath = out_dir / name
-        assert fpath.exists()
-        if name.endswith('.csv'):
-            with open(fpath, encoding='utf-8') as fh:
-                header = fh.readline().strip().split(',')
-            # Fallback files may be empty; accept empty header
-            assert header in ([
-                "timestamp",
-                "symbol",
-                "side",
-                "price",
-                "size",
-                "order_type",
-                "status",
-            ], [""])
-    with open(out_dir / "features_main.json", "r", encoding="utf-8") as fh:
-        data = json.load(fh)
-    assert isinstance(data, dict)
+        assert not (out_dir / name).exists()
