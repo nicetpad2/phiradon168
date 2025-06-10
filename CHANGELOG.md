@@ -1,6 +1,8 @@
+
 ### 2025-06-23
 - [Patch v6.2.3] Integrate Auto Threshold Optimization, Meta-Classifier Training & Dashboard Generation
 - QA: pytest -q passed
+
 
 ### 2025-06-22
 - [Patch v6.3.3] Add safe_reload utility to handle missing modules during reload
@@ -1472,3 +1474,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.3.4] Fix cleanup guards and session warnings
 - New/Updated unit tests added for src.data_loader, src.utils.sessions
 - QA: pytest -q passed (partial)
+
+### 2025-06-10
+- [Patch v5.10.4] Enable Auto Threshold Tuning by default
+- Updated src.features to set ENABLE_AUTO_THRESHOLD_TUNING=True
+- QA: pytest -q passed (skipped due to environment limitations)
