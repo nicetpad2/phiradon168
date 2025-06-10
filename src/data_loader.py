@@ -1035,6 +1035,7 @@ def clean_test_file(test_file_path: str) -> None:
     import logging
     from src import config as cfg
     logger = logging.getLogger(__name__)
+
     abs_path = os.path.realpath(test_file_path)
     env_dir = os.getenv("DATA_DIR")
     data_dir = os.path.realpath(env_dir) if env_dir else os.path.realpath(str(cfg.DATA_DIR))
@@ -1043,6 +1044,7 @@ def clean_test_file(test_file_path: str) -> None:
             os.remove(test_file_path)
         except FileNotFoundError:
             pass
+
     else:
 # noinspection PyUnresolvedReferences
         logger.warning(
