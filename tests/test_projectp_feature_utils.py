@@ -21,3 +21,9 @@ def test_generate_all_features_basic(tmp_path):
     df.to_csv(csv, index=False)
     feats = ProjectP.generate_all_features([str(csv)])
     assert "A" in feats and "B" in feats and "label" not in feats
+
+
+def test_generate_all_features_missing_file(caplog):
+    ProjectP.configure_logging()
+    feats = ProjectP.generate_all_features(["no_data.csv"])
+    assert feats == []
