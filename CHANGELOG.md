@@ -1550,3 +1550,9 @@ QA: pytest -q passed (219 tests)
 - Updated ProjectP trade log selection logic
 - New/Updated unit tests added for data loader and realtime dashboard
 - QA: pytest -q passed (889 tests)
+
+### 2025-06-10
+- [Patch v6.4.8] Add PROJECTP_FALLBACK_DIR for missing data
+- Updated ProjectP.generate_all_features and trade log search
+- New test tests/test_projectp_fallback_dir.py
+- QA: pytest -q passed (889 tests)
