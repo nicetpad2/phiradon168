@@ -59,12 +59,13 @@ def test_real_train_func_no_numeric_target(tmp_path, monkeypatch):
 def test_real_train_func_pnl_column(tmp_path, monkeypatch):
     trade_path = tmp_path / 'trade.csv'
     m1_path = tmp_path / 'm1.csv'
-    pd.DataFrame({'pnl_usd_net': [1, -1, 2]}).to_csv(trade_path, index=False)
+    pnl = [1, -1] * 5
+    pd.DataFrame({'pnl_usd_net': pnl}).to_csv(trade_path, index=False)
     pd.DataFrame({
-        'Open': [1, 2, 3],
-        'High': [2, 3, 4],
-        'Low': [0, 1, 2],
-        'Close': [1.5, 2.5, 3.5]
+        'Open': range(1, 11),
+        'High': range(2, 12),
+        'Low': range(0, 10),
+        'Close': [i + 0.5 for i in range(1, 11)]
     }).to_csv(m1_path, index=False)
     monkeypatch.setattr(training, 'CatBoostClassifier', None, raising=False)
     res = training.real_train_func(output_dir=str(tmp_path), trade_log_path=str(trade_path), m1_path=str(m1_path))
@@ -74,12 +75,13 @@ def test_real_train_func_pnl_column(tmp_path, monkeypatch):
 def test_real_train_func_auc_calculated(tmp_path, monkeypatch):
     trade_path = tmp_path / 'trade.csv'
     m1_path = tmp_path / 'm1.csv'
-    pd.DataFrame({'profit': [1, -1, 2, -2, 3, -3, 4, -4]}).to_csv(trade_path, index=False)
+    profits = [1, -1] * 5
+    pd.DataFrame({'profit': profits}).to_csv(trade_path, index=False)
     pd.DataFrame({
-        'Open': range(8),
-        'High': range(1, 9),
-        'Low': range(-1, 7),
-        'Close': range(2, 10)
+        'Open': range(1, 11),
+        'High': range(2, 12),
+        'Low': range(0, 10),
+        'Close': [i + 1 for i in range(1, 11)]
     }).to_csv(m1_path, index=False)
     monkeypatch.setattr(training, 'CatBoostClassifier', None, raising=False)
     res = training.real_train_func(output_dir=str(tmp_path), trade_log_path=str(trade_path), m1_path=str(m1_path))
@@ -89,12 +91,12 @@ def test_real_train_func_auc_calculated(tmp_path, monkeypatch):
 def test_real_train_func_other_numeric_target(tmp_path, monkeypatch):
     trade_path = tmp_path / 'trade.csv'
     m1_path = tmp_path / 'm1.csv'
-    pd.DataFrame({'other': [1, 0, 1]}).to_csv(trade_path, index=False)
+    pd.DataFrame({'other': [1, 0] * 5}).to_csv(trade_path, index=False)
     pd.DataFrame({
-        'Open': [1, 2, 3],
-        'High': [2, 3, 4],
-        'Low': [0, 1, 2],
-        'Close': [1.5, 2.5, 3.5]
+        'Open': range(1, 11),
+        'High': range(2, 12),
+        'Low': range(0, 10),
+        'Close': [i + 0.5 for i in range(1, 11)]
     }).to_csv(m1_path, index=False)
     monkeypatch.setattr(training, 'CatBoostClassifier', None, raising=False)
     res = training.real_train_func(output_dir=str(tmp_path), trade_log_path=str(trade_path), m1_path=str(m1_path))
@@ -237,6 +239,9 @@ def test_real_train_func_single_row(tmp_path, monkeypatch, caplog):
         'Close': [1.5]
     }).to_csv(m1_path, index=False)
     monkeypatch.setattr(training, 'CatBoostClassifier', None, raising=False)
-    res = training.real_train_func(output_dir=str(tmp_path), trade_log_path=str(trade_path), m1_path=str(m1_path))
-    assert res['metrics']['accuracy'] == -1.0
-    assert np.isnan(res['metrics']['auc'])
+    with pytest.raises(ValueError):
+        training.real_train_func(
+            output_dir=str(tmp_path),
+            trade_log_path=str(trade_path),
+            m1_path=str(m1_path),
+        )

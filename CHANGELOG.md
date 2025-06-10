@@ -3,6 +3,12 @@
 - New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
 - QA: pytest -q passed (886 tests)
 
+### 2025-07-15
+- [Patch v6.4.7] Enforce minimum sample size for training
+- Updated src/training.py with a ValueError for datasets <10 rows
+- Updated tests for new validation logic
+- QA: pytest -q passed (886 tests)
+
 ### 2025-06-29
 - [Patch v6.4.5] Support zipped trade log detection in ProjectP
 - Updated ProjectP.py to search for `trade_log_*.csv.gz` if no CSV found
