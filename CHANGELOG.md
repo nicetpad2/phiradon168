@@ -1543,3 +1543,10 @@ QA: pytest -q passed (219 tests)
 - [Patch v5.10.4] Enable Auto Threshold Tuning by default
 - Updated src.features to set ENABLE_AUTO_THRESHOLD_TUNING=True
 - QA: pytest -q passed (skipped due to environment limitations)
+
+### 2025-06-10
+- [Patch v5.8.15] Improve missing CSV handling and trade log generation
+- Updated src.data_loader and src.realtime_dashboard
+- Updated ProjectP trade log selection logic
+- New/Updated unit tests added for data loader and realtime dashboard
+- QA: pytest -q passed (889 tests)
