@@ -359,6 +359,19 @@ if __name__ == "__main__":
             os.path.join(output_dir, "XAUUSD_M1.csv"),
             os.path.join(output_dir, "XAUUSD_M15.csv"),
         ]
+        # [Patch v6.4.9] Fall back to default CSV paths from config
+        if not os.path.exists(raw_data_paths[0]):
+            try:
+                from src import config as cfg
+                raw_data_paths[0] = getattr(cfg, "DEFAULT_CSV_PATH_M1", raw_data_paths[0])
+            except Exception:  # pragma: no cover - config import failure
+                pass
+        if len(raw_data_paths) > 1 and not os.path.exists(raw_data_paths[1]):
+            try:
+                from src import config as cfg
+                raw_data_paths[1] = getattr(cfg, "DEFAULT_CSV_PATH_M15", raw_data_paths[1])
+            except Exception:  # pragma: no cover - config import failure
+                pass
         features_main = generate_all_features(raw_data_paths)
         save_features(features_main, features_path)
         logger.info("Feature set regenerated with %d rows", len(features_main))
