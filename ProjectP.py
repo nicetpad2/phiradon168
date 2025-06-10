@@ -300,13 +300,18 @@ if __name__ == "__main__":
 
         try:
             from src.evaluation import auto_train_meta_classifiers
-            logger.info("[Patch v6.2.3] Auto-training missing meta-classifiers...")
+            logger.info("[Patch v6.4.1] Auto-training missing meta-classifiers...")
+            trade_log_path = os.path.join(
+                cfg.OUTPUT_DIR, "trade_log_v32_walkforward.csv.gz"
+            )
+            training_data = pd.read_csv(trade_log_path, compression="gzip")
             auto_train_meta_classifiers(
-                trade_log=os.path.join(cfg.OUTPUT_DIR, "trade_log_v32_walkforward.csv.gz"),
+                cfg,
+                training_data,
                 models_dir=getattr(cfg, "MODELS_DIR", cfg.OUTPUT_DIR),
                 features_dir=cfg.OUTPUT_DIR,
             )
-            logger.info("[Patch v6.2.3] Meta-Classifier Training Completed.")
+            logger.info("[Patch v6.4.1] Meta-Classifier Training Completed.")
         except ImportError:
             logger.warning("[Patch v6.2.3] auto_train_meta_classifiers not found; skipping.")
 

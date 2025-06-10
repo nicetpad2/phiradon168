@@ -5,6 +5,8 @@ import types
 import sys
 import logging
 import os
+from pathlib import Path
+import pandas as pd
 import pytest
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -28,8 +30,23 @@ def test_projectp_import_without_pynvml(monkeypatch):
     assert module.nvml_handle is None
 
 
-def test_projectp_main_logs_gpu_status(monkeypatch, caplog):
+def test_projectp_main_logs_gpu_status(monkeypatch, caplog, tmp_path):
     """Running the script should log GPU availability."""
+    out_dir = Path("output_default")
+    out_dir.mkdir(exist_ok=True)
+    for name in [
+        "features_main.json",
+        "trade_log_BUY.csv",
+        "trade_log_SELL.csv",
+        "trade_log_NORMAL.csv",
+    ]:
+        (out_dir / name).write_text("")
+    pd.DataFrame({"col": [1]}).to_csv(
+        out_dir / "trade_log_v32_walkforward.csv.gz",
+        index=False,
+        compression="gzip",
+    )
+
     dummy_main = lambda: None
     monkeypatch.setitem(sys.modules, "src.main", types.SimpleNamespace(main=dummy_main))
     monkeypatch.setattr(sys, "argv", ["ProjectP.py"])
@@ -38,8 +55,23 @@ def test_projectp_main_logs_gpu_status(monkeypatch, caplog):
     assert any("GPU not available" in m for m in caplog.messages)
 
 
-def test_projectp_logs_gpu_release(monkeypatch, caplog):
+def test_projectp_logs_gpu_release(monkeypatch, caplog, tmp_path):
     """NVML handle should be shut down and logged."""
+    out_dir = Path("output_default")
+    out_dir.mkdir(exist_ok=True)
+    for name in [
+        "features_main.json",
+        "trade_log_BUY.csv",
+        "trade_log_SELL.csv",
+        "trade_log_NORMAL.csv",
+    ]:
+        (out_dir / name).write_text("")
+    pd.DataFrame({"col": [1]}).to_csv(
+        out_dir / "trade_log_v32_walkforward.csv.gz",
+        index=False,
+        compression="gzip",
+    )
+
     dummy_nvml = types.SimpleNamespace()
 
     def fake_shutdown():
