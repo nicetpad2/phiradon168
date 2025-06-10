@@ -125,3 +125,23 @@ def test_projectp_output_audit(monkeypatch, caplog, tmp_path):
     with caplog.at_level(logging.INFO):
         runpy.run_path(script_path, run_name="__main__")
     assert (out_dir / "features_main.json").exists()
+
+
+def test_projectp_detect_zipped_log(monkeypatch, tmp_path):
+    """Script should detect trade log when only a .csv.gz file is present."""
+    out_dir = tmp_path / "output_default"
+    out_dir.mkdir()
+    (out_dir / "features_main.json").write_text("{}")
+    pd.DataFrame({"col": [1]}).to_csv(
+        out_dir / "trade_log_v32_walkforward.csv.gz",
+        index=False,
+        compression="gzip",
+    )
+
+    dummy_main = lambda: None
+    monkeypatch.setitem(sys.modules, "src.main", types.SimpleNamespace(main=dummy_main))
+    monkeypatch.setattr(config, "OUTPUT_DIR", out_dir)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["ProjectP.py"])
+    script_path = os.path.join(ROOT_DIR, "ProjectP.py")
+    runpy.run_path(script_path, run_name="__main__")
