@@ -97,17 +97,19 @@ def run_sweep(
         if os.path.exists(alt):
             trade_log_path = alt
         else:
-            logger.warning(f"ไม่พบไฟล์ trade log: {trade_log_path} จะสร้างไฟล์ตัวอย่าง")
-            _create_placeholder_trade_log(trade_log_path)
+            logger.error(
+                "Missing real walk-forward trade log: %s. Aborting sweep",
+                trade_log_path,
+            )
+            raise SystemExit(1)
     try:
         df_log = pd.read_csv(trade_log_path)
         # [Patch v5.8.13] Allow single-row trade logs with fallback metrics
         if len(df_log) < 1:
-            logger.warning(
-                "trade log มีข้อมูลน้อยกว่า 1 แถว - สร้างไฟล์ตัวอย่างเพิ่ม"
+            logger.error(
+                "trade log มีข้อมูลน้อยกว่า 1 แถว - ต้องใช้ walk-forward log ที่แท้จริง"
             )
-            _create_placeholder_trade_log(trade_log_path)
-            df_log = pd.read_csv(trade_log_path)
+            raise SystemExit(1)
     except Exception as e:  # pragma: no cover - unexpected read failure
         logger.error(f"อ่านไฟล์ trade log ไม่สำเร็จ: {e}")
         raise SystemExit(1)
