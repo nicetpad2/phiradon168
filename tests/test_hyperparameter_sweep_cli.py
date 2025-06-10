@@ -77,12 +77,8 @@ def test_run_sweep_filters_unknown_params(tmp_path, monkeypatch):
 def test_run_sweep_no_log(tmp_path):
     grid = {'p': [1]}
     missing = tmp_path / 'missing.csv'
-    hs.run_sweep(str(tmp_path), grid, trade_log_path=str(missing))
-    assert missing.exists()
-    df_log = pd.read_csv(missing)
-    assert len(df_log) > 1
-    df = pd.read_csv(tmp_path / 'summary.csv')
-    assert len(df) == 1
+    with pytest.raises(SystemExit):
+        hs.run_sweep(str(tmp_path), grid, trade_log_path=str(missing))
 
 
 def test_parse_args_defaults():

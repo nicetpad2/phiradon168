@@ -1,3 +1,7 @@
+### 2025-06-24
+- [Patch v6.3.5] Disable dummy trade log fallback; require real walk-forward log
+- New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
+- QA: pytest -q passed
 
 ### 2025-06-23
 - [Patch v6.2.3] Integrate Auto Threshold Optimization, Meta-Classifier Training & Dashboard Generation
