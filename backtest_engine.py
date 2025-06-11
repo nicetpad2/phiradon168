@@ -6,6 +6,7 @@ import pandas as pd
 import logging
 
 from src.config import DATA_FILE_PATH_M1, DATA_FILE_PATH_M15
+from utils import convert_thai_datetime
 from src.strategy import run_backtest_simulation_v34
 from src.features import engineer_m1_features, calculate_m15_trend_zone, calculate_m1_entry_signals
 
@@ -26,22 +27,26 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     """
     # 1) Load the raw M1 price data
     try:
-        # [Patch] Use explicit date parsing for consistent datetime index
-        # [Patch v6.5.17] specify format to silence pandas warnings
-        df = pd.read_csv(
-            DATA_FILE_PATH_M1,
-            index_col=0,
-            parse_dates=[0],
-            date_format="%Y%m%d",
-        )
+        df = pd.read_csv(DATA_FILE_PATH_M1)
     except Exception as e:
         raise RuntimeError(f"[backtest_engine] Failed to load price data: {e}") from e
 
-    # 1b) Ensure index is a DatetimeIndex so `.tz` attribute exists
+    # 1b) Combine Date and Timestamp into a proper datetime index
+    if {"Date", "Timestamp"}.issubset(df.columns):
+        df = convert_thai_datetime(df)
+        if "timestamp" not in df.columns:
+            raise RuntimeError("[backtest_engine] Missing timestamp column after conversion")
+        df.set_index("timestamp", inplace=True)
+    else:
+        if 0 in df.columns or df.columns[0] == "Date":
+            df.index = pd.to_datetime(df.iloc[:, 0], format="%Y%m%d", errors="coerce")
+        else:
+            df.index = pd.to_datetime(df.index, errors="coerce")
+
+    # Ensure index is DatetimeIndex for `.tz` attribute
     if not isinstance(df.index, pd.DatetimeIndex):
         try:
-            # [Patch v6.5.17] enforce format when converting index
-            df.index = pd.to_datetime(df.index, format="%Y%m%d", errors="coerce")
+            df.index = pd.to_datetime(df.index, errors="coerce")
         except Exception as e:
             raise RuntimeError(
                 f"[backtest_engine] Failed to convert index to datetime: {e}"
@@ -65,13 +70,12 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     features_df = engineer_m1_features(df)
     # [Patch v6.6.0] Generate Trend Zone and entry signal features
     try:
-        # [Patch v6.6.1] remove deprecated infer_datetime_format
-        df_m15 = pd.read_csv(
-            DATA_FILE_PATH_M15,
-            index_col=0,
-            parse_dates=[0],
-            date_format="%Y%m%d",
-        )
+        df_m15 = pd.read_csv(DATA_FILE_PATH_M15)
+        if {"Date", "Timestamp"}.issubset(df_m15.columns):
+            df_m15 = convert_thai_datetime(df_m15)
+            df_m15.set_index("timestamp", inplace=True)
+        else:
+            df_m15.index = pd.to_datetime(df_m15.iloc[:, 0], format="%Y%m%d", errors="coerce")
     except Exception:
         df_m15 = None
     if df_m15 is not None and not df_m15.empty:

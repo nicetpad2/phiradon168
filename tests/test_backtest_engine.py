@@ -106,8 +106,19 @@ def test_run_backtest_engine_calls_feature_engineering(monkeypatch):
 
 
 def test_run_backtest_engine_generates_trend_and_signals(monkeypatch):
-    m1_df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]})
-    m15_df = pd.DataFrame({'Close': [1]}, index=[pd.Timestamp('2024-01-01')])
+    m1_df = pd.DataFrame({
+        'Date': ['25670101'],
+        'Timestamp': ['00:00:00'],
+        'Open': [1],
+        'High': [1],
+        'Low': [1],
+        'Close': [1],
+    })
+    m15_df = pd.DataFrame({
+        'Date': ['25670101'],
+        'Timestamp': ['00:00:00'],
+        'Close': [1],
+    })
     trade_df = pd.DataFrame({'pnl': [1.0]})
 
     def fake_read_csv(path, *a, **k):
@@ -149,8 +160,19 @@ def test_run_backtest_engine_generates_trend_and_signals(monkeypatch):
 
 
 def test_run_backtest_engine_drops_duplicate_trend_index(monkeypatch, caplog):
-    m1_df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]})
-    m15_df = pd.DataFrame({'Close': [1, 2]}, index=[pd.Timestamp('2024-01-01'), pd.Timestamp('2024-01-01')])
+    m1_df = pd.DataFrame({
+        'Date': ['25670101'],
+        'Timestamp': ['00:00:00'],
+        'Open': [1],
+        'High': [1],
+        'Low': [1],
+        'Close': [1],
+    })
+    m15_df = pd.DataFrame({
+        'Date': ['25670101', '25670101'],
+        'Timestamp': ['00:00:00', '00:00:00'],
+        'Close': [1, 2],
+    })
     trade_df = pd.DataFrame({'pnl': [1.0]})
 
     def fake_read_csv(path, *a, **k):
@@ -174,8 +196,19 @@ def test_run_backtest_engine_drops_duplicate_trend_index(monkeypatch, caplog):
 
 
 def test_run_backtest_engine_sorts_trend_index(monkeypatch, caplog):
-    m1_df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]})
-    m15_df = pd.DataFrame({'Close': [1, 2]}, index=[pd.Timestamp('2024-01-02'), pd.Timestamp('2024-01-01')])
+    m1_df = pd.DataFrame({
+        'Date': ['25670101'],
+        'Timestamp': ['00:00:00'],
+        'Open': [1],
+        'High': [1],
+        'Low': [1],
+        'Close': [1],
+    })
+    m15_df = pd.DataFrame({
+        'Date': ['25670102', '25670101'],
+        'Timestamp': ['00:00:00', '00:00:00'],
+        'Close': [1, 2],
+    })
     trade_df = pd.DataFrame({'pnl': [1.0]})
 
     def fake_read_csv(path, *a, **k):
@@ -199,8 +232,14 @@ def test_run_backtest_engine_sorts_trend_index(monkeypatch, caplog):
 
 
 def test_run_backtest_engine_sorts_m1_index(monkeypatch, caplog):
-    m1_df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]},
-                         index=[pd.Timestamp('2024-01-02'), pd.Timestamp('2024-01-01')])
+    m1_df = pd.DataFrame({
+        'Date': ['25670102', '25670101'],
+        'Timestamp': ['00:00:00', '00:00:00'],
+        'Open': [1, 1],
+        'High': [1, 1],
+        'Low': [1, 1],
+        'Close': [1, 1],
+    })
     trade_df = pd.DataFrame({'pnl': [1.0]})
 
     monkeypatch.setattr(be.pd, 'read_csv', lambda *a, **k: m1_df)
@@ -217,8 +256,14 @@ def test_run_backtest_engine_sorts_m1_index(monkeypatch, caplog):
 
 
 def test_run_backtest_engine_drops_duplicate_m1_index(monkeypatch, caplog):
-    idx = [pd.Timestamp('2024-01-01'), pd.Timestamp('2024-01-01')]
-    m1_df = pd.DataFrame({'Open': [1, 2], 'High': [1, 2], 'Low': [1, 2], 'Close': [1, 2]}, index=idx)
+    m1_df = pd.DataFrame({
+        'Date': ['25670101', '25670101'],
+        'Timestamp': ['00:00:00', '00:00:00'],
+        'Open': [1, 2],
+        'High': [1, 2],
+        'Low': [1, 2],
+        'Close': [1, 2],
+    })
     trade_df = pd.DataFrame({'pnl': [1.0]})
 
     monkeypatch.setattr(be.pd, 'read_csv', lambda *a, **k: m1_df)
@@ -232,3 +277,39 @@ def test_run_backtest_engine_drops_duplicate_m1_index(monkeypatch, caplog):
 
     assert result.equals(trade_df)
     assert any('index ซ้ำซ้อนในข้อมูลราคา M1' in msg for msg in caplog.messages)
+
+
+def test_run_backtest_engine_parses_date_and_timestamp(monkeypatch):
+    """ควรรวม Date และ Timestamp เป็นดัชนี datetime ที่ไม่ซ้ำ"""
+    df_raw = pd.DataFrame(
+        {
+            "Date": ["25670101", "25670101"],
+            "Timestamp": ["00:00:00", "00:01:00"],
+            "Open": [1, 1],
+            "High": [1, 1],
+            "Low": [1, 1],
+            "Close": [1, 1],
+        }
+    )
+    trade_df = pd.DataFrame({"pnl": [1.0]})
+
+    captured = {}
+
+    def fake_simulation(df, **k):
+        captured["index"] = df.index
+        return None, trade_df
+
+    monkeypatch.setattr(be.pd, "read_csv", lambda *a, **k: df_raw)
+    monkeypatch.setattr(be, "engineer_m1_features", lambda df, **k: df)
+    monkeypatch.setattr(be, "calculate_m15_trend_zone", lambda df: pd.DataFrame({"Trend_Zone": ["UP", "UP"]}, index=df.index))
+    monkeypatch.setattr(
+        be,
+        "calculate_m1_entry_signals",
+        lambda df, cfg: df.assign(Entry_Long=0, Entry_Short=0, Trade_Tag="t", Signal_Score=0.0, Trade_Reason="r"),
+    )
+    monkeypatch.setattr(be, "run_backtest_simulation_v34", fake_simulation)
+
+    result = be.run_backtest_engine(pd.DataFrame())
+    assert result.equals(trade_df)
+    expected = pd.to_datetime(["2024-01-01 00:00:00", "2024-01-01 00:01:00"])
+    assert captured["index"].equals(pd.DatetimeIndex(expected))
