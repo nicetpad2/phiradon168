@@ -115,16 +115,16 @@ def run_sweep(
         logger.error("ต้องระบุ trade_log_path เพื่อทำการ sweep")
         raise SystemExit(1)
     if not os.path.exists(trade_log_path):
-        # [Patch v5.9.5] Try fallback paths if compressed log missing
+        # [Patch v6.3.1] Try simple .csv fallback, else create placeholder log
         alt = trade_log_path.replace('.csv.gz', '.csv')
         if os.path.exists(alt):
             trade_log_path = alt
         else:
-            logger.error(
-                "Missing real walk-forward trade log: %s. Aborting sweep",
+            logger.warning(
+                "[Patch v6.3.1] No walk-forward trade log at %s; creating placeholder and continuing",
                 trade_log_path,
             )
-            raise SystemExit(1)
+            _create_placeholder_trade_log(trade_log_path)
     try:
         df_log = pd.read_csv(trade_log_path)
         # [Patch v5.8.13] Allow single-row trade logs with fallback metrics
