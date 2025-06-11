@@ -79,3 +79,16 @@ def test_auto_train_meta_classifiers_derive_target(tmp_path, caplog):
     assert any("Deriving 'target'" in m for m in caplog.messages)
 
 
+
+def test_auto_train_meta_classifiers_warns_missing_features(tmp_path, caplog):
+    """Should log warning when some features are missing."""
+    from types import SimpleNamespace
+    cfg = SimpleNamespace(OUTPUT_DIR=str(tmp_path))
+    (tmp_path / "features_main.json").write_text('["f1", "f2"]')
+    data = pd.DataFrame({"f1": [1, 0, 1, 0, 1], "profit": [1.0, -1.0, 2.0, -0.5, 1.5]})
+    with caplog.at_level('WARNING', logger=logger.name):
+        result = auto_train_meta_classifiers(
+            cfg, data, models_dir=str(tmp_path), features_dir=str(tmp_path)
+        )
+    assert Path(result["model_path"]).exists()
+    assert any("missing features" in m for m in caplog.messages)
