@@ -331,3 +331,4 @@
 - Added `wfv_orchestrator` module for dynamic fold splitting.
 - Added `entry_rules` module providing ML-based open signal logic.
 - Added `some_module` module providing `compute_metrics` helper function.
+- Added `backtest_engine` module for trade log regeneration.
