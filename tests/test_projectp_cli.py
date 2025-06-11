@@ -112,22 +112,26 @@ def test_run_mode_all(monkeypatch, tmp_path):
     assert calls == ['sweep', 'update', 'wfv']
 
 
-def test_run_full_pipeline_warns_when_metric_missing(monkeypatch, tmp_path):
-    monkeypatch.setattr(proj, 'run_preprocess', lambda: None)
-    monkeypatch.setattr(proj, 'run_hyperparameter_sweep', lambda params: None)
-    monkeypatch.setattr(proj, 'run_threshold_optimization', lambda: None)
-    monkeypatch.setattr(proj, 'run_backtest', lambda: None)
-    monkeypatch.setattr(proj, 'run_report', lambda: None)
 
-    monkeypatch.setattr(proj.config, 'OUTPUT_DIR', str(tmp_path), raising=False)
-    monkeypatch.setattr(proj.config, 'LEARNING_RATE', 0.01, raising=False)
-    monkeypatch.setattr(proj.config, 'DEPTH', 6, raising=False)
-    monkeypatch.setattr(proj.config, 'L2_LEAF_REG', 1, raising=False)
+def test_run_backtest_uses_best_threshold(tmp_path, monkeypatch):
+    import pandas as pd
+    model_dir = tmp_path / 'models'
+    model_dir.mkdir()
+    (model_dir / 'model_a.joblib').write_text('x')
+    (model_dir / 'model_b.joblib').write_text('x')
+    pd.DataFrame({'best_threshold': [0.4, 0.6]}).to_csv(
+        model_dir / 'threshold_wfv_optuna_results.csv', index=False
+    )
 
-    summary = tmp_path / 'hyperparameter_summary.csv'
-    pd.DataFrame({'learning_rate': [0.1], 'depth': [6], 'l2_leaf_reg': [2]}).to_csv(summary, index=False)
+    captured = {}
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        proj.pipeline,
+        'run_backtest_pipeline',
+        lambda *_args: captured.setdefault('thresh', _args[3])
+    )
 
-    proj.run_full_pipeline()
-    assert proj.config.LEARNING_RATE == 0.01
-    assert proj.config.DEPTH == 6
-    assert proj.config.L2_LEAF_REG == 1
+    proj.run_backtest()
+
+    assert captured['thresh'] == pytest.approx(0.5)
+

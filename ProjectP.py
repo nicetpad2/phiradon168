@@ -174,10 +174,15 @@ def run_backtest():
     model_files.sort()
     model_path = os.path.join(model_dir, model_files[-1]) if model_files else None
     thresh_path = os.path.join(model_dir, "threshold_wfv_optuna_results.csv")
-    threshold = {}
+    threshold = None
     if os.path.exists(thresh_path):
         df = pd.read_csv(thresh_path)
-        threshold = df.median(numeric_only=True).to_dict()
+        if "best_threshold" in df.columns:
+            threshold_val = df["best_threshold"].median()
+            threshold = float(threshold_val) if not pd.isna(threshold_val) else None
+        else:  # pragma: no cover - fallback for legacy column names
+            threshold_val = df.median(numeric_only=True).mean()
+            threshold = float(threshold_val) if not pd.isna(threshold_val) else None
     pipeline.run_backtest_pipeline(pd.DataFrame(), pd.DataFrame(), model_path, threshold)
 
 
@@ -515,12 +520,13 @@ if __name__ == "__main__":
 
         if getattr(cfg, "AUTO_THRESHOLD_TUNING", False):
             import threshold_optimization as topt
-            logger.info("[Patch v6.2.3] Starting Auto Threshold Optimization...")
+            logger.info("[Patch v6.6.8] Starting Auto Threshold Optimization...")
             topt.run_threshold_optimization(
-                summary_csv=os.path.join(cfg.OUTPUT_DIR, "summary.csv"),
-                output_csv=os.path.join(cfg.OUTPUT_DIR, "threshold_wfv_optuna_results.csv"),
-                cv_splits=getattr(cfg, "OPTUNA_CV_SPLITS", 5),
-                n_trials=getattr(cfg, "OPTUNA_N_TRIALS", 50),
+                output_dir=str(cfg.OUTPUT_DIR),
+                trials=getattr(cfg, "OPTUNA_N_TRIALS", 50),
+                study_name="threshold_wfv",
+                direction=getattr(cfg, "OPTUNA_DIRECTION", "maximize"),
+                timeout=None,
             )
             logger.info("[Patch v6.2.3] Auto Threshold Optimization Completed.")
 
