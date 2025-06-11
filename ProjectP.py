@@ -370,7 +370,7 @@ def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) ->
 
 if __name__ == "__main__":
     configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
-    args = parse_args()
+    args = parse_args([])  # [Patch] ignore external argv to avoid pytest args
     DEBUG_DEFAULT_ROWS = 2000
     if args.rows is not None:
         max_rows = args.rows
