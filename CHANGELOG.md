@@ -1,3 +1,9 @@
+### 2025-07-17
+- [Patch v6.3.1] Placeholder trade log if missing during sweep
+- Updated tuning/hyperparameter_sweep.py with warning fallback
+- Updated tests for missing log case
+- QA: pytest -q passed (892 tests)
+
 ### 2025-07-14
 - [Patch v6.3.0] Dynamic walk-forward trade log lookup in hyperparameter_sweep
 - New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
