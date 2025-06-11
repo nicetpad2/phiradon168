@@ -262,3 +262,41 @@ def test_cli_console_level(monkeypatch, tmp_path):
         if isinstance(h, logging.StreamHandler):
             assert h.level == logging.WARNING
 
+
+def test_cli_debug_uses_default_rows(monkeypatch, tmp_path):
+    df = pd.DataFrame({
+        'Datetime': pd.date_range('2022-01-01', periods=1200, freq='min', tz='UTC'),
+        'Open': [1]*1200, 'High': [1]*1200, 'Low': [1]*1200, 'Close': [1]*1200
+    })
+    m1 = tmp_path / 'debug_M1.csv'
+    df.to_csv(m1, index=False)
+    captured = {}
+
+    def dummy_run(df, *a, **k):
+        captured['rows'] = len(df)
+
+    monkeypatch.setattr(profile_backtest, 'run_backtest_simulation_v34', dummy_run)
+    monkeypatch.setattr(sys, 'argv', ['profile_backtest.py', str(m1), '--debug'])
+    profile_backtest.profile_from_cli()
+    assert captured['rows'] == 1000
+
+
+def test_cli_debug_with_rows_override(monkeypatch, tmp_path):
+    df = pd.DataFrame({
+        'Datetime': pd.date_range('2022-01-01', periods=1500, freq='min', tz='UTC'),
+        'Open': [1]*1500, 'High': [1]*1500, 'Low': [1]*1500, 'Close': [1]*1500
+    })
+    m1 = tmp_path / 'debug_override_M1.csv'
+    df.to_csv(m1, index=False)
+    captured = {}
+
+    def dummy_run(df, *a, **k):
+        captured['rows'] = len(df)
+
+    monkeypatch.setattr(profile_backtest, 'run_backtest_simulation_v34', dummy_run)
+    monkeypatch.setattr(sys, 'argv', [
+        'profile_backtest.py', str(m1), '--rows', '500', '--debug'
+    ])
+    profile_backtest.profile_from_cli()
+    assert captured['rows'] == 500
+

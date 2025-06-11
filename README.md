@@ -105,6 +105,10 @@ python profile_backtest.py XAUUSD_M1.csv --rows 10000 --limit 30 --output profil
 ```bash
 python profile_backtest.py XAUUSD_M1.csv --output-profile-dir profiles
 ```
+หากต้องการโหลดข้อมูลจำนวนน้อยเพื่อทดสอบ สามารถใช้โหมด debug ได้ดังนี้:
+```bash
+python profile_backtest.py XAUUSD_M1.csv --debug
+```
 นอกจากนี้ยังสามารถระบุชื่อ Fund Profile และสั่งให้ฝึกโมเดลหลังจบการทดสอบได้ดังนี้:
 ```bash
 python profile_backtest.py XAUUSD_M1.csv --fund AGGRESSIVE --train --train-output models
