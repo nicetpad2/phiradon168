@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import os
 import yaml
 
@@ -13,6 +13,7 @@ class PipelineConfig:
     log_level: str = 'INFO'
     model_dir: str = 'models'
     threshold_file: str = 'threshold_wfv_optuna_results.csv'
+    cleaning: dict = field(default_factory=lambda: {"fill_method": "drop"})
 
 
 def load_config(path: str = DEFAULT_CONFIG_FILE) -> 'PipelineConfig':

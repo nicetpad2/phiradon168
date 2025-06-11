@@ -80,7 +80,10 @@ python ProjectP.py --mode all
 log_level: INFO
 model_dir: models
 threshold_file: threshold_wfv_optuna_results.csv
+cleaning:
+  fill_method: drop
 ```
+ค่า `cleaning.fill_method` สามารถตั้งเป็น `drop` หรือ `mean` เพื่อกำหนดวิธีจัดการค่า NaN
 
 
 

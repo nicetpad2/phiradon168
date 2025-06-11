@@ -54,7 +54,9 @@ def test_run_preprocess_success():
     called = []
     def fake_run(cmd, check):
         called.append(cmd)
-    pipeline.run_preprocess(PipelineConfig(), runner=fake_run)
+    cfg = PipelineConfig(cleaning={'fill_method': 'mean'})
+    pipeline.run_preprocess(cfg, runner=fake_run)
+    assert called[0][-2:] == ['--fill', 'mean']
     assert any('ProjectP.py' in c[1] for c in called)
 
 

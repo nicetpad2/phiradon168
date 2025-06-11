@@ -7,6 +7,11 @@
 - [Patch v6.7.15] Remove pandas warnings during fallback parsing
 - QA: pytest -q passed (954 tests)
 
+### 2025-08-09
+- [Patch v6.7.16] Configurable fill_method for preprocessing
+- New/Updated unit tests added for tests/test_pipeline_config.py, tests/test_main_cli_extended.py
+- QA: pytest -q passed (954 tests)
+
 ### 2025-08-06
 - [Patch v6.7.13] Add max_rows option for load_data
 - New/Updated unit tests added for tests/test_data_loader_additional.py::test_load_data_max_rows

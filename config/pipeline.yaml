@@ -1,3 +1,5 @@
 log_level: INFO
 model_dir: models
 threshold_file: threshold_wfv_optuna_results.csv
+cleaning:
+  fill_method: "drop"
