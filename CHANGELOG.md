@@ -1,8 +1,13 @@
-### 2025-07-27
+
+
+- [Patch v6.7.2] Ensure session column exists after signal calculation
+- Exclude non-numeric 'Date' from features_main.json
+
 - [Patch v6.7.2] Exclude Date and Timestamp columns from feature list
 - [Patch v6.7.2] Shorten dummy trade log to 9 rows
 - New/Updated unit tests added for tests/test_projectp_feature_utils.py::test_generate_all_features_excludes_date_columns
 - QA: pytest -q passed (925 tests)
+
 
 ### 2025-07-26
 

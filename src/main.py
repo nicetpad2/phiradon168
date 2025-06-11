@@ -61,6 +61,7 @@ from src.features import (
     engineer_m1_features,
     clean_m1_data,
     calculate_m1_entry_signals,
+    create_session_column,
     load_features_for_model,
 )
 from src.strategy import (
@@ -940,6 +941,8 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             if df_m1_merged_with_signals.empty:
                 logging.critical("(Error) M1 ว่างเปล่าหลังคำนวณ Signal.")
                 sys.exit("ออก: M1 ว่างเปล่าหลังคำนวณ Signal.")
+            # สร้างคอลัมน์ session หากยังไม่มี เพื่อไม่ให้ context ขาดหาย
+            df_m1_merged_with_signals = create_session_column(df_m1_merged_with_signals)
 
             context_cols_needed_main = ['cluster', 'spike_score', 'session', 'model_tag']
             for ccol in context_cols_needed_main:
@@ -1010,7 +1013,7 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             try:
                 features_list_actual = [
                     c for c in df_m1_final.columns
-                    if c not in ["datetime", "is_tp", "is_sl"]
+                    if c not in ["datetime", "is_tp", "is_sl", "Date"]
                     and pd.api.types.is_numeric_dtype(df_m1_final[c])
                 ]
                 features_path = os.path.join(OUTPUT_DIR, "features_main.json")
