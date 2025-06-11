@@ -898,6 +898,12 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                 sys.exit("ออก: ข้อมูล M15/M1 ว่างเปล่าหลัง prepare_datetime.")
 
             df_m15_trend = calculate_m15_trend_zone(df_m15_dt)
+            # [Patch v6.6.2] Remove duplicate index from Trend Zone before merge
+            if df_m15_trend.index.duplicated().any():
+                dup_count = int(df_m15_trend.index.duplicated().sum())
+                logging.warning("(Warning) พบ index ซ้ำซ้อนใน Trend Zone DataFrame, กำลังลบรายการซ้ำ (คงไว้ค่าแรกของแต่ละ index)")
+                df_m15_trend = df_m15_trend.loc[~df_m15_trend.index.duplicated(keep='first')]
+                logging.info(f"      Removed {dup_count} duplicate index rows from Trend Zone data.")
             df_m1_features = engineer_m1_features(df_m1_dt, lag_features_config=lag_config)
             if df_m1_features is None or df_m1_features.empty:
                 logging.critical("(Error) M1 ว่างเปล่าหลัง engineer_m1_features.")
