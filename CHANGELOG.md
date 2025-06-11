@@ -1777,3 +1777,7 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (919 tests)
 
 
+### 2025-06-12
+- [Patch v6.6.10] Warn when training data missing some features
+- New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_warns_missing_features
+- QA: pytest -q passed (919 tests)
