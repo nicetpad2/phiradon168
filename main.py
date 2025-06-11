@@ -108,6 +108,25 @@ def run_backtest_pipeline(features_df, price_df, model_path, threshold) -> None:
 def run_backtest(config: PipelineConfig, pipeline_func=run_backtest_pipeline) -> None:
     """Run backtest stage."""
     logger.info("[Stage] backtest")
+    from config import config as cfg
+    try:
+        from ProjectP import load_trade_log
+    except Exception:  # pragma: no cover - fallback for tests
+        def load_trade_log(*_a, **_kw):
+            return pd.DataFrame()
+
+    trade_log_file = getattr(cfg, "TRADE_LOG_PATH", None)
+    try:
+        trade_df = load_trade_log(
+            trade_log_file,
+            min_rows=getattr(cfg, "MIN_TRADE_ROWS", 10),
+        )
+    except Exception as e:
+        logger.error(f"Failed loading trade log: {e}")
+        trade_df = pd.DataFrame(columns=["timestamp", "price", "signal"])
+        logger.info("Initialized empty trade_df for pipeline execution.")
+    else:
+        logger.debug("Loaded trade log with %d rows", len(trade_df))
     model_dir = config.model_dir
     model_files = [
         f
