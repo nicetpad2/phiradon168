@@ -201,15 +201,19 @@ def run_full_pipeline() -> None:
     summary_file = os.path.join(config.OUTPUT_DIR, 'hyperparameter_summary.csv')
     if os.path.exists(summary_file):
         df = pd.read_csv(summary_file)
-        # Assumes 'metric' column indicates performance; sort descending
-        best = df.sort_values(by='metric', ascending=False).iloc[0]
-        config.LEARNING_RATE = best['learning_rate']
-        config.DEPTH = int(best['depth'])
-        config.L2_LEAF_REG = int(best['l2_leaf_reg'])
-        logger.info(
-            f"Applied best hyperparameters: lr={config.LEARNING_RATE}, "
-            f"depth={config.DEPTH}, l2={config.L2_LEAF_REG}"
-        )
+        if 'metric' in df.columns and df['metric'].notna().any():
+            best = df.sort_values(by='metric', ascending=False).iloc[0]
+            config.LEARNING_RATE = best.get('learning_rate', config.LEARNING_RATE)
+            config.DEPTH = int(best.get('depth', config.DEPTH))
+            config.L2_LEAF_REG = int(best.get('l2_leaf_reg', config.L2_LEAF_REG))
+            logger.info(
+                f"Applied best hyperparameters: lr={config.LEARNING_RATE}, "
+                f"depth={config.DEPTH}, l2={config.L2_LEAF_REG}"
+            )
+        else:
+            logger.warning(
+                "ไม่มีคอลัมน์ metric ในไฟล์ sweep หรือไม่มีค่า metric ใช้ค่า default"
+            )
     else:
         logger.warning(
             f"Hyperparameter summary not found at {summary_file}, using default parameters."
