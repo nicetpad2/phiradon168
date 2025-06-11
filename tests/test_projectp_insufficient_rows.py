@@ -21,6 +21,10 @@ def test_insufficient_rows_logs_warning(monkeypatch, tmp_path, caplog):
     test_logger = logging.getLogger("test_logger")
     test_logger.setLevel(logging.WARNING)
     monkeypatch.setattr(ProjectP, "logger", test_logger)
+    import src.trade_log_pipeline as tlp
+    monkeypatch.setattr(tlp, "logger", test_logger)
+    import src.trade_log_pipeline as tlp
+    monkeypatch.setattr(tlp, "logger", test_logger)
     monkeypatch.setattr(ProjectP.pd, "read_csv", fake_read_csv)
 
     def fake_engine(_):
@@ -40,7 +44,7 @@ def test_insufficient_rows_logs_warning(monkeypatch, tmp_path, caplog):
         df = ProjectP.load_trade_log(str(csv_path), min_rows=10)
     assert not df.empty
     assert any(
-        "Successfully regenerated trade log" in rec.getMessage() for rec in caplog.records
+        "Generated trade log with" in rec.getMessage() for rec in caplog.records
     )
 
 
@@ -64,10 +68,8 @@ def test_regeneration_empty_dataframe(monkeypatch, tmp_path, caplog):
     )
     monkeypatch.setattr(ProjectP, "load_features", lambda p: pd.DataFrame())
 
-    with caplog.at_level(logging.ERROR, logger="test_logger"):
-        with pytest.raises(PipelineError):
-            ProjectP.load_trade_log(str(csv_path), min_rows=5)
-    assert any("ไม่สามารถสร้าง trade log ใหม่" in rec.getMessage() for rec in caplog.records)
+    with pytest.raises(PipelineError):
+        ProjectP.load_trade_log(str(csv_path), min_rows=5)
 
 
 

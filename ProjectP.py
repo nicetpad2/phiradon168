@@ -342,42 +342,11 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
 def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) -> pd.DataFrame:
     """Load trade log and regenerate via backtest if rows are insufficient."""
 
+    from src.trade_log_pipeline import load_or_generate_trade_log
+
     logger.info(f"[Patch v6.5.9] Attempting to load trade log from {filepath}")
-
-    # Try loading existing file first
-    try:
-        df = pd.read_csv(filepath)
-    except Exception:
-        df = pd.DataFrame()
-
-    row_count = len(df)
-
-    # Override minimum rows from environment variable if provided
-    min_rows = int(os.getenv("TRADE_LOG_MIN_ROWS", min_rows))
-
-    if row_count < min_rows:
-        logger.warning(
-            f"[Patch v6.5.9] Trade log has {row_count}/{min_rows} rows — regenerating via backtest"
-        )
-        try:
-            from backtest_engine import run_backtest_engine  # Local import to avoid heavy deps
-            feat_df = load_features(os.path.join(OUTPUT_DIR, "features_main.json"))
-            if feat_df is None:
-                feat_df = pd.DataFrame()
-            df_new = run_backtest_engine(feat_df)
-            if df_new.empty:
-                raise ValueError("Generated trade log is empty")
-            df = df_new
-            df.to_csv(filepath, index=False)
-            logger.info(
-                f"[Patch v6.5.16] Successfully regenerated trade log with {len(df)} rows"
-            )
-        except Exception as exc:  # pragma: no cover - regeneration failure
-            logger.error(
-                f"[Patch v6.5.16] ไม่สามารถสร้าง trade log ใหม่: {exc}", exc_info=True
-            )
-            raise PipelineError("Trade log generation failed; aborting pipeline.")
-    return df
+    features_path = os.path.join(OUTPUT_DIR, "features_main.json")
+    return load_or_generate_trade_log(filepath, min_rows=min_rows, features_path=features_path)
 
 
 if __name__ == "__main__":

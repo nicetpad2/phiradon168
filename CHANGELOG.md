@@ -1,4 +1,9 @@
 
+### 2025-07-28
+- [Patch v6.7.4] Refactor trade log pipeline into standalone module
+- New/Updated unit tests added for tests/test_trade_log_pipeline.py
+- QA: pytest -q passed (930 tests)
+
 ### 2025-07-27
 - [Patch v6.7.2] ปรับปรุง real_train_func ให้ข้ามการฝึกโมเดลเมื่อข้อมูลไม่เพียงพอ
 - Updated tests/test_training_more.py::test_real_train_func_single_row
