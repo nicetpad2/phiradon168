@@ -26,16 +26,18 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     """
     # 1) Load the raw M1 price data
     try:
-        # [Patch] Use explicit date parsing for consistent datetime index
-        # [Patch v6.5.17] specify format to silence pandas warnings
-        df = pd.read_csv(
-            DATA_FILE_PATH_M1,
-            index_col=0,
-            parse_dates=[0],
-            date_format="%Y%m%d",
-        )
+        df = pd.read_csv(DATA_FILE_PATH_M1)
     except Exception as e:
         raise RuntimeError(f"[backtest_engine] Failed to load price data: {e}") from e
+
+    # [Patch v6.7.5] combine Date and Timestamp to unique datetime index if present
+    if {"Date", "Timestamp"}.issubset(df.columns):
+        combined = df["Date"].astype(str) + " " + df["Timestamp"].astype(str)
+        df.index = pd.to_datetime(combined, format="%Y%m%d %H:%M:%S", errors="coerce")
+        df.drop(columns=["Date", "Timestamp"], inplace=True)
+    elif not isinstance(df.index, pd.DatetimeIndex):
+        # fallback: convert existing index
+        df.index = pd.to_datetime(df.index, errors="coerce")
 
     # 1b) Ensure index is a DatetimeIndex so `.tz` attribute exists
     if not isinstance(df.index, pd.DatetimeIndex):
@@ -65,15 +67,15 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     features_df = engineer_m1_features(df)
     # [Patch v6.6.0] Generate Trend Zone and entry signal features
     try:
-        # [Patch v6.6.1] remove deprecated infer_datetime_format
-        df_m15 = pd.read_csv(
-            DATA_FILE_PATH_M15,
-            index_col=0,
-            parse_dates=[0],
-            date_format="%Y%m%d",
-        )
+        df_m15 = pd.read_csv(DATA_FILE_PATH_M15)
     except Exception:
         df_m15 = None
+    if df_m15 is not None and {"Date", "Timestamp"}.issubset(df_m15.columns):
+        combined = df_m15["Date"].astype(str) + " " + df_m15["Timestamp"].astype(str)
+        df_m15.index = pd.to_datetime(combined, format="%Y%m%d %H:%M:%S", errors="coerce")
+        df_m15.drop(columns=["Date", "Timestamp"], inplace=True)
+    elif df_m15 is not None and not isinstance(df_m15.index, pd.DatetimeIndex):
+        df_m15.index = pd.to_datetime(df_m15.index, errors="coerce")
     if df_m15 is not None and not df_m15.empty:
         # Ensure M15 index is a DatetimeIndex
         if not isinstance(df_m15.index, pd.DatetimeIndex):
