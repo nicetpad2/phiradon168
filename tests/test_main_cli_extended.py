@@ -38,6 +38,18 @@ def test_parse_args_custom():
     assert args.log_level == 'debug'
 
 
+def test_parse_args_debug_only():
+    args = pipeline.parse_args(['--debug'])
+    assert args.debug
+    assert args.rows is None
+
+
+def test_parse_args_debug_rows():
+    args = pipeline.parse_args(['--debug', '--rows', '123'])
+    assert args.debug
+    assert args.rows == 123
+
+
 def test_run_preprocess_success():
     called = []
     def fake_run(cmd, check):
@@ -136,3 +148,29 @@ def test_main_success(monkeypatch):
     monkeypatch.setattr(pipeline, 'setup_logging', lambda level: None)
     res = pipeline.main(['--mode', 'preprocess', '--log-level', 'info'])
     assert res == 0
+
+
+def test_main_debug_sets_sample_size(monkeypatch):
+    import src.main as src_main
+    import src.strategy as strategy
+    src_main.sample_size = 0
+    strategy.sample_size = 0
+    monkeypatch.setattr(pipeline, 'run_all', lambda c: None)
+    monkeypatch.setattr(pipeline, 'setup_logging', lambda level: None)
+    monkeypatch.setattr(pipeline, 'load_config', lambda p: PipelineConfig())
+    pipeline.main(['--debug'])
+    assert src_main.sample_size == 2000
+    assert strategy.sample_size == 2000
+
+
+def test_main_rows_override(monkeypatch):
+    import src.main as src_main
+    import src.strategy as strategy
+    src_main.sample_size = 0
+    strategy.sample_size = 0
+    monkeypatch.setattr(pipeline, 'run_all', lambda c: None)
+    monkeypatch.setattr(pipeline, 'setup_logging', lambda level: None)
+    monkeypatch.setattr(pipeline, 'load_config', lambda p: PipelineConfig())
+    pipeline.main(['--rows', '123'])
+    assert src_main.sample_size == 123
+    assert strategy.sample_size == 123

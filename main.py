@@ -50,6 +50,16 @@ def parse_args(args=None) -> argparse.Namespace:
         default=None,
         help="Logging level override (e.g., DEBUG)",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode (use limited rows for fast run)",
+    )
+    parser.add_argument(
+        "--rows",
+        type=int,
+        help="Limit number of rows loaded from data (overrides debug default)",
+    )
     parser.add_argument("--profile", action="store_true", help="Profile backtest stage")
     parser.add_argument(
         "--output-file",
@@ -184,6 +194,22 @@ def main(args=None) -> int:
     parsed = parse_args(args)
     config = load_config(parsed.config)
     setup_logging(parsed.log_level or config.log_level)
+
+    DEBUG_DEFAULT_ROWS = 2000
+    if parsed.rows is not None:
+        max_rows = parsed.rows
+    elif parsed.debug:
+        max_rows = DEBUG_DEFAULT_ROWS
+    else:
+        max_rows = None
+    if max_rows:
+        print(f"--- [DEBUG MODE] \u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19 max_rows={max_rows} ---")
+        import src.main as pipeline
+        import src.strategy as strategy
+        pipeline.sample_size = max_rows
+        strategy.sample_size = max_rows
+    else:
+        print("--- [FULL PIPELINE] \u0e43\u0e0a\u0e49\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14 ---")
 
     if has_gpu():
         logger.info("GPU detected")
