@@ -1591,3 +1591,9 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.5.4] Fix default variable initialization
 - Corrected DEFAULT_FUND_NAME, DEFAULT_MODEL_TO_LINK, and DEFAULT_RISK_PER_TRADE fallbacks
 - QA: pytest -q passed (895 tests)
+
+### 2025-07-20
+- [Patch v6.5.5] Implement meta-classifier training logic
+- Updated src/utils/auto_train_meta_classifiers.py with logistic regression
+- New tests for auto_train_meta_classifiers covering training behavior
+- QA: pytest -q passed (896 tests)
