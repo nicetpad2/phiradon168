@@ -1898,3 +1898,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.7.8] Enhance CSV cleaner with delimiter auto-detection
 - New/Updated unit tests added for tests/test_data_cleaner.py::test_clean_csv_whitespace
 - QA: pytest -q passed (941 tests)
+
+### 2025-08-02
+- [Patch v6.7.9] Resolve output_dir path relative to cwd
+- New/Updated unit tests added for src/main.py, test_function_registry.py
+- QA: pytest -q passed (943 tests)
