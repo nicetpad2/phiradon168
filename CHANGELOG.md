@@ -1888,3 +1888,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.7.7] Add CSV data cleaner and remove vendored ta
 - New/Updated unit tests added for tests/test_data_cleaner.py
 - QA: pytest -q passed (932 tests)
+
+### 2025-08-01
+- [Patch v6.7.8] Enhance CSV cleaner with delimiter auto-detection
+- New/Updated unit tests added for tests/test_data_cleaner.py::test_clean_csv_whitespace
+- QA: pytest -q passed (941 tests)
