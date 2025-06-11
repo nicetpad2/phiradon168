@@ -1,3 +1,8 @@
+### 2025-07-31
+- [Patch v6.7.7] Improve duplicate handling during data load
+- New/Updated unit tests added for tests/test_deduplicate_sort.py
+- QA: pytest -q passed (932 tests)
+
 
 ### 2025-07-29
 - [Patch v6.7.5] Fix date parsing in backtest_engine to use Date and Timestamp columns

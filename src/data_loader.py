@@ -546,13 +546,8 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
         logging.info("   [Data Quality] ตรวจสอบ Duplicates (Date & Timestamp)...")
         duplicate_cols = ["Date", "Timestamp"]
         if all(col in df_pd.columns for col in duplicate_cols):
-            num_duplicates = df_pd.duplicated(subset=duplicate_cols, keep=False).sum()
-            if num_duplicates > 0:
-                logging.warning(f"   (Warning) พบ {num_duplicates} แถวที่มี Date & Timestamp ซ้ำกัน. กำลังลบรายการซ้ำ (เก็บรายการแรก)...")
-                df_pd.drop_duplicates(subset=duplicate_cols, keep='first', inplace=True)
-                logging.info(f"      ขนาดข้อมูลหลังลบ Duplicates: {df_pd.shape[0]} แถว.")
-            else:
-                logging.debug("      ไม่พบ Duplicates (Date & Timestamp).")
+            df_pd = deduplicate_and_sort(df_pd, subset_cols=duplicate_cols)
+            logging.info(f"      ขนาดข้อมูลหลังจัดการ Duplicates: {df_pd.shape[0]} แถว.")
         else:
             logging.warning(f"   (Warning) ขาดคอลัมน์ {duplicate_cols} สำหรับตรวจสอบ Duplicates.")
 
@@ -946,6 +941,40 @@ def check_price_jumps(df, threshold=0.1):
     return jumps.sum()
 
 
+def deduplicate_and_sort(df: pd.DataFrame, subset_cols=None) -> pd.DataFrame:
+    """Remove duplicate rows and sort by ``subset_cols``.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame.
+    subset_cols : list[str] or tuple[str], optional
+        Columns to identify duplicates. If ``None`` or missing, the DataFrame
+        is only sorted by its index.
+
+    Returns
+    -------
+    pd.DataFrame
+        Cleaned DataFrame with duplicates removed (keeping the last occurrence)
+        and sorted.
+    """
+    if df is None or df.empty:
+        return df
+
+    if subset_cols is None or not all(col in df.columns for col in subset_cols):
+        return df.sort_index()
+
+    dup_count = df.duplicated(subset=subset_cols).sum()
+    if dup_count > 0:
+        logging.warning(
+            f"   (Warning) พบ {dup_count} duplicates based on {subset_cols}. "
+            "Keeping last occurrence."
+        )
+    df_sorted = df.sort_values(list(subset_cols))
+    df_dedup = df_sorted.groupby(list(subset_cols), as_index=False).last()
+    return df_dedup.reset_index(drop=True)
+
+
 def convert_thai_years(df, column):
     """Stubbed Thai year converter."""
     if column in df.columns:
@@ -1165,6 +1194,7 @@ __all__ = [
     "read_csv_with_date_parse",
     "check_nan_percent",
     "check_duplicates",
+    "deduplicate_and_sort",
     "check_price_jumps",
     "convert_thai_years",
     "convert_thai_datetime",
