@@ -1,3 +1,7 @@
 log_level: INFO
 model_dir: models
 threshold_file: threshold_wfv_optuna_results.csv
+data:
+  output_dir: output_default
+  features_filename: features_main.json
+  trade_log_pattern: trade_log_*.csv*

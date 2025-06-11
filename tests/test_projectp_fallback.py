@@ -19,6 +19,11 @@ def test_missing_outputs_creates_dummy(monkeypatch, tmp_path, caplog):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(config, "OUTPUT_DIR", str(out_dir))
     monkeypatch.setattr(config, "DATA_DIR", Path(ROOT_DIR))
+    from src.utils.pipeline_config import PipelineConfig, DataConfig
+    monkeypatch.setattr(
+        "src.utils.pipeline_config.load_config",
+        lambda path='pipeline.yaml': PipelineConfig(data=DataConfig(output_dir=str(out_dir))),
+    )
     out_dir.mkdir()
     # Pre-create features_main.json to skip heavy generation
     (out_dir / "features_main.json").write_text("[]")
