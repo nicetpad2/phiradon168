@@ -30,18 +30,10 @@ def test_real_train_func_with_real_data(tmp_path, monkeypatch):
     assert set(res['features']) == {'Open', 'High', 'Low', 'Close'}
 
 
-def test_real_train_func_missing_files(tmp_path):
-    records = []
-    class ListHandler(logging.Handler):
-        def emit(self, record):
-            records.append(record.getMessage())
-
-    handler = ListHandler()
-    training.logger.addHandler(handler)
-    try:
+def test_real_train_func_missing_files(tmp_path, caplog):
+    with caplog.at_level('ERROR', logger=training.logger.name):
         res = training.real_train_func(
             output_dir=str(tmp_path), trade_log_path=None, m1_path=None
         )
-    finally:
-        training.logger.removeHandler(handler)
     assert res is None
+    assert any('ไม่ได้ระบุ trade log หรือ M1 path' in m for m in caplog.messages)

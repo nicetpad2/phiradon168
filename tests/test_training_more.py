@@ -21,21 +21,13 @@ def test_save_model_none(tmp_path, caplog):
     assert "No model was trained" in caplog.text
 
 
-def test_real_train_func_missing_files(tmp_path):
-    records = []
-    class ListHandler(logging.Handler):
-        def emit(self, record):
-            records.append(record.getMessage())
-
-    handler = ListHandler()
-    training.logger.addHandler(handler)
-    try:
+def test_real_train_func_missing_files(tmp_path, caplog):
+    with caplog.at_level('ERROR', logger=training.logger.name):
         res = training.real_train_func(
             output_dir=str(tmp_path), trade_log_path='no.csv', m1_path='no.csv'
         )
-    finally:
-        training.logger.removeHandler(handler)
     assert res is None
+    assert any('ไม่พบไฟล์ trade log' in m for m in caplog.messages)
 
 
 def test_real_train_func_m1_empty(tmp_path, monkeypatch):

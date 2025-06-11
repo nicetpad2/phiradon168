@@ -1,3 +1,8 @@
+### 2025-07-26
+- [Patch v6.7.1] Graceful skip when data files missing
+- New/Updated unit tests added for tests/test_training_more.py::test_real_train_func_missing_files tests/test_training_real_dataset.py::test_real_train_func_missing_files
+- QA: pytest -q passed (921 tests)
+
 ### 2025-07-25
 - [Patch v6.7.0] Improve sweep file checks and metric handling
 - New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py::test_run_sweep_no_metric
