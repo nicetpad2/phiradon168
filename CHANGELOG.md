@@ -1720,3 +1720,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests.test_backtest_engine.py::test_run_backtest_engine_sorts_trend_index
 - QA: pytest -q passed (913 tests)
 
+### 2025-08-01
+- [Patch v6.6.4] Update Trend Zone duplicate index test expectations
+- New/Updated unit tests added for tests/test_features_more.py::test_calculate_m15_trend_zone_duplicate_index
+- QA: pytest -q passed (913 tests)
+
