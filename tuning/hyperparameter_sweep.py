@@ -269,7 +269,7 @@ def run_sweep(
     if metric_col is None or df[metric_col].dropna().empty:
         numeric_cols = df.select_dtypes(include='number').columns.tolist()
         numeric_cols = [
-            c for c in numeric_cols if c not in {'run_id', 'seed', *param_names}
+            c for c in numeric_cols if c not in {'run_id', 'seed'}
         ]
         if numeric_cols:
             metric_col = numeric_cols[0]
@@ -288,7 +288,23 @@ def run_sweep(
         else:
             logger.error("[Patch v5.9.1] best_param.json missing at %s", best_param_path)
     else:
-        logger.warning("ไม่มีคอลัมน์ metric หรือไม่มีข้อมูลสำหรับ export best_param")
+        # [Patch v6.6.11] Intelligent fallback metric detection
+        metric_candidates = [
+            c for c in df.select_dtypes(exclude="object").columns
+            if c not in ("run_id", "seed")
+        ]
+        if metric_candidates:
+            fallback_metric_col = metric_candidates[0]
+            logger.info(
+                "สร้างคอลัมน์ 'metric' อัตโนมัติจาก '%s' (fallback metric)",
+                fallback_metric_col,
+            )
+            df["metric"] = df[fallback_metric_col]
+            export_summary(df, summary_path)
+        else:
+            logger.warning(
+                "ไม่มีคอลัมน์ metric และไม่พบตัวเลขอื่นให้ fallback – export best_param จะถูกข้าม"
+            )
 
 
 def parse_args(args=None) -> argparse.Namespace:
