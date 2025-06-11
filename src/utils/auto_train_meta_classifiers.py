@@ -65,13 +65,17 @@ def auto_train_meta_classifiers(
         )
         return {}
 
-    missing = [c for c in features if c not in training_data.columns]
+    missing = [f for f in features if f not in training_data.columns]
     if missing:
-        logger.warning("[Patch v6.6.6] Training data missing features: %s", missing)
-    available = [c for c in features if c in training_data.columns]
-    if not available:
-        logger.error("[Patch v6.6.6] No available features for training")
-        return None
+        logger.warning(
+            "[Patch v6.6.7] Training data missing features: %s", missing
+        )
+    features = [f for f in features if f in training_data.columns]
+    if len(features) == 0:
+        logger.error(
+            "[Patch v6.6.7] No available features in training data, skipping meta-classifier"
+        )
+        return {}
 
     if len(training_data) < 5:
         logger.error(
@@ -79,7 +83,7 @@ def auto_train_meta_classifiers(
         )
         return None
 
-    X = training_data[available]
+    X = training_data[features]
     y = training_data["target"]
 
     model = LogisticRegression(max_iter=1000)

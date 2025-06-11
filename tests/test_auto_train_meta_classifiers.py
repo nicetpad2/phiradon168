@@ -62,3 +62,29 @@ def test_auto_train_meta_classifiers_missing_target(tmp_path, caplog):
     assert res == {}
     assert any("6.5.10" in m and "target" in m for m in caplog.messages)
 
+
+def test_auto_train_meta_classifiers_skip_missing_features(tmp_path, caplog):
+    """Should ignore unavailable features and still train."""
+    cfg = SimpleNamespace(OUTPUT_DIR=str(tmp_path))
+    (tmp_path / "features_main.json").write_text("[\"f1\", \"f2\"]")
+    data = pd.DataFrame({"f2": [1, 0, 1, 0, 1], "target": [1, 0, 1, 0, 1]})
+    with caplog.at_level('WARNING', logger=logger.name):
+        res = auto_train_meta_classifiers(
+            cfg, data, models_dir=str(tmp_path), features_dir=str(tmp_path)
+        )
+    assert Path(res["model_path"]).exists()
+    assert any("missing features" in m for m in caplog.messages)
+
+
+def test_auto_train_meta_classifiers_no_available_features(tmp_path, caplog):
+    """Should return empty dict when no features are present."""
+    cfg = SimpleNamespace(OUTPUT_DIR=str(tmp_path))
+    (tmp_path / "features_main.json").write_text("[\"f\"]")
+    data = pd.DataFrame({"target": [0, 1, 0, 1, 0]})
+    with caplog.at_level('ERROR', logger=logger.name):
+        res = auto_train_meta_classifiers(
+            cfg, data, models_dir=str(tmp_path), features_dir=str(tmp_path)
+        )
+    assert res == {}
+    assert any("No available features" in m for m in caplog.messages)
+
