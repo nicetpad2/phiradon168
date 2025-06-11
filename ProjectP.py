@@ -178,7 +178,7 @@ def run_backtest():
     if os.path.exists(thresh_path):
         df = pd.read_csv(thresh_path)
         if "best_threshold" in df.columns:
-            threshold_val = df["best_threshold"].median()
+            threshold_val = df["best_threshold"].iloc[0]
             threshold = float(threshold_val) if not pd.isna(threshold_val) else None
         else:  # pragma: no cover - fallback for legacy column names
             threshold_val = df.median(numeric_only=True).mean()
