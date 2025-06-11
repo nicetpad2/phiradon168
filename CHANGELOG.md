@@ -1781,3 +1781,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.6.10] Warn when training data missing some features
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_warns_missing_features
 - QA: pytest -q passed (919 tests)
+
+### 2025-06-13
+- [Patch v6.6.11] Enable fallback_metric when data is insufficient
+- Updated tests/test_training_more.py::test_real_train_func_single_row
+- QA: pytest -q passed (920 tests)

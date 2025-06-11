@@ -239,9 +239,10 @@ def test_real_train_func_single_row(tmp_path, monkeypatch, caplog):
         'Close': [1.5]
     }).to_csv(m1_path, index=False)
     monkeypatch.setattr(training, 'CatBoostClassifier', None, raising=False)
-    with pytest.raises(ValueError):
-        training.real_train_func(
+    with caplog.at_level(logging.WARNING, logger=training.logger.name):
+        res = training.real_train_func(
             output_dir=str(tmp_path),
             trade_log_path=str(trade_path),
             m1_path=str(m1_path),
         )
+    assert res['metrics']['accuracy'] == -1.0
