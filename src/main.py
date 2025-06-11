@@ -196,11 +196,11 @@ except NameError:
 try:
     DEFAULT_FUND_NAME
 except NameError:
-    DEFAULT_FUND_NAME = DEFAULT_FUND_NAME
+    DEFAULT_FUND_NAME = "NORMAL"
 try:
     DEFAULT_MODEL_TO_LINK
 except NameError:
-    DEFAULT_MODEL_TO_LINK = DEFAULT_MODEL_TO_LINK
+    DEFAULT_MODEL_TO_LINK = "catboost"
 try:
     ENABLE_OPTUNA_TUNING
 except NameError:
@@ -356,7 +356,7 @@ except NameError:
 try:
     DEFAULT_RISK_PER_TRADE
 except NameError:
-    DEFAULT_RISK_PER_TRADE = DEFAULT_RISK_PER_TRADE
+    DEFAULT_RISK_PER_TRADE = 0.01
 try:
     MAX_DRAWDOWN_THRESHOLD
 except NameError:
