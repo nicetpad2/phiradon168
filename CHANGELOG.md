@@ -1591,3 +1591,9 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.5.4] Fix default variable initialization
 - Corrected DEFAULT_FUND_NAME, DEFAULT_MODEL_TO_LINK, and DEFAULT_RISK_PER_TRADE fallbacks
 - QA: pytest -q passed (895 tests)
+### 2025-07-20
+- [Patch v6.5.9] ENV-friendly config import
+- Updated src.config with env variable DEFAULT_TRADE_LOG_MIN_ROWS
+- Updated tests/test_function_registry.py for new line numbers
+- QA: pytest -q passed (895 tests)
+
