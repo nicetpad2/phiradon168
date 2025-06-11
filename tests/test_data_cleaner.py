@@ -35,6 +35,25 @@ def test_clean_csv(tmp_path):
     assert len(cleaned) == 1
 
 
+def test_clean_csv_whitespace(tmp_path):
+    df = pd.DataFrame(
+        {
+            "Date": ["25670101", "25670101"],
+            "Timestamp": ["00:00:00", "00:00:00"],
+            "Open": [1, 1],
+            "High": [2, 2],
+            "Low": [0.5, 0.5],
+            "Close": [1.5, 1.5],
+            "Volume": [10, 10],
+        }
+    )
+    path = tmp_path / "space.csv"
+    df.to_csv(path, index=False, sep="\t")
+    data_cleaner.clean_csv(str(path))
+    cleaned = pd.read_csv(path)
+    assert len(cleaned) == 1
+
+
 def test_clean_dataframe_basic():
     df = pd.DataFrame(
         {

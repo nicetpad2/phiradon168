@@ -9,6 +9,14 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
+def read_csv_auto(path: str) -> pd.DataFrame:
+    """[Patch] โหลด CSV โดยตรวจสอบตัวคั่นอัตโนมัติ"""
+    with open(path, "r", encoding="utf-8") as f:
+        first_line = f.readline()
+    delimiter = "," if "," in first_line else r"\s+"
+    return pd.read_csv(path, sep=delimiter, engine="python")
+
+
 def convert_buddhist_year(
     df: pd.DataFrame,
     date_col: str = "Date",
@@ -93,7 +101,7 @@ def clean_dataframe(df: pd.DataFrame, fill_method: str = "drop") -> pd.DataFrame
 
 def clean_csv(path: str, output: str | None = None, fill_method: str = "drop") -> None:
     """โหลด CSV แล้วทำความสะอาดข้อมูลก่อนบันทึก"""
-    df = pd.read_csv(path)
+    df = read_csv_auto(path)
     cleaned = clean_dataframe(df, fill_method=fill_method)
     out_path = output or path
     cleaned.to_csv(out_path, index=False)
