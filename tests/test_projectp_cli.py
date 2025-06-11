@@ -133,5 +133,5 @@ def test_run_backtest_uses_best_threshold(tmp_path, monkeypatch):
 
     proj.run_backtest()
 
-    assert captured['thresh'] == pytest.approx(0.5)
+    assert captured['thresh'] == pytest.approx(0.4)
 

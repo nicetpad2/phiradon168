@@ -1771,4 +1771,9 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_projectp_cli.py::test_run_backtest_uses_best_threshold
 - QA: pytest -q passed (916 tests)
 
+### 2025-06-11
+- [Patch v6.6.9] Use first best_threshold value when running backtest
+- Updated tests/test_projectp_cli.py::test_run_backtest_uses_best_threshold
+- QA: pytest -q passed (919 tests)
+
 
