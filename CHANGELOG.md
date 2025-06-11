@@ -1709,3 +1709,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.6.1] Fix M15 trend reindex error by removing duplicates and sorting index
 - Updated tests/test_function_registry.py for new line numbers
 - QA: pytest -q passed (912 tests)
+
+### 2025-07-31
+- [Patch v6.6.3] Ensure Trend Zone index unique and sorted before forward fill
+- New/Updated unit tests added for tests.test_backtest_engine.py::test_run_backtest_engine_sorts_trend_index
+- QA: pytest -q passed (913 tests)
