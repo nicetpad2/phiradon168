@@ -268,14 +268,14 @@ def _ensure_ta_installed():  # pragma: no cover
     """Ensure `ta` library is available and record its version."""
     global ta, TA_VERSION
     try:
-        import vendor.ta as ta  # noqa: F401
+        import ta  # noqa: F401
     except ImportError:
         if AUTO_INSTALL_LIBS:
             logging.info("(Info) ไลบรารี 'ta' ไม่พบ กำลังติดตั้งอัตโนมัติ...")
             try:
                 subprocess.check_call([sys.executable, "-m", "pip", "install", "ta"])
                 importlib.invalidate_caches()
-                import vendor.ta as _ta
+                import ta as _ta
             except Exception as e_install:
                 logging.warning(f"(Warning) ติดตั้งไลบรารี ta ไม่สำเร็จ: {e_install}")
                 TA_VERSION = None

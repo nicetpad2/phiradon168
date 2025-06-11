@@ -6,7 +6,6 @@ omit =
     */tests/*
     */logs/*
     */ta/*
-    */vendor/ta/*
     */__init__.py
 
 [report]
@@ -14,5 +13,4 @@ omit =
     */tests/*
     */logs/*
     */ta/*
-    */vendor/ta/*
     */__init__.py

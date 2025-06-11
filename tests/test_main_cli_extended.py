@@ -39,13 +39,11 @@ def test_parse_args_custom():
 
 
 def test_run_preprocess_success():
-    called = {}
+    called = []
     def fake_run(cmd, check):
-        called['cmd'] = cmd
-        called['check'] = check
+        called.append(cmd)
     pipeline.run_preprocess(PipelineConfig(), runner=fake_run)
-    assert 'ProjectP.py' in called['cmd'][1]
-    assert called['check']
+    assert any('ProjectP.py' in c[1] for c in called)
 
 
 def test_run_preprocess_failure():

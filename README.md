@@ -228,4 +228,4 @@ Patch 5.7.8 resolves font configuration parsing errors when plotting.
 ## สรุป Metrics หลัง Hyperparameter Sweep
 เมื่อรัน `python tuning/hyperparameter_sweep.py` จนครบทุกค่าแล้ว ให้นำผล AUC/K-Fold จากแต่ละรอบมาเขียนลงไฟล์ `metrics_summary.csv` และแสดงคอนฟิกที่มีค่า AUC สูงสุด 5 อันดับแรกบนหน้าจอ
 ## Vendored Libraries
-โฟลเดอร์ `vendor/ta/` นำโค้ดไลบรารี ta เวอร์ชัน 0.11.0 มารวมไว้เป็นสำรอง หากไม่ต้องการสามารถติดตั้ง `ta` จาก PyPI และลบโฟลเดอร์นี้ได้
+ไลบรารี `ta` ติดตั้งผ่าน `requirements.txt` แล้ว ตั้งแต่แพตช์นี้จึงลบโฟลเดอร์ `vendor/ta` ออก

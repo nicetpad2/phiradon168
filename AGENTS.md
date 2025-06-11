@@ -261,6 +261,13 @@
   - Ingest logs after each fold
 - **Modules:** `src/event_etl.py`
 
+### [Data_Cleaner](src/data_cleaner.py)
+- **Main Role:** Source Data Validation
+- **Key Responsibilities:**
+  - Remove duplicate rows before ingestion
+  - Provide CLI script `src/data_cleaner.py`
+- **Modules:** `src/data_cleaner.py`
+
 ## 📌 Process & Collaboration Guidelines
 
 1. **Branch & Commit Naming**  
