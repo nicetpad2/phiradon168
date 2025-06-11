@@ -1660,6 +1660,10 @@ QA: pytest -q passed (219 tests)
 ### 2025-07-26
 
 
+- [Patch v6.5.16] Remove duplicate imports in src.strategy
+- Cleaned redundant function and module imports for clarity
+=======
+
 - [Patch v6.5.16] Abort pipeline on trade log regeneration failure
 - Updated ProjectP.load_trade_log to raise PipelineError when regeneration fails
 - Updated tests/test_projectp_insufficient_rows.py accordingly
@@ -1670,6 +1674,7 @@ QA: pytest -q passed (219 tests)
 =======
 - [Patch v6.5.16] Handle missing 'median' column when reading threshold
 - Updated main.py to compute threshold from 'median' column and warn if absent
+
 
 
 - QA: pytest -q passed (910 tests)
