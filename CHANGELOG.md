@@ -1680,3 +1680,7 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (910 tests)
 
 
+### 2025-07-26
+- [Patch v6.5.16] Vectorize convert_thai_datetime with logging
+- Updated tests/test_new_utils.py for new warning/error behavior
+- QA: pytest -q passed (910 tests)
