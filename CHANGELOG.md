@@ -1711,6 +1711,12 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (912 tests)
 
 ### 2025-07-31
+
 - [Patch v6.6.3] Ensure M15 trend index unique and sorted
 - New/Updated unit tests added for tests/test_features_more.py::test_calculate_m15_trend_zone_duplicate_index
 - QA: pytest -q passed (912 tests)
+=======
+- [Patch v6.6.3] Ensure Trend Zone index unique and sorted before forward fill
+- New/Updated unit tests added for tests.test_backtest_engine.py::test_run_backtest_engine_sorts_trend_index
+
+- QA: pytest -q passed (913 tests)
