@@ -27,6 +27,7 @@ def test_auto_train_meta_classifiers_loads_and_trains(tmp_path, caplog):
     assert isinstance(result, dict) and "model_path" in result
     assert Path(result["model_path"]).exists()
     assert any("Meta-classifier trained" in m for m in caplog.messages)
+    assert any("metrics - accuracy" in m for m in caplog.messages)
 
 
 def test_auto_train_meta_classifiers_missing_trade_log(tmp_path, caplog):

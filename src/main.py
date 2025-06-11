@@ -1061,6 +1061,17 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                     log_save_path = os.path.join(OUTPUT_DIR, f"trade_log_v32_walkforward{suffix}.csv.gz")
                     logging.info(f"   Saving generated trade log to: {log_save_path}")
                     if prep_trade_log_wf is not None and not prep_trade_log_wf.empty:
+                        if "target" not in prep_trade_log_wf.columns:
+                            value_col = None
+                            for c in ("profit", "pnl", "PnL_Realized_USD"):
+                                if c in prep_trade_log_wf.columns:
+                                    value_col = c
+                                    break
+                            if value_col:
+                                prep_trade_log_wf["target"] = (prep_trade_log_wf[value_col] > 0).astype(int)
+                                logging.info("[Patch v6.6.6] Added target column using %s", value_col)
+                            else:
+                                logging.warning("[Patch v6.6.6] No profit column found to derive target")
                         prep_trade_log_wf.to_csv(log_save_path, index=False, encoding="utf-8", compression="gzip")
                         logging.info(f"   (Success) Saved generated trade log ({len(prep_trade_log_wf)} rows): {os.path.basename(log_save_path)}")
                     else:
@@ -1338,6 +1349,17 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
 
                     log_file_path = os.path.join(OUTPUT_DIR, f"trade_log_v32_walkforward{final_run_suffix_fund}.csv")
                     saved_path = None
+                    if "target" not in trade_log_wf_fund.columns:
+                        value_col = None
+                        for c in ("profit", "pnl", "PnL_Realized_USD"):
+                            if c in trade_log_wf_fund.columns:
+                                value_col = c
+                                break
+                        if value_col:
+                            trade_log_wf_fund["target"] = (trade_log_wf_fund[value_col] > 0).astype(int)
+                            logging.info("[Patch v6.6.6] Added target column using %s", value_col)
+                        else:
+                            logging.warning("[Patch v6.6.6] No profit column found to derive target")
                     try:
                         trade_log_wf_fund.to_csv(log_file_path + ".gz", index=False, encoding="utf-8", compression="gzip")
                         saved_path = log_file_path + ".gz"
@@ -1414,6 +1436,17 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
             if all_funds_trade_logs:
                 logging.info("   Combining trade logs from all funds...")
                 all_funds_combined_log = pd.concat(all_funds_trade_logs.values(), ignore_index=True)
+                if "target" not in all_funds_combined_log.columns:
+                    val_col = None
+                    for c in ("profit", "pnl", "PnL_Realized_USD"):
+                        if c in all_funds_combined_log.columns:
+                            val_col = c
+                            break
+                    if val_col:
+                        all_funds_combined_log["target"] = (all_funds_combined_log[val_col] > 0).astype(int)
+                        logging.info("[Patch v6.6.6] Added target column to combined log using %s", val_col)
+                    else:
+                        logging.warning("[Patch v6.6.6] No profit column found for combined log")
                 combined_log_path = os.path.join(OUTPUT_DIR, f"trade_log_v32_walkforward_ALL_FUNDS.csv")
                 try:
                     all_funds_combined_log.to_csv(combined_log_path + ".gz", index=False, encoding="utf-8", compression="gzip")

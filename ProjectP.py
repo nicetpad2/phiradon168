@@ -134,12 +134,15 @@ def run_hyperparameter_sweep(params: Dict[str, List[float]]) -> None:
     """รันการค้นหาค่าพารามิเตอร์."""
     logger.debug(f"Starting sweep with params: {params}")
     from tuning.hyperparameter_sweep import run_sweep as _sweep, DEFAULT_TRADE_LOG
+    m1_path = os.path.join(str(OUTPUT_DIR), "final_data_m1_v32_walkforward.csv.gz")
+    logger.info("[Patch v6.6.6] Running sweep with m1_path=%s", m1_path)
     _sweep(
         str(OUTPUT_DIR),
         params,
         seed=42,
         resume=True,
         trade_log_path=DEFAULT_TRADE_LOG,
+        m1_path=m1_path,
     )
 
 
@@ -205,6 +208,12 @@ def run_full_pipeline() -> None:
 
     run_threshold_optimization()
     run_backtest()
+    metrics_path = os.path.join(config.OUTPUT_DIR, "metrics_summary_v32.csv")
+    if os.path.exists(metrics_path):
+        results_df = pd.read_csv(metrics_path)
+    else:
+        results_df = pd.DataFrame()
+    generate_dashboard(results=results_df, output_filepath=os.path.join(config.OUTPUT_DIR, "dashboard.html"))
     run_report()
 
 
@@ -514,12 +523,16 @@ if __name__ == "__main__":
                 cfg.OUTPUT_DIR, "trade_log_v32_walkforward.csv.gz"
             )
             training_data = pd.read_csv(trade_log_path, compression="gzip")
-            auto_train_meta_classifiers(
+            result = auto_train_meta_classifiers(
                 cfg,
                 training_data,
                 models_dir=getattr(cfg, "MODELS_DIR", cfg.OUTPUT_DIR),
                 features_dir=cfg.OUTPUT_DIR,
             )
+            if result:
+                logger.info(
+                    "[Patch v6.6.6] Meta-Classifier metrics: %s", result.get("metrics")
+                )
             logger.info("[Patch v6.4.1] Meta-Classifier Training Completed.")
         except ImportError:
             logger.warning("[Patch v6.2.3] auto_train_meta_classifiers not found; skipping.")
@@ -527,12 +540,10 @@ if __name__ == "__main__":
         try:
             from reporting.dashboard import generate_dashboard
             dashboard_path = os.path.join(cfg.OUTPUT_DIR, "dashboard.html")
-            logger.info("[Patch v6.2.3] Generating Dashboard at %s...", dashboard_path)
-            generate_dashboard(
-                folds_dir=cfg.OUTPUT_DIR,
-                metrics_summary=os.path.join(cfg.OUTPUT_DIR, "metrics_summary_v32.csv"),
-                output_html=dashboard_path,
-            )
-            logger.info("[Patch v6.2.3] Dashboard Generated: %s", dashboard_path)
+            metrics_file = os.path.join(cfg.OUTPUT_DIR, "metrics_summary_v32.csv")
+            df_dash = pd.read_csv(metrics_file) if os.path.exists(metrics_file) else pd.DataFrame()
+            logger.info("[Patch v6.6.6] Generating Dashboard at %s", dashboard_path)
+            generate_dashboard(results=df_dash, output_filepath=dashboard_path)
+            logger.info("[Patch v6.6.6] Dashboard Generated: %s", dashboard_path)
         except ImportError:
             logger.warning("[Patch v6.2.3] reporting.dashboard.generate_dashboard not found; skipping.")

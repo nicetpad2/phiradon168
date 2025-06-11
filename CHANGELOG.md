@@ -1730,3 +1730,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_backtest_engine.py::test_run_backtest_engine_sorts_m1_index and ::test_run_backtest_engine_drops_duplicate_m1_index
 - QA: pytest -q passed (915 tests)
 
+### 2025-08-03
+- [Patch v6.6.6] Add target column and dashboard generation enhancements
+- New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py and tests/test_reporting_dashboard.py
+- QA: pytest -q passed (915 tests)
+
