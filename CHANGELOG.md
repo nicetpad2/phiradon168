@@ -1580,8 +1580,9 @@ QA: pytest -q passed (219 tests)
 - Updated ProjectP.py to generate 10 placeholder trades
 - QA: pytest -q passed (663 tests)
 
-### 2025-06-11
-- [Patch v6.5.2] Add MIN_TRADE_ROWS validation
-- Updated config.Config with TRADE_LOG_PATH and MIN_TRADE_ROWS
-- New test tests/test_config_trade_log.py
-- QA: pytest -q passed (894 tests)
+
+### 2025-07-18
+- [Patch v6.5.4] Strict trade log loading with detailed errors
+- Updated ProjectP.load_trade_log and tests
+- QA: pytest -q passed (892 tests)
+

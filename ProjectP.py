@@ -316,6 +316,34 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
     ]
 
 
+def load_trade_log(path: str, min_rows: int = 10) -> pd.DataFrame:
+    """Load trade log CSV with strict validation.
+
+    [Patch v6.5.4] Raise detailed errors if the file is empty, malformed,
+    or does not contain the minimum required number of rows.
+    """
+    logger.info(f"[Patch v6.5.4] Attempting to load trade log from {path}")
+    try:
+        df = pd.read_csv(path)
+    except pd.errors.EmptyDataError:
+        logger.critical(f"[Patch v6.5.4] Trade log file is empty: {path}")
+        raise
+    except pd.errors.ParserError as pe:
+        logger.critical(f"[Patch v6.5.4] ParserError while reading trade log: {pe}")
+        raise
+    except Exception as ex:
+        logger.critical(f"[Patch v6.5.4] Unexpected error reading trade log: {ex}")
+        raise
+
+    row_count = len(df)
+    if row_count < min_rows:
+        logger.critical(
+            f"[Patch v6.5.4] Insufficient trade rows ({row_count}); minimum required: {min_rows}"
+        )
+        raise ValueError(f"Insufficient trade rows: {row_count}/{min_rows}")
+    return df
+
+
 if __name__ == "__main__":
     configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
     args = parse_args()
@@ -429,11 +457,11 @@ if __name__ == "__main__":
         "[Patch v5.8.15] Loaded trade log: %s", os.path.basename(trade_log_file)
     )
 
-    trade_df = pd.read_csv(trade_log_file)
-    # [Patch v6.5.0] Allow running with minimal or empty trade logs
-    if trade_df.shape[0] < 10:
-        msg = f"Insufficient trade data rows: {trade_df.shape[0]}"
-        logger.warning(msg)
+    try:
+        trade_df = load_trade_log(trade_log_file, min_rows=10)
+    except ValueError as ve:
+        logger.error(str(ve))
+        raise
 
     ensure_output_files([features_path, trade_log_file])
     try:
