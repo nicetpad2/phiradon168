@@ -13,6 +13,10 @@ class PipelineConfig:
     log_level: str = 'INFO'
     model_dir: str = 'models'
     threshold_file: str = 'threshold_wfv_optuna_results.csv'
+    output_dir: str = 'output_default'
+    features_filename: str = 'features_main.json'
+    trade_log_pattern: str = 'trade_log_*.csv*'
+    raw_m1_filename: str = 'XAUUSD_M1.csv'
 
 
 def load_config(path: str = DEFAULT_CONFIG_FILE) -> 'PipelineConfig':
@@ -20,5 +24,8 @@ def load_config(path: str = DEFAULT_CONFIG_FILE) -> 'PipelineConfig':
     if os.path.exists(path):
         with open(path, 'r', encoding='utf-8') as fh:
             data = yaml.safe_load(fh) or {}
+        if 'data' in data and isinstance(data['data'], dict):
+            data = {**data, **data['data']}
+            del data['data']
         return PipelineConfig(**{**PipelineConfig().__dict__, **data})
     return PipelineConfig()
