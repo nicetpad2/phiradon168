@@ -1,3 +1,7 @@
+### 2025-07-26
+- [Patch v6.7.1] Update VPS log message when not using Google Drive
+- QA: pytest -q passed (923 tests)
+
 ### 2025-07-25
 - [Patch v6.7.0] Improve sweep file checks and metric handling
 - New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py::test_run_sweep_no_metric
