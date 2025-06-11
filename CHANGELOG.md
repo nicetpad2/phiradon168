@@ -1,3 +1,7 @@
+### 2025-07-23
+- [Patch v6.6.0] Ensure Trend Zone and signals computed before backtest
+- New/Updated unit tests added for tests/test_backtest_engine.py
+- QA: pytest -q passed (911 tests)
 
 ### 2025-07-22
 - [Patch v6.5.9] Dynamic threshold + MA fallback for open signals
