@@ -23,7 +23,7 @@ from tqdm import tqdm
 import logging
 import numpy as np
 
-from src.config import logger, DefaultConfig
+from src.config import logger, DefaultConfig, __version__
 
 # [Patch v5.9.1] Default sweep results under configured OUTPUT_DIR
 DEFAULT_SWEEP_DIR = DefaultConfig.OUTPUT_DIR
@@ -112,6 +112,30 @@ def export_summary(summary_df: pd.DataFrame, summary_path: str) -> pd.DataFrame:
     return summary_df
 
 
+def _run_single_trial(
+    params: Dict[str, object],
+    df_log: pd.DataFrame,
+    output_dir: str,
+    trade_log_path: str,
+    m1_path: str,
+) -> dict | None:
+    """Run one training trial or skip if the dataset is too small."""
+    # Skip if not enough training samples
+    if df_log.shape[0] < 2:
+        logger.warning(
+            f"[Patch v{__version__}] Skipping trial: only {df_log.shape[0]} training samples"
+        )
+        return None
+
+    call_dict = _filter_kwargs(real_train_func, params)
+    return real_train_func(
+        output_dir=output_dir,
+        trade_log_path=trade_log_path,
+        m1_path=m1_path,
+        **call_dict,
+    )
+
+
 def run_sweep(
     output_dir: str | None,
     params_grid: Dict[str, List],
@@ -183,13 +207,24 @@ def run_sweep(
         log_msg = f"Run {run_id}: {param_dict}"
         logger.info(log_msg)
         try:
-            call_dict = _filter_kwargs(real_train_func, param_dict)
-            result = real_train_func(
-                output_dir=output_dir,
-                trade_log_path=trade_log_path,
-                m1_path=m1_path or DefaultConfig.DATA_FILE_PATH_M1,
-                **call_dict,
+            result = _run_single_trial(
+                param_dict,
+                df_log,
+                output_dir,
+                trade_log_path,
+                m1_path or DefaultConfig.DATA_FILE_PATH_M1,
             )
+            if result is None:
+                summary_rows.append({
+                    'run_id': run_id,
+                    **param_dict,
+                    'error': 'insufficient training samples',
+                    'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                })
+                with open(qa_log_path, 'a', encoding='utf-8') as f:
+                    f.write(f"SKIP {log_msg} => insufficient training samples\n")
+                pbar.update(1)
+                continue
             metric_val = None
             if result.get('metrics'):
                 metric_val = list(result['metrics'].values())[0]

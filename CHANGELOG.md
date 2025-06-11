@@ -1,3 +1,8 @@
+### 2025-07-21
+- [Patch v6.5.9] Dynamic split computation in wfv_orchestrator
+- New/Updated unit tests added for tests/test_wfv_orchestrator.py
+- QA: pytest -q passed (897 tests)
+
 ### 2025-07-17
 - [Patch v6.3.1] Placeholder trade log if missing during sweep
 - Updated tuning/hyperparameter_sweep.py with warning fallback
@@ -1593,6 +1598,7 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (895 tests)
 
 ### 2025-07-20
+
 - [Patch v6.5.5] Implement meta-classifier training logic
 - Updated src/utils/auto_train_meta_classifiers.py with logistic regression
 - New tests for auto_train_meta_classifiers covering training behavior
@@ -1603,3 +1609,4 @@ QA: pytest -q passed (219 tests)
 - Updated src/utils/auto_train_meta_classifiers.py to skip training when 'target' absent
 - New test tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_missing_target
 - QA: pytest -q passed (896 tests)
+

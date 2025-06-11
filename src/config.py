@@ -47,6 +47,7 @@ import sys
 import subprocess
 import importlib
 import sys
+# Imports
 import os
 import time
 import warnings
@@ -181,6 +182,8 @@ FOLD_ID = os.getenv('FOLD_ID', 'fold0')
 LOG_DIR = os.path.join(BASE_LOG_DIR, LOG_DATE, FOLD_ID)
 os.makedirs(LOG_DIR, exist_ok=True)
 LOG_FILENAME = os.path.join(LOG_DIR, f'gold_ai_v{__version__}_qa.log')
+# minimum rows required for trade log validation (override via TRADE_LOG_MIN_ROWS)
+DEFAULT_TRADE_LOG_MIN_ROWS = int(os.getenv("TRADE_LOG_MIN_ROWS", 10))
 
 # ตั้งค่า Logger กลางเพื่อให้โมดูลอื่น ๆ ใช้งานร่วมกัน
 # [Patch v5.5.6] Force COMPACT_LOG when running under pytest
@@ -702,6 +705,7 @@ OUTPUT_BASE_DIR = DEFAULT_LOG_DIR
 OUTPUT_DIR_NAME = f"outputgpt_v{__version__}"
 DATA_FILE_PATH_M15 = DEFAULT_CSV_PATH_M15
 DATA_FILE_PATH_M1 = DEFAULT_CSV_PATH_M1
+DEFAULT_TRADE_LOG_MIN_ROWS = 10  # Minimum rows required in trade log
 TRAIN_META_MODEL_BEFORE_RUN = True
 DEFAULT_MODEL_TO_LINK = "catboost"
 META_CLASSIFIER_PATH = "meta_classifier.pkl"
