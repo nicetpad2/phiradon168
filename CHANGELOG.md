@@ -1657,4 +1657,10 @@ QA: pytest -q passed (219 tests)
 - Expanded tests/test_backtest_engine.py to verify feature engineering call
 - QA: pytest -q passed (909 tests)
 
+### 2025-07-26
+- [Patch v6.5.16] Default AUTO_INSTALL_LIBS=False for security
+- Updated src/config.py and documentation
+- Added test_config_defaults assertion for AUTO_INSTALL_LIBS
+- QA: pytest -q passed (910 tests)
+
 

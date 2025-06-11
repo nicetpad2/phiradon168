@@ -4,11 +4,11 @@ import pytest
 
 # Mapping of module paths to function names and their expected starting line numbers
 FUNCTIONS_INFO = [
-    ("src/config.py", "log_library_version", 215),
-    ("src/config.py", "_ensure_ta_installed", 260),
-    ("src/config.py", "is_colab", 491),
-    ("src/config.py", "print_gpu_utilization", 591),
-    ("src/config.py", "show_system_status", 643),
+    ("src/config.py", "log_library_version", 222),
+    ("src/config.py", "_ensure_ta_installed", 267),
+    ("src/config.py", "is_colab", 498),
+    ("src/config.py", "print_gpu_utilization", 598),
+    ("src/config.py", "show_system_status", 650),
 
     ("src/data_loader.py", "inspect_file_exists", 911),
     ("src/data_loader.py", "read_csv_with_date_parse", 916),
