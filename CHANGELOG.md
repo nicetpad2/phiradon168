@@ -5,6 +5,11 @@
   tests/test_training_real_dataset.py::test_real_train_func_missing_files
 - QA: pytest -q passed (920 tests)
 
+### 2025-07-26
+- [Patch v6.7.1] Validate M1 path and abort on missing metric
+- New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
+- QA: pytest -q passed (923 tests)
+
 ### 2025-07-24
 - [Patch v6.6.11] Intelligent fallback metric in hyperparameter_sweep
 - New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py::test_run_sweep_fallback_metric
