@@ -1739,3 +1739,8 @@ QA: pytest -q passed (219 tests)
 
 - QA: pytest -q passed (915 tests)
 
+### 2025-08-04
+- [Patch v6.6.7] Handle missing metric column when applying hyperparameters
+- New/Updated unit tests added for tests/test_projectp_cli.py::test_run_full_pipeline_warns_when_metric_missing
+- QA: pytest -q passed (916 tests)
+

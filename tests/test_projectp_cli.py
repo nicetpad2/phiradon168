@@ -1,4 +1,6 @@
 import os
+import logging
+import pandas as pd
 import ProjectP as proj
 import pytest
 
@@ -108,3 +110,24 @@ def test_run_mode_all(monkeypatch, tmp_path):
     monkeypatch.setattr(proj, 'run_walkforward', lambda: calls.append('wfv'))
     proj.run_mode('all')
     assert calls == ['sweep', 'update', 'wfv']
+
+
+def test_run_full_pipeline_warns_when_metric_missing(monkeypatch, tmp_path):
+    monkeypatch.setattr(proj, 'run_preprocess', lambda: None)
+    monkeypatch.setattr(proj, 'run_hyperparameter_sweep', lambda params: None)
+    monkeypatch.setattr(proj, 'run_threshold_optimization', lambda: None)
+    monkeypatch.setattr(proj, 'run_backtest', lambda: None)
+    monkeypatch.setattr(proj, 'run_report', lambda: None)
+
+    monkeypatch.setattr(proj.config, 'OUTPUT_DIR', str(tmp_path), raising=False)
+    monkeypatch.setattr(proj.config, 'LEARNING_RATE', 0.01, raising=False)
+    monkeypatch.setattr(proj.config, 'DEPTH', 6, raising=False)
+    monkeypatch.setattr(proj.config, 'L2_LEAF_REG', 1, raising=False)
+
+    summary = tmp_path / 'hyperparameter_summary.csv'
+    pd.DataFrame({'learning_rate': [0.1], 'depth': [6], 'l2_leaf_reg': [2]}).to_csv(summary, index=False)
+
+    proj.run_full_pipeline()
+    assert proj.config.LEARNING_RATE == 0.01
+    assert proj.config.DEPTH == 6
+    assert proj.config.L2_LEAF_REG == 1
