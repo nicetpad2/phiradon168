@@ -126,7 +126,7 @@ def test_load_raw_data_m1_invalid(monkeypatch):
 
 
 def test_load_raw_data_m15(monkeypatch, tmp_path):
-    csv = tmp_path / 'm15.csv'
+    csv = tmp_path / 'XAUUSD_M15.csv'
     pd.DataFrame({'A':[1]}).to_csv(csv)
     monkeypatch.setattr(dl, 'safe_load_csv_auto', lambda p: pd.read_csv(p))
     out = dl.load_raw_data_m15(str(csv))

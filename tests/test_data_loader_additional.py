@@ -104,6 +104,29 @@ def test_load_raw_data_m1_bad_path(tmp_path, caplog):
     assert 'Unexpected M1 data file' in caplog.text
 
 
+def test_validate_m15_data_path_ok(tmp_path):
+    p = tmp_path / 'XAUUSD_M15.csv'
+    p.write_text('a,b\n1,2', encoding='utf-8')
+    assert dl.validate_m15_data_path(str(p)) is True
+
+
+def test_validate_m15_data_path_wrong_name(tmp_path, caplog):
+    p = tmp_path / 'bad.csv'
+    p.write_text('a,b\n1,2', encoding='utf-8')
+    with caplog.at_level('ERROR'):
+        assert not dl.validate_m15_data_path(str(p))
+    assert 'Unexpected M15 data file' in caplog.text
+
+
+def test_load_raw_data_m15_bad_path(tmp_path, caplog):
+    p = tmp_path / 'wrong.csv'
+    pd.DataFrame({'A': [1]}).to_csv(p)
+    with caplog.at_level('ERROR'):
+        res = dl.load_raw_data_m15(str(p))
+    assert res is None
+    assert 'Unexpected M15 data file' in caplog.text
+
+
 def test_load_final_m1_data_valid(tmp_path):
     df = pd.DataFrame(
         {
