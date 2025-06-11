@@ -319,8 +319,8 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
 def load_trade_log(path: str, min_rows: int = 10) -> pd.DataFrame:
     """Load trade log CSV with strict validation.
 
-    [Patch v6.5.4] Raise detailed errors if the file is empty, malformed,
-    or does not contain the minimum required number of rows.
+    [Patch v6.5.6] Raise detailed errors if the file is empty or malformed.
+    Log a warning instead of raising when row count is below minimum.
     """
     logger.info(f"[Patch v6.5.4] Attempting to load trade log from {path}")
     try:
@@ -337,10 +337,10 @@ def load_trade_log(path: str, min_rows: int = 10) -> pd.DataFrame:
 
     row_count = len(df)
     if row_count < min_rows:
-        logger.critical(
-            f"[Patch v6.5.4] Insufficient trade rows ({row_count}); minimum required: {min_rows}"
+        # Log a warning and continue pipeline even when trade log has fewer rows than expected
+        logger.warning(
+            f"[Patch v6.5.6] Insufficient trade rows: {row_count}/{min_rows}, proceeding with available data"
         )
-        raise ValueError(f"Insufficient trade rows: {row_count}/{min_rows}")
     return df
 
 
