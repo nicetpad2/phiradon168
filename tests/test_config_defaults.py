@@ -42,3 +42,4 @@ def test_default_parameters():
     assert cfg.AUTO_THRESHOLD_TUNING is False
     assert hasattr(cfg, "MODELS_DIR")
     assert cfg.MODELS_DIR.exists()
+    assert cfg.AUTO_INSTALL_LIBS is False
