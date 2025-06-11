@@ -70,13 +70,24 @@ def test_auto_train_meta_classifiers_derive_target(tmp_path, caplog):
     (tmp_path / "features_main.json").write_text("[\"f\"]")
     data = pd.DataFrame({"f": [1, 0, 1, 0, 1], "profit": [1.0, -0.5, 2.0, -1.0, 0.4]})
     with caplog.at_level('INFO', logger=logger.name):
-
         res = auto_train_meta_classifiers(
             cfg, data, models_dir=str(tmp_path), features_dir=str(tmp_path)
         )
     assert Path(res["model_path"]).exists()
+    assert any("Auto-generating 'target' from 'profit'" in m for m in caplog.messages)
 
-    assert any("Deriving 'target'" in m for m in caplog.messages)
+
+def test_auto_train_meta_classifiers_derive_target_alt_column(tmp_path, caplog):
+    """Should derive target from alternate profit column when missing."""
+    cfg = SimpleNamespace(OUTPUT_DIR=str(tmp_path))
+    (tmp_path / "features_main.json").write_text("[\"f\"]")
+    data = pd.DataFrame({"f": [1, 0, 1, 0, 1], "pnl_usd_net": [1.0, -0.5, 2.0, -1.0, 0.4]})
+    with caplog.at_level('INFO', logger=logger.name):
+        res = auto_train_meta_classifiers(
+            cfg, data, models_dir=str(tmp_path), features_dir=str(tmp_path)
+        )
+    assert Path(res["model_path"]).exists()
+    assert any("Auto-generating 'target' from 'pnl_usd_net'" in m for m in caplog.messages)
 
 
 
