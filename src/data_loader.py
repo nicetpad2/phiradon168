@@ -480,6 +480,12 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
 
     if dtypes is None:
         dtypes = safe_get_global("DEFAULT_DTYPE_MAP", None)
+        if dtypes is None:
+            try:
+                from src.config import DEFAULT_DTYPE_MAP as CONFIG_DEFAULT_DTYPE_MAP
+                dtypes = CONFIG_DEFAULT_DTYPE_MAP
+            except Exception:
+                dtypes = None
 
     if not os.path.exists(file_path):
         logging.critical(f"(Error) ไม่พบไฟล์: {file_path}")
