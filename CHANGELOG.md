@@ -1694,3 +1694,8 @@ QA: pytest -q passed (219 tests)
 - Replaced deprecated infer_datetime_format usage with explicit date_format
 - Added safe to_datetime fallback with format
 - QA: pytest -q passed (910 tests)
+
+### 2025-07-28
+- [Patch v6.6.1] Remove pandas datetime warnings
+- Updated backtest_engine to use date_format for M15 data
+- QA: pytest -q passed (911 tests)
