@@ -111,6 +111,16 @@ def parse_projectp_args(args=None):
         default="preprocess",
         help="ขั้นตอนที่จะรัน",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode (limit rows for fast pipeline loop test)",
+    )
+    parser.add_argument(
+        "--rows",
+        type=int,
+        help="Limit number of rows loaded from data (overrides debug default)",
+    )
     return parser.parse_args(args)
 
 
@@ -352,6 +362,20 @@ def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) ->
 if __name__ == "__main__":
     configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
     args = parse_args()
+    DEBUG_DEFAULT_ROWS = 2000
+    if args.rows is not None:
+        max_rows = args.rows
+    elif args.debug:
+        max_rows = DEBUG_DEFAULT_ROWS
+    else:
+        max_rows = None
+    if max_rows:
+        print(f"--- [DEBUG MODE] กำหนด max_rows={max_rows} ---")
+        pipeline.sample_size = max_rows
+        import src.strategy as strategy
+        strategy.sample_size = max_rows
+    else:
+        print("--- [FULL PIPELINE] ใช้ข้อมูลทั้งหมด ---")
     # [Patch v6.3.5] ตรวจสอบไฟล์ผลลัพธ์ก่อนและหลังการทำงาน
     output_dir = OUTPUT_DIR
     features_path = os.path.join(output_dir, "features_main.json")
