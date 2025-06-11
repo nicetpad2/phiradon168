@@ -506,7 +506,7 @@ def calculate_m15_trend_zone(df_m15):
     if cache_key is not None and cache_key in _m15_trend_cache:
         logging.info("      [Cache] ใช้ผลลัพธ์ Trend Zone จาก cache")
         cached_df = _m15_trend_cache[cache_key]
-        return cached_df.reindex(df_m15.index).copy()
+        return cached_df.copy()
     if not isinstance(df_m15, pd.DataFrame): logging.error("M15 Trend Zone Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m15.empty or "Close" not in df_m15.columns:
         result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category');
@@ -540,7 +540,7 @@ def calculate_m15_trend_zone(df_m15):
         is_up = (df["EMA_Fast"] > df["EMA_Slow"]) & (df["RSI"] > M15_TREND_RSI_UP); is_down = (df["EMA_Fast"] < df["EMA_Slow"]) & (df["RSI"] < M15_TREND_RSI_DOWN)
         df["Trend_Zone"] = "NEUTRAL"; df.loc[is_up, "Trend_Zone"] = "UP"; df.loc[is_down, "Trend_Zone"] = "DOWN"
         if not df.empty: logging.info(f"   การกระจาย M15 Trend Zone:\n{df['Trend_Zone'].value_counts(normalize=True).round(3).to_string()}")
-        result_df = df[["Trend_Zone"]].reindex(df_m15.index).fillna("NEUTRAL"); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category')
+        result_df = df[["Trend_Zone"]].copy(); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category')
         del df, is_up, is_down; maybe_collect();
         if cache_key is not None:
             _m15_trend_cache[cache_key] = result_df
