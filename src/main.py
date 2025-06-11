@@ -168,6 +168,9 @@ DEFAULT_PERMUTATION_IMPORTANCE_THRESHOLD = 0.001
 # [Patch v5.2.4] Ensure default output directory exists
 def ensure_default_output_dir(path=DEFAULT_OUTPUT_DIR):
     """สร้างโฟลเดอร์ผลลัพธ์เริ่มต้นหากยังไม่มี"""
+    if not os.path.isabs(path):
+        project_root = os.getcwd()
+        path = os.path.join(project_root, path)
     try:
         os.makedirs(path, exist_ok=True)
         logging.info(f"   (Setup) ตรวจสอบโฟลเดอร์ผลลัพธ์: {path}")
