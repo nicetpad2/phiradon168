@@ -1,6 +1,12 @@
+
+### 2025-06-11
+- [Patch v6.5.7] Add sample tests for trade log regeneration and open signal fallback
+- New test tests/test_regeneration_and_signals.py
+=======
 ### 2025-07-21
 - [Patch v6.5.9] Dynamic split computation in wfv_orchestrator
 - New/Updated unit tests added for tests/test_wfv_orchestrator.py
+
 - QA: pytest -q passed (897 tests)
 
 ### 2025-07-17
