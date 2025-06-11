@@ -1,3 +1,8 @@
+### 2025-06-11
+- [Patch v6.5.7] Add sample tests for trade log regeneration and open signal fallback
+- New test tests/test_regeneration_and_signals.py
+- QA: pytest -q passed (897 tests)
+
 ### 2025-07-17
 - [Patch v6.3.1] Placeholder trade log if missing during sweep
 - Updated tuning/hyperparameter_sweep.py with warning fallback
