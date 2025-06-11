@@ -47,6 +47,17 @@ def auto_train_meta_classifiers(
         logger.error("[Patch v6.5.5] Training data must be a DataFrame")
         return None
 
+    # ตรวจสอบคอลัมน์กำไรว่าไม่เป็นศูนย์ทั้งหมด ก่อนเริ่มฝึก
+    profit_col = next(
+        (c for c in ("profit", "pnl_usd_net", "PnL", "pnl") if c in training_data.columns),
+        None,
+    )
+    if profit_col and (training_data[profit_col] == 0).all():
+        logger.error(
+            "[Patch v6.6.12] All profit values are 0 – skipping meta-classifier training"
+        )
+        return None
+
     if features_dir is None:
         features_dir = getattr(config, "OUTPUT_DIR", ".")
     features_path = os.path.join(features_dir, "features_main.json")
