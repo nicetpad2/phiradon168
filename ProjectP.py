@@ -403,18 +403,25 @@ if __name__ == "__main__":
             "[Patch v6.4.6] No trade_log CSV found in %s; initializing empty trade log.",
             output_dir,
         )
-        # Create a dummy empty trade log to allow loop completion
+        # [Patch v6.4.7] Create a dummy trade log with 10 placeholder rows
         trade_log_file = os.path.join(output_dir, "trade_log_dummy.csv")
-        # Define minimal expected columns for downstream processing
         dummy_cols = [
-            "entry_time",
-            "exit_time",
-            "entry_price",
-            "exit_price",
-            "side",
-            "profit",
+            "entry_time", "exit_time", "entry_price",
+            "exit_price", "side", "profit",
         ]
-        pd.DataFrame(columns=dummy_cols).to_csv(trade_log_file, index=False)
+        # populate 10 rows so that downstream sees sufficient data
+        dummy_rows = [
+            {
+                "entry_time": "",
+                "exit_time": "",
+                "entry_price": 0.0,
+                "exit_price": 0.0,
+                "side": "",
+                "profit": 0.0,
+            }
+            for _ in range(10)
+        ]
+        pd.DataFrame(dummy_rows, columns=dummy_cols).to_csv(trade_log_file, index=False)
     else:
         log_files = sorted(log_files, key=lambda f: ("walkforward" not in f, f))
         trade_log_file = log_files[0]
