@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+import logging
 
 import backtest_engine as be
 
@@ -145,3 +146,28 @@ def test_run_backtest_engine_generates_trend_and_signals(monkeypatch):
     assert flags.get('has_trend')
     for col in ['Trend_Zone', 'Entry_Long', 'Entry_Short', 'Trade_Tag', 'Signal_Score', 'Trade_Reason']:
         assert col in flags.get('cols', [])
+
+
+def test_run_backtest_engine_drops_duplicate_trend_index(monkeypatch, caplog):
+    m1_df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]})
+    m15_df = pd.DataFrame({'Close': [1, 2]}, index=[pd.Timestamp('2024-01-01'), pd.Timestamp('2024-01-01')])
+    trade_df = pd.DataFrame({'pnl': [1.0]})
+
+    def fake_read_csv(path, *a, **k):
+        return m1_df if path == be.DATA_FILE_PATH_M1 else m15_df
+
+    monkeypatch.setattr(be.pd, 'read_csv', fake_read_csv)
+    monkeypatch.setattr(be, 'engineer_m1_features', lambda df, **k: df)
+    monkeypatch.setattr(be, 'calculate_m1_entry_signals', lambda df, cfg: df.assign(Entry_Long=0, Entry_Short=0, Trade_Tag='t', Signal_Score=0.0, Trade_Reason='r'))
+    monkeypatch.setattr(be, 'run_backtest_simulation_v34', lambda df, **k: (None, trade_df))
+
+    def fake_trend(df):
+        return pd.DataFrame({'Trend_Zone': ['UP', 'DOWN']}, index=df.index)
+
+    monkeypatch.setattr(be, 'calculate_m15_trend_zone', fake_trend)
+
+    with caplog.at_level(logging.INFO):
+        result = be.run_backtest_engine(pd.DataFrame())
+
+    assert result.equals(trade_df)
+    assert any('duplicate index rows' in msg for msg in caplog.messages)

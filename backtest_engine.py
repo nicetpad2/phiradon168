@@ -3,6 +3,7 @@ Module: backtest_engine.py
 Provides a function to regenerate the trade log via your core backtest simulation.
 """
 import pandas as pd
+import logging
 
 from src.config import DATA_FILE_PATH_M1, DATA_FILE_PATH_M15
 from src.strategy import run_backtest_simulation_v34
@@ -69,6 +70,14 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
         except Exception:
             # Fallback: default all zones to NEUTRAL on error
             trend_df = pd.DataFrame("NEUTRAL", index=features_df.index, columns=["Trend_Zone"])
+        # [Patch v6.6.2] Remove duplicate trend index before alignment
+        if trend_df.index.duplicated().any():
+            dup_count = int(trend_df.index.duplicated().sum())
+            logging.warning(
+                "(Warning) พบ index ซ้ำซ้อนใน Trend Zone DataFrame, กำลังลบรายการซ้ำ (คงไว้ค่าแรกของแต่ละ index)"
+            )
+            trend_df = trend_df.loc[~trend_df.index.duplicated(keep='first')]
+            logging.info(f"      Removed {dup_count} duplicate index rows from Trend Zone data.")
         # Align Trend_Zone values to M1 timeline
         trend_series = trend_df["Trend_Zone"].reindex(features_df.index, method="ffill").fillna("NEUTRAL")
         features_df["Trend_Zone"] = pd.Categorical(trend_series, categories=["NEUTRAL", "UP", "DOWN"])

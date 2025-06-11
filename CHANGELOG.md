@@ -1699,3 +1699,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.6.1] Remove pandas datetime warnings
 - Updated backtest_engine to use date_format for M15 data
 - QA: pytest -q passed (911 tests)
+
+### 2025-07-29
+- [Patch v6.6.2] Drop duplicate Trend Zone indices before merge
+- New/Updated unit tests added for tests.test_backtest_engine.py::test_run_backtest_engine_drops_duplicate_trend_index
+- QA: pytest -q passed (1 test)
