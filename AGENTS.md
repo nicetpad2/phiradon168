@@ -320,6 +320,7 @@
 - Added `order_manager` module for order placement logic.
 - Added `money_management` module for ATR-based SL/TP and portfolio stop logic.
 - Added `wfv_monitor` module for KPI-driven Walk-Forward validation.
+- Added `src/entry_rules` module for dynamic signal thresholding.
 - Added `tuning.joint_optuna` module for joint model + strategy optimization.
 - Added `config` package for environment-based directory paths.
 - Added `strategy.strategy`, `strategy.order_management`, `strategy.risk_management`,

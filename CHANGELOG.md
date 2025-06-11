@@ -1591,3 +1591,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.5.4] Fix default variable initialization
 - Corrected DEFAULT_FUND_NAME, DEFAULT_MODEL_TO_LINK, and DEFAULT_RISK_PER_TRADE fallbacks
 - QA: pytest -q passed (895 tests)
+
+### 2025-07-21
+- [Patch v6.5.9] Dynamic threshold with MA fallback
+- New/Updated unit tests added for src/entry_rules
+- QA: pytest -q passed (897 tests)
