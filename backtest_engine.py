@@ -20,9 +20,24 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     """
     # 1) Load the raw M1 price data
     try:
-        df = pd.read_csv(DATA_FILE_PATH_M1, parse_dates=True, index_col=0)
+        # [Patch] Use explicit date parsing for consistent datetime index
+        df = pd.read_csv(
+            DATA_FILE_PATH_M1,
+            index_col=0,
+            parse_dates=[0],
+            infer_datetime_format=True,
+        )
     except Exception as e:
         raise RuntimeError(f"[backtest_engine] Failed to load price data: {e}") from e
+
+    # 1b) Ensure index is a DatetimeIndex so `.tz` attribute exists
+    if not isinstance(df.index, pd.DatetimeIndex):
+        try:
+            df.index = pd.to_datetime(df.index, infer_datetime_format=True)
+        except Exception as e:
+            raise RuntimeError(
+                f"[backtest_engine] Failed to convert index to datetime: {e}"
+            ) from e
 
     # 2) Run your core simulation (returns tuple: (sim_df, trade_log_df, …))
     result = run_backtest_simulation_v34(

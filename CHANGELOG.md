@@ -1630,4 +1630,11 @@ QA: pytest -q passed (219 tests)
 - New module backtest_engine.py และ tests/test_backtest_engine.py
 - QA: pytest -q passed (904 tests)
 
+### 2025-07-23
+- [Patch v6.5.12] Fix datetime parsing & index tz for backtest_engine
+- Updated backtest_engine.py to use parse_dates=[0] with infer_datetime_format
+- Added index conversion logic with error handling
+- New test tests/test_backtest_engine.py::test_run_backtest_engine_index_conversion
+- QA: pytest -q passed (906 tests)
+
 
