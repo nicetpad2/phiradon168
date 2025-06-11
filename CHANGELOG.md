@@ -1637,4 +1637,10 @@ QA: pytest -q passed (219 tests)
 - New test tests/test_backtest_engine.py::test_run_backtest_engine_index_conversion
 - QA: pytest -q passed (906 tests)
 
+### 2025-07-24
+- [Patch v6.5.14] Force single-fold regen to fix empty trade log
+- Updated backtest_engine.py with DEFAULT_FOLD_CONFIG and DEFAULT_FOLD_INDEX
+- Added test_run_backtest_engine_passes_fold_params
+- QA: pytest -q passed (908 tests)
+
 
