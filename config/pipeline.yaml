@@ -6,3 +6,5 @@ data:
   features_filename: "features_main.json"
   trade_log_pattern: "trade_log_*.csv*"
   raw_m1_filename: "XAUUSD_M1.csv"
+cleaning:
+  fill_method: "drop"

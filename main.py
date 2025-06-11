@@ -77,8 +77,18 @@ def run_preprocess(config: PipelineConfig, runner=subprocess.run) -> None:
     logger.info("[Stage] preprocess")
     m1_path = config.raw_m1_filename
     auto_convert_gold_csv(os.path.dirname(m1_path), output_path=m1_path)
+    fill_method = getattr(config, "cleaning_fill_method", "drop")
     try:
-        runner([os.environ.get("PYTHON", "python"), "src/data_cleaner.py", m1_path], check=True)
+        runner(
+            [
+                os.environ.get("PYTHON", "python"),
+                "src/data_cleaner.py",
+                m1_path,
+                "--fill",
+                fill_method,
+            ],
+            check=True,
+        )
         runner([os.environ.get("PYTHON", "python"), "ProjectP.py"], check=True)
     except subprocess.CalledProcessError as exc:
         logger.error("Preprocess failed", exc_info=True)

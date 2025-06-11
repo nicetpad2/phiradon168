@@ -26,3 +26,10 @@ def test_load_config_data_section(tmp_path):
     assert cfg.features_filename == 'f.json'
     assert cfg.trade_log_pattern == 'tl.csv'
     assert cfg.raw_m1_filename == 'raw.csv'
+
+
+def test_load_config_cleaning_section(tmp_path):
+    conf_path = tmp_path / 'cfg.yaml'
+    conf_path.write_text('cleaning:\n  fill_method: mean\n')
+    cfg = pipeline_config.load_config(str(conf_path))
+    assert cfg.cleaning_fill_method == 'mean'
