@@ -26,11 +26,12 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     # 1) Load the raw M1 price data
     try:
         # [Patch] Use explicit date parsing for consistent datetime index
+        # [Patch v6.5.17] specify format to silence pandas warnings
         df = pd.read_csv(
             DATA_FILE_PATH_M1,
             index_col=0,
             parse_dates=[0],
-            infer_datetime_format=True,
+            date_format="%Y%m%d",
         )
     except Exception as e:
         raise RuntimeError(f"[backtest_engine] Failed to load price data: {e}") from e
@@ -38,7 +39,8 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     # 1b) Ensure index is a DatetimeIndex so `.tz` attribute exists
     if not isinstance(df.index, pd.DatetimeIndex):
         try:
-            df.index = pd.to_datetime(df.index, infer_datetime_format=True)
+            # [Patch v6.5.17] enforce format when converting index
+            df.index = pd.to_datetime(df.index, format="%Y%m%d", errors="coerce")
         except Exception as e:
             raise RuntimeError(
                 f"[backtest_engine] Failed to convert index to datetime: {e}"

@@ -1684,3 +1684,9 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.5.16] Vectorize convert_thai_datetime with logging
 - Updated tests/test_new_utils.py for new warning/error behavior
 - QA: pytest -q passed (910 tests)
+
+### 2025-07-27
+- [Patch v6.5.17] Fix pandas datetime warnings in backtest_engine
+- Replaced deprecated infer_datetime_format usage with explicit date_format
+- Added safe to_datetime fallback with format
+- QA: pytest -q passed (910 tests)
