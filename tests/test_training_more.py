@@ -243,10 +243,21 @@ def test_real_train_func_single_row(tmp_path, monkeypatch, caplog):
         'Close': [1.5]
     }).to_csv(m1_path, index=False)
     monkeypatch.setattr(training, 'CatBoostClassifier', None, raising=False)
+    called = {"dummy": False}
+
+    def raise_if_called(*args, **kwargs):
+        called["dummy"] = True
+        raise AssertionError("DummyClassifier should not be used")
+
+    monkeypatch.setattr('sklearn.dummy.DummyClassifier', raise_if_called)
+
     with caplog.at_level(logging.WARNING, logger=training.logger.name):
         res = training.real_train_func(
             output_dir=str(tmp_path),
             trade_log_path=str(trade_path),
             m1_path=str(m1_path),
         )
+
+    assert res['model_path']['model'] is None
     assert res['metrics']['accuracy'] == -1.0
+    assert not called["dummy"]

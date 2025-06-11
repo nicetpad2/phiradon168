@@ -1,3 +1,8 @@
+### 2025-07-27
+- [Patch v6.7.2] ปรับปรุง real_train_func ให้ข้ามการฝึกโมเดลเมื่อข้อมูลไม่เพียงพอ
+- Updated tests/test_training_more.py::test_real_train_func_single_row
+- QA: pytest -q passed (924 tests)
+
 ### 2025-07-26
 
 - [Patch v6.7.1] Graceful skip when data files missing
