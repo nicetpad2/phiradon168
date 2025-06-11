@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 # from data_loader import some_helper  # switched to absolute import (Patch v4.8.9)
 try:  # [Patch v5.8.2] Handle missing ta library gracefully
-    import vendor.ta as ta
+    import ta
     _TA_AVAILABLE = True
 except ImportError:  # pragma: no cover - environment may not have ta installed
     class _DummySubmodule:

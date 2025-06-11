@@ -58,10 +58,14 @@ def parse_args(args=None) -> argparse.Namespace:
     return parser.parse_args(args)
 
 
+from src.config import DATA_FILE_PATH_M1
+
+
 def run_preprocess(config: PipelineConfig, runner=subprocess.run) -> None:
     """Run data preprocessing stage."""
     logger.info("[Stage] preprocess")
     try:
+        runner([os.environ.get("PYTHON", "python"), "src/data_cleaner.py", DATA_FILE_PATH_M1], check=True)
         runner([os.environ.get("PYTHON", "python"), "ProjectP.py"], check=True)
     except subprocess.CalledProcessError as exc:
         logger.error("Preprocess failed", exc_info=True)

@@ -1861,3 +1861,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.6.13] Fallback to profit column when features missing
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_fallback_profit
 - QA: pytest -q passed (925 tests)
+
+### 2025-07-31
+- [Patch v6.7.7] Add CSV data cleaner and remove vendored ta
+- New/Updated unit tests added for tests/test_data_cleaner.py
+- QA: pytest -q passed (932 tests)
