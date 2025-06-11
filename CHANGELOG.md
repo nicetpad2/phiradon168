@@ -1,3 +1,8 @@
+### 2025-07-27
+- [Patch v6.7.2] Ensure session column exists after signal calculation
+- Exclude non-numeric 'Date' from features_main.json
+- QA: pytest -q passed (924 tests)
+
 ### 2025-07-26
 
 - [Patch v6.7.1] Graceful skip when data files missing
