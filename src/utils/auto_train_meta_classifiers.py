@@ -9,13 +9,20 @@ from typing import Any
 import os
 import glob
 import pandas as pd
+from joblib import dump
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, roc_auc_score
 from src.config import logger
+from src.utils import load_json_with_comments
 
 
 def auto_train_meta_classifiers(
-    config: Any, training_data: Any | None = None, **kwargs
-) -> None:
-    """[Patch v6.4.2] Auto train meta-classifiers if trade log exists."""
+    config: Any,
+    training_data: Any | None = None,
+    models_dir: str | None = None,
+    features_dir: str | None = None,
+) -> dict | None:
+    """[Patch v6.5.5] Auto train meta-classifiers if trade log exists."""
     if training_data is None:
         pattern = os.path.join(config.OUTPUT_DIR, "trade_log_v32_walkforward*.csv.gz")
         matches = glob.glob(pattern)
@@ -36,5 +43,53 @@ def auto_train_meta_classifiers(
             logger.error("[Patch v6.4.2] Failed to load %s: %s", trade_log_path, e)
             return None
 
-    # TODO: implement actual training logic
-    return None
+    if not isinstance(training_data, pd.DataFrame):
+        logger.error("[Patch v6.5.5] Training data must be a DataFrame")
+        return None
+
+    if features_dir is None:
+        features_dir = getattr(config, "OUTPUT_DIR", ".")
+    features_path = os.path.join(features_dir, "features_main.json")
+    try:
+        features = load_json_with_comments(features_path)
+        if not isinstance(features, list):
+            raise ValueError("Invalid format")
+    except Exception as e:
+        logger.error("[Patch v6.5.5] Failed to load features file: %s", e)
+        return None
+
+    # Ensure 'target' column exists before proceeding
+    if "target" not in training_data.columns:
+        logger.warning(
+            "[Patch v6.5.10] 'target' column missing, skipping meta-classifier training"
+        )
+        return {}
+
+    missing = [c for c in features if c not in training_data.columns]
+    if missing:
+        logger.error("[Patch v6.5.5] Training data missing features: %s", missing)
+        return None
+
+    if len(training_data) < 5:
+        logger.error(
+            "[Patch v6.5.5] Insufficient rows for training: %d", len(training_data)
+        )
+        return None
+
+    X = training_data[features]
+    y = training_data["target"]
+
+    model = LogisticRegression(max_iter=1000)
+    model.fit(X, y)
+
+    proba = model.predict_proba(X)[:, 1]
+    acc = accuracy_score(y, (proba >= 0.5).astype(int))
+    auc = roc_auc_score(y, proba)
+
+    if models_dir is None:
+        models_dir = getattr(config, "OUTPUT_DIR", ".")
+    os.makedirs(models_dir, exist_ok=True)
+    model_path = os.path.join(models_dir, "meta_classifier.joblib")
+    dump(model, model_path)
+    logger.info("[Patch v6.5.5] Meta-classifier trained: %s", model_path)
+    return {"model_path": model_path, "metrics": {"accuracy": acc, "auc": auc}}

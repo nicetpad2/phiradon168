@@ -66,7 +66,7 @@ def test_run_sweep_filters_unknown_params(tmp_path, monkeypatch):
     monkeypatch.setattr(hs, 'real_train_func', dummy_train_func)
     grid = {'learning_rate': [0.1], 'depth': [6]}
     trade_log = tmp_path / 'log.csv'
-    pd.DataFrame({'profit': [1]}).to_csv(trade_log, index=False)
+    pd.DataFrame({'profit': [1, -1]}).to_csv(trade_log, index=False)
     hs.run_sweep(str(tmp_path), grid, seed=1, resume=False, trade_log_path=str(trade_log))
     df = pd.read_csv(tmp_path / 'summary.csv')
     assert df.loc[0, 'learning_rate'] == 0.1
@@ -134,7 +134,7 @@ def test_run_sweep_resume_skips(tmp_path, monkeypatch):
 
     monkeypatch.setattr(hs, 'real_train_func', dummy_train)
     trade_log = tmp_path / 'log.csv'
-    pd.DataFrame({'p': [1]}).to_csv(trade_log, index=False)
+    pd.DataFrame({'p': [1, 0]}).to_csv(trade_log, index=False)
     summary = tmp_path / 'summary.csv'
     pd.DataFrame([
         {'run_id': 1, 'learning_rate': 0.1, 'depth': 6, 'seed': 1, 'model_path': '', 'features': '', 'metric': None, 'time': 't'},
@@ -155,7 +155,7 @@ def test_run_sweep_resume_missing_column(tmp_path, monkeypatch):
 
     monkeypatch.setattr(hs, 'real_train_func', dummy_train)
     trade_log = tmp_path / 'log.csv'
-    pd.DataFrame({'p': [1]}).to_csv(trade_log, index=False)
+    pd.DataFrame({'p': [1, 1]}).to_csv(trade_log, index=False)
     summary = tmp_path / 'summary.csv'
     # summary.csv ไม่มีคอลัมน์ subsample เพื่อทดสอบกรณี missing columns
     pd.DataFrame([
@@ -177,7 +177,7 @@ def test_run_sweep_no_metric_warning(tmp_path, monkeypatch, caplog):
 
     monkeypatch.setattr(hs, 'real_train_func', dummy_train)
     trade_log = tmp_path / 'log.csv'
-    pd.DataFrame({'p': [1]}).to_csv(trade_log, index=False)
+    pd.DataFrame({'p': [1, 0]}).to_csv(trade_log, index=False)
     with caplog.at_level(logging.WARNING):
         hs.run_sweep(str(tmp_path), {'lr': [0.1]}, resume=False, trade_log_path=str(trade_log))
     assert 'ไม่มีคอลัมน์ metric' in caplog.text
@@ -186,7 +186,7 @@ def test_run_sweep_no_metric_warning(tmp_path, monkeypatch, caplog):
 
 def test_main_passes_args(tmp_path, monkeypatch):
     trade_log = tmp_path / 'log.csv'
-    pd.DataFrame({'p': [1]}).to_csv(trade_log, index=False)
+    pd.DataFrame({'p': [1, 0]}).to_csv(trade_log, index=False)
     captured = {}
 
     def fake_run_sweep(output_dir, params_grid, seed, resume, trade_log_path, m1_path):
@@ -215,7 +215,7 @@ def test_main_passes_args(tmp_path, monkeypatch):
 
 def test_cli_entrypoint_runs_main(tmp_path, monkeypatch):
     trade_log = tmp_path / 'log.csv'
-    pd.DataFrame({'p': [1]}).to_csv(trade_log, index=False)
+    pd.DataFrame({'p': [1, 0]}).to_csv(trade_log, index=False)
 
     def dummy_train(*_, **__):
         return {

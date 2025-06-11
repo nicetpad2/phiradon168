@@ -1,6 +1,12 @@
+
 ### 2025-06-11
 - [Patch v6.5.7] Add sample tests for trade log regeneration and open signal fallback
 - New test tests/test_regeneration_and_signals.py
+=======
+### 2025-07-21
+- [Patch v6.5.9] Dynamic split computation in wfv_orchestrator
+- New/Updated unit tests added for tests/test_wfv_orchestrator.py
+
 - QA: pytest -q passed (897 tests)
 
 ### 2025-07-17
@@ -1596,3 +1602,17 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.5.4] Fix default variable initialization
 - Corrected DEFAULT_FUND_NAME, DEFAULT_MODEL_TO_LINK, and DEFAULT_RISK_PER_TRADE fallbacks
 - QA: pytest -q passed (895 tests)
+
+### 2025-07-20
+
+- [Patch v6.5.5] Implement meta-classifier training logic
+- Updated src/utils/auto_train_meta_classifiers.py with logistic regression
+- New tests for auto_train_meta_classifiers covering training behavior
+- QA: pytest -q passed (896 tests)
+
+### 2025-07-21
+- [Patch v6.5.10] Handle missing 'target' column gracefully
+- Updated src/utils/auto_train_meta_classifiers.py to skip training when 'target' absent
+- New test tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_missing_target
+- QA: pytest -q passed (896 tests)
+
