@@ -1821,3 +1821,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_zero_profit
 - QA: pytest -q passed (924 tests)
 
+
+### 2025-06-15
+- [Patch v6.6.13] Fallback to profit column when features missing
+- New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_fallback_profit
+- QA: pytest -q passed (925 tests)
