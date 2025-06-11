@@ -1,4 +1,5 @@
 import os
+import logging
 import pandas as pd
 import src.training as training
 
@@ -27,3 +28,20 @@ def test_real_train_func_with_real_data(tmp_path, monkeypatch):
     assert 'model_path' in res
     assert os.path.exists(res['model_path']['model'])
     assert set(res['features']) == {'Open', 'High', 'Low', 'Close'}
+
+
+def test_real_train_func_missing_files(tmp_path):
+    records = []
+    class ListHandler(logging.Handler):
+        def emit(self, record):
+            records.append(record.getMessage())
+
+    handler = ListHandler()
+    training.logger.addHandler(handler)
+    try:
+        res = training.real_train_func(
+            output_dir=str(tmp_path), trade_log_path=None, m1_path=None
+        )
+    finally:
+        training.logger.removeHandler(handler)
+    assert res is None

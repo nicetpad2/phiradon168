@@ -168,7 +168,7 @@ def test_run_sweep_resume_missing_column(tmp_path, monkeypatch):
     assert len(df) == 3
 
 
-def test_run_sweep_fallback_metric(tmp_path, monkeypatch, caplog):
+def test_run_sweep_no_metric(tmp_path, monkeypatch, caplog):
     def dummy_train(output_dir, trade_log_path=None, m1_path=None, seed=0):
         return {
             'model_path': {'model': str(tmp_path / 'm.joblib')},
@@ -178,10 +178,26 @@ def test_run_sweep_fallback_metric(tmp_path, monkeypatch, caplog):
     monkeypatch.setattr(hs, 'real_train_func', dummy_train)
     trade_log = tmp_path / 'log.csv'
     pd.DataFrame({'p': [1, 0]}).to_csv(trade_log, index=False)
-    with caplog.at_level(logging.INFO):
-        hs.run_sweep(str(tmp_path), {'lr': [0.1]}, resume=False, trade_log_path=str(trade_log))
-    assert 'ไม่มีคอลัมน์ metric' not in caplog.text
-    assert (tmp_path / 'best_param.json').exists()
+    m1_path = tmp_path / 'm1.csv'
+    pd.DataFrame({'Open': [1, 2]}).to_csv(m1_path, index=False)
+    with caplog.at_level(logging.ERROR):
+        hs.run_sweep(
+            str(tmp_path),
+            {'lr': [0.1]},
+            resume=False,
+            trade_log_path=str(trade_log),
+            m1_path=str(m1_path),
+        )
+    assert 'ไม่มีผลการ sweep ที่สำเร็จ' in caplog.text
+    assert not (tmp_path / 'best_param.json').exists()
+
+
+def test_run_sweep_missing_m1(tmp_path):
+    trade_log = tmp_path / 'log.csv'
+    pd.DataFrame({'p': [1, 0]}).to_csv(trade_log, index=False)
+    m1_path = tmp_path / 'missing.csv'
+    with pytest.raises(SystemExit):
+        hs.run_sweep(str(tmp_path), {'lr': [0.1]}, trade_log_path=str(trade_log), m1_path=str(m1_path))
 
 
 def test_main_passes_args(tmp_path, monkeypatch):

@@ -130,8 +130,11 @@ def real_train_func(
             y_raw = trade_df.loc[: min_len - 1, num_cols[0]]
         y = (y_raw > 0).astype(int).to_numpy()
         feature_names = feature_cols
-    else:
-        raise FileNotFoundError("ต้องส่งไฟล์ trade log จริงมา")
+    else:  # [Patch v6.7.0] Return None when files are missing
+        logger.warning(
+            "ไม่พบไฟล์ trade log หรือไฟล์ M1 สำหรับฝึกโมเดล ชุดทดลองนี้จะถูกข้าม"
+        )
+        return None
 
     df_X = pd.DataFrame(X, columns=feature_names)
     # [Patch v5.4.5] Use stratified split when possible to avoid ROC AUC warnings

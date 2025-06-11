@@ -164,6 +164,11 @@ def run_sweep(
                 trade_log_path,
             )
             _create_placeholder_trade_log(trade_log_path)
+    if not m1_path:
+        m1_path = DefaultConfig.DATA_FILE_PATH_M1
+    if not os.path.exists(m1_path):
+        logger.error("ไม่พบไฟล์ M1 ที่ %s", m1_path)
+        raise SystemExit(1)
     try:
         df_log = pd.read_csv(trade_log_path)
         # [Patch v5.8.13] Allow single-row trade logs with fallback metrics
@@ -212,7 +217,7 @@ def run_sweep(
                 df_log,
                 output_dir,
                 trade_log_path,
-                m1_path or DefaultConfig.DATA_FILE_PATH_M1,
+                m1_path,
             )
             if result is None:
                 summary_rows.append({
@@ -267,15 +272,10 @@ def run_sweep(
     # (ไม่มีแก้) – ตรงนี้บันทึกไฟล์ชื่อ best_param.json ตามมาตรฐานโค้ด
     metric_col = 'metric' if 'metric' in df.columns else None
     if metric_col is None or df[metric_col].dropna().empty:
-        numeric_cols = df.select_dtypes(include='number').columns.tolist()
-        numeric_cols = [
-            c for c in numeric_cols if c not in {'run_id', 'seed'}
-        ]
-        if numeric_cols:
-            metric_col = numeric_cols[0]
-            df['metric'] = df[metric_col]
-            export_summary(df, summary_path)
-            logger.info(f"ใช้คอลัมน์ {metric_col} เป็น metric")
+        logger.error(
+            "ไม่มีผลการ sweep ที่สำเร็จ – จะไม่ปรับ hyperparameter จากรอบนี้"
+        )
+        return
     if metric_col and not df[metric_col].dropna().empty:
         best_row = df.sort_values(metric_col, ascending=False).iloc[0]
         best_param_path = os.path.join(output_dir, 'best_param.json')
@@ -288,23 +288,9 @@ def run_sweep(
         else:
             logger.error("[Patch v5.9.1] best_param.json missing at %s", best_param_path)
     else:
-        # [Patch v6.6.11] Intelligent fallback metric detection
-        metric_candidates = [
-            c for c in df.select_dtypes(exclude="object").columns
-            if c not in ("run_id", "seed")
-        ]
-        if metric_candidates:
-            fallback_metric_col = metric_candidates[0]
-            logger.info(
-                "สร้างคอลัมน์ 'metric' อัตโนมัติจาก '%s' (fallback metric)",
-                fallback_metric_col,
-            )
-            df["metric"] = df[fallback_metric_col]
-            export_summary(df, summary_path)
-        else:
-            logger.warning(
-                "ไม่มีคอลัมน์ metric และไม่พบตัวเลขอื่นให้ fallback – export best_param จะถูกข้าม"
-            )
+        logger.warning(
+            "ไม่สามารถหา metric สำหรับเลือกพารามิเตอร์ที่ดีที่สุด"
+        )
 
 
 def parse_args(args=None) -> argparse.Namespace:
