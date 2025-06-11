@@ -32,7 +32,7 @@ DEFAULT_SWEEP_DIR = DefaultConfig.OUTPUT_DIR
 def _create_placeholder_trade_log(path: str) -> None:
     """Create a minimal trade log so the sweep can run."""
     # [Patch v5.10.8] Ensure sample size > 1 to avoid train_test_split errors
-    profits = [1.0, -1.0, 0.8, -0.8, 0.6, -0.6, 0.4, -0.4]
+    profits = [1.0, -1.0, 0.8, -0.8, 0.6, -0.6, 0.4, -0.4, 0.2, -0.2]
     df = pd.DataFrame({"profit": profits})
     os.makedirs(os.path.dirname(path), exist_ok=True)
     compression = "gzip" if path.endswith(".gz") else None
@@ -131,7 +131,7 @@ def _run_single_trial(
 ) -> dict | None:
     """Run one training trial or skip if the dataset is too small."""
     # Skip if not enough training samples
-    if df_log.shape[0] < 2:
+    if df_log.shape[0] < 10:
         logger.warning(
             f"[Patch v{__version__}] Skipping trial: only {df_log.shape[0]} training samples"
         )

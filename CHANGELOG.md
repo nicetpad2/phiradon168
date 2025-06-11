@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_deduplicate_sort.py
 - QA: pytest -q passed (932 tests)
 
+### 2025-08-01
+- [Patch v6.7.8] Improve datetime parsing fallback and trial skipping
+- New/Updated unit tests added for tests/test_backtest_engine.py::test_run_backtest_engine_parse_datetime_fallback, tests/test_hyperparameter_sweep_cli.py::test_run_single_trial_skip_on_small_log
+- QA: pytest -q passed (936 tests)
+
 
 ### 2025-07-29
 - [Patch v6.7.5] Fix date parsing in backtest_engine to use Date and Timestamp columns
