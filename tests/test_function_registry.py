@@ -47,7 +47,7 @@ FUNCTIONS_INFO = [
     ("src/strategy.py", "log_trade", 4614),
     ("src/strategy.py", "aggregate_fold_results", 4617),
 
-    ("ProjectP.py", "custom_helper_function", 95),
+    ("ProjectP.py", "custom_helper_function", 104),
 ]
 
 

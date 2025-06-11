@@ -44,8 +44,13 @@ import argparse
 import subprocess
 import json
 
+from src.utils.pipeline_config import load_config  # [Patch v6.7.17] dynamic config loader
+
 # [Patch v6.4.8] Optional fallback directory for raw data and logs
 FALLBACK_DIR = os.getenv("PROJECTP_FALLBACK_DIR")
+
+# [Patch v6.7.17] Load pipeline configuration for dynamic paths
+pipeline_config = load_config()
 
 
 # [Patch v6.3.1] Ensure working directory fallback on import
@@ -63,7 +68,6 @@ import main as pipeline
 from config_loader import update_config_from_dict  # [Patch] dynamic config update
 from wfv_runner import run_walkforward  # [Patch] walk-forward helper
 from src.features import build_feature_catalog
-
 # Default grid for hyperparameter sweep
 DEFAULT_SWEEP_PARAMS: Dict[str, List[float]] = {
     "learning_rate": [0.01, 0.05],
@@ -355,8 +359,12 @@ def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) ->
     from src.trade_log_pipeline import load_or_generate_trade_log
 
     logger.info(f"[Patch v6.5.9] Attempting to load trade log from {filepath}")
-    features_path = os.path.join(OUTPUT_DIR, "features_main.json")
-    return load_or_generate_trade_log(filepath, min_rows=min_rows, features_path=features_path)
+    output_dir = getattr(config, "OUTPUT_DIR", Path(pipeline_config.output_dir))
+    features_filename = pipeline_config.features_filename
+    features_path = os.path.join(output_dir, features_filename)
+    return load_or_generate_trade_log(
+        filepath, min_rows=min_rows, features_path=features_path
+    )
 
 
 if __name__ == "__main__":
@@ -377,8 +385,9 @@ if __name__ == "__main__":
     else:
         print("--- [FULL PIPELINE] ใช้ข้อมูลทั้งหมด ---")
     # [Patch v6.3.5] ตรวจสอบไฟล์ผลลัพธ์ก่อนและหลังการทำงาน
-    output_dir = OUTPUT_DIR
-    features_path = os.path.join(output_dir, "features_main.json")
+    output_dir = getattr(config, "OUTPUT_DIR", Path(pipeline_config.output_dir))
+    features_filename = pipeline_config.features_filename
+    features_path = os.path.join(output_dir, features_filename)
 
     if not os.path.exists(features_path):
         logger.warning(
@@ -435,7 +444,7 @@ if __name__ == "__main__":
 
     import glob
     # match both uncompressed (.csv) and gzip-compressed (.csv.gz) trade logs
-    trade_pattern = os.path.join(output_dir, "trade_log_*.csv*")
+    trade_pattern = os.path.join(output_dir, pipeline_config.trade_log_pattern)
     log_files = sorted(glob.glob(trade_pattern))
     if not log_files:
 
@@ -444,10 +453,15 @@ if __name__ == "__main__":
             output_dir,
         )
 
-        trade_pattern_gz = os.path.join(output_dir, "trade_log_*.csv.gz")
+        trade_pattern_gz = os.path.join(
+            output_dir,
+            pipeline_config.trade_log_pattern.replace(".csv*", ".csv.gz")
+        )
         log_files = glob.glob(trade_pattern_gz)
     if not log_files and FALLBACK_DIR:
-        fallback_pattern = os.path.join(FALLBACK_DIR, "trade_log_*.csv*")
+        fallback_pattern = os.path.join(
+            FALLBACK_DIR, pipeline_config.trade_log_pattern
+        )
         log_files = sorted(glob.glob(fallback_pattern))
         if log_files:
             logger.warning(
