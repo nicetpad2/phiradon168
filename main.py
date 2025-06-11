@@ -50,6 +50,16 @@ def parse_args(args=None) -> argparse.Namespace:
         default=None,
         help="Logging level override (e.g., DEBUG)",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode (limit rows for faster run)",
+    )
+    parser.add_argument(
+        "--rows",
+        type=int,
+        help="Override row limit when loading data",
+    )
     parser.add_argument("--profile", action="store_true", help="Profile backtest stage")
     parser.add_argument(
         "--output-file",
@@ -182,6 +192,16 @@ def run_all(config: PipelineConfig) -> None:
 def main(args=None) -> int:
     """Entry point for command-line execution."""
     parsed = parse_args(args)
+    DEBUG_DEFAULT_ROWS = 2000
+    if parsed.rows is not None:
+        max_rows = parsed.rows
+    elif parsed.debug:
+        max_rows = DEBUG_DEFAULT_ROWS
+    else:
+        max_rows = None
+    if max_rows:
+        logger.info("--- [DEBUG MODE] ใช้งาน max_rows=%s ---", max_rows)
+        os.environ["DATA_ROW_LIMIT"] = str(max_rows)
     config = load_config(parsed.config)
     setup_logging(parsed.log_level or config.log_level)
 

@@ -23,7 +23,7 @@ def test_run_pipeline_stage_preprocess(monkeypatch, tmp_path):
     monkeypatch.setattr(main, 'OUTPUT_DIR', str(tmp_path))
     df = pd.DataFrame({'A': [1]})
     called = {}
-    monkeypatch.setattr(main, 'load_data', lambda p, t: df)
+    monkeypatch.setattr(main, 'load_data', lambda *a, **k: df)
     monkeypatch.setattr(main, 'engineer_m1_features', lambda d: d)
     def fake_to_parquet(self, path, *a, **k):
         Path(path).write_text('x')

@@ -678,6 +678,10 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
     start_time_main = time.time()
     logging.info(f"\n(Starting) กำลังเริ่มฟังก์ชัน Main (Mode: {run_mode})...")
     current_run_suffix = ""
+    row_limit_env = os.getenv("DATA_ROW_LIMIT")
+    max_rows = int(row_limit_env) if row_limit_env and row_limit_env.isdigit() else None
+    if max_rows:
+        logging.info(f"--- [DEBUG MODE] จำกัดการโหลดข้อมูล {max_rows} rows ---")
 
     try:
         # --- Output Directory Setup ---
@@ -892,8 +896,18 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
         try:
             m15_dtypes = {'Open': 'float32', 'High': 'float32', 'Low': 'float32', 'Close': 'float32'}
             m1_dtypes = {'Open': 'float32', 'High': 'float32', 'Low': 'float32', 'Close': 'float32'}
-            df_m15_raw = load_data(DATA_FILE_PATH_M15, "M15", dtypes=m15_dtypes)
-            df_m1_raw = load_data(DATA_FILE_PATH_M1, "M1", dtypes=m1_dtypes)
+            df_m15_raw = load_data(
+                DATA_FILE_PATH_M15,
+                "M15",
+                dtypes=m15_dtypes,
+                max_rows=max_rows,
+            )
+            df_m1_raw = load_data(
+                DATA_FILE_PATH_M1,
+                "M1",
+                dtypes=m1_dtypes,
+                max_rows=max_rows,
+            )
 
             df_m15_dt = prepare_datetime(df_m15_raw, "M15")
             df_m1_dt = prepare_datetime(df_m1_raw, "M1")
@@ -2007,8 +2021,10 @@ def run_auto_threshold_stage():
 # [Patch v5.5.9] Pipeline helper for discrete stages
 def run_pipeline_stage(stage: str):
     """Run a specific pipeline stage."""
+    row_limit_env = os.getenv("DATA_ROW_LIMIT")
+    env_rows = int(row_limit_env) if row_limit_env and row_limit_env.isdigit() else None
     if stage == 'preprocess':
-        df = load_data(DATA_FILE_PATH_M1, "M1")
+        df = load_data(DATA_FILE_PATH_M1, "M1", max_rows=env_rows)
         df = engineer_m1_features(df)
         out_path = os.path.join(OUTPUT_DIR, "preprocessed.parquet")
         df.to_parquet(out_path)
@@ -2021,7 +2037,7 @@ def run_pipeline_stage(stage: str):
         if os.path.exists(data_path):
             df = pd.read_parquet(data_path)
         else:
-            df = load_data(DATA_FILE_PATH_M1, "M1")
+            df = load_data(DATA_FILE_PATH_M1, "M1", max_rows=env_rows)
         run_backtest_simulation_v34(df, label="WFV", initial_capital_segment=INITIAL_CAPITAL)
         logger.info("[Pipeline] Backtest completed")
         return None

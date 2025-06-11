@@ -15,6 +15,8 @@ def test_parse_args_profile():
     assert args.mode == 'backtest'
     assert args.profile
     assert args.output_file == 'out.prof'
+    assert not args.debug
+    assert args.rows is None
 
 
 def test_run_backtest_no_models_threshold(tmp_path):

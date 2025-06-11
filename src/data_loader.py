@@ -252,6 +252,10 @@ def safe_load_csv_auto(file_path, row_limit=None, chunk_size=None):  # pragma: n
                               is empty, or None if loading fails.
     """
     read_csv_kwargs = {"index_col": 0, "parse_dates": False, "low_memory": False}
+    if row_limit is None:
+        env_limit = os.getenv("DATA_ROW_LIMIT")
+        if env_limit and env_limit.isdigit():
+            row_limit = int(env_limit)
     if chunk_size is not None and isinstance(chunk_size, int) and chunk_size > 0:
         if row_limit is not None:
             logging.info(
@@ -454,7 +458,14 @@ MAX_NAT_RATIO_THRESHOLD = globals().get("MAX_NAT_RATIO_THRESHOLD", CONFIG_MAX_NA
 
 # --- Data Loading Function ---
 # [Patch v5.0.2] Exclude heavy load_data from coverage
-def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_threshold=0.05, dtypes=None):  # pragma: no cover
+def load_data(
+    file_path,
+    timeframe_str="",
+    price_jump_threshold=0.10,
+    nan_threshold=0.05,
+    dtypes=None,
+    max_rows=None,
+):  # pragma: no cover
     """
     Loads data from a CSV file, performs basic validation and data quality checks.
 
@@ -497,7 +508,16 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
 
     try:
         try:
-            df_pd = pd.read_csv(file_path, low_memory=False, dtype=dtypes)
+            if max_rows is None:
+                env_limit = os.getenv("DATA_ROW_LIMIT")
+                if env_limit and env_limit.isdigit():
+                    max_rows = int(env_limit)
+            df_pd = pd.read_csv(
+                file_path,
+                low_memory=False,
+                dtype=dtypes,
+                nrows=max_rows,
+            )
             logging.info(f"   ไฟล์ดิบ {timeframe_str}: {df_pd.shape[0]} แถว")
         except pd.errors.ParserError as e_parse:
             logging.critical(f"(Error) ไม่สามารถ Parse ไฟล์ CSV '{file_path}': {e_parse}")

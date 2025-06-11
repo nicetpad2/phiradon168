@@ -24,7 +24,7 @@ def test_main_prepare_train_data_flow(monkeypatch, tmp_path):
         'datetime': dates
     })
 
-    monkeypatch.setattr(main, 'load_data', lambda p, tf, dtypes=None: df_base.copy())
+    monkeypatch.setattr(main, 'load_data', lambda *a, **k: df_base.copy())
     monkeypatch.setattr(main, 'prepare_datetime', lambda df, tf: df.set_index('datetime'))
     monkeypatch.setattr(main, 'calculate_m15_trend_zone', lambda df: pd.DataFrame({'Trend_Zone': ['NEUTRAL'] * len(df)}, index=df.index))
 

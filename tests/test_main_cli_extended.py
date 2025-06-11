@@ -25,6 +25,8 @@ def test_parse_args_defaults():
     assert args.mode == 'all'
     assert args.output_file == 'backtest_profile.prof'
     assert args.config.endswith('pipeline.yaml')
+    assert not args.debug
+    assert args.rows is None
 
 
 def test_parse_args_custom():
@@ -36,6 +38,16 @@ def test_parse_args_custom():
     assert args.mode == 'backtest'
     assert args.config == 'cfg.yaml'
     assert args.log_level == 'debug'
+    assert not args.debug
+    assert args.rows is None
+
+def test_parse_args_debug_rows():
+    args = pipeline.parse_args([
+        '--debug',
+        '--rows', '50'
+    ])
+    assert args.debug
+    assert args.rows == 50
 
 
 def test_run_preprocess_success():
