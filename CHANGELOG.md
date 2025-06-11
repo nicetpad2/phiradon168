@@ -8,9 +8,15 @@
 - QA: pytest -q passed (954 tests)
 
 ### 2025-08-09
+
 - [Patch v6.7.16] Make data cleaner method configurable
 - New/Updated unit tests added for tests/test_main_cli_extended.py::test_run_preprocess_custom_method tests/test_pipeline_config.py::test_load_config_cleaning_section
 - QA: pytest -q passed (957 tests)
+
+- [Patch v6.8.0] Refactor entry point to use main.py
+- New/Updated unit tests added for tests/test_pipeline_manager.py, tests/test_projectp_entry.py, tests/test_projectp_script.py
+- QA: pytest -q passed (951 tests)
+
 
 ### 2025-08-06
 - [Patch v6.7.13] Add max_rows option for load_data

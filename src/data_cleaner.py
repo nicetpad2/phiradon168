@@ -82,20 +82,32 @@ def validate_price_columns(df: pd.DataFrame, cols: Iterable[str] | None = None) 
 
     missing = [c for c in cols if c not in df.columns]
     if missing:
+        logger.error("Missing columns during validation: %s", missing)
         raise ValueError(f"Missing columns: {missing}")
 
     for c in cols:
         if not pd.api.types.is_numeric_dtype(df[c]):
+            logger.error("Non-numeric column detected: %s", c)
             raise TypeError(f"Column {c} must be numeric")
 
 
 def clean_dataframe(df: pd.DataFrame, fill_method: str = "drop") -> pd.DataFrame:
     """[Patch] ขั้นตอนทำความสะอาดข้อมูลแบบครบถ้วน"""
+    logger.info(f"Rows before clean_dataframe: {len(df)}")
     df = convert_buddhist_year(df)
+    logger.info(f"Rows after convert_buddhist_year: {len(df)}")
     df = remove_duplicate_times(df)
+    logger.info(f"Rows after remove_duplicate_times: {len(df)}")
     df = sort_by_time(df)
     df = handle_missing_values(df, method=fill_method)
-    validate_price_columns(df)
+    logger.info(f"Rows after handle_missing_values: {len(df)}")
+    try:
+        validate_price_columns(df)
+        logger.info("validate_price_columns passed")
+    except Exception:
+        logger.error("validate_price_columns failed", exc_info=True)
+        raise
+    logger.info("NaN count after clean_dataframe:\n%s", df.isna().sum().to_string())
     return df
 
 

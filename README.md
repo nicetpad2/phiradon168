@@ -24,7 +24,7 @@ pip install -r requirements.txt
 ## Usage
 ```bash
 python main.py --mode backtest
-python ProjectP.py --mode all
+python main.py --mode all
 ```
 
 ## Project Structure
@@ -62,8 +62,7 @@ python ProjectP.py --mode all
 - `docs/` เอกสารประกอบ
 - `logs/<date>/<fold>/` โฟลเดอร์บันทึก log แยกตามวันที่และ fold
 
-## การใช้งานสคริปต์หลัก
-- `python ProjectP.py` เตรียมข้อมูลพื้นฐานและรันขั้นตอนหลัก
+- `python main.py --mode all` เตรียมข้อมูลและรันขั้นตอนหลักครบถ้วน
 - `python tuning/hyperparameter_sweep.py` รันฝึกโมเดลหลายค่าพารามิเตอร์
 - ก่อนรัน sweep ควรสั่ง `python main.py --stage all` เพื่อสร้างไฟล์ `logs/trade_log_<DATE>.csv` ให้ครบถ้วน
 - `python threshold_optimization.py` หา threshold ที่ดีที่สุดด้วย Optuna
@@ -90,7 +89,7 @@ threshold_file: threshold_wfv_optuna_results.csv
 ก่อนรันโปรแกรมได้ เช่น
 ```bash
 export DRIFT_WASSERSTEIN_THRESHOLD=0.2
-python ProjectP.py
+python main.py --mode all
 ```
 
 
@@ -116,10 +115,10 @@ python profile_backtest.py XAUUSD_M1.csv --fund AGGRESSIVE --train --train-outpu
 
 ## การลดข้อความ Log
 หากต้องการให้โปรแกรมแสดงเฉพาะคำเตือนและสรุปผลแบบย่อ สามารถตั้งค่า
-ตัวแปรสภาพแวดล้อม `COMPACT_LOG=1` ก่อนรัน `ProjectP.py` เช่น
+ตัวแปรสภาพแวดล้อม `COMPACT_LOG=1` ก่อนรัน `main.py` เช่น
 
 ```bash
-COMPACT_LOG=1 python ProjectP.py
+COMPACT_LOG=1 python main.py --mode all
 ```
 ค่าดังกล่าวจะปรับระดับ log เป็น `WARNING` อัตโนมัติ ทำให้เห็นเฉพาะ
 ข้อความสำคัญและผลลัพธ์สรุปท้ายรัน
@@ -178,8 +177,8 @@ Before running tests in Colab:
 * ใช้ `merge_wave_pattern_labels()` เมื่อต้องการเพิ่มป้ายกำกับแพตเทิร์นจาก
   ไฟล์บันทึกของ Wave_Marker_Unit
 ## การรันบน Colab และ VPS
-ระบบจะตรวจสอบโดยอัตโนมัติว่ารันบน Google Colab หรือไม่ผ่านฟังก์ชัน `is_colab()` ใน `src/config.py`
-- หากเป็น Colab จะทำการ mount Google Drive และติดตั้งฟอนต์ให้เอง สามารถรัน `python ProjectP.py` หรือ `python main.py --stage all` ได้ทันที
+- ระบบจะตรวจสอบโดยอัตโนมัติว่ารันบน Google Colab หรือไม่ผ่านฟังก์ชัน `is_colab()` ใน `src/config.py`
+- หากเป็น Colab จะทำการ mount Google Drive และติดตั้งฟอนต์ให้เอง สามารถรัน `python main.py --mode all` ได้ทันที
 - หากรันบน VPS ไม่จำเป็นต้อง mount Drive และสามารถกำหนดเส้นทางด้วยตัวแปร `FILE_BASE_OVERRIDE` เพื่อชี้ไปยังโฟลเดอร์ข้อมูล
 
 
