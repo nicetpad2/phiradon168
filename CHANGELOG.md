@@ -1599,8 +1599,14 @@ QA: pytest -q passed (219 tests)
 
 ### 2025-07-20
 
-- [Patch v6.5.9] Regenerate trade log when rows below threshold
-- Added DEFAULT_TRADE_LOG_MIN_ROWS in config
-- Updated test_projectp_insufficient_rows for regeneration
-- QA: pytest -q passed (895 tests)
+- [Patch v6.5.5] Implement meta-classifier training logic
+- Updated src/utils/auto_train_meta_classifiers.py with logistic regression
+- New tests for auto_train_meta_classifiers covering training behavior
+- QA: pytest -q passed (896 tests)
+
+### 2025-07-21
+- [Patch v6.5.10] Handle missing 'target' column gracefully
+- Updated src/utils/auto_train_meta_classifiers.py to skip training when 'target' absent
+- New test tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_missing_target
+- QA: pytest -q passed (896 tests)
 

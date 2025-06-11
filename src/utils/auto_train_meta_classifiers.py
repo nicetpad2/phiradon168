@@ -58,9 +58,12 @@ def auto_train_meta_classifiers(
         logger.error("[Patch v6.5.5] Failed to load features file: %s", e)
         return None
 
+    # Ensure 'target' column exists before proceeding
     if "target" not in training_data.columns:
-        logger.error("[Patch v6.5.5] Training data missing 'target' column")
-        return None
+        logger.warning(
+            "[Patch v6.5.10] 'target' column missing, skipping meta-classifier training"
+        )
+        return {}
 
     missing = [c for c in features if c not in training_data.columns]
     if missing:

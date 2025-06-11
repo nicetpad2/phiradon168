@@ -48,3 +48,16 @@ def test_auto_train_meta_classifiers_with_data(tmp_path):
     )
     assert Path(res["model_path"]).exists()
 
+
+def test_auto_train_meta_classifiers_missing_target(tmp_path, caplog):
+    """Should skip training when 'target' column missing."""
+    cfg = SimpleNamespace(OUTPUT_DIR=str(tmp_path))
+    (tmp_path / "features_main.json").write_text("[\"f\"]")
+    data = pd.DataFrame({"f": [1, 0, 1, 0, 1]})
+    with caplog.at_level('WARNING', logger=logger.name):
+        res = auto_train_meta_classifiers(
+            cfg, data, models_dir=str(tmp_path), features_dir=str(tmp_path)
+        )
+    assert res == {}
+    assert any("6.5.10" in m and "target" in m for m in caplog.messages)
+
