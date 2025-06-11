@@ -1,4 +1,8 @@
 
+### 2025-07-29
+- [Patch v6.7.5] Fix date parsing in backtest_engine to use Date and Timestamp columns
+- QA: pytest -q passed (930 tests)
+
 ### 2025-07-28
 - [Patch v6.7.4] Refactor trade log pipeline into standalone module
 - New/Updated unit tests added for tests/test_trade_log_pipeline.py
