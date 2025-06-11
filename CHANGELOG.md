@@ -1730,3 +1730,7 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_backtest_engine.py::test_run_backtest_engine_sorts_m1_index and ::test_run_backtest_engine_drops_duplicate_m1_index
 - QA: pytest -q passed (915 tests)
 
+### 2025-08-03
+- [Patch v6.6.6] Pass M1 path to hyperparameter sweep
+- QA: pytest -q passed (915 tests)
+
