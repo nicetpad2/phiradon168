@@ -1650,4 +1650,11 @@ QA: pytest -q passed (219 tests)
 
 - QA: pytest -q passed (908 tests)
 
+### 2025-07-25
+
+- [Patch v6.5.15] Run feature engineering before simulation
+- Updated backtest_engine.run_backtest_engine to call engineer_m1_features
+- Expanded tests/test_backtest_engine.py to verify feature engineering call
+- QA: pytest -q passed (909 tests)
+
 

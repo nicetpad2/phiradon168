@@ -6,6 +6,7 @@ import pandas as pd
 
 from src.config import DATA_FILE_PATH_M1
 from src.strategy import run_backtest_simulation_v34
+from src.features import engineer_m1_features
 
 # [Patch v6.5.14] Force fold 0 of 1 when regenerating the trade log
 DEFAULT_FOLD_CONFIG = {"n_folds": 1}
@@ -43,16 +44,19 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
                 f"[backtest_engine] Failed to convert index to datetime: {e}"
             ) from e
 
-    # 2) Run your core simulation (returns tuple: (sim_df, trade_log_df, …))
+    # [Patch v6.5.15] Engineer features before simulation
+    features_df = engineer_m1_features(df)
+
+    # 3) Run your core simulation (returns tuple: (sim_df, trade_log_df, …))
     result = run_backtest_simulation_v34(
-        df,
+        features_df,
         label="regen",
         initial_capital_segment=100.0,
         fold_config=DEFAULT_FOLD_CONFIG,
         current_fold_index=DEFAULT_FOLD_INDEX,
     )
 
-    # 3) Extract and validate the trade log DataFrame
+    # 4) Extract and validate the trade log DataFrame
     try:
         trade_log_df = result[1]
     except Exception:
