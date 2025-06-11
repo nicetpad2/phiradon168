@@ -1598,7 +1598,9 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (895 tests)
 
 ### 2025-07-20
-- [Patch v6.5.5] Implement meta-classifier training logic
-- Updated src/utils/auto_train_meta_classifiers.py with logistic regression
-- New tests for auto_train_meta_classifiers covering training behavior
-- QA: pytest -q passed (896 tests)
+- [Patch v6.5.9] ENV-friendly config import
+- Updated src.config with env variable DEFAULT_TRADE_LOG_MIN_ROWS
+- Updated tests/test_function_registry.py for new line numbers
+- QA: pytest -q passed (895 tests)
+
+
