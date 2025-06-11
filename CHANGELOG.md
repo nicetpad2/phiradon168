@@ -1,3 +1,8 @@
+### 2025-08-02
+- [Patch v6.7.9] Add automated data cleaning pipeline
+- New/Updated unit tests added for tests/test_data_cleaner.py::test_clean_dataframe_basic
+- QA: pytest -q passed (936 tests)
+
 ### 2025-07-31
 - [Patch v6.7.7] Improve duplicate handling during data load
 - New/Updated unit tests added for tests/test_deduplicate_sort.py

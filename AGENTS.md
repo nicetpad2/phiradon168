@@ -265,6 +265,9 @@
 - **Main Role:** Source Data Validation
 - **Key Responsibilities:**
   - Remove duplicate rows before ingestion
+  - Convert Buddhist year dates and merge to a single ``Time`` column
+  - Sort by time and handle missing values automatically
+  - Validate ``Open``/``High``/``Low``/``Close``/``Volume`` columns
   - Provide CLI script `src/data_cleaner.py`
 - **Modules:** `src/data_cleaner.py`
 

@@ -1,35 +1,100 @@
+"""Simple CLI และฟังก์ชันสำหรับทำความสะอาดข้อมูลราคา."""
+
 import argparse
 import logging
+from typing import Iterable
+
 import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 
-def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
-    """Remove duplicate rows by index or Date/Timestamp."""
-    if df.index.has_duplicates:
-        dupes = df.index.duplicated().sum()
-        logger.info("[Patch] Removing %s duplicated index rows", dupes)
-        df = df[~df.index.duplicated(keep="first")]
+def convert_buddhist_year(
+    df: pd.DataFrame,
+    date_col: str = "Date",
+    time_col: str = "Timestamp",
+    out_col: str = "Time",
+) -> pd.DataFrame:
+    """[Patch] แปลงปี พ.ศ. เป็น ค.ศ. และรวมเป็นคอลัมน์ ``Time``"""
+    if date_col not in df.columns or time_col not in df.columns:
+        return df
 
-    subset = ["Date", "Timestamp"]
-    if all(col in df.columns for col in subset):
-        dupes = df.duplicated(subset=subset).sum()
-        if dupes:
-            logger.info("[Patch] Removing %s duplicated rows by Date/Timestamp", dupes)
-            df = df.drop_duplicates(subset=subset, keep="first")
-    else:
-        dupes = df.duplicated().sum()
-        if dupes:
-            logger.info("[Patch] Removing %s duplicated rows", dupes)
-            df = df.drop_duplicates()
+    year = df[date_col].astype(str).str[:4].astype(int)
+    year = year.where(year < 2500, year - 543)
+    rest = df[date_col].astype(str).str[4:]
+    dt_str = (
+        year.astype(str).str.zfill(4)
+        + rest
+        + " "
+        + df[time_col].astype(str).str.replace(r"\.0$", "", regex=True)
+    )
+    df[out_col] = pd.to_datetime(dt_str, format="%Y%m%d %H:%M:%S", errors="coerce")
+    df.drop(columns=[date_col, time_col], inplace=True)
     return df
 
 
-def clean_csv(path: str, output: str | None = None) -> None:
-    """Load CSV, remove duplicates and save to output."""
+def remove_duplicate_times(df: pd.DataFrame, time_col: str = "Time") -> pd.DataFrame:
+    """[Patch] ลบแถวที่มีเวลาซ้ำกัน"""
+    if time_col in df.columns:
+        dupes = df.duplicated(subset=time_col).sum()
+        if dupes:
+            logger.info("[Patch] Removing %s duplicated rows by %s", dupes, time_col)
+            df = df.drop_duplicates(subset=time_col, keep="first")
+    return df
+
+
+def sort_by_time(df: pd.DataFrame, time_col: str = "Time") -> pd.DataFrame:
+    """[Patch] เรียงข้อมูลตามเวลา"""
+    if time_col in df.columns:
+        df = df.sort_values(time_col)
+    return df
+
+
+def handle_missing_values(
+    df: pd.DataFrame,
+    cols: Iterable[str] | None = None,
+    method: str = "drop",
+) -> pd.DataFrame:
+    """[Patch] จัดการค่า NaN ในคอลัมน์ราคาหลัก"""
+    if cols is None:
+        cols = ["Open", "High", "Low", "Close", "Volume"]
+
+    if method == "drop":
+        df = df.dropna(subset=list(cols))
+    else:
+        means = df[list(cols)].mean()
+        df[list(cols)] = df[list(cols)].fillna(means)
+    return df
+
+
+def validate_price_columns(df: pd.DataFrame, cols: Iterable[str] | None = None) -> None:
+    """[Patch] ตรวจสอบว่าคอลัมน์ราคาครบถ้วนและเป็นตัวเลข"""
+    if cols is None:
+        cols = ["Open", "High", "Low", "Close", "Volume"]
+
+    missing = [c for c in cols if c not in df.columns]
+    if missing:
+        raise ValueError(f"Missing columns: {missing}")
+
+    for c in cols:
+        if not pd.api.types.is_numeric_dtype(df[c]):
+            raise TypeError(f"Column {c} must be numeric")
+
+
+def clean_dataframe(df: pd.DataFrame, fill_method: str = "drop") -> pd.DataFrame:
+    """[Patch] ขั้นตอนทำความสะอาดข้อมูลแบบครบถ้วน"""
+    df = convert_buddhist_year(df)
+    df = remove_duplicate_times(df)
+    df = sort_by_time(df)
+    df = handle_missing_values(df, method=fill_method)
+    validate_price_columns(df)
+    return df
+
+
+def clean_csv(path: str, output: str | None = None, fill_method: str = "drop") -> None:
+    """โหลด CSV แล้วทำความสะอาดข้อมูลก่อนบันทึก"""
     df = pd.read_csv(path)
-    cleaned = remove_duplicates(df)
+    cleaned = clean_dataframe(df, fill_method=fill_method)
     out_path = output or path
     cleaned.to_csv(out_path, index=False)
     logger.info("[Patch] Cleaned CSV written to %s", out_path)
@@ -39,9 +104,13 @@ def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description="CSV data cleaner")
     parser.add_argument("input", help="Input CSV file")
     parser.add_argument("--output", help="Output path", default=None)
+    parser.add_argument(
+        "--fill", choices=["drop", "mean"], default="drop", help="วิธีจัดการค่า NaN"
+    )
     args = parser.parse_args(argv)
-    clean_csv(args.input, args.output)
+    clean_csv(args.input, args.output, args.fill)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - CLI entry
     main()
+
