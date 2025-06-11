@@ -134,15 +134,19 @@ def run_hyperparameter_sweep(params: Dict[str, List[float]]) -> None:
     """รันการค้นหาค่าพารามิเตอร์."""
     logger.debug(f"Starting sweep with params: {params}")
     from tuning.hyperparameter_sweep import run_sweep as _sweep, DEFAULT_TRADE_LOG
+
     m1_path = os.path.join(str(OUTPUT_DIR), "final_data_m1_v32_walkforward.csv.gz")
     logger.info("[Patch v6.6.6] Running sweep with m1_path=%s", m1_path)
+
     _sweep(
         str(OUTPUT_DIR),
         params,
         seed=42,
         resume=True,
         trade_log_path=DEFAULT_TRADE_LOG,
+
         m1_path=m1_path,
+
     )
 
 

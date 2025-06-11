@@ -1731,7 +1731,11 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (915 tests)
 
 ### 2025-08-03
+
 - [Patch v6.6.6] Add target column and dashboard generation enhancements
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py and tests/test_reporting_dashboard.py
+=======
+- [Patch v6.6.6] Pass M1 path to hyperparameter sweep
+
 - QA: pytest -q passed (915 tests)
 
