@@ -46,25 +46,26 @@ def print_qa_summary(trades: pd.DataFrame, equity: pd.DataFrame) -> Dict[str, fl
     return metrics
 
 
+# [Patch v6.5.16] Vectorize Thai datetime conversion and warn on failures
 def convert_thai_datetime(df: pd.DataFrame, date_col: str = "Date", time_col: str = "Timestamp") -> pd.DataFrame:
-    """Convert Thai Buddhist era date and time columns to a ``timestamp`` column."""
+    """แปลงวันที่ พ.ศ. และเวลาเป็นคอลัมน์ ``timestamp`` ด้วย Pandas vectorization."""
     if date_col not in df.columns or time_col not in df.columns:
-        return df
-
-    def _convert(row):
-        try:
-            date_str = str(row[date_col])
-            time_str = str(row[time_col])
-            year = int(date_str[:4]) - 543
-            greg = f"{year}{date_str[4:]} {time_str}"
-            return pd.to_datetime(greg, format="%Y%m%d %H:%M:%S", errors="coerce")
-        except Exception as e:  # pragma: no cover - unexpected formats
-            with open("error_log.txt", "a", encoding="utf-8") as f:
-                f.write(f"convert_thai_datetime error: {e}\n")
-            return pd.NaT
+        return df.copy()
 
     df = df.copy()
-    df["timestamp"] = df.apply(_convert, axis=1)
+    try:
+        year_ce = df[date_col].astype(str).str[:4].astype(int) - 543
+    except Exception as e:  # pragma: no cover - unexpected formats
+        logging.error(f"ไม่สามารถแปลงปี พ.ศ. เป็น ค.ศ.: {e}")
+        df["timestamp"] = pd.NaT
+        return df
+
+    greg_str = year_ce.astype(str) + df[date_col].astype(str).str[4:] + " " + df[time_col].astype(str)
+    df["timestamp"] = pd.to_datetime(greg_str, format="%Y%m%d %H:%M:%S", errors="coerce")
+
+    if df["timestamp"].isna().any():
+        n_failed = int(df["timestamp"].isna().sum())
+        logging.warning(f"convert_thai_datetime: พบ {n_failed} แถวที่แปลงไม่ได้ (NaT)")
     return df
 
 

@@ -23,16 +23,12 @@ def test_print_qa_summary_empty_df(caplog):
     assert "ไม่มีไม้ที่ถูกเทรด" in caplog.text
 
 
-def test_convert_thai_datetime_invalid(tmp_path):
+def test_convert_thai_datetime_invalid(caplog):
     df = pd.DataFrame({"Date": ["abc"], "Timestamp": ["xx"]})
-    log_file = tmp_path / "error_log.txt"
-    os.chdir(tmp_path)
-    try:
+    with caplog.at_level(logging.ERROR):
         result = utils.convert_thai_datetime(df.copy())
-        assert result["timestamp"].isna().all()
-        assert log_file.exists()
-    finally:
-        os.chdir(ROOT_DIR)
+    assert result["timestamp"].isna().all()
+    assert "ไม่สามารถแปลงปี พ.ศ." in caplog.text
 
 
 def test_get_resource_plan_missing_modules(monkeypatch):
@@ -78,7 +74,8 @@ def test_prepare_csv_auto(tmp_path):
 def test_convert_thai_datetime_missing_cols():
     df = pd.DataFrame({"A": [1]})
     out = utils.convert_thai_datetime(df)
-    assert out is df
+    assert out.equals(df)
+    assert out is not df
 
 
 def test_get_resource_plan_with_gpu(monkeypatch):
