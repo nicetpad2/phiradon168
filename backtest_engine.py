@@ -47,6 +47,20 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
                 f"[backtest_engine] Failed to convert index to datetime: {e}"
             ) from e
 
+    # [Patch v6.6.5] Ensure M1 price index sorted and unique
+    if not df.index.is_monotonic_increasing:
+        df.sort_index(inplace=True)
+        logging.warning(
+            "(Warning) พบ index M1 ไม่เรียงลำดับเวลา กำลังจัดเรียงใหม่ในลำดับ ascending"
+        )
+    if df.index.duplicated().any():
+        dup_count = int(df.index.duplicated().sum())
+        logging.warning(
+            "(Warning) พบ index ซ้ำซ้อนในข้อมูลราคา M1 กำลังลบรายการซ้ำ (คงไว้ค่าแรก)"
+        )
+        df = df.loc[~df.index.duplicated(keep='first')]
+        logging.info(f"      Removed {dup_count} duplicate index rows from M1 data.")
+
     # [Patch v6.5.15] Engineer features before simulation
     features_df = engineer_m1_features(df)
     # [Patch v6.6.0] Generate Trend Zone and entry signal features

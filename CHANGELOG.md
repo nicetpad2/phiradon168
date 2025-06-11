@@ -1725,3 +1725,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_features_more.py::test_calculate_m15_trend_zone_duplicate_index
 - QA: pytest -q passed (913 tests)
 
+### 2025-08-02
+- [Patch v6.6.5] Validate and fix M1 price index order and duplicates
+- New/Updated unit tests added for tests/test_backtest_engine.py::test_run_backtest_engine_sorts_m1_index and ::test_run_backtest_engine_drops_duplicate_m1_index
+- QA: pytest -q passed (915 tests)
+
