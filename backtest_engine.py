@@ -70,7 +70,7 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
         except Exception:
             # Fallback: assume NEUTRAL trend for all on error
             trend_df = pd.DataFrame("NEUTRAL", index=features_df.index, columns=["Trend_Zone"])
-        # [Patch v6.6.2] Remove duplicate trend index before alignment
+        # [Patch v6.6.3] Remove duplicate trend indices and sort index before alignment
         if trend_df.index.duplicated().any():
             dup_count = int(trend_df.index.duplicated().sum())
             logging.warning(
@@ -78,10 +78,10 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
             )
             trend_df = trend_df.loc[~trend_df.index.duplicated(keep='first')]
             logging.info(f"      Removed {dup_count} duplicate index rows from Trend Zone data.")
-        # [Patch v6.6.1] Sort trend index for monotonic reindexing
         if not trend_df.index.is_monotonic_increasing:
-            trend_df = trend_df.sort_index(ascending=True)
-        # Align Trend_Zone values to M1 timeline
+            trend_df.sort_index(inplace=True)
+            logging.info("      Sorted Trend Zone DataFrame index in ascending order for alignment")
+        # Align Trend_Zone values to M1 timeline by forward-filling last known trend; default missing to NEUTRAL
         trend_series = trend_df["Trend_Zone"].reindex(features_df.index, method="ffill").fillna("NEUTRAL")
         features_df["Trend_Zone"] = pd.Categorical(trend_series, categories=["NEUTRAL", "UP", "DOWN"])
     else:
