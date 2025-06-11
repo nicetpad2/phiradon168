@@ -102,3 +102,46 @@ def test_run_backtest_engine_calls_feature_engineering(monkeypatch):
     result = be.run_backtest_engine(pd.DataFrame())
     assert result.equals(trade_df)
     assert calls['count'] == 1
+
+
+def test_run_backtest_engine_generates_trend_and_signals(monkeypatch):
+    m1_df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]})
+    m15_df = pd.DataFrame({'Close': [1]}, index=[pd.Timestamp('2024-01-01')])
+    trade_df = pd.DataFrame({'pnl': [1.0]})
+
+    def fake_read_csv(path, *a, **k):
+        return m1_df if path == be.DATA_FILE_PATH_M1 else m15_df
+
+    monkeypatch.setattr(be.pd, 'read_csv', fake_read_csv)
+    monkeypatch.setattr(be, 'engineer_m1_features', lambda df, **k: df)
+
+    flags = {}
+
+    def fake_trend(df):
+        flags['trend_called'] = True
+        return pd.DataFrame({'Trend_Zone': ['UP']}, index=df.index)
+
+    def fake_entry(df, cfg):
+        flags['has_trend'] = 'Trend_Zone' in df.columns
+        return df.assign(
+            Entry_Long=0,
+            Entry_Short=0,
+            Trade_Tag='t',
+            Signal_Score=0.1,
+            Trade_Reason='r'
+        )
+
+    def fake_sim(df, **k):
+        flags['cols'] = df.columns.tolist()
+        return None, trade_df
+
+    monkeypatch.setattr(be, 'calculate_m15_trend_zone', fake_trend)
+    monkeypatch.setattr(be, 'calculate_m1_entry_signals', fake_entry)
+    monkeypatch.setattr(be, 'run_backtest_simulation_v34', fake_sim)
+
+    result = be.run_backtest_engine(pd.DataFrame())
+    assert result.equals(trade_df)
+    assert flags.get('trend_called')
+    assert flags.get('has_trend')
+    for col in ['Trend_Zone', 'Entry_Long', 'Entry_Short', 'Trade_Tag', 'Signal_Score', 'Trade_Reason']:
+        assert col in flags.get('cols', [])

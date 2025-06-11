@@ -4,9 +4,9 @@ Provides a function to regenerate the trade log via your core backtest simulatio
 """
 import pandas as pd
 
-from src.config import DATA_FILE_PATH_M1
+from src.config import DATA_FILE_PATH_M1, DATA_FILE_PATH_M15
 from src.strategy import run_backtest_simulation_v34
-from src.features import engineer_m1_features
+from src.features import engineer_m1_features, calculate_m15_trend_zone, calculate_m1_entry_signals
 
 # [Patch v6.5.14] Force fold 0 of 1 when regenerating the trade log
 DEFAULT_FOLD_CONFIG = {"n_folds": 1}
@@ -48,6 +48,35 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
 
     # [Patch v6.5.15] Engineer features before simulation
     features_df = engineer_m1_features(df)
+    # [Patch v6.6.0] Generate Trend Zone and entry signal features
+    try:
+        df_m15 = pd.read_csv(
+            DATA_FILE_PATH_M15,
+            index_col=0,
+            parse_dates=[0],
+            infer_datetime_format=True,
+        )
+    except Exception:
+        df_m15 = None
+    if df_m15 is not None and not df_m15.empty:
+        # Ensure M15 index is a DatetimeIndex
+        if not isinstance(df_m15.index, pd.DatetimeIndex):
+            df_m15.index = pd.to_datetime(df_m15.index, infer_datetime_format=True)
+        try:
+            trend_df = calculate_m15_trend_zone(df_m15)
+        except Exception:
+            # Fallback: default all zones to NEUTRAL on error
+            trend_df = pd.DataFrame("NEUTRAL", index=features_df.index, columns=["Trend_Zone"])
+        # Align Trend_Zone values to M1 timeline
+        trend_series = trend_df["Trend_Zone"].reindex(features_df.index, method="ffill").fillna("NEUTRAL")
+        features_df["Trend_Zone"] = pd.Categorical(trend_series, categories=["NEUTRAL", "UP", "DOWN"])
+    else:
+        # No M15 data: assume neutral trend for all
+        features_df["Trend_Zone"] = pd.Categorical(["NEUTRAL"] * len(features_df), categories=["NEUTRAL", "UP", "DOWN"])
+    # Compute entry signals and related columns (Entry_Long, Entry_Short, Trade_Tag, Signal_Score, Trade_Reason)
+    from src.strategy import ENTRY_CONFIG_PER_FOLD
+    base_config = ENTRY_CONFIG_PER_FOLD.get(0, {})
+    features_df = calculate_m1_entry_signals(features_df, base_config)
 
     # 3) Run your core simulation (returns tuple: (sim_df, trade_log_df, …))
     result = run_backtest_simulation_v34(
