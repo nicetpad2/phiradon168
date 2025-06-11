@@ -39,7 +39,7 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
             logging.warning(
                 "(Warning) การ parse วันที่/เวลา ด้วย format ที่กำหนดไม่สำเร็จ - กำลัง parse ใหม่แบบไม่ระบุ format"
             )
-            df.index = pd.to_datetime(combined, errors="coerce")
+            df.index = pd.to_datetime(combined, errors="coerce", format="mixed")
         df.drop(columns=["Date", "Timestamp"], inplace=True)
     elif not isinstance(df.index, pd.DatetimeIndex):
         # fallback: convert existing index
@@ -84,7 +84,7 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
             logging.warning(
                 "(Warning) การ parse วันที่/เวลา (M15) ด้วย format ที่กำหนดไม่สำเร็จ - กำลัง parse ใหม่แบบไม่ระบุ format"
             )
-            df_m15.index = pd.to_datetime(combined, errors="coerce")
+            df_m15.index = pd.to_datetime(combined, errors="coerce", format="mixed")
         df_m15.drop(columns=["Date", "Timestamp"], inplace=True)
     elif df_m15 is not None and not isinstance(df_m15.index, pd.DatetimeIndex):
         df_m15.index = pd.to_datetime(df_m15.index, errors="coerce")
