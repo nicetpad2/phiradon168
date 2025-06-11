@@ -269,7 +269,8 @@
   - Sort by time and handle missing values automatically
   - Validate ``Open``/``High``/``Low``/``Close``/``Volume`` columns
   - Provide CLI script `src/data_cleaner.py`
-- **Modules:** `src/data_cleaner.py`
+  - Validate cleaned files with `validate_and_convert_csv`
+- **Modules:** `src/data_cleaner.py`, `src/csv_validator.py`
 
 ## 📌 Process & Collaboration Guidelines
 
