@@ -1579,3 +1579,9 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.5.1] Populate dummy trade log with 10 rows
 - Updated ProjectP.py to generate 10 placeholder trades
 - QA: pytest -q passed (663 tests)
+
+### 2025-07-18
+- [Patch v6.5.3] Export summary helper for hyperparameter sweep
+- Added tuning.export_summary to ensure metric/best_param columns
+- New test tests/test_export_summary.py
+- QA: pytest -q passed (893 tests)

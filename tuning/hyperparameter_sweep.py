@@ -20,6 +20,8 @@ from typing import Callable, List, Dict
 import inspect
 from datetime import datetime
 from tqdm import tqdm
+import logging
+import numpy as np
 
 from src.config import logger, DefaultConfig
 
@@ -95,6 +97,19 @@ def _filter_kwargs(func: Callable, kwargs: Dict[str, object]) -> Dict[str, objec
     """คัดเฉพาะ kwargs ที่ฟังก์ชันรองรับ"""
     sig = inspect.signature(func)
     return {k: v for k, v in kwargs.items() if k in sig.parameters}
+
+
+def export_summary(summary_df: pd.DataFrame, summary_path: str) -> pd.DataFrame:
+    """บันทึก DataFrame สรุปผล sweep เป็น CSV และเติมคอลัมน์ที่ขาด"""
+    # Ensure 'metric' and 'best_param' columns exist without warnings
+    summary_df['metric'] = summary_df.get('metric', summary_df.get('score', np.nan))
+    summary_df['best_param'] = summary_df.get('best_param', [{} for _ in range(len(summary_df))])
+    try:
+        summary_df.to_csv(summary_path, mode='w', index=False)
+    except Exception as e:  # pragma: no cover - file write failure
+        logging.critical(f"[Patch v6.5.3] Failed to write summary CSV: {e}")
+        raise
+    return summary_df
 
 
 def run_sweep(
@@ -211,7 +226,7 @@ def run_sweep(
         df = pd.concat([df_exist, pd.DataFrame(summary_rows)], ignore_index=True)
     else:
         df = pd.DataFrame(summary_rows)
-    df.to_csv(summary_path, index=False)
+    df = export_summary(df, summary_path)
     logger.info(f"Sweep summary saved to {summary_path}")
 
     # (ไม่มีแก้) – ตรงนี้บันทึกไฟล์ชื่อ best_param.json ตามมาตรฐานโค้ด
@@ -224,7 +239,7 @@ def run_sweep(
         if numeric_cols:
             metric_col = numeric_cols[0]
             df['metric'] = df[metric_col]
-            df.to_csv(summary_path, index=False)
+            export_summary(df, summary_path)
             logger.info(f"ใช้คอลัมน์ {metric_col} เป็น metric")
     if metric_col and not df[metric_col].dropna().empty:
         best_row = df.sort_values(metric_col, ascending=False).iloc[0]
