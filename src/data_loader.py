@@ -454,7 +454,8 @@ MAX_NAT_RATIO_THRESHOLD = globals().get("MAX_NAT_RATIO_THRESHOLD", CONFIG_MAX_NA
 
 # --- Data Loading Function ---
 # [Patch v5.0.2] Exclude heavy load_data from coverage
-def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_threshold=0.05, dtypes=None):  # pragma: no cover
+# [Patch v6.7.13] Add max_rows parameter for limited row loading
+def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_threshold=0.05, dtypes=None, max_rows=None):  # pragma: no cover
     """
     Loads data from a CSV file, performs basic validation and data quality checks.
 
@@ -466,8 +467,8 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
         nan_threshold (float): Maximum acceptable proportion of NaN values in price columns.
                                Defaults to 0.05 (5%).
         dtypes (dict, optional): Dictionary specifying data types for columns during loading.
-                                 Defaults to ``DEFAULT_DTYPE_MAP`` from config
-                                 if not provided.
+                                 Defaults to ``DEFAULT_DTYPE_MAP`` from config if not provided.
+        max_rows (int, optional): Limit the number of rows to load for debugging. Defaults to None (load all rows).
 
     Returns:
         pd.DataFrame: The loaded and initially validated DataFrame.
@@ -497,8 +498,11 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
 
     try:
         try:
-            df_pd = pd.read_csv(file_path, low_memory=False, dtype=dtypes)
-            logging.info(f"   ไฟล์ดิบ {timeframe_str}: {df_pd.shape[0]} แถว")
+            read_csv_kwargs = {"low_memory": False, "dtype": dtypes}
+            if max_rows is not None:
+                read_csv_kwargs["nrows"] = max_rows
+            df_pd = pd.read_csv(file_path, **read_csv_kwargs)
+            logging.info(f"   ไฟล์ดิบ {timeframe_str}: {df_pd.shape[0]} แถว (max_rows={max_rows})")
         except pd.errors.ParserError as e_parse:
             logging.critical(f"(Error) ไม่สามารถ Parse ไฟล์ CSV '{file_path}': {e_parse}")
             sys.exit(f"ออก: ปัญหาการ Parse ไฟล์ CSV {timeframe_str}")
