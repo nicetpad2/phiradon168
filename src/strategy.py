@@ -40,7 +40,6 @@ from src.config import (
     USE_RSI_SIGNALS,
     OUTPUT_DIR as CFG_OUTPUT_DIR,
 )
-from src.utils.env_utils import get_env_float
 
 logger = logging.getLogger(__name__)
 
@@ -87,9 +86,6 @@ from src.evaluation import find_best_threshold
 from src.adaptive import compute_dynamic_lot, atr_position_size, compute_trailing_atr_stop
 import gc # For memory management
 from src.utils.gc_utils import maybe_collect
-from src.utils.gc_utils import maybe_collect
-from src.utils.gc_utils import maybe_collect
-import os
 import itertools
 # Import ML libraries conditionally (assuming they are checked/installed in Part 1)
 try:
@@ -1090,17 +1086,11 @@ logging.info(f"Part 7: Model Training Function Loaded (v{__version__} Applied)."
 # <<< MODIFIED v4.8.8 (Patch 26.3.1): Applied [PATCH B] to _check_order_exit_conditions (new name & logic), verified BE-SL PnL and SL multiplier usage. >>>
 # <<< MODIFIED v4.8.8 (Patch 26.4.1): Unified [PATCH B] for logging in _update_open_order_state, and [PATCH C] for error handling in run_backtest_simulation_v34. >>>
 # <<< MODIFIED v4.8.8 (Patch 26.6.1): Applied user-provided fixes for f-string formatting in logging statements to prevent ValueError. >>>
-import logging
-import pandas as pd
-import numpy as np
 import random
-import time
 from collections import defaultdict
-import gc # For memory management
 import math # For math.isclose
 import importlib # Added for safe global access
 import sys # Added for safe global access
-import traceback # Added for [PATCH C]
 
 # Ensure tqdm is available (imported in Part 1)
 try:
@@ -2827,18 +2817,11 @@ logging.info(f"Part 8: Backtesting Engine Functions Loaded (v{__version__} Appli
 # <<< MODIFIED v4.7.9: Implemented logging, added docstrings/comments, enhanced analysis robustness, fixed SyntaxError, added memory cleanup >>>
 # <<< MODIFIED v4.8.1: Added input validation and handling for no trades in run_all_folds_with_threshold >>>
 # <<< MODIFIED v4.8.3: Applied SyntaxError fix for try-except global variable checks >>>
-import logging
-import os
-import pandas as pd
-import numpy as np
-import math
-import json
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm  # [Patch v5.7.7] Required for FontProperties
 from matplotlib.ticker import FuncFormatter
 from scipy.stats import ttest_ind, wasserstein_distance # For DriftObserver
 from sklearn.model_selection import TimeSeriesSplit # For Walk-Forward
-import gc # For memory management
 
 # Ensure global configurations are accessible if run independently
 # Define defaults if globals are not found

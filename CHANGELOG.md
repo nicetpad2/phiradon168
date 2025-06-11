@@ -1657,4 +1657,10 @@ QA: pytest -q passed (219 tests)
 - Expanded tests/test_backtest_engine.py to verify feature engineering call
 - QA: pytest -q passed (909 tests)
 
+### 2025-07-26
+
+- [Patch v6.5.16] Remove duplicate imports in src.strategy
+- Cleaned redundant function and module imports for clarity
+- QA: pytest -q passed (910 tests)
+
 
