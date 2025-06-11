@@ -1744,3 +1744,8 @@ QA: pytest -q passed (219 tests)
 - Updated tests/test_main_cli_extended.py for new column
 - QA: pytest -q passed (915 tests)
 
+### 2025-08-05
+- [Patch v6.6.8] Fix auto threshold tuning call and backtest threshold parsing
+- New/Updated unit tests added for tests/test_projectp_cli.py::test_run_backtest_uses_best_threshold
+- QA: pytest -q passed (916 tests)
+

@@ -108,3 +108,26 @@ def test_run_mode_all(monkeypatch, tmp_path):
     monkeypatch.setattr(proj, 'run_walkforward', lambda: calls.append('wfv'))
     proj.run_mode('all')
     assert calls == ['sweep', 'update', 'wfv']
+
+
+def test_run_backtest_uses_best_threshold(tmp_path, monkeypatch):
+    import pandas as pd
+    model_dir = tmp_path / 'models'
+    model_dir.mkdir()
+    (model_dir / 'model_a.joblib').write_text('x')
+    (model_dir / 'model_b.joblib').write_text('x')
+    pd.DataFrame({'best_threshold': [0.4, 0.6]}).to_csv(
+        model_dir / 'threshold_wfv_optuna_results.csv', index=False
+    )
+
+    captured = {}
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        proj.pipeline,
+        'run_backtest_pipeline',
+        lambda *_args: captured.setdefault('thresh', _args[3])
+    )
+
+    proj.run_backtest()
+
+    assert captured['thresh'] == pytest.approx(0.5)
