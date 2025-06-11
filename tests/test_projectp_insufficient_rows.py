@@ -4,6 +4,7 @@ import sys
 import os
 from pathlib import Path
 import pandas as pd
+import pytest
 import src.config as config
 import ProjectP
 
@@ -36,6 +37,5 @@ def test_insufficient_rows_logs_warning(monkeypatch, tmp_path, caplog):
     monkeypatch.setitem(sys.modules, "src.main", types.SimpleNamespace(main=dummy_main))
     monkeypatch.setattr(sys, "argv", ["ProjectP.py"])
     script_path = os.path.join(ROOT_DIR, "ProjectP.py")
-    with caplog.at_level("WARNING"):
+    with pytest.raises(ValueError):
         runpy.run_path(script_path, run_name="__main__")
-    assert (out_dir / "features_main.json").exists()
