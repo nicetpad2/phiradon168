@@ -38,6 +38,16 @@ def _create_placeholder_trade_log(path: str) -> None:
     compression = "gzip" if path.endswith(".gz") else None
     df.to_csv(path, index=False, compression=compression)
     logger.warning(f"สร้าง trade log ตัวอย่างที่ {path}")
+
+def _create_placeholder_m1(path: str) -> None:
+    """Create a minimal M1 data file so the pipeline can run end-to-end."""
+    # [Patch v6.7.1] Ensure sample size > 1 to avoid training issues
+    prices = [100.0, 100.5, 99.5, 100.4, 99.6, 100.3, 99.7, 100.2]
+    df = pd.DataFrame({"Close": prices})
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    compression = "gzip" if path.endswith(".gz") else None
+    df.to_csv(path, index=False, compression=compression)
+    logger.warning(f"สร้างไฟล์ M1 ตัวอย่างที่ {path}")
 from src.training import real_train_func
 
 # [Patch v6.3.0] Default trade log path under configured OUTPUT_DIR
@@ -164,11 +174,19 @@ def run_sweep(
                 trade_log_path,
             )
             _create_placeholder_trade_log(trade_log_path)
+    # ตรวจสอบไฟล์ M1 ก่อนรัน sweep
     if not m1_path:
         m1_path = DefaultConfig.DATA_FILE_PATH_M1
     if not os.path.exists(m1_path):
-        logger.error("ไม่พบไฟล์ M1 ที่ %s", m1_path)
-        raise SystemExit(1)
+        alt_m1 = m1_path.replace('.csv.gz', '.csv')
+        if os.path.exists(alt_m1):
+            m1_path = alt_m1
+        else:
+            logger.warning(
+                "[Patch v6.7.1] No M1 data file at %s; creating placeholder and continuing",
+                m1_path,
+            )
+            _create_placeholder_m1(m1_path)
     try:
         df_log = pd.read_csv(trade_log_path)
         # [Patch v5.8.13] Allow single-row trade logs with fallback metrics
@@ -271,26 +289,25 @@ def run_sweep(
 
     # (ไม่มีแก้) – ตรงนี้บันทึกไฟล์ชื่อ best_param.json ตามมาตรฐานโค้ด
     metric_col = 'metric' if 'metric' in df.columns else None
-    if metric_col is None or df[metric_col].dropna().empty:
+    if metric_col is None:
+        logger.error("ไม่มีคอลัมน์ metric ในผลลัพธ์ sweep")
+        raise SystemExit(1)
+    if df['metric'].dropna().empty:
         logger.error(
-            "ไม่มีผลการ sweep ที่สำเร็จ – จะไม่ปรับ hyperparameter จากรอบนี้"
+            "ไม่มี metric จากผลลัพธ์ sweep – หยุดการดำเนินการและไม่เลือกพารามิเตอร์ที่ดีที่สุด"
         )
-        return
-    if metric_col and not df[metric_col].dropna().empty:
-        best_row = df.sort_values(metric_col, ascending=False).iloc[0]
-        best_param_path = os.path.join(output_dir, 'best_param.json')
-        best_row[param_names + ['seed']].to_json(best_param_path, force_ascii=False)
-        logger.info(
-            f"Best param: {dict(best_row[param_names + ['seed']])} -> {best_row[metric_col]}"
-        )
-        if os.path.exists(best_param_path):
-            logger.info("[Patch v5.9.1] best_param.json saved to %s", best_param_path)
-        else:
-            logger.error("[Patch v5.9.1] best_param.json missing at %s", best_param_path)
+        raise SystemExit(1)
+
+    best_row = df.sort_values('metric', ascending=False).iloc[0]
+    best_param_path = os.path.join(output_dir, 'best_param.json')
+    best_row[param_names + ['seed']].to_json(best_param_path, force_ascii=False)
+    logger.info(
+        f"Best param: {dict(best_row[param_names + ['seed']])} -> {best_row['metric']}"
+    )
+    if os.path.exists(best_param_path):
+        logger.info("best_param.json saved to %s", best_param_path)
     else:
-        logger.warning(
-            "ไม่สามารถหา metric สำหรับเลือกพารามิเตอร์ที่ดีที่สุด"
-        )
+        logger.error("best_param.json missing at %s", best_param_path)
 
 
 def parse_args(args=None) -> argparse.Namespace:

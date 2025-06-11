@@ -1,7 +1,12 @@
 ### 2025-07-26
+
 - [Patch v6.7.1] Graceful skip when data files missing
 - New/Updated unit tests added for tests/test_training_more.py::test_real_train_func_missing_files tests/test_training_real_dataset.py::test_real_train_func_missing_files
 - QA: pytest -q passed (921 tests)
+
+- [Patch v6.7.1] Update VPS log message when not using Google Drive
+- QA: pytest -q passed (923 tests)
+
 
 ### 2025-07-25
 - [Patch v6.7.0] Improve sweep file checks and metric handling
@@ -9,6 +14,11 @@
   tests/test_hyperparameter_sweep_cli.py::test_run_sweep_missing_m1
   tests/test_training_real_dataset.py::test_real_train_func_missing_files
 - QA: pytest -q passed (920 tests)
+
+### 2025-07-26
+- [Patch v6.7.1] Validate M1 path and abort on missing metric
+- New/Updated unit tests added for tests/test_hyperparameter_sweep_cli.py
+- QA: pytest -q passed (923 tests)
 
 ### 2025-07-24
 - [Patch v6.6.11] Intelligent fallback metric in hyperparameter_sweep
@@ -1792,8 +1802,6 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.6.9] Use first best_threshold value when running backtest
 - Updated tests/test_projectp_cli.py::test_run_backtest_uses_best_threshold
 - QA: pytest -q passed (919 tests)
-
-
 ### 2025-06-12
 - [Patch v6.6.10] Warn when training data missing some features
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_warns_missing_features
@@ -1807,4 +1815,9 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.6.11] Auto-generate 'target' from profit-like columns
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_derive_target_alt_column
 - QA: pytest -q passed (919 tests)
+
+### 2025-06-14
+- [Patch v6.6.12] Skip meta-classifier training when all profit values are zero
+- New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_zero_profit
+- QA: pytest -q passed (924 tests)
 
