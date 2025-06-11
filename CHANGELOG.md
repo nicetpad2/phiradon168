@@ -3,6 +3,10 @@
 - New/Updated unit tests added for tests/test_main_cli_extended.py::test_main_debug_sets_sample_size
 - QA: pytest -q passed (954 tests)
 
+### 2025-08-08
+- [Patch v6.7.15] Remove pandas warnings during fallback parsing
+- QA: pytest -q passed (954 tests)
+
 ### 2025-08-06
 - [Patch v6.7.13] Add max_rows option for load_data
 - New/Updated unit tests added for tests/test_data_loader_additional.py::test_load_data_max_rows
