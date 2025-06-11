@@ -63,15 +63,19 @@ def test_auto_train_meta_classifiers_missing_target(tmp_path, caplog):
     assert any("6.5.10" in m and "target" in m for m in caplog.messages)
 
 
+
 def test_auto_train_meta_classifiers_derive_target(tmp_path, caplog):
     """Should derive target from profit column when missing."""
     cfg = SimpleNamespace(OUTPUT_DIR=str(tmp_path))
     (tmp_path / "features_main.json").write_text("[\"f\"]")
     data = pd.DataFrame({"f": [1, 0, 1, 0, 1], "profit": [1.0, -0.5, 2.0, -1.0, 0.4]})
     with caplog.at_level('INFO', logger=logger.name):
+
         res = auto_train_meta_classifiers(
             cfg, data, models_dir=str(tmp_path), features_dir=str(tmp_path)
         )
     assert Path(res["model_path"]).exists()
+
     assert any("Deriving 'target'" in m for m in caplog.messages)
+
 

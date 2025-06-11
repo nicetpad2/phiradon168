@@ -72,7 +72,7 @@ def test_run_backtest_selects_model_and_threshold(tmp_path):
     cfg = PipelineConfig(model_dir=str(tmp_path), threshold_file='th.csv')
     (tmp_path / 'model_a.joblib').write_text('x')
     (tmp_path / 'model_b.joblib').write_text('x')
-    pd.DataFrame({'median': [0.4, 0.6]}).to_csv(tmp_path / 'th.csv', index=False)
+    pd.DataFrame({'best_threshold': [0.4, 0.6]}).to_csv(tmp_path / 'th.csv', index=False)
     captured = {}
     def fake_pipe(f_df, p_df, model, thresh):
         captured['model'] = model
