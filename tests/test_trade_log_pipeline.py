@@ -29,13 +29,17 @@ def test_regenerate_when_missing(monkeypatch, tmp_path):
     assert path.exists()
 
 
-def test_regenerate_empty_failure(monkeypatch, tmp_path):
+def test_regenerate_empty_returns_original(monkeypatch, tmp_path):
     path = tmp_path / 'missing.csv'
 
     def fake_engine(_):
         return pd.DataFrame()
 
-    monkeypatch.setitem(sys.modules, 'backtest_engine', types.SimpleNamespace(run_backtest_engine=fake_engine))
+    monkeypatch.setitem(
+        sys.modules,
+        'backtest_engine',
+        types.SimpleNamespace(run_backtest_engine=fake_engine)
+    )
 
-    with pytest.raises(PipelineError):
-        load_or_generate_trade_log(str(path), min_rows=1)
+    result = load_or_generate_trade_log(str(path), min_rows=1)
+    assert result.empty
