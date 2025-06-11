@@ -1050,6 +1050,29 @@ def validate_m1_data_path(file_path):
         raise RuntimeError(msg)
     return True
 
+# --- M15 Data Path Validator ---
+# [Patch v6.8.2] Ensure correct file name and existence
+def validate_m15_data_path(file_path):
+    """Validate that the M15 data path points to an expected file."""
+    allowed = {"XAUUSD_M15.csv"}
+    if not isinstance(file_path, str) or not file_path:
+        logging.error("(Error) Invalid file path for M15 data.")
+        return False
+    fname = os.path.basename(file_path)
+    if fname not in allowed:
+        logging.error(
+            f"(Error) Unexpected M15 data file '{fname}'. Expected one of {allowed}."
+        )
+        return False
+    if not os.path.exists(file_path):
+        msg = (
+            f"[Patch v6.8.2] Missing raw CSV: {file_path}. "
+            "กรุณาวางไฟล์ CSV ในไดเรกทอรีที่กำหนด"
+        )
+        logging.error(msg)
+        raise RuntimeError(msg)
+    return True
+
 def load_raw_data_m1(path):
     """Load raw M1 data after validating the file path.
 
@@ -1061,7 +1084,9 @@ def load_raw_data_m1(path):
     return safe_load_csv_auto(path)
 
 def load_raw_data_m15(path):
-    """Stubbed loader for raw M15 data."""
+    """Load raw M15 data after validating the file path."""
+    if not validate_m15_data_path(path):
+        return None
     return safe_load_csv_auto(path)
 
 def write_test_file(path):
@@ -1261,6 +1286,7 @@ __all__ = [
     "convert_thai_datetime",
     "prepare_datetime_index",
     "validate_m1_data_path",
+    "validate_m15_data_path",
     "load_raw_data_m1",
     "load_raw_data_m15",
     "write_test_file",

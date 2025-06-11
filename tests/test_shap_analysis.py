@@ -80,7 +80,7 @@ def test_load_raw_data_m1_returns_dataframe(tmp_path):
 
 
 def test_load_raw_data_m15_returns_dataframe(tmp_path):
-    csv = tmp_path / 'd.csv'
+    csv = tmp_path / 'XAUUSD_M15.csv'
     pd.DataFrame({'A': [1]}).to_csv(csv)
     df = dl.load_raw_data_m15(str(csv))
     assert isinstance(df, pd.DataFrame)
