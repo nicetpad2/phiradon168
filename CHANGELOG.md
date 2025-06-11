@@ -1,3 +1,8 @@
+### 2025-06-11
+- [Patch v6.7.9] Skip Thai-year conversion for CE dates
+- New/Updated unit tests added for tests/test_new_utils.py::test_convert_thai_datetime_ce_year
+- QA: pytest -q passed (937 tests)
+
 ### 2025-07-31
 - [Patch v6.7.7] Improve duplicate handling during data load
 - New/Updated unit tests added for tests/test_deduplicate_sort.py

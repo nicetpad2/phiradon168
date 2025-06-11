@@ -63,6 +63,12 @@ def test_convert_thai_datetime_valid(tmp_path):
     assert res["timestamp"].iloc[0] == pd.Timestamp("2024-01-01 12:00:00")
 
 
+def test_convert_thai_datetime_ce_year():
+    df = pd.DataFrame({"Date": ["20240101"], "Timestamp": ["06:00:00"]})
+    res = utils.convert_thai_datetime(df)
+    assert res["timestamp"].iloc[0] == pd.Timestamp("2024-01-01 06:00:00")
+
+
 def test_prepare_csv_auto(tmp_path):
     df = pd.DataFrame({"Date": ["25670101"], "Timestamp": ["00:00:00"], "A": [1]})
     csv_path = tmp_path / "d.csv"

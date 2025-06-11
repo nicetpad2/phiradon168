@@ -6,6 +6,7 @@ from typing import Dict
 logger = logging.getLogger(__name__)
 
 import pandas as pd
+import numpy as np
 
 
 # [Patch v5.7.3] Utility helpers for data processing and resource planning
@@ -54,7 +55,9 @@ def convert_thai_datetime(df: pd.DataFrame, date_col: str = "Date", time_col: st
 
     df = df.copy()
     try:
-        year_ce = df[date_col].astype(str).str[:4].astype(int) - 543
+        year_vals = df[date_col].astype(str).str[:4].astype(int)
+        # Skip conversion when year appears to already be Gregorian
+        year_ce = np.where(year_vals >= 2500, year_vals - 543, year_vals)
     except Exception as e:  # pragma: no cover - unexpected formats
         logging.error(f"ไม่สามารถแปลงปี พ.ศ. เป็น ค.ศ.: {e}")
         df["timestamp"] = pd.NaT
