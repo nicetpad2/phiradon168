@@ -1657,4 +1657,11 @@ QA: pytest -q passed (219 tests)
 - Expanded tests/test_backtest_engine.py to verify feature engineering call
 - QA: pytest -q passed (909 tests)
 
+### 2025-07-26
+
+- [Patch v6.5.16] Abort pipeline on trade log regeneration failure
+- Updated ProjectP.load_trade_log to raise PipelineError when regeneration fails
+- Updated tests/test_projectp_insufficient_rows.py accordingly
+- QA: pytest -q passed (910 tests)
+
 
