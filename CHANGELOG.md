@@ -1,4 +1,9 @@
 
+### 2025-08-03
+- [Patch v6.7.10] Convert XAUUSD CSV files automatically
+- New/Updated unit tests added for tests/test_auto_convert_csv.py
+- QA: pytest -q passed (943 tests)
+
 ### 2025-06-11
 - [Patch v6.7.9] Skip Thai-year conversion for CE dates
 - New/Updated unit tests added for tests/test_new_utils.py::test_convert_thai_datetime_ce_year
