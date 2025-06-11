@@ -1,4 +1,9 @@
 
+### 2025-07-22
+- [Patch v6.5.9] Dynamic threshold + MA fallback for open signals
+- Added new module src/entry_rules.py and corresponding tests
+- QA: pytest -q passed (903 tests)
+
 ### 2025-06-11
 - [Patch v6.5.7] Add sample tests for trade log regeneration and open signal fallback
 - New test tests/test_regeneration_and_signals.py
