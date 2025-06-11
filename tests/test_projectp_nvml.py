@@ -41,7 +41,7 @@ def test_projectp_main_logs_gpu_status(monkeypatch, caplog, tmp_path):
         "trade_log_NORMAL.csv",
     ]:
         (out_dir / name).write_text("")
-    pd.DataFrame({"col": [1]}).to_csv(
+    pd.DataFrame({"col": range(10)}).to_csv(
         out_dir / "trade_log_v32_walkforward.csv.gz",
         index=False,
         compression="gzip",
@@ -66,7 +66,7 @@ def test_projectp_logs_gpu_release(monkeypatch, caplog, tmp_path):
         "trade_log_NORMAL.csv",
     ]:
         (out_dir / name).write_text("")
-    pd.DataFrame({"col": [1]}).to_csv(
+    pd.DataFrame({"col": range(10)}).to_csv(
         out_dir / "trade_log_v32_walkforward.csv.gz",
         index=False,
         compression="gzip",
@@ -109,7 +109,7 @@ def test_projectp_output_audit(monkeypatch, caplog, tmp_path):
     # Create only some files
     (out_dir / "features_main.json").write_text("{}")
     (out_dir / "trade_log_NORMAL.csv").write_text("")
-    pd.DataFrame({"col": [1]}).to_csv(
+    pd.DataFrame({"col": range(10)}).to_csv(
         out_dir / "trade_log_v32_walkforward.csv.gz",
         index=False,
         compression="gzip",
@@ -132,7 +132,7 @@ def test_projectp_detect_zipped_log(monkeypatch, tmp_path):
     out_dir = tmp_path / "output_default"
     out_dir.mkdir()
     (out_dir / "features_main.json").write_text("{}")
-    pd.DataFrame({"col": [1]}).to_csv(
+    pd.DataFrame({"col": range(10)}).to_csv(
         out_dir / "trade_log_v32_walkforward.csv.gz",
         index=False,
         compression="gzip",
