@@ -1620,4 +1620,9 @@ QA: pytest -q passed (219 tests)
 - New test tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_missing_target
 - QA: pytest -q passed (896 tests)
 
+### 2025-07-22
+- [Patch v6.5.11] เพิ่ม backtest_engine module เพื่อรองรับการ regenerate trade log
+- New module backtest_engine.py และ tests/test_backtest_engine.py
+- QA: pytest -q passed (904 tests)
+
 

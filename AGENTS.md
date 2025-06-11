@@ -330,3 +330,4 @@
 - Added `config_loader` module for dynamic config updates and `wfv_runner` module for simplified walk-forward execution.
 - Added `wfv_orchestrator` module for dynamic fold splitting.
 - Added `some_module` module providing `compute_metrics` helper function.
+- Added `backtest_engine` module for trade log regeneration.
