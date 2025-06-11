@@ -139,12 +139,19 @@ def run_backtest(config: PipelineConfig, pipeline_func=run_backtest_pipeline) ->
     threshold = None
     if os.path.exists(thresh_path):
         df = pd.read_csv(thresh_path)
-        try:
+        threshold_value = None
+        if "median" in df.columns:
             threshold_value = df["median"].median()
             # [Patch v6.5.16] Align threshold reading with ProjectP median logic
-            threshold = float(threshold_value) if not pd.isna(threshold_value) else None
-        except KeyError:
-            logging.warning(f"ไม่พบคอลัมน์ 'median' ในไฟล์ {thresh_path}")
+        elif "best_threshold" in df.columns:
+            threshold_value = df["best_threshold"].iloc[0]
+        else:
+            logging.warning(
+                f"ไม่พบคอลัมน์ 'median' หรือ 'best_threshold' ในไฟล์ {thresh_path}"
+            )
+        if threshold_value is not None and not pd.isna(threshold_value):
+            threshold = float(threshold_value)
+        else:
             threshold = None
     try:
         pipeline_func(pd.DataFrame(), pd.DataFrame(), model_path, threshold)

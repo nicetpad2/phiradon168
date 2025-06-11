@@ -513,10 +513,11 @@ if __name__ == "__main__":
             import threshold_optimization as topt
             logger.info("[Patch v6.2.3] Starting Auto Threshold Optimization...")
             topt.run_threshold_optimization(
-                summary_csv=os.path.join(cfg.OUTPUT_DIR, "summary.csv"),
-                output_csv=os.path.join(cfg.OUTPUT_DIR, "threshold_wfv_optuna_results.csv"),
-                cv_splits=getattr(cfg, "OPTUNA_CV_SPLITS", 5),
-                n_trials=getattr(cfg, "OPTUNA_N_TRIALS", 50),
+                output_dir=getattr(cfg, "OUTPUT_DIR", "models"),
+                trials=getattr(cfg, "OPTUNA_N_TRIALS", 50),
+                study_name="threshold_wfv",
+                direction=getattr(cfg, "OPTUNA_DIRECTION", "maximize"),
+                timeout=None,
             )
             logger.info("[Patch v6.2.3] Auto Threshold Optimization Completed.")
 

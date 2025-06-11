@@ -3,6 +3,13 @@
 - New/Updated unit tests added for tests/test_backtest_engine.py
 - QA: pytest -q passed (911 tests)
 
+### 2025-07-24
+- [Patch v6.6.7] Fix auto threshold tuning call and threshold reading
+- Updated ProjectP.py to pass supported arguments to `run_threshold_optimization`
+- Updated `main.run_backtest` to handle `best_threshold` column
+- New test `test_run_backtest_best_threshold`
+- QA: pytest -q passed (916 tests)
+
 ### 2025-07-22
 - [Patch v6.5.9] Dynamic threshold + MA fallback for open signals
 - Added new module src/entry_rules.py and corresponding tests
