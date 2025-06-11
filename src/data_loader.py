@@ -547,12 +547,14 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
         rows_dropped_nan = initial_rows - df_pd.shape[0]
         if rows_dropped_nan > 0:
             logging.info(f"   ลบ {rows_dropped_nan} แถวที่มีราคาเป็น NaN.")
+        logging.info(f"Rows after drop price NaN: {df_pd.shape[0]}")
 
         logging.info("   [Data Quality] ตรวจสอบ Duplicates (Date & Timestamp)...")
         duplicate_cols = ["Date", "Timestamp"]
         if all(col in df_pd.columns for col in duplicate_cols):
             df_pd = deduplicate_and_sort(df_pd, subset_cols=duplicate_cols)
             logging.info(f"      ขนาดข้อมูลหลังจัดการ Duplicates: {df_pd.shape[0]} แถว.")
+            logging.info(f"Rows after dedupe: {df_pd.shape[0]}")
         else:
             logging.warning(f"   (Warning) ขาดคอลัมน์ {duplicate_cols} สำหรับตรวจสอบ Duplicates.")
 
@@ -579,6 +581,7 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
         if df_pd.empty:
             logging.warning(f"   (Warning) DataFrame ว่างเปล่าหลังจากลบราคา NaN และ Duplicates ({timeframe_str}).")
 
+        logging.info("NaN count after load_data:\n%s", df_pd.isna().sum().to_string())
         logging.info(f"(Success) โหลดและตรวจสอบข้อมูล {timeframe_str} สำเร็จ: {df_pd.shape[0]} แถว")
         return df_pd
 
