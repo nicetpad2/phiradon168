@@ -1568,3 +1568,8 @@ QA: pytest -q passed (219 tests)
 - Updated ProjectP trade log validation
 - New test tests/test_projectp_insufficient_rows.py
 - QA: pytest -q passed (663 tests)
+
+### 2025-07-17
+- [Patch v6.5.1] Populate dummy trade log with 10 rows
+- Updated ProjectP.py to generate 10 placeholder trades
+- QA: pytest -q passed (663 tests)
