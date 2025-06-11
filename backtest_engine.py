@@ -34,6 +34,12 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     if {"Date", "Timestamp"}.issubset(df.columns):
         combined = df["Date"].astype(str) + " " + df["Timestamp"].astype(str)
         df.index = pd.to_datetime(combined, format="%Y%m%d %H:%M:%S", errors="coerce")
+        # [Patch v6.7.8] Fallback parse without explicit format when too many NaT
+        if df.index.isnull().sum() > 0.5 * len(df):
+            logging.warning(
+                "(Warning) การ parse วันที่/เวลา ด้วย format ที่กำหนดไม่สำเร็จ - กำลัง parse ใหม่แบบไม่ระบุ format"
+            )
+            df.index = pd.to_datetime(combined, errors="coerce")
         df.drop(columns=["Date", "Timestamp"], inplace=True)
     elif not isinstance(df.index, pd.DatetimeIndex):
         # fallback: convert existing index
@@ -73,6 +79,12 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     if df_m15 is not None and {"Date", "Timestamp"}.issubset(df_m15.columns):
         combined = df_m15["Date"].astype(str) + " " + df_m15["Timestamp"].astype(str)
         df_m15.index = pd.to_datetime(combined, format="%Y%m%d %H:%M:%S", errors="coerce")
+        # [Patch v6.7.8] Fallback parse for M15 when explicit format fails
+        if df_m15.index.isnull().sum() > 0.5 * len(df_m15):
+            logging.warning(
+                "(Warning) การ parse วันที่/เวลา (M15) ด้วย format ที่กำหนดไม่สำเร็จ - กำลัง parse ใหม่แบบไม่ระบุ format"
+            )
+            df_m15.index = pd.to_datetime(combined, errors="coerce")
         df_m15.drop(columns=["Date", "Timestamp"], inplace=True)
     elif df_m15 is not None and not isinstance(df_m15.index, pd.DatetimeIndex):
         df_m15.index = pd.to_datetime(df_m15.index, errors="coerce")
