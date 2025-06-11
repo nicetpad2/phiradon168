@@ -69,15 +69,16 @@ def parse_args(args=None) -> argparse.Namespace:
     return parser.parse_args(args)
 
 
-from src.config import DATA_FILE_PATH_M1
+
 
 
 def run_preprocess(config: PipelineConfig, runner=subprocess.run) -> None:
     """Run data preprocessing stage."""
     logger.info("[Stage] preprocess")
-    auto_convert_gold_csv(os.path.dirname(DATA_FILE_PATH_M1), output_path=DATA_FILE_PATH_M1)
+    m1_path = config.raw_m1_filename
+    auto_convert_gold_csv(os.path.dirname(m1_path), output_path=m1_path)
     try:
-        runner([os.environ.get("PYTHON", "python"), "src/data_cleaner.py", DATA_FILE_PATH_M1], check=True)
+        runner([os.environ.get("PYTHON", "python"), "src/data_cleaner.py", m1_path], check=True)
         runner([os.environ.get("PYTHON", "python"), "ProjectP.py"], check=True)
     except subprocess.CalledProcessError as exc:
         logger.error("Preprocess failed", exc_info=True)
