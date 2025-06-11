@@ -32,7 +32,7 @@ except ImportError:  # pragma: no cover - fallback when module missing
 import csv
 from pathlib import Path
 try:  # [Patch v5.10.2] allow import without heavy dependencies
-    from src.config import logger, OUTPUT_DIR
+    from src.config import logger, OUTPUT_DIR, DEFAULT_TRADE_LOG_MIN_ROWS
     import src.config as config
 except Exception:  # pragma: no cover - fallback logger for tests
     logger = logging.getLogger("ProjectP")
@@ -316,31 +316,39 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
     ]
 
 
-def load_trade_log(path: str, min_rows: int = 10) -> pd.DataFrame:
-    """Load trade log CSV with strict validation.
+def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) -> pd.DataFrame:
+    """Load trade log and regenerate via backtest if rows are insufficient."""
 
-    [Patch v6.5.6] Raise detailed errors if the file is empty or malformed.
-    Log a warning instead of raising when row count is below minimum.
-    """
-    logger.info(f"[Patch v6.5.4] Attempting to load trade log from {path}")
+    logger.info(f"[Patch v6.5.9] Attempting to load trade log from {filepath}")
+
+    # Try loading existing file first
     try:
-        df = pd.read_csv(path)
-    except pd.errors.EmptyDataError:
-        logger.critical(f"[Patch v6.5.4] Trade log file is empty: {path}")
-        raise
-    except pd.errors.ParserError as pe:
-        logger.critical(f"[Patch v6.5.4] ParserError while reading trade log: {pe}")
-        raise
-    except Exception as ex:
-        logger.critical(f"[Patch v6.5.4] Unexpected error reading trade log: {ex}")
-        raise
+        df = pd.read_csv(filepath)
+    except Exception:
+        df = pd.DataFrame()
 
     row_count = len(df)
+
+    # Override minimum rows from environment variable if provided
+    min_rows = int(os.getenv("TRADE_LOG_MIN_ROWS", min_rows))
+
     if row_count < min_rows:
-        # Log a warning and continue pipeline even when trade log has fewer rows than expected
         logger.warning(
-            f"[Patch v6.5.6] Insufficient trade rows: {row_count}/{min_rows}, proceeding with available data"
+            f"[Patch v6.5.9] Trade log has {row_count}/{min_rows} rows — regenerating via backtest"
         )
+        try:
+            from backtest_engine import run_backtest_engine  # Local import to avoid heavy deps
+            feat_df = load_features(os.path.join(OUTPUT_DIR, "features_main.json"))
+            if feat_df is None:
+                feat_df = pd.DataFrame()
+            df = run_backtest_engine(feat_df)
+            df.to_csv(filepath, index=False)
+            row_count = len(df)
+            logger.info(
+                f"[Patch v6.5.9] Regenerated trade log: {row_count} rows saved to {filepath}"
+            )
+        except Exception as exc:  # pragma: no cover - regeneration failure
+            logger.error(f"[Patch v6.5.9] Failed to regenerate trade log: {exc}")
     return df
 
 

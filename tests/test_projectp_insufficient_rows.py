@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 import pandas as pd
 import ProjectP
+import sys
 
 
 def test_insufficient_rows_logs_warning(monkeypatch, tmp_path, caplog):
@@ -19,9 +20,23 @@ def test_insufficient_rows_logs_warning(monkeypatch, tmp_path, caplog):
     test_logger.setLevel(logging.WARNING)
     monkeypatch.setattr(ProjectP, "logger", test_logger)
     monkeypatch.setattr(ProjectP.pd, "read_csv", fake_read_csv)
-    with caplog.at_level(logging.WARNING, logger="test_logger"):
+
+    def fake_engine(_):
+        return pd.DataFrame({"pnl": [1.0]})
+
+    import types
+
+    monkeypatch.setitem(
+        sys.modules,
+        "backtest_engine",
+        types.SimpleNamespace(run_backtest_engine=fake_engine),
+    )
+
+    monkeypatch.setattr(ProjectP, "load_features", lambda p: pd.DataFrame())
+
+    with caplog.at_level(logging.INFO, logger="test_logger"):
         df = ProjectP.load_trade_log(str(csv_path), min_rows=10)
-    assert df.empty
+    assert not df.empty
     assert any(
-        "Insufficient trade rows" in rec.getMessage() for rec in caplog.records
+        "Regenerated trade log" in rec.getMessage() for rec in caplog.records
     )

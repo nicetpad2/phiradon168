@@ -1598,9 +1598,9 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (895 tests)
 
 ### 2025-07-20
-- [Patch v6.5.9] ENV-friendly config import
-- Updated src.config with env variable DEFAULT_TRADE_LOG_MIN_ROWS
-- Updated tests/test_function_registry.py for new line numbers
-- QA: pytest -q passed (895 tests)
 
+- [Patch v6.5.9] Regenerate trade log when rows below threshold
+- Added DEFAULT_TRADE_LOG_MIN_ROWS in config
+- Updated test_projectp_insufficient_rows for regeneration
+- QA: pytest -q passed (895 tests)
 
