@@ -1745,7 +1745,12 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (915 tests)
 
 ### 2025-08-04
+
+- [Patch v6.6.7] Derive target from profit column when missing
+- New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_derive_target
+=======
 - [Patch v6.6.7] Read threshold from 'best_threshold' column
 - Updated tests/test_main_cli_extended.py for new column
+
 - QA: pytest -q passed (915 tests)
 

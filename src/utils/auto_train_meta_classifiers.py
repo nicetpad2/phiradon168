@@ -60,10 +60,17 @@ def auto_train_meta_classifiers(
 
     # Ensure 'target' column exists before proceeding
     if "target" not in training_data.columns:
-        logger.warning(
-            "[Patch v6.5.10] 'target' column missing, skipping meta-classifier training"
-        )
-        return {}
+        if "profit" in training_data.columns:
+            logger.info(
+                "[Patch v6.6.7] Deriving 'target' from 'profit' column"
+            )
+            training_data = training_data.copy()
+            training_data["target"] = (training_data["profit"] > 0).astype(int)
+        else:
+            logger.warning(
+                "[Patch v6.5.10] 'target' column missing, skipping meta-classifier training"
+            )
+            return {}
 
     missing = [f for f in features if f not in training_data.columns]
     if missing:
