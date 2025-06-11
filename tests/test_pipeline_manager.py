@@ -21,10 +21,11 @@ def test_run_all_invokes_stages(monkeypatch, tmp_path):
     cfg = PipelineConfig(model_dir=str(tmp_path))
     order = []
     pm = PipelineManager(cfg)
+    monkeypatch.setattr(pm, 'prepare_data_environment', DummyStage(order, 'prep'))
     monkeypatch.setattr(pm, 'stage_load', DummyStage(order, 'load'))
     monkeypatch.setattr(pm, 'stage_sweep', DummyStage(order, 'sweep'))
     monkeypatch.setattr(pm, 'stage_wfv', DummyStage(order, 'wfv'))
     monkeypatch.setattr(pm, 'stage_save', DummyStage(order, 'save'))
     monkeypatch.setattr(pm, 'stage_qa', DummyStage(order, 'qa'))
     pm.run_all()
-    assert order == ['load', 'sweep', 'wfv', 'save', 'qa']
+    assert order == ['prep', 'load', 'sweep', 'wfv', 'save', 'qa']

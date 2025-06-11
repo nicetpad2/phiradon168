@@ -7,6 +7,8 @@ from .utils.errors import PipelineError
 
 # Import pipeline stage functions from project root main module
 import main as pipeline
+from src.main import ensure_main_features_file
+from src.trade_log_pipeline import load_or_generate_trade_log
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +18,17 @@ class PipelineManager:
 
     def __init__(self, config: PipelineConfig):
         self.config = config
+
+    def prepare_data_environment(self) -> None:
+        """Ensure required feature and trade log files are present."""
+        output_dir = self.config.model_dir
+        features_path = ensure_main_features_file(output_dir)
+        trade_log_path = os.path.join(
+            output_dir, "trade_log_v32_walkforward.csv.gz"
+        )
+        load_or_generate_trade_log(
+            trade_log_path, min_rows=10, features_path=features_path
+        )
 
     def stage_load(self) -> None:
         pipeline.run_preprocess(self.config)
@@ -39,6 +52,12 @@ class PipelineManager:
 
     def run_all(self) -> None:
         """Execute all pipeline stages in order."""
+        try:
+            self.prepare_data_environment()
+        except Exception as exc:  # pragma: no cover - unexpected stage error
+            logger.error("prepare_data_environment failed", exc_info=True)
+            raise PipelineError("prepare_data_environment failed") from exc
+
         for stage in [self.stage_load, self.stage_sweep, self.stage_wfv,
                       self.stage_save, self.stage_qa]:
             try:
