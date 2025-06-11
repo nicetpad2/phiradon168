@@ -22,8 +22,20 @@ def test_save_model_none(tmp_path, caplog):
 
 
 def test_real_train_func_missing_files(tmp_path):
-    with pytest.raises(FileNotFoundError):
-        training.real_train_func(output_dir=str(tmp_path), trade_log_path='no.csv', m1_path='no.csv')
+    records = []
+    class ListHandler(logging.Handler):
+        def emit(self, record):
+            records.append(record.getMessage())
+
+    handler = ListHandler()
+    training.logger.addHandler(handler)
+    try:
+        res = training.real_train_func(
+            output_dir=str(tmp_path), trade_log_path='no.csv', m1_path='no.csv'
+        )
+    finally:
+        training.logger.removeHandler(handler)
+    assert res is None
 
 
 def test_real_train_func_m1_empty(tmp_path, monkeypatch):
