@@ -15,6 +15,10 @@
 ```bash
 python profile_backtest.py XAUUSD_M1.csv --rows 1000 --console_level WARNING
 ```
+สำหรับการทดสอบรวดเร็ว สามารถระบุ `--debug` เพื่อลดจำนวนแถวที่โหลด
+```bash
+python profile_backtest.py XAUUSD_M1.csv --debug
+```
 
 ## โครงสร้างโฟลเดอร์
 - `src/` โค้ดหลักของระบบ

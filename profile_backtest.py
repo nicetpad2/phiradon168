@@ -84,11 +84,10 @@ def main_profile(
     train_output: str = "models",
 ) -> None:
     """Run the backtest simulation with profiling enabled."""
-    df = safe_load_csv_auto(csv_path)
+    df = safe_load_csv_auto(csv_path, row_limit=num_rows)
     if df is None:
         raise FileNotFoundError(f"File not found: {csv_path}")
     if not df.empty:
-        df = df.head(num_rows)
         if 'Datetime' in df.columns:
             df['Datetime'] = pd.to_datetime(df['Datetime'])
             df.set_index('Datetime', inplace=True)
@@ -155,7 +154,8 @@ def main_profile(
 def profile_from_cli() -> None:
     parser = argparse.ArgumentParser(description="Profile backtest simulation")
     parser.add_argument('csv', help='Path to M1 data CSV')
-    parser.add_argument('--rows', type=int, default=5000, help='Number of rows to load')
+    parser.add_argument('--rows', type=int, default=None, help='Number of rows to load')
+    parser.add_argument('--debug', action='store_true', help='Enable debug mode (use fewer rows)')
     parser.add_argument('--limit', type=int, default=20, help='Number of functions to display')
     parser.add_argument('--output', help='File path to save the stats table')
     parser.add_argument('--output-file', default='backtest_profile.prof', help='Profiling result .prof file')
@@ -165,6 +165,7 @@ def profile_from_cli() -> None:
     parser.add_argument('--train-output', default='models', help='Training output directory')
     parser.add_argument('--console_level', default='INFO', help='Console log level')
     args = parser.parse_args()
+    num_rows = args.rows if args.rows is not None else (1000 if args.debug else 5000)
     level = getattr(logging, args.console_level.upper(), logging.INFO)
     for h in logging.getLogger().handlers:
         if isinstance(h, logging.StreamHandler):
@@ -182,7 +183,7 @@ def profile_from_cli() -> None:
     profiler = run_profile(
         lambda: main_profile(
             args.csv,
-            args.rows,
+            num_rows,
             fund_profile_name=args.fund,
             train=args.train,
             train_output=args.train_output,
