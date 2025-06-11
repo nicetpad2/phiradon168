@@ -101,40 +101,49 @@ def real_train_func(
 
     np.random.seed(seed)  # [Patch v5.3.4] Ensure deterministic training
 
-    if (
-        trade_log_path
-        and m1_path
-        and os.path.exists(trade_log_path)
-        and os.path.exists(m1_path)
-    ):
-        # [Patch v5.9.1] Validate that trade log and M1 data are not empty
-        trade_df = pd.read_csv(trade_log_path)
-        m1_df = pd.read_csv(m1_path)
-        if trade_df.empty:
-            raise ValueError("trade_log file is empty")
-        if m1_df.empty:
-            raise ValueError("m1 data file is empty")
-        feature_cols = m1_df.select_dtypes(include=[np.number]).columns.tolist()
-        if not feature_cols:
-            raise ValueError("No numeric columns found in m1 data")
-        min_len = min(len(trade_df), len(m1_df))
-        X = m1_df.loc[: min_len - 1, feature_cols].to_numpy()
-        if "profit" in trade_df.columns:
-            y_raw = trade_df.loc[: min_len - 1, "profit"]
-        elif "pnl_usd_net" in trade_df.columns:
-            y_raw = trade_df.loc[: min_len - 1, "pnl_usd_net"]
-        else:
-            num_cols = trade_df.select_dtypes(include=[np.number]).columns
-            if num_cols.empty:
-                raise ValueError("No numeric target column found in trade log")
-            y_raw = trade_df.loc[: min_len - 1, num_cols[0]]
-        y = (y_raw > 0).astype(int).to_numpy()
-        feature_names = feature_cols
-    else:  # [Patch v6.7.0] Return None when files are missing
-        logger.warning(
-            "ไม่พบไฟล์ trade log หรือไฟล์ M1 สำหรับฝึกโมเดล ชุดทดลองนี้จะถูกข้าม"
+    # ตรวจสอบไฟล์ trade log และ M1 ก่อนเริ่มฝึก
+    if not trade_log_path or not m1_path:
+        logger.error("ไม่ได้ระบุ trade log หรือ M1 path – ข้ามการฝึกโมเดล")
+        logging.getLogger().error(
+            "ไม่ได้ระบุ trade log หรือ M1 path – ข้ามการฝึกโมเดล"
         )
         return None
+    if not os.path.exists(trade_log_path):
+        logger.error("ไม่พบไฟล์ trade log ที่ %s – ข้ามการฝึกโมเดล", trade_log_path)
+        logging.getLogger().error(
+            "ไม่พบไฟล์ trade log ที่ %s – ข้ามการฝึกโมเดล", trade_log_path
+        )
+        return None
+    if not os.path.exists(m1_path):
+        logger.error("ไม่พบไฟล์ข้อมูล M1 ที่ %s – ข้ามการฝึกโมเดล", m1_path)
+        logging.getLogger().error(
+            "ไม่พบไฟล์ข้อมูล M1 ที่ %s – ข้ามการฝึกโมเดล", m1_path
+        )
+        return None
+
+    # [Patch v5.9.1] Validate that trade log and M1 data are not empty
+    trade_df = pd.read_csv(trade_log_path)
+    m1_df = pd.read_csv(m1_path)
+    if trade_df.empty:
+        raise ValueError("trade_log file is empty")
+    if m1_df.empty:
+        raise ValueError("m1 data file is empty")
+    feature_cols = m1_df.select_dtypes(include=[np.number]).columns.tolist()
+    if not feature_cols:
+        raise ValueError("No numeric columns found in m1 data")
+    min_len = min(len(trade_df), len(m1_df))
+    X = m1_df.loc[: min_len - 1, feature_cols].to_numpy()
+    if "profit" in trade_df.columns:
+        y_raw = trade_df.loc[: min_len - 1, "profit"]
+    elif "pnl_usd_net" in trade_df.columns:
+        y_raw = trade_df.loc[: min_len - 1, "pnl_usd_net"]
+    else:
+        num_cols = trade_df.select_dtypes(include=[np.number]).columns
+        if num_cols.empty:
+            raise ValueError("No numeric target column found in trade log")
+        y_raw = trade_df.loc[: min_len - 1, num_cols[0]]
+    y = (y_raw > 0).astype(int).to_numpy()
+    feature_names = feature_cols
 
     df_X = pd.DataFrame(X, columns=feature_names)
     # [Patch v5.4.5] Use stratified split when possible to avoid ROC AUC warnings
