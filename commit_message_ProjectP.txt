@@ -1,0 +1,7 @@
+[Patch v6.5.6] Continue pipeline on insufficient trade log rows
+
+Purpose/Key Changes:
+
+Removed ValueError raise to prevent pipeline termination when trade log entries < min_rows.
+
+Consolidated logging into a warning to inform of insufficient data while allowing execution to continue.
