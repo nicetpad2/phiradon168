@@ -68,8 +68,10 @@ def test_regeneration_empty_dataframe(monkeypatch, tmp_path, caplog):
     )
     monkeypatch.setattr(ProjectP, "load_features", lambda p: pd.DataFrame())
 
-    with pytest.raises(PipelineError):
-        ProjectP.load_trade_log(str(csv_path), min_rows=5)
+    with caplog.at_level(logging.INFO, logger="test_logger"):
+        df = ProjectP.load_trade_log(str(csv_path), min_rows=5)
+    # Should fall back to the original small log
+    assert len(df) == 1
 
 
 

@@ -124,6 +124,10 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
         raise RuntimeError("[backtest_engine] Unexpected return format from simulation.")
 
     if trade_log_df is None or trade_log_df.empty:
-        raise RuntimeError("[backtest_engine] Simulation produced an empty trade log.")
+        # [Patch v6.7.6] Downgrade empty trade log to warning and return empty DataFrame
+        logging.getLogger(__name__).warning(
+            "[backtest_engine] Simulation produced an empty trade log. This might be expected if no entry signals were found."
+        )
+        return trade_log_df if trade_log_df is not None else pd.DataFrame()
 
     return trade_log_df

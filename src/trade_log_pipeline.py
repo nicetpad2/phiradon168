@@ -39,14 +39,22 @@ def load_or_generate_trade_log(log_path: str, min_rows: int = 10, features_path:
             logger.warning("Failed loading features: %s", exc)
 
     try:
+        logger.info("Attempting to regenerate trade log via backtest engine...")
         new_df = run_backtest_engine(features_df)
-    except Exception as exc:
-        logger.error("Run backtest failed: %s", exc, exc_info=True)
-        raise PipelineError("trade log generation failed") from exc
+        if new_df.empty:
+            logger.warning(
+                "Backtest engine returned an empty trade log. Cannot regenerate."
+            )
+            return df
 
-    if new_df.empty:
-        logger.error("Generated trade log is empty")
-        raise PipelineError("trade log generation failed")
+        logger.info(
+            "Successfully regenerated trade log with %d new entries.", len(new_df)
+        )
+    except Exception as exc:
+        logger.error(
+            "Trade log generation via backtest failed unexpectedly: %s", exc, exc_info=True
+        )
+        raise PipelineError("trade log generation process encountered an error") from exc
 
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     new_df.to_csv(log_path, index=False)

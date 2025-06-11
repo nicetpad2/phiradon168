@@ -27,13 +27,14 @@ def test_run_backtest_engine_fail_load(monkeypatch):
 
 
 def test_run_backtest_engine_empty_log(monkeypatch):
-    """เมื่อ trade log ว่างต้องยก RuntimeError"""
+    """เมื่อ trade log ว่างควรรีเทิร์น DataFrame ว่าง"""
     price_df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]})
     monkeypatch.setattr(be.pd, 'read_csv', lambda *a, **k: price_df)
     monkeypatch.setattr(be, 'engineer_m1_features', lambda df, **k: df)
     monkeypatch.setattr(be, 'run_backtest_simulation_v34', lambda df, **k: (None, pd.DataFrame()))
-    with pytest.raises(RuntimeError):
-        be.run_backtest_engine(pd.DataFrame())
+    result = be.run_backtest_engine(pd.DataFrame())
+    assert isinstance(result, pd.DataFrame)
+    assert result.empty
 
 
 def test_run_backtest_engine_index_conversion(monkeypatch):
