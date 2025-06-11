@@ -103,3 +103,16 @@ def test_auto_train_meta_classifiers_warns_missing_features(tmp_path, caplog):
         )
     assert Path(result["model_path"]).exists()
     assert any("missing features" in m for m in caplog.messages)
+
+
+def test_auto_train_meta_classifiers_zero_profit(tmp_path, caplog):
+    """Should skip training when all profit values are zero."""
+    cfg = SimpleNamespace(OUTPUT_DIR=str(tmp_path))
+    (tmp_path / "features_main.json").write_text('["f"]')
+    data = pd.DataFrame({"f": [1, 0, 1, 0, 1], "profit": [0, 0, 0, 0, 0]})
+    with caplog.at_level('ERROR', logger=logger.name):
+        res = auto_train_meta_classifiers(
+            cfg, data, models_dir=str(tmp_path), features_dir=str(tmp_path)
+        )
+    assert res is None
+    assert any("6.6.12" in m and "All profit values are 0" in m for m in caplog.messages)

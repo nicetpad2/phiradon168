@@ -1787,8 +1787,6 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.6.9] Use first best_threshold value when running backtest
 - Updated tests/test_projectp_cli.py::test_run_backtest_uses_best_threshold
 - QA: pytest -q passed (919 tests)
-
-
 ### 2025-06-12
 - [Patch v6.6.10] Warn when training data missing some features
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_warns_missing_features
@@ -1802,4 +1800,9 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.6.11] Auto-generate 'target' from profit-like columns
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_derive_target_alt_column
 - QA: pytest -q passed (919 tests)
+
+### 2025-06-14
+- [Patch v6.6.12] Skip meta-classifier training when all profit values are zero
+- New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_zero_profit
+- QA: pytest -q passed (924 tests)
 
