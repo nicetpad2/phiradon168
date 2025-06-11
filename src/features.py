@@ -501,55 +501,84 @@ def tag_price_structure_patterns(df):
     return df
 
 def calculate_m15_trend_zone(df_m15):
+    """Calculate UP/DOWN/NEUTRAL trend zone for M15 timeframe."""
     logging.info("(Processing) กำลังคำนวณ M15 Trend Zone...")
+    # [Patch v6.6.3] Ensure index is unique and sorted before indicator calculation
     cache_key = hash(tuple(df_m15.index)) if isinstance(df_m15, pd.DataFrame) else None
     if cache_key is not None and cache_key in _m15_trend_cache:
         logging.info("      [Cache] ใช้ผลลัพธ์ Trend Zone จาก cache")
         cached_df = _m15_trend_cache[cache_key]
-        return cached_df.reindex(df_m15.index).copy()
+        return cached_df.copy()
     if not isinstance(df_m15, pd.DataFrame): logging.error("M15 Trend Zone Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m15.empty or "Close" not in df_m15.columns:
-        result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category');
+        result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"})
+        result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category')
         if cache_key is not None:
             _m15_trend_cache[cache_key] = result_df
+        if result_df.index.duplicated().any():
+            result_df = result_df.loc[~result_df.index.duplicated(keep='first')]
+        if not result_df.index.is_monotonic_increasing:
+            result_df.sort_index(inplace=True)
         return result_df
     df = df_m15.copy()
     if df.index.duplicated().any():
         dup_count = int(df.index.duplicated().sum())
         logging.warning(
-            "(Warning) พบ duplicate labels ใน index M15, กำลังลบซ้ำ..."
-        )  # [Patch v5.8.3]
-        df = df[~df.index.duplicated(keep='last')]
+            "(Warning) พบ duplicate labels ใน index M15, กำลังลบซ้ำ (คงไว้ค่าแรกของแต่ละ index)"
+        )
+        df = df[~df.index.duplicated(keep='first')]
         logging.info(
             f"      Removed {dup_count} duplicate rows from M15 index."
         )
+    if not df.index.is_monotonic_increasing:
+        df.sort_index(inplace=True)
+        logging.info("      Sorted M15 index in ascending order for Trend Zone calculation")
     try:
         df["Close"] = pd.to_numeric(df["Close"], errors='coerce')
         if df["Close"].isnull().all():
-            result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category');
+            result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"})
+            result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category')
             if cache_key is not None:
                 _m15_trend_cache[cache_key] = result_df
+            if result_df.index.duplicated().any():
+                result_df = result_df.loc[~result_df.index.duplicated(keep='first')]
+            if not result_df.index.is_monotonic_increasing:
+                result_df.sort_index(inplace=True)
             return result_df
         df["EMA_Fast"] = ema(df["Close"], M15_TREND_EMA_FAST); df["EMA_Slow"] = ema(df["Close"], M15_TREND_EMA_SLOW); df["RSI"] = rsi(df["Close"], M15_TREND_RSI_PERIOD)
         df.dropna(subset=["EMA_Fast", "EMA_Slow", "RSI"], inplace=True)
         if df.empty:
-            result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category');
+            result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"})
+            result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category')
             if cache_key is not None:
                 _m15_trend_cache[cache_key] = result_df
+            if result_df.index.duplicated().any():
+                result_df = result_df.loc[~result_df.index.duplicated(keep='first')]
+            if not result_df.index.is_monotonic_increasing:
+                result_df.sort_index(inplace=True)
             return result_df
         is_up = (df["EMA_Fast"] > df["EMA_Slow"]) & (df["RSI"] > M15_TREND_RSI_UP); is_down = (df["EMA_Fast"] < df["EMA_Slow"]) & (df["RSI"] < M15_TREND_RSI_DOWN)
         df["Trend_Zone"] = "NEUTRAL"; df.loc[is_up, "Trend_Zone"] = "UP"; df.loc[is_down, "Trend_Zone"] = "DOWN"
         if not df.empty: logging.info(f"   การกระจาย M15 Trend Zone:\n{df['Trend_Zone'].value_counts(normalize=True).round(3).to_string()}")
-        result_df = df[["Trend_Zone"]].reindex(df_m15.index).fillna("NEUTRAL"); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category')
+        # Build result DataFrame with unique, sorted index (fill missing with NEUTRAL)
+        target_index = pd.Index(df_m15.index.unique())
+        target_index = target_index.sort_values()
+        result_df = df[["Trend_Zone"]].reindex(target_index).fillna("NEUTRAL")
+        result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category')
         del df, is_up, is_down; maybe_collect();
         if cache_key is not None:
             _m15_trend_cache[cache_key] = result_df
         return result_df
     except Exception as e:
         logging.error(f"(Error) การคำนวณ M15 Trend Zone ล้มเหลว: {e}", exc_info=True)
-        result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"}); result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category');
+        result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"})
+        result_df["Trend_Zone"] = result_df["Trend_Zone"].astype('category')
         if cache_key is not None:
             _m15_trend_cache[cache_key] = result_df
+        if result_df.index.duplicated().any():
+            result_df = result_df.loc[~result_df.index.duplicated(keep='first')]
+        if not result_df.index.is_monotonic_increasing:
+            result_df.sort_index(inplace=True)
         return result_df
 
 # [Patch v5.5.6] Helper to evaluate higher timeframe trend using SMA crossover
