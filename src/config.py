@@ -527,7 +527,8 @@ elif is_colab():
     try:
         drive.mount('/content/drive', force_remount=True)
         logging.info("(Success) Mount Google Drive สำเร็จ")
-        FILE_BASE = "/content/drive/MyDrive/Phiradon168"
+        # ใช้โฟลเดอร์ปัจจุบันเป็นฐานข้อมูลเพื่อให้ทำงานได้ทุกที่
+        FILE_BASE = os.getcwd()
     except Exception as e_drive:
         logging.warning(
             f"(Warning) ล้มเหลวในการ mount Drive: {e_drive} -- ดำเนินการต่อโดยใช้ Local Path แทน"
