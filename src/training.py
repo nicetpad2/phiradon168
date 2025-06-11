@@ -152,29 +152,31 @@ def real_train_func(
 
     # [Patch v6.4.7] Require minimum data for training
     MIN_SAMPLES = 10
-    fallback_metric = False
     if len(df_X) < MIN_SAMPLES:
         logger.warning(
-            "พบข้อมูลเพียง %d แถว (<%d) – สลับเป็น fallback_metric + DummyClassifier",
+            "พบข้อมูลเพียง %d แถว (<%d) – ข้ามการฝึกโมเดลเนื่องจากข้อมูลไม่เพียงพอ",
             len(df_X),
             MIN_SAMPLES,
         )
-        fallback_metric = True
-        X_train, X_test, y_train, y_test = df_X, df_X, y, y
-    else:
-        train_size = max(1, int(len(df_X) * 0.75))
-        test_size = len(df_X) - train_size
-        if test_size == 0:
-            test_size = 1
-            train_size = len(df_X) - 1
-        X_train, X_test, y_train, y_test = train_test_split(
-            df_X,
-            y,
-            train_size=train_size,
-            test_size=test_size,
-            random_state=seed,
-            stratify=stratify_arg,
-        )
+        return {
+            "model_path": {"model": None},
+            "features": feature_names,
+            "metrics": compute_fallback_metrics(df_X),
+        }
+    fallback_metric = False
+    train_size = max(1, int(len(df_X) * 0.75))
+    test_size = len(df_X) - train_size
+    if test_size == 0:
+        test_size = 1
+        train_size = len(df_X) - 1
+    X_train, X_test, y_train, y_test = train_test_split(
+        df_X,
+        y,
+        train_size=train_size,
+        test_size=test_size,
+        random_state=seed,
+        stratify=stratify_arg,
+    )
 
     if CatBoostClassifier and not fallback_metric:
         cat_params = {
