@@ -50,18 +50,20 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     features_df = engineer_m1_features(df)
     # [Patch v6.6.0] Generate Trend Zone and entry signal features
     try:
+        # [Patch v6.6.1] remove deprecated infer_datetime_format
         df_m15 = pd.read_csv(
             DATA_FILE_PATH_M15,
             index_col=0,
             parse_dates=[0],
-            infer_datetime_format=True,
+            date_format="%Y%m%d",
         )
     except Exception:
         df_m15 = None
     if df_m15 is not None and not df_m15.empty:
         # Ensure M15 index is a DatetimeIndex
         if not isinstance(df_m15.index, pd.DatetimeIndex):
-            df_m15.index = pd.to_datetime(df_m15.index, infer_datetime_format=True)
+            # [Patch v6.6.1] enforce format when converting index
+            df_m15.index = pd.to_datetime(df_m15.index, format="%Y%m%d", errors="coerce")
         try:
             trend_df = calculate_m15_trend_zone(df_m15)
         except Exception:
