@@ -1086,14 +1086,38 @@ def clean_test_file(test_file_path: str) -> None:
         )
 
 # [Patch v6.7.10] Auto convert raw gold CSV files to Thai datetime format
-def auto_convert_gold_csv(data_dir="data"):
-    """แปลงไฟล์ XAUUSD_M*.csv ทั้งหมดให้เป็นรูปแบบ _thai.csv"""
+def auto_convert_gold_csv(data_dir="data", output_path=None):
+    """แปลงไฟล์ XAUUSD_M*.csv ทั้งหมดให้เป็นรูปแบบ _thai.csv
+
+    Parameters
+    ----------
+    data_dir : str
+        โฟลเดอร์ที่เก็บไฟล์ CSV ต้นฉบับ
+    output_path : str, optional
+        Path ปลายทางที่ pipeline ต้องใช้ หากระบุและพบเพียงไฟล์เดียว
+        จะบันทึกผลไปยัง path นี้โดยตรง
+        หากมีหลายไฟล์จะบันทึกไปยังโฟลเดอร์ของ ``output_path``
+    """
     pattern = os.path.join(data_dir, "XAUUSD_M*.csv")
     files = glob.glob(pattern)
+    out_dir = None
+    use_single = False
+    if output_path:
+        if len(files) > 1 or os.path.isdir(output_path):
+            out_dir = output_path
+        else:
+            use_single = True
+
     for f in files:
         if f.endswith("_thai.csv"):
             continue
-        out_f = f.replace(".csv", "_thai.csv")
+        base_out = os.path.basename(f).replace(".csv", "_thai.csv")
+        if use_single:
+            out_f = output_path
+        elif out_dir:
+            out_f = os.path.join(out_dir, base_out)
+        else:
+            out_f = f.replace(".csv", "_thai.csv")
         try:
             df = pd.read_csv(f)
             df.columns = [c.capitalize() for c in df.columns]
@@ -1109,7 +1133,8 @@ def auto_convert_gold_csv(data_dir="data"):
                     df[col] = df[col.lower()]
             df2 = df[["Date", "Timestamp", "Open", "High", "Low", "Close"]]
             df2.to_csv(out_f, index=False)
-            print(f"✔ [AutoConvert] {out_f} OK")
+            status = "พบ" if os.path.exists(out_f) else "ไม่พบ"
+            print(f"✔ [AutoConvert] {out_f} OK - {status}ไฟล์")
         except Exception as e:
             print(f"✗ [AutoConvert] Error ({f}): {e}")
 # [Patch v5.7.3] Validate DataFrame for required columns and non-emptiness
