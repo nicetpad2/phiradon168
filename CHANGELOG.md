@@ -1586,3 +1586,8 @@ QA: pytest -q passed (219 tests)
 - New test tests/test_export_summary.py
 - QA: pytest -q passed (893 tests)
 
+
+### 2025-07-19
+- [Patch v6.5.4] Fix default variable initialization
+- Corrected DEFAULT_FUND_NAME, DEFAULT_MODEL_TO_LINK, and DEFAULT_RISK_PER_TRADE fallbacks
+- QA: pytest -q passed (895 tests)
