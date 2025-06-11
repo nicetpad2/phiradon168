@@ -196,3 +196,39 @@ def test_run_backtest_engine_sorts_trend_index(monkeypatch, caplog):
 
     assert result.equals(trade_df)
     assert any('Sorted Trend Zone DataFrame index' in msg for msg in caplog.messages)
+
+
+def test_run_backtest_engine_sorts_m1_index(monkeypatch, caplog):
+    m1_df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]},
+                         index=[pd.Timestamp('2024-01-02'), pd.Timestamp('2024-01-01')])
+    trade_df = pd.DataFrame({'pnl': [1.0]})
+
+    monkeypatch.setattr(be.pd, 'read_csv', lambda *a, **k: m1_df)
+    monkeypatch.setattr(be, 'engineer_m1_features', lambda df, **k: df)
+    monkeypatch.setattr(be, 'calculate_m15_trend_zone', lambda df: pd.DataFrame({'Trend_Zone': ['UP']}, index=df.index))
+    monkeypatch.setattr(be, 'calculate_m1_entry_signals', lambda df, cfg: df.assign(Entry_Long=0, Entry_Short=0, Trade_Tag='t', Signal_Score=0.0, Trade_Reason='r'))
+    monkeypatch.setattr(be, 'run_backtest_simulation_v34', lambda df, **k: (None, trade_df))
+
+    with caplog.at_level(logging.INFO):
+        result = be.run_backtest_engine(pd.DataFrame())
+
+    assert result.equals(trade_df)
+    assert any('index M1 ไม่เรียงลำดับเวลา' in msg for msg in caplog.messages)
+
+
+def test_run_backtest_engine_drops_duplicate_m1_index(monkeypatch, caplog):
+    idx = [pd.Timestamp('2024-01-01'), pd.Timestamp('2024-01-01')]
+    m1_df = pd.DataFrame({'Open': [1, 2], 'High': [1, 2], 'Low': [1, 2], 'Close': [1, 2]}, index=idx)
+    trade_df = pd.DataFrame({'pnl': [1.0]})
+
+    monkeypatch.setattr(be.pd, 'read_csv', lambda *a, **k: m1_df)
+    monkeypatch.setattr(be, 'engineer_m1_features', lambda df, **k: df)
+    monkeypatch.setattr(be, 'calculate_m15_trend_zone', lambda df: pd.DataFrame({'Trend_Zone': ['UP', 'UP']}, index=df.index))
+    monkeypatch.setattr(be, 'calculate_m1_entry_signals', lambda df, cfg: df.assign(Entry_Long=0, Entry_Short=0, Trade_Tag='t', Signal_Score=0.0, Trade_Reason='r'))
+    monkeypatch.setattr(be, 'run_backtest_simulation_v34', lambda df, **k: (None, trade_df))
+
+    with caplog.at_level(logging.INFO):
+        result = be.run_backtest_engine(pd.DataFrame())
+
+    assert result.equals(trade_df)
+    assert any('index ซ้ำซ้อนในข้อมูลราคา M1' in msg for msg in caplog.messages)
