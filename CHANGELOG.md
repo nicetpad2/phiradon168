@@ -1913,3 +1913,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.7.9] Resolve output_dir path relative to cwd
 - New/Updated unit tests added for src/main.py, test_function_registry.py
 - QA: pytest -q passed (943 tests)
+
+### 2025-08-03
+- [Patch v6.7.13] Add max_rows debug option across pipeline
+- New/Updated unit tests added for main.py, pipeline_manager, data_loader
+- QA: pytest -q passed (946 tests)

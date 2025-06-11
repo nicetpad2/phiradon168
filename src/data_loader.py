@@ -454,7 +454,14 @@ MAX_NAT_RATIO_THRESHOLD = globals().get("MAX_NAT_RATIO_THRESHOLD", CONFIG_MAX_NA
 
 # --- Data Loading Function ---
 # [Patch v5.0.2] Exclude heavy load_data from coverage
-def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_threshold=0.05, dtypes=None):  # pragma: no cover
+def load_data(
+    file_path,
+    timeframe_str="",
+    price_jump_threshold=0.10,
+    nan_threshold=0.05,
+    dtypes=None,
+    max_rows=None,
+):  # pragma: no cover
     """
     Loads data from a CSV file, performs basic validation and data quality checks.
 
@@ -468,6 +475,8 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
         dtypes (dict, optional): Dictionary specifying data types for columns during loading.
                                  Defaults to ``DEFAULT_DTYPE_MAP`` from config
                                  if not provided.
+        max_rows (int, optional): Limit number of rows loaded from CSV. ``None``
+            loads the entire file.
 
     Returns:
         pd.DataFrame: The loaded and initially validated DataFrame.
@@ -497,7 +506,12 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
 
     try:
         try:
-            df_pd = pd.read_csv(file_path, low_memory=False, dtype=dtypes)
+            df_pd = pd.read_csv(
+                file_path,
+                low_memory=False,
+                dtype=dtypes,
+                nrows=max_rows,
+            )
             logging.info(f"   ไฟล์ดิบ {timeframe_str}: {df_pd.shape[0]} แถว")
         except pd.errors.ParserError as e_parse:
             logging.critical(f"(Error) ไม่สามารถ Parse ไฟล์ CSV '{file_path}': {e_parse}")
@@ -600,7 +614,7 @@ def load_data_cached(file_path, timeframe_str="", cache_format=None, **kwargs):
         (``'parquet'``, ``'feather'`` or ``'hdf5'``). Subsequent calls
         will load from the cached file if available.
     kwargs : dict
-        Additional arguments forwarded to :func:`load_data`.
+        Additional arguments forwarded to :func:`load_data` (e.g. ``max_rows``).
 
     Returns
     -------

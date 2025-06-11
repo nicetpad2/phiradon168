@@ -17,32 +17,35 @@ class PipelineManager:
     def __init__(self, config: PipelineConfig):
         self.config = config
 
-    def stage_load(self) -> None:
+    def stage_load(self, max_rows: int | None = None) -> None:
         pipeline.run_preprocess(self.config)
 
-    def stage_sweep(self) -> None:
+    def stage_sweep(self, max_rows: int | None = None) -> None:
         pipeline.run_sweep(self.config)
 
-    def stage_wfv(self) -> None:
+    def stage_wfv(self, max_rows: int | None = None) -> None:
         # Threshold optimization is part of walk-forward run
         pipeline.run_threshold(self.config)
-        pipeline.run_backtest(self.config)
+        pipeline.run_backtest(self.config, max_rows=max_rows)
 
-    def stage_save(self) -> None:
+    def stage_save(self, max_rows: int | None = None) -> None:
         pipeline.run_report(self.config)
 
-    def stage_qa(self) -> None:
+    def stage_qa(self, max_rows: int | None = None) -> None:
         qa_path = os.path.join(self.config.model_dir, ".qa_pipeline.log")
         with open(qa_path, "a", encoding="utf-8") as fh:
             fh.write("qa completed\n")
         logger.info("[QA] log saved to %s", qa_path)
 
-    def run_all(self) -> None:
+    def run_all(self, max_rows: int | None = None) -> None:
         """Execute all pipeline stages in order."""
         for stage in [self.stage_load, self.stage_sweep, self.stage_wfv,
                       self.stage_save, self.stage_qa]:
             try:
-                stage()
+                if max_rows is not None:
+                    stage(max_rows=max_rows)  # type: ignore[arg-type]
+                else:
+                    stage()
             except Exception as exc:  # pragma: no cover - unexpected stage error
                 logger.error("Stage %s failed", stage.__name__, exc_info=True)
                 raise PipelineError(f"{stage.__name__} failed") from exc

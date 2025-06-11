@@ -100,18 +100,31 @@ def run_threshold(config: PipelineConfig, runner=subprocess.run) -> None:
         raise PipelineError("threshold stage failed") from exc
 
 
-def run_backtest_pipeline(features_df, price_df, model_path, threshold) -> None:
+def run_backtest_pipeline(
+    features_df,
+    price_df,
+    model_path,
+    threshold,
+    max_rows: int | None = None,
+) -> None:
     """[Patch v5.9.12] Execute simple backtest pipeline."""
     logger.info("Running backtest with model=%s threshold=%s", model_path, threshold)
     try:
         from src.main import run_pipeline_stage
-        run_pipeline_stage("backtest")
+        try:
+            run_pipeline_stage("backtest", max_rows=max_rows)
+        except TypeError:
+            run_pipeline_stage("backtest")
     except Exception:
         logger.exception("Internal backtest error")
         raise
 
 
-def run_backtest(config: PipelineConfig, pipeline_func=run_backtest_pipeline) -> None:
+def run_backtest(
+    config: PipelineConfig,
+    pipeline_func=run_backtest_pipeline,
+    max_rows: int | None = None,
+) -> None:
     """Run backtest stage."""
     logger.info("[Stage] backtest")
     from config import config as cfg
@@ -153,7 +166,21 @@ def run_backtest(config: PipelineConfig, pipeline_func=run_backtest_pipeline) ->
             logging.warning(f"ไม่พบคอลัมน์ 'best_threshold' ในไฟล์ {thresh_path}")
             threshold = None
     try:
-        pipeline_func(pd.DataFrame(), pd.DataFrame(), model_path, threshold)
+        try:
+            pipeline_func(
+                pd.DataFrame(),
+                pd.DataFrame(),
+                model_path,
+                threshold,
+                max_rows=max_rows,
+            )
+        except TypeError:
+            pipeline_func(
+                pd.DataFrame(),
+                pd.DataFrame(),
+                model_path,
+                threshold,
+            )
     except Exception as exc:
         logger.error("Backtest failed", exc_info=True)
         raise PipelineError("backtest stage failed") from exc
@@ -173,10 +200,14 @@ def run_report(config: PipelineConfig) -> None:
 from src.pipeline_manager import PipelineManager
 
 
-def run_all(config: PipelineConfig) -> None:
+def run_all(config: PipelineConfig, max_rows: int | None = None) -> None:
     """Run full pipeline via :class:`PipelineManager`."""
     logger.info("[Stage] all")
-    PipelineManager(config).run_all()
+    manager = PipelineManager(config)
+    try:
+        manager.run_all(max_rows=max_rows)
+    except TypeError:
+        manager.run_all()
 
 
 def main(args=None) -> int:

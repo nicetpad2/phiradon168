@@ -2005,10 +2005,13 @@ def run_auto_threshold_stage():
 
 
 # [Patch v5.5.9] Pipeline helper for discrete stages
-def run_pipeline_stage(stage: str):
+def run_pipeline_stage(stage: str, max_rows: int | None = None):
     """Run a specific pipeline stage."""
     if stage == 'preprocess':
-        df = load_data(DATA_FILE_PATH_M1, "M1")
+        try:
+            df = load_data(DATA_FILE_PATH_M1, "M1", max_rows=max_rows)
+        except TypeError:
+            df = load_data(DATA_FILE_PATH_M1, "M1")
         df = engineer_m1_features(df)
         out_path = os.path.join(OUTPUT_DIR, "preprocessed.parquet")
         df.to_parquet(out_path)
@@ -2021,7 +2024,10 @@ def run_pipeline_stage(stage: str):
         if os.path.exists(data_path):
             df = pd.read_parquet(data_path)
         else:
-            df = load_data(DATA_FILE_PATH_M1, "M1")
+            try:
+                df = load_data(DATA_FILE_PATH_M1, "M1", max_rows=max_rows)
+            except TypeError:
+                df = load_data(DATA_FILE_PATH_M1, "M1")
         run_backtest_simulation_v34(df, label="WFV", initial_capital_segment=INITIAL_CAPITAL)
         logger.info("[Pipeline] Backtest completed")
         return None
