@@ -3,6 +3,8 @@ from pathlib import Path
 import pandas as pd
 import ProjectP
 import sys
+import pytest
+from src.utils.errors import PipelineError
 
 
 def test_insufficient_rows_logs_warning(monkeypatch, tmp_path, caplog):
@@ -62,11 +64,10 @@ def test_regeneration_empty_dataframe(monkeypatch, tmp_path, caplog):
     )
     monkeypatch.setattr(ProjectP, "load_features", lambda p: pd.DataFrame())
 
-    with caplog.at_level(logging.WARNING, logger="test_logger"):
-        df = ProjectP.load_trade_log(str(csv_path), min_rows=5)
-
-    assert not df.empty
-    assert any("Skipping regeneration" in rec.getMessage() for rec in caplog.records)
+    with caplog.at_level(logging.ERROR, logger="test_logger"):
+        with pytest.raises(PipelineError):
+            ProjectP.load_trade_log(str(csv_path), min_rows=5)
+    assert any("ไม่สามารถสร้าง trade log ใหม่" in rec.getMessage() for rec in caplog.records)
 
 
 

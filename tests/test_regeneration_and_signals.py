@@ -11,20 +11,14 @@ def test_load_trade_log_regeneration(tmp_path, monkeypatch):
     file = tmp_path / 'trade.csv'
     file.write_text('timestamp,price,signal\n')
     monkeypatch.setenv('TRADE_LOG_MIN_ROWS', '5')
-    orig_load = ProjectP.load_trade_log
 
-    def regen_load(path, min_rows=10):
-        df = orig_load(path, min_rows)
-        if len(df) < min_rows:
-            extra = pd.DataFrame({
-                'timestamp': pd.date_range('2020-01-01', periods=min_rows),
-                'price': range(min_rows),
-                'signal': np.zeros(min_rows, dtype=int),
-            })
-            return extra
-        return df
+    def fake_engine(_):
+        return pd.DataFrame({'pnl': [1] * 5})
 
-    monkeypatch.setattr(ProjectP, 'load_trade_log', regen_load)
+    import backtest_engine
+    monkeypatch.setattr(backtest_engine, 'run_backtest_engine', fake_engine)
+    monkeypatch.setattr(ProjectP, 'load_features', lambda p: pd.DataFrame())
+
     df = ProjectP.load_trade_log(str(file), min_rows=int(os.environ['TRADE_LOG_MIN_ROWS']))
     assert len(df) >= 5
 

@@ -61,8 +61,10 @@ import traceback
 from datetime import datetime
 import pandas as pd
 import numpy as np
-# [Patch v5.5.1] Enable auto-installation of libraries
-AUTO_INSTALL_LIBS = True  # If False, skip auto-installation of libraries
+# [Patch v6.5.16] Disable auto-installation of libraries by default
+# แนะนำติดตั้ง dependencies ด้วย `pip install -r requirements.txt`
+# เปิดใช้ AUTO_INSTALL_LIBS=True เฉพาะในสภาพแวดล้อมพัฒนา
+AUTO_INSTALL_LIBS = False  # If True, attempt to auto-install missing libraries
 # อ่านเวอร์ชันจากไฟล์ VERSION
 VERSION_FILE = os.path.join(os.path.dirname(__file__), '..', 'VERSION')
 with open(VERSION_FILE, 'r', encoding='utf-8') as vf:

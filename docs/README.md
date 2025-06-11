@@ -7,7 +7,8 @@
    ```bash
    pip install -r requirements.txt
    ```
-2. หากต้องการติดตั้งไลบรารีโดยอัตโนมัติทุกครั้ง สามารถตั้งค่า `AUTO_INSTALL_LIBS=True` ภายใน `src/config.py`
+2. หากต้องการติดตั้งไลบรารีอัตโนมัติในช่วงพัฒนา ให้ตั้งค่า `AUTO_INSTALL_LIBS=True` ภายใน `src/config.py`
+   ค่าเริ่มต้นถูกตั้งเป็น `False` เพื่อความปลอดภัย ควรติดตั้งไลบรารีผ่าน `pip install -r requirements.txt` ก่อนใช้งานจริง
 
 ## การรัน Pipeline
 ใช้งานผ่านสคริปต์หลัก `ProjectP.py` หรือใช้ `profile_backtest.py` เพื่อประเมินประสิทธิภาพ ตัวอย่างเช่น
