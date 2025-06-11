@@ -1,3 +1,8 @@
+### 2025-07-21
+- [Patch v6.5.9] Dynamic split computation in wfv_orchestrator
+- New/Updated unit tests added for tests/test_wfv_orchestrator.py
+- QA: pytest -q passed (897 tests)
+
 ### 2025-07-17
 - [Patch v6.3.1] Placeholder trade log if missing during sweep
 - Updated tuning/hyperparameter_sweep.py with warning fallback
@@ -1593,7 +1598,9 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (895 tests)
 
 ### 2025-07-20
+
 - [Patch v6.5.9] Regenerate trade log when rows below threshold
 - Added DEFAULT_TRADE_LOG_MIN_ROWS in config
 - Updated test_projectp_insufficient_rows for regeneration
 - QA: pytest -q passed (895 tests)
+
