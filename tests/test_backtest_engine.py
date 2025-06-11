@@ -56,3 +56,24 @@ def test_run_backtest_engine_index_conversion(monkeypatch):
     assert result.equals(trade_df)
     assert captured['index_is_dt']
     assert 'tz_attr' in captured
+
+
+def test_run_backtest_engine_passes_fold_params(monkeypatch):
+    """ควรส่ง fold_config และ current_fold_index ให้ simulation"""
+    price_df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]})
+    trade_df = pd.DataFrame({'pnl': [1.0]})
+
+    captured = {}
+
+    def fake_simulation(df, **kwargs):
+        captured['fold_config'] = kwargs.get('fold_config')
+        captured['current_fold_index'] = kwargs.get('current_fold_index')
+        return None, trade_df
+
+    monkeypatch.setattr(be.pd, 'read_csv', lambda *a, **k: price_df)
+    monkeypatch.setattr(be, 'run_backtest_simulation_v34', fake_simulation)
+
+    result = be.run_backtest_engine(pd.DataFrame())
+    assert result.equals(trade_df)
+    assert captured['fold_config'] == be.DEFAULT_FOLD_CONFIG
+    assert captured['current_fold_index'] == be.DEFAULT_FOLD_INDEX

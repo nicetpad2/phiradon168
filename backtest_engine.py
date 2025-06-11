@@ -7,6 +7,10 @@ import pandas as pd
 from src.config import DATA_FILE_PATH_M1
 from src.strategy import run_backtest_simulation_v34
 
+# [Patch v6.5.14] Force fold 0 of 1 when regenerating the trade log
+DEFAULT_FOLD_CONFIG = {"n_folds": 1}
+DEFAULT_FOLD_INDEX = 0
+
 
 def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     """Regenerate the trade log when the existing CSV has too few rows.
@@ -44,6 +48,8 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
         df,
         label="regen",
         initial_capital_segment=100.0,
+        fold_config=DEFAULT_FOLD_CONFIG,
+        current_fold_index=DEFAULT_FOLD_INDEX,
     )
 
     # 3) Extract and validate the trade log DataFrame
