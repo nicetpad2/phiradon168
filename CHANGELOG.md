@@ -1739,3 +1739,8 @@ QA: pytest -q passed (219 tests)
 
 - QA: pytest -q passed (915 tests)
 
+### 2025-08-04
+- [Patch v6.6.7] Implement interactive HTML dashboard generation
+- New/Updated unit tests added for tests/test_reporting_dashboard.py
+- QA: pytest -q passed (915 tests)
+
