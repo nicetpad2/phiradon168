@@ -4,6 +4,11 @@
 - New/Updated unit tests added for tests/test_auto_convert_csv.py::test_auto_convert_gold_csv_batch
 - QA: pytest -q passed (944 tests)
 
+### 2025-08-05
+- [Patch v6.7.12] Add CSV validator for automated checks
+- New/Updated unit tests added for tests/test_csv_validator.py
+- QA: pytest -q passed (946 tests)
+
 ### 2025-08-03
 - [Patch v6.7.10] Convert XAUUSD CSV files automatically
 - New/Updated unit tests added for tests/test_auto_convert_csv.py

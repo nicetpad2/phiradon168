@@ -28,6 +28,7 @@ _SUBMODULES = [
     "signal_classifier",
     "entry_rules",
     "strategy",
+    "csv_validator",
     "training",
     "wfv_monitor",
     "log_analysis",
