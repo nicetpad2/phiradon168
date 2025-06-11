@@ -334,7 +334,7 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
         c
         for c in df_sample.columns
         if pd.api.types.is_numeric_dtype(df_sample[c])
-        and c not in {"datetime", "is_tp", "is_sl"}
+        and c not in {"datetime", "is_tp", "is_sl", "Date", "Timestamp"}  # [Patch v6.7.2] skip date columns
         and c.lower() not in {"label", "target"}
     ]
 
@@ -467,13 +467,13 @@ if __name__ == "__main__":
             "[Patch v6.4.6] No trade_log CSV found in %s; initializing empty trade log.",
             output_dir,
         )
-        # [Patch v6.4.7] Create a dummy trade log with 10 placeholder rows
+        # [Patch v6.7.2] Create a dummy trade log with placeholder rows (reduce to 9 rows)
         trade_log_file = os.path.join(output_dir, "trade_log_dummy.csv")
         dummy_cols = [
             "entry_time", "exit_time", "entry_price",
             "exit_price", "side", "profit",
         ]
-        # populate 10 rows so that downstream sees sufficient data
+        # populate 9 rows so that downstream sees insufficient data and trigger backtest
         dummy_rows = [
             {
                 "entry_time": "",
@@ -483,7 +483,7 @@ if __name__ == "__main__":
                 "side": "",
                 "profit": 0.0,
             }
-            for _ in range(10)
+            for _ in range(9)
         ]
         pd.DataFrame(dummy_rows, columns=dummy_cols).to_csv(trade_log_file, index=False)
     else:

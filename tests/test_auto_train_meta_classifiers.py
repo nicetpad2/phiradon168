@@ -116,3 +116,16 @@ def test_auto_train_meta_classifiers_zero_profit(tmp_path, caplog):
         )
     assert res is None
     assert any("6.6.12" in m and "All profit values are 0" in m for m in caplog.messages)
+
+def test_auto_train_meta_classifiers_fallback_profit(tmp_path, caplog):
+    """Should use profit column as fallback feature when no others available."""
+    from types import SimpleNamespace
+    cfg = SimpleNamespace(OUTPUT_DIR=str(tmp_path))
+    (tmp_path / "features_main.json").write_text('["f1", "f2"]')
+    data = pd.DataFrame({"profit": [1.0, -1.0, 0.5, -0.2, 1.2]})
+    with caplog.at_level('WARNING', logger=logger.name):
+        result = auto_train_meta_classifiers(
+            cfg, data, models_dir=str(tmp_path), features_dir=str(tmp_path)
+        )
+    assert Path(result["model_path"]).exists()
+    assert any("fallback feature" in m for m in caplog.messages)

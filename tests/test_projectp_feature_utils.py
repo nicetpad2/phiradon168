@@ -27,3 +27,17 @@ def test_generate_all_features_missing_file(caplog):
     ProjectP.configure_logging()
     feats = ProjectP.generate_all_features(["no_data.csv"])
     assert feats == []
+
+
+def test_generate_all_features_excludes_date_columns(tmp_path):
+    df = pd.DataFrame({
+        "A": [1, 2],
+        "Date": [20240101, 20240102],
+        "Timestamp": [0, 1],
+        "B": [3, 4],
+    })
+    csv = tmp_path / "data.csv"
+    df.to_csv(csv, index=False)
+    feats = ProjectP.generate_all_features([str(csv)])
+    assert "Date" not in feats and "Timestamp" not in feats
+    assert "A" in feats and "B" in feats
