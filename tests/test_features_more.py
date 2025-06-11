@@ -115,7 +115,7 @@ def test_calculate_m15_trend_zone_duplicate_index(monkeypatch, caplog):
     with caplog.at_level(logging.INFO):
         result = features.calculate_m15_trend_zone(df)
 
-    assert len(result) == len(df)
+    assert len(result) == len(df.index.unique())
     logs = " ".join(caplog.messages).lower()
     assert "duplicate labels" in logs
     assert "removed" in logs
