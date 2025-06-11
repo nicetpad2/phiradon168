@@ -58,6 +58,7 @@ except Exception:
 
 import pandas as pd
 from typing import Dict, List
+from src.utils.errors import PipelineError
 import main as pipeline
 from config_loader import update_config_from_dict  # [Patch] dynamic config update
 from wfv_runner import run_walkforward  # [Patch] walk-forward helper
@@ -346,15 +347,14 @@ def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) ->
                 raise ValueError("Generated trade log is empty")
             df = df_new
             df.to_csv(filepath, index=False)
-            row_count = len(df)
             logger.info(
-                f"[Patch v6.5.9] Successfully regenerated trade log with {row_count} rows"
+                f"[Patch v6.5.16] Successfully regenerated trade log with {len(df)} rows"
             )
         except Exception as exc:  # pragma: no cover - regeneration failure
-            logger.error(f"[Patch v6.5.9] Failed to regenerate trade log: {exc}")
-            logger.warning(
-                "[Patch v6.5.9] Skipping regeneration and using existing trade log"
+            logger.error(
+                f"[Patch v6.5.16] ไม่สามารถสร้าง trade log ใหม่: {exc}", exc_info=True
             )
+            raise PipelineError("Trade log generation failed; aborting pipeline.")
     return df
 
 
