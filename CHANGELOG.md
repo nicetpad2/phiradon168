@@ -14,6 +14,10 @@
 - New/Updated unit tests added for tests/test_projectp_feature_utils.py::test_generate_all_features_excludes_date_columns
 - QA: pytest -q passed (925 tests)
 
+- [Patch v6.7.3] Skip Date and Timestamp in build_feature_catalog
+- New unit test added for tests/test_feature_catalog.py::test_build_feature_catalog_excludes_date_columns
+- QA: pytest -q passed (927 tests)
+
 
 ### 2025-07-26
 

@@ -1764,9 +1764,9 @@ def build_feature_catalog(data_dir: str, output_dir: str) -> list:
     features = [
         c
         for c in df_sample.columns
-        if c not in {"datetime", "is_tp", "is_sl"}
+        if c not in {"datetime", "is_tp", "is_sl", "Date", "Timestamp"}
         and pd.api.types.is_numeric_dtype(df_sample[c])
-    ]
+    ]  # [Patch v6.7.3] skip Date/Timestamp columns
     return features
 
 
