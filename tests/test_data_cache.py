@@ -11,6 +11,7 @@ def test_load_data_cached_parquet(tmp_path):
         'High': [1.0],
         'Low': [1.0],
         'Close': [1.0],
+        'Volume': [1.0],
     })
     df.to_csv(csv_path, index=False)
 

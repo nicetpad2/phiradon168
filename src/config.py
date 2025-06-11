@@ -729,7 +729,7 @@ DEFAULT_DTYPE_MAP = {
     "High": "float32",
     "Low": "float32",
     "Close": "float32",
-    "Volume": "int32",
+    "Volume": "float32",
 }
 
 # --- Multi-Fund & IB Config ---

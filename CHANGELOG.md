@@ -1953,3 +1953,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.7.9] Resolve output_dir path relative to cwd
 - New/Updated unit tests added for src/main.py, test_function_registry.py
 - QA: pytest -q passed (943 tests)
+
+### 2025-08-03
+- [Patch v6.8.3] Fix volume dtype to support decimal values
+- New/Updated unit tests added for tests/test_data_loader_additional.py::test_load_data_volume_dtype
+- QA: pytest -q passed (958 tests)

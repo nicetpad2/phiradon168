@@ -196,3 +196,19 @@ def test_load_data_max_rows_none(tmp_path):
     dtypes = {'Open': 'float32', 'High': 'float32', 'Low': 'float32', 'Close': 'float32'}
     loaded = dl.load_data(str(csv_path), 'M1', dtypes=dtypes)
     assert loaded.shape[0] == 8
+
+
+def test_load_data_volume_dtype(tmp_path):
+    df = pd.DataFrame({
+        'Date': pd.date_range('2023-01-01', periods=5, freq='min').date,
+        'Timestamp': pd.date_range('2023-01-01', periods=5, freq='min'),
+        'Open': np.arange(5, dtype=float),
+        'High': np.arange(5, dtype=float) + 0.1,
+        'Low': np.arange(5, dtype=float) - 0.1,
+        'Close': np.arange(5, dtype=float),
+        'Volume': np.linspace(1.0, 5.0, num=5),
+    })
+    csv_path = tmp_path / 'data.csv'
+    df.to_csv(csv_path, index=False)
+    loaded = dl.load_data(str(csv_path), 'M1')
+    assert loaded['Volume'].dtype == 'float32'
