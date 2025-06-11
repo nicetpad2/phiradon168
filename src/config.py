@@ -536,7 +536,7 @@ elif is_colab():
             FILE_BASE = FILE_BASE_OVERRIDE
 else:
     logging.info(
-        "(Info) ไม่ใช่ Colab – สมมติรันบน VPS และโฟลเดอร์ Google Drive ถูกซิงก์ไว้เรียบร้อยแล้ว"
+        "(Info) ไม่ใช่ Colab – ใช้เส้นทางในเครื่องสำหรับจัดเก็บ log และข้อมูล"
     )
 
 DEFAULT_CSV_PATH_M1 = os.path.join(FILE_BASE, "XAUUSD_M1.csv")
