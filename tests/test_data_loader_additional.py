@@ -139,3 +139,37 @@ def test_load_final_m1_data_missing_cols(tmp_path):
     df.to_csv(path, compression='gzip')
     trade_log = pd.DataFrame({'datetime': [pd.Timestamp('2023-01-01', tz='UTC')]})
     assert dl.load_final_m1_data(str(path), trade_log) is None
+
+
+def test_load_data_max_rows(tmp_path, caplog):
+    df = pd.DataFrame({
+        'Date': pd.date_range('2023-01-01', periods=10, freq='min').date,
+        'Timestamp': pd.date_range('2023-01-01', periods=10, freq='min'),
+        'Open': np.arange(10, dtype=float),
+        'High': np.arange(10, dtype=float) + 0.1,
+        'Low': np.arange(10, dtype=float) - 0.1,
+        'Close': np.arange(10, dtype=float)
+    })
+    csv_path = tmp_path / 'data.csv'
+    df.to_csv(csv_path, index=False)
+    dtypes = {'Open': 'float32', 'High': 'float32', 'Low': 'float32', 'Close': 'float32'}
+    with caplog.at_level('INFO'):
+        loaded = dl.load_data(str(csv_path), 'M1', dtypes=dtypes, max_rows=5)
+    assert loaded.shape[0] == 5
+    assert 'max_rows=5' in caplog.text
+
+
+def test_load_data_max_rows_none(tmp_path):
+    df = pd.DataFrame({
+        'Date': pd.date_range('2023-01-01', periods=8, freq='min').date,
+        'Timestamp': pd.date_range('2023-01-01', periods=8, freq='min'),
+        'Open': np.arange(8, dtype=float),
+        'High': np.arange(8, dtype=float) + 0.1,
+        'Low': np.arange(8, dtype=float) - 0.1,
+        'Close': np.arange(8, dtype=float)
+    })
+    csv_path = tmp_path / 'data.csv'
+    df.to_csv(csv_path, index=False)
+    dtypes = {'Open': 'float32', 'High': 'float32', 'Low': 'float32', 'Close': 'float32'}
+    loaded = dl.load_data(str(csv_path), 'M1', dtypes=dtypes)
+    assert loaded.shape[0] == 8

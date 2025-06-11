@@ -1,13 +1,19 @@
+### 2025-08-06
+- [Patch v6.7.13] Add max_rows option for load_data
+- New/Updated unit tests added for tests/test_data_loader_additional.py::test_load_data_max_rows
+- QA: pytest -q passed (948 tests)
+
+### 2025-08-05
+- [Patch v6.7.12] Add CSV validator for automated checks
+- New/Updated unit tests added for tests/test_csv_validator.py
+- QA: pytest -q passed (946 tests)
+
 
 ### 2025-08-04
 - [Patch v6.7.11] Support output_path in auto_convert_gold_csv
 - New/Updated unit tests added for tests/test_auto_convert_csv.py::test_auto_convert_gold_csv_batch
 - QA: pytest -q passed (944 tests)
 
-### 2025-08-05
-- [Patch v6.7.12] Add CSV validator for automated checks
-- New/Updated unit tests added for tests/test_csv_validator.py
-- QA: pytest -q passed (946 tests)
 
 ### 2025-08-03
 - [Patch v6.7.10] Convert XAUUSD CSV files automatically
