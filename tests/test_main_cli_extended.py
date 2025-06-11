@@ -56,6 +56,7 @@ def test_run_preprocess_success():
         called.append(cmd)
     pipeline.run_preprocess(PipelineConfig(), runner=fake_run)
     assert any('ProjectP.py' in c[1] for c in called)
+    assert called[0][-2:] == ['--fill', 'drop']
 
 
 def test_run_preprocess_failure():
@@ -63,6 +64,15 @@ def test_run_preprocess_failure():
         raise subprocess.CalledProcessError(1, cmd)
     with pytest.raises(pipeline.PipelineError):
         pipeline.run_preprocess(PipelineConfig(), runner=fake_run)
+
+
+def test_run_preprocess_custom_method():
+    called = []
+    cfg = PipelineConfig(cleaning_fill_method='mean')
+    def fake_run(cmd, check):
+        called.append(cmd)
+    pipeline.run_preprocess(cfg, runner=fake_run)
+    assert called[0][-2:] == ['--fill', 'mean']
 
 
 def test_run_sweep_success():

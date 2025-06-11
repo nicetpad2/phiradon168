@@ -17,6 +17,7 @@ class PipelineConfig:
     features_filename: str = 'features_main.json'
     trade_log_pattern: str = 'trade_log_*.csv*'
     raw_m1_filename: str = 'XAUUSD_M1.csv'
+    cleaning_fill_method: str = 'drop'
 
 
 def load_config(path: str = DEFAULT_CONFIG_FILE) -> 'PipelineConfig':
@@ -27,5 +28,8 @@ def load_config(path: str = DEFAULT_CONFIG_FILE) -> 'PipelineConfig':
         if 'data' in data and isinstance(data['data'], dict):
             data = {**data, **data['data']}
             del data['data']
+        if 'cleaning' in data and isinstance(data['cleaning'], dict):
+            data['cleaning_fill_method'] = data['cleaning'].get('fill_method', PipelineConfig.cleaning_fill_method)
+            del data['cleaning']
         return PipelineConfig(**{**PipelineConfig().__dict__, **data})
     return PipelineConfig()
