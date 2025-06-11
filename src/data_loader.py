@@ -28,6 +28,7 @@ import os
 import sys
 import subprocess
 import traceback
+import glob
 import pandas as pd
 import numpy as np
 import json
@@ -1083,6 +1084,34 @@ def clean_test_file(test_file_path: str) -> None:
         logger.warning(
             f"Ignoring removal of {test_file_path}: outside DATA_DIR"
         )
+
+# [Patch v6.7.10] Auto convert raw gold CSV files to Thai datetime format
+def auto_convert_gold_csv(data_dir="data"):
+    """แปลงไฟล์ XAUUSD_M*.csv ทั้งหมดให้เป็นรูปแบบ _thai.csv"""
+    pattern = os.path.join(data_dir, "XAUUSD_M*.csv")
+    files = glob.glob(pattern)
+    for f in files:
+        if f.endswith("_thai.csv"):
+            continue
+        out_f = f.replace(".csv", "_thai.csv")
+        try:
+            df = pd.read_csv(f)
+            df.columns = [c.capitalize() for c in df.columns]
+            if "Date" in df.columns and "Time" in df.columns:
+                dt = pd.to_datetime(df["Date"] + " " + df["Time"], errors="coerce")
+                df["Date"] = dt.map(lambda d: f"{d.year + 543:04d}{d.month:02d}{d.day:02d}")
+                df["Timestamp"] = dt.dt.strftime("%H:%M:%S")
+            else:
+                print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
+                continue
+            for col in ["Open", "High", "Low", "Close"]:
+                if col not in df.columns and col.lower() in df.columns:
+                    df[col] = df[col.lower()]
+            df2 = df[["Date", "Timestamp", "Open", "High", "Low", "Close"]]
+            df2.to_csv(out_f, index=False)
+            print(f"✔ [AutoConvert] {out_f} OK")
+        except Exception as e:
+            print(f"✗ [AutoConvert] Error ({f}): {e}")
 # [Patch v5.7.3] Validate DataFrame for required columns and non-emptiness
 def validate_csv_data(df, required_cols=None):
     """Ensure ``df`` is non-empty and contains required columns.
@@ -1207,5 +1236,6 @@ __all__ = [
     "validate_csv_data",
     "load_final_m1_data",
     "check_data_quality",
+    "auto_convert_gold_csv",
 ]
 

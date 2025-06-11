@@ -1,0 +1,29 @@
+import pandas as pd
+from src.data_loader import auto_convert_gold_csv
+
+
+def test_auto_convert_gold_csv_success(tmp_path):
+    df = pd.DataFrame({
+        'Date': ['2024-01-01'],
+        'Time': ['00:00:00'],
+        'open': [1.0],
+        'high': [1.1],
+        'low': [0.9],
+        'close': [1.0],
+    })
+    csv = tmp_path / 'XAUUSD_M1.csv'
+    df.to_csv(csv, index=False)
+    auto_convert_gold_csv(str(tmp_path))
+    out_f = tmp_path / 'XAUUSD_M1_thai.csv'
+    assert out_f.exists()
+    out = pd.read_csv(out_f, dtype=str)
+    assert list(out.columns) == ['Date', 'Timestamp', 'Open', 'High', 'Low', 'Close']
+    assert out.iloc[0]['Date'].startswith('2567')
+    assert out.iloc[0]['Timestamp'] == '00:00:00'
+
+
+def test_auto_convert_gold_csv_missing_columns(tmp_path):
+    csv = tmp_path / 'XAUUSD_M15.csv'
+    pd.DataFrame({'A': [1]}).to_csv(csv, index=False)
+    auto_convert_gold_csv(str(tmp_path))
+    assert not (tmp_path / 'XAUUSD_M15_thai.csv').exists()

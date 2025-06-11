@@ -6,6 +6,7 @@ import logging
 import logging.config
 import yaml
 import pandas as pd
+from src.data_loader import auto_convert_gold_csv
 
 from src.utils.pipeline_config import (
     load_config,
@@ -64,6 +65,7 @@ from src.config import DATA_FILE_PATH_M1
 def run_preprocess(config: PipelineConfig, runner=subprocess.run) -> None:
     """Run data preprocessing stage."""
     logger.info("[Stage] preprocess")
+    auto_convert_gold_csv(os.path.dirname(DATA_FILE_PATH_M1))
     try:
         runner([os.environ.get("PYTHON", "python"), "src/data_cleaner.py", DATA_FILE_PATH_M1], check=True)
         runner([os.environ.get("PYTHON", "python"), "ProjectP.py"], check=True)
