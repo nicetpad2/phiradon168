@@ -341,14 +341,20 @@ def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) ->
             feat_df = load_features(os.path.join(OUTPUT_DIR, "features_main.json"))
             if feat_df is None:
                 feat_df = pd.DataFrame()
-            df = run_backtest_engine(feat_df)
+            df_new = run_backtest_engine(feat_df)
+            if df_new.empty:
+                raise ValueError("Generated trade log is empty")
+            df = df_new
             df.to_csv(filepath, index=False)
             row_count = len(df)
             logger.info(
-                f"[Patch v6.5.9] Regenerated trade log: {row_count} rows saved to {filepath}"
+                f"[Patch v6.5.9] Successfully regenerated trade log with {row_count} rows"
             )
         except Exception as exc:  # pragma: no cover - regeneration failure
             logger.error(f"[Patch v6.5.9] Failed to regenerate trade log: {exc}")
+            logger.warning(
+                "[Patch v6.5.9] Skipping regeneration and using existing trade log"
+            )
     return df
 
 

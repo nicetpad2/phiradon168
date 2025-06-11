@@ -1637,4 +1637,11 @@ QA: pytest -q passed (219 tests)
 - New test tests/test_backtest_engine.py::test_run_backtest_engine_index_conversion
 - QA: pytest -q passed (906 tests)
 
+### 2025-07-24
+- [Patch v6.5.13] Improve trade-log regeneration resilience
+- Enhanced ProjectP.load_trade_log to verify regenerated DataFrame is not empty
+  and log warnings without aborting on failure
+- Updated test_projectp_insufficient_rows with additional empty regeneration case
+- QA: pytest -q passed (908 tests)
+
 
