@@ -1788,6 +1788,11 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (919 tests)
 
 ### 2025-06-13
+
+- [Patch v6.6.11] Enable fallback_metric when data is insufficient
+- Updated tests/test_training_more.py::test_real_train_func_single_row
+
 - [Patch v6.6.11] Auto-generate 'target' from profit-like columns
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_derive_target_alt_column
 - QA: pytest -q passed (919 tests)
+
