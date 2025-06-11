@@ -1,4 +1,8 @@
 
+### 2025-08-06
+- [Patch v6.7.13] Add debug row limit options to ProjectP CLI
+- QA: pytest -q passed (946 tests)
+
 ### 2025-08-04
 - [Patch v6.7.11] Support output_path in auto_convert_gold_csv
 - New/Updated unit tests added for tests/test_auto_convert_csv.py::test_auto_convert_gold_csv_batch
