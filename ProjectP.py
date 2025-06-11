@@ -44,8 +44,13 @@ import argparse
 import subprocess
 import json
 
+from src.utils.pipeline_config import load_config  # [Patch v6.7.17] dynamic config loader
+
 # [Patch v6.4.8] Optional fallback directory for raw data and logs
 FALLBACK_DIR = os.getenv("PROJECTP_FALLBACK_DIR")
+
+# [Patch v6.7.17] Load pipeline configuration for dynamic paths
+pipeline_config = load_config()
 
 
 # [Patch v6.3.1] Ensure working directory fallback on import
@@ -63,7 +68,6 @@ import main as pipeline
 from config_loader import update_config_from_dict  # [Patch] dynamic config update
 from wfv_runner import run_walkforward  # [Patch] walk-forward helper
 from src.features import build_feature_catalog
-
 # Default grid for hyperparameter sweep
 DEFAULT_SWEEP_PARAMS: Dict[str, List[float]] = {
     "learning_rate": [0.01, 0.05],
@@ -355,9 +359,147 @@ def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) ->
     from src.trade_log_pipeline import load_or_generate_trade_log
 
     logger.info(f"[Patch v6.5.9] Attempting to load trade log from {filepath}")
-    features_path = os.path.join(OUTPUT_DIR, "features_main.json")
-    return load_or_generate_trade_log(filepath, min_rows=min_rows, features_path=features_path)
+    output_dir = getattr(config, "OUTPUT_DIR", Path(pipeline_config.output_dir))
+    features_filename = pipeline_config.features_filename
+    features_path = os.path.join(output_dir, features_filename)
+    return load_or_generate_trade_log(
+        filepath, min_rows=min_rows, features_path=features_path
+    )
 
+
+
+if __name__ == "__main__":
+    configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
+    args = parse_args()
+    DEBUG_DEFAULT_ROWS = 2000
+    if args.rows is not None:
+        max_rows = args.rows
+    elif args.debug:
+        max_rows = DEBUG_DEFAULT_ROWS
+    else:
+        max_rows = None
+    if max_rows:
+        print(f"--- [DEBUG MODE] กำหนด max_rows={max_rows} ---")
+        pipeline.sample_size = max_rows
+        import src.strategy as strategy
+        strategy.sample_size = max_rows
+    else:
+        print("--- [FULL PIPELINE] ใช้ข้อมูลทั้งหมด ---")
+    # [Patch v6.3.5] ตรวจสอบไฟล์ผลลัพธ์ก่อนและหลังการทำงาน
+    output_dir = getattr(config, "OUTPUT_DIR", Path(pipeline_config.output_dir))
+    features_filename = pipeline_config.features_filename
+    features_path = os.path.join(output_dir, features_filename)
+
+    if not os.path.exists(features_path):
+        logger.warning(
+            f"features_main.json not found in {output_dir}; attempting to generate it."
+        )
+        try:
+            from src import config as cfg
+            os.makedirs(output_dir, exist_ok=True)
+            feature_catalog = build_feature_catalog(
+                data_dir=getattr(cfg, "DATA_DIR", output_dir),
+                output_dir=output_dir,
+            )
+            with open(features_path, "w", encoding="utf-8") as fp:
+                json.dump(feature_catalog, fp, ensure_ascii=False, indent=2)
+            logger.info(
+                "Generated features_main.json with %d entries.",
+                len(feature_catalog),
+            )
+        except ImportError as ie:
+            logger.error("Cannot import feature builder: %s. Aborting.", ie)
+            sys.exit(1)
+        except Exception as ex:
+            logger.error("Failed to generate features_main.json: %s. Aborting.", ex)
+            sys.exit(1)
+    else:
+        logger.info(
+            "Loaded existing features_main.json (%d bytes)",
+            os.path.getsize(features_path),
+        )
+
+    features_main = load_features(features_path)
+    if features_main is None or len(features_main) < 10:
+        logger.info("Generating fresh feature set...")
+        raw_data_paths = [
+            os.path.join(output_dir, "XAUUSD_M1.csv"),
+            os.path.join(output_dir, "XAUUSD_M15.csv"),
+        ]
+        # [Patch v6.4.9] Fall back to default CSV paths from config
+        if not os.path.exists(raw_data_paths[0]):
+            try:
+                from src import config as cfg
+                raw_data_paths[0] = getattr(cfg, "DEFAULT_CSV_PATH_M1", raw_data_paths[0])
+            except Exception:  # pragma: no cover - config import failure
+                pass
+        if len(raw_data_paths) > 1 and not os.path.exists(raw_data_paths[1]):
+            try:
+                from src import config as cfg
+                raw_data_paths[1] = getattr(cfg, "DEFAULT_CSV_PATH_M15", raw_data_paths[1])
+            except Exception:  # pragma: no cover - config import failure
+                pass
+        features_main = generate_all_features(raw_data_paths)
+        save_features(features_main, features_path)
+        logger.info("Feature set regenerated with %d rows", len(features_main))
+
+    import glob
+    # match both uncompressed (.csv) and gzip-compressed (.csv.gz) trade logs
+    trade_pattern = os.path.join(output_dir, pipeline_config.trade_log_pattern)
+    log_files = sorted(glob.glob(trade_pattern))
+    if not log_files:
+
+        logger.error(
+            "[Patch v6.4.5] No trade_log CSV or CSV.GZ found in %s; aborting.",
+            output_dir,
+        )
+
+        trade_pattern_gz = os.path.join(
+            output_dir,
+            pipeline_config.trade_log_pattern.replace(".csv*", ".csv.gz")
+        )
+        log_files = glob.glob(trade_pattern_gz)
+    if not log_files and FALLBACK_DIR:
+        fallback_pattern = os.path.join(
+            FALLBACK_DIR, pipeline_config.trade_log_pattern
+        )
+        log_files = sorted(glob.glob(fallback_pattern))
+        if log_files:
+            logger.warning(
+                "Trade log not found in %s; using fallback directory %s",
+                output_dir,
+                FALLBACK_DIR,
+            )
+    if not log_files:
+        logger.warning(
+            "[Patch v6.4.6] No trade_log CSV found in %s; initializing empty trade log.",
+            output_dir,
+        )
+        # [Patch v6.7.2] Create a dummy trade log with placeholder rows (reduce to 9 rows)
+        trade_log_file = os.path.join(output_dir, "trade_log_dummy.csv")
+        dummy_cols = [
+            "entry_time", "exit_time", "entry_price",
+            "exit_price", "side", "profit",
+        ]
+        # populate 9 rows so that downstream sees insufficient data and trigger backtest
+        dummy_rows = [
+            {
+                "entry_time": "",
+                "exit_time": "",
+                "entry_price": 0.0,
+                "exit_price": 0.0,
+                "side": "",
+                "profit": 0.0,
+            }
+            for _ in range(9)
+        ]
+        pd.DataFrame(dummy_rows, columns=dummy_cols).to_csv(trade_log_file, index=False)
+    else:
+        log_files = sorted(log_files, key=lambda f: ("walkforward" not in f, f))
+        trade_log_file = log_files[0]
+    logger.info(
+        "[Patch v5.8.15] Loaded trade log: %s", os.path.basename(trade_log_file)
+    )
 
 
 if __name__ == "__main__":
