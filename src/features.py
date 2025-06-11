@@ -623,6 +623,7 @@ def get_mtf_sma_trend(df_m15, fast=50, slow=200, rsi_period=14, rsi_upper=70, rs
 def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_features_config=None):  # pragma: no cover
     logging.info("[QA] Start M1 Feature Engineering")
     logging.info("(Processing) กำลังสร้าง Features M1 (v4.9.0)...") # <<< MODIFIED v4.9.0
+    logging.info(f"Rows at start: {df_m1.shape[0]}")
     if not isinstance(df_m1, pd.DataFrame): logging.error("Engineer M1 Features Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m1.empty: logging.warning("   (Warning) ข้ามการสร้าง Features M1: DataFrame ว่างเปล่า."); return df_m1
     df = df_m1.copy(); price_cols = ["Open", "High", "Low", "Close"]
@@ -635,6 +636,7 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
     else:
         for col in price_cols: df[col] = pd.to_numeric(df[col], errors='coerce')
         df.dropna(subset=price_cols, inplace=True)
+        logging.info(f"Rows after drop price NaN: {df.shape[0]}")
         if df.empty: logging.warning("   (Warning) M1 DataFrame ว่างเปล่าหลังลบราคา NaN."); return df
         df["Candle_Body"]=abs(df["Close"]-df["Open"]).astype('float32'); df["Candle_Range"]=(df["High"]-df["Low"]).astype('float32'); df["Gain"]=(df["Close"]-df["Open"]).astype('float32')
         df["Candle_Ratio"]=np.where(df["Candle_Range"].abs()>1e-9,df["Candle_Body"]/df["Candle_Range"],0.0).astype('float32'); df["Upper_Wick"]=(df["High"]-np.maximum(df["Open"],df["Close"])).astype('float32')
@@ -737,6 +739,11 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
     # [Patch v5.5.4] Run QA check after cleaning to avoid false warnings
     if df.isnull().any().any() or np.isinf(df[numeric_cols_clean]).any().any():
         logging.warning("[QA WARNING] NaN/Inf detected in engineered features")
+    nan_counts = df.isna().sum()
+    logging.info("NaN per column after engineering:\n%s", nan_counts.to_string())
+    high_nan_cols = nan_counts[nan_counts > len(df) * 0.5]
+    if not high_nan_cols.empty:
+        logging.warning(f"Columns with >50% NaN: {list(high_nan_cols.index)}")
     logging.info("[QA] M1 Feature Engineering Completed")
     return df.reindex(df_m1.index)
 
@@ -745,6 +752,7 @@ def clean_m1_data(df_m1):  # pragma: no cover
     logging.info("(Processing) กำลังกำหนด Features M1 สำหรับ Drift และแปลงประเภท (v4.9.0)...") # <<< MODIFIED v4.9.0
     if not isinstance(df_m1, pd.DataFrame): logging.error("Clean M1 Data Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m1.empty: logging.warning("   (Warning) ข้ามการทำความสะอาดข้อมูล M1: DataFrame ว่างเปล่า."); return pd.DataFrame(), []
+    logging.info(f"Rows before cleaning: {df_m1.shape[0]}")
     df_cleaned = df_m1.copy()
     potential_m1_features = ["Candle_Body", "Candle_Range", "Candle_Ratio", "Gain", "Gain_Z", "MACD_line", "MACD_signal", "MACD_hist", "MACD_hist_smooth", "ATR_14", "ATR_14_Shifted", "ATR_14_Rolling_Avg", "Candle_Speed", "Wick_Length", "Wick_Ratio", "Pattern_Label", "Signal_Score", 'Volatility_Index', 'ADX', 'RSI', 'cluster', 'spike_score', 'OF_Imbalance', 'Momentum_Divergence', 'Relative_Volume', 'session']
     lag_cols_in_df = [col for col in df_cleaned.columns if '_lag' in col]
@@ -778,6 +786,8 @@ def clean_m1_data(df_m1):  # pragma: no cover
             if not isinstance(df_cleaned[col].dtype, pd.CategoricalDtype):
                 try: df_cleaned[col] = df_cleaned[col].astype('category')
                 except Exception as e_cat: logging.warning(f"   (Warning) เกิดข้อผิดพลาดในการแปลง '{col}' เป็น category: {e_cat}.")
+    logging.info(f"Rows after cleaning features: {df_cleaned.shape[0]}")
+    logging.info("NaN count after clean_m1_data:\n%s", df_cleaned.isna().sum().to_string())
     logging.info("(Success) กำหนด Features M1 และแปลงประเภท (v4.9.0) เสร็จสิ้น.") # <<< MODIFIED v4.9.0
     return df_cleaned, m1_features_for_drift
 

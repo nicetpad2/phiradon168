@@ -367,6 +367,7 @@ def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) ->
     )
 
 
+
 if __name__ == "__main__":
     configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
     args = parse_args()
@@ -500,71 +501,8 @@ if __name__ == "__main__":
         "[Patch v5.8.15] Loaded trade log: %s", os.path.basename(trade_log_file)
     )
 
-    try:
-        trade_df = load_trade_log(trade_log_file, min_rows=10)
-    except ValueError as ve:
-        logger.error(str(ve))
-        raise
 
-    ensure_output_files([features_path, trade_log_file])
-    try:
-        run_mode(args.mode)
-        ensure_output_files([features_path, trade_log_file])
-
-    except KeyboardInterrupt:
-        print("\n(Stopped) การทำงานถูกยกเลิกโดยผู้ใช้.")
-    except Exception as e:
-        logger.error("เกิดข้อผิดพลาดที่ไม่คาดคิด: %s", str(e), exc_info=True)
-        sys.exit(1)
-    else:
-        # [Patch v5.0.23] Respect USE_GPU_ACCELERATION flag when logging GPU status
-        main_mod = sys.modules.get("src.main")
-        use_gpu = getattr(main_mod, "USE_GPU_ACCELERATION", False)
-        release_gpu_resources(nvml_handle, use_gpu)
-
-        # [Patch v6.2.3] Auto Threshold Tuning, Meta-Classifier Training & Dashboard Generation
-        from src import config as cfg
-
-        if getattr(cfg, "AUTO_THRESHOLD_TUNING", False):
-            import threshold_optimization as topt
-            logger.info("[Patch v6.6.8] Starting Auto Threshold Optimization...")
-            topt.run_threshold_optimization(
-                output_dir=str(cfg.OUTPUT_DIR),
-                trials=getattr(cfg, "OPTUNA_N_TRIALS", 50),
-                study_name="threshold_wfv",
-                direction=getattr(cfg, "OPTUNA_DIRECTION", "maximize"),
-                timeout=None,
-            )
-            logger.info("[Patch v6.2.3] Auto Threshold Optimization Completed.")
-
-        try:
-            from src.evaluation import auto_train_meta_classifiers
-            logger.info("[Patch v6.4.1] Auto-training missing meta-classifiers...")
-            trade_log_path = os.path.join(
-                cfg.OUTPUT_DIR, "trade_log_v32_walkforward.csv.gz"
-            )
-            training_data = pd.read_csv(trade_log_path, compression="gzip")
-            result = auto_train_meta_classifiers(
-                cfg,
-                training_data,
-                models_dir=getattr(cfg, "MODELS_DIR", cfg.OUTPUT_DIR),
-                features_dir=cfg.OUTPUT_DIR,
-            )
-            if result:
-                logger.info(
-                    "[Patch v6.6.6] Meta-Classifier metrics: %s", result.get("metrics")
-                )
-            logger.info("[Patch v6.4.1] Meta-Classifier Training Completed.")
-        except ImportError:
-            logger.warning("[Patch v6.2.3] auto_train_meta_classifiers not found; skipping.")
-
-        try:
-            from reporting.dashboard import generate_dashboard
-            dashboard_path = os.path.join(cfg.OUTPUT_DIR, "dashboard.html")
-            metrics_file = os.path.join(cfg.OUTPUT_DIR, "metrics_summary_v32.csv")
-            df_dash = pd.read_csv(metrics_file) if os.path.exists(metrics_file) else pd.DataFrame()
-            logger.info("[Patch v6.6.6] Generating Dashboard at %s", dashboard_path)
-            generate_dashboard(results=df_dash, output_filepath=dashboard_path)
-            logger.info("[Patch v6.6.6] Dashboard Generated: %s", dashboard_path)
-        except ImportError:
-            logger.warning("[Patch v6.2.3] reporting.dashboard.generate_dashboard not found; skipping.")
+if __name__ == "__main__":
+    configure_logging()
+    from main import main as entry_main
+    sys.exit(entry_main())
