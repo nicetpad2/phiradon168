@@ -95,10 +95,17 @@ def auto_train_meta_classifiers(
         )
     features = [f for f in features if f in training_data.columns]
     if len(features) == 0:
-        logger.error(
-            "[Patch v6.6.7] No available features in training data, skipping meta-classifier"
-        )
-        return {}
+        if profit_col and profit_col in training_data.columns:
+            logger.warning(
+                "[Patch v6.6.13] No feature columns found; using '%s' as fallback feature",
+                profit_col,
+            )
+            features = [profit_col]
+        else:
+            logger.error(
+                "[Patch v6.6.7] No available features in training data, skipping meta-classifier"
+            )
+            return {}
 
     if len(training_data) < 5:
         logger.error(

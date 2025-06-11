@@ -1,7 +1,13 @@
-### 2025-07-27
+
+
 - [Patch v6.7.2] Ensure session column exists after signal calculation
 - Exclude non-numeric 'Date' from features_main.json
-- QA: pytest -q passed (924 tests)
+
+- [Patch v6.7.2] Exclude Date and Timestamp columns from feature list
+- [Patch v6.7.2] Shorten dummy trade log to 9 rows
+- New/Updated unit tests added for tests/test_projectp_feature_utils.py::test_generate_all_features_excludes_date_columns
+- QA: pytest -q passed (925 tests)
+
 
 ### 2025-07-26
 
@@ -1826,3 +1832,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_zero_profit
 - QA: pytest -q passed (924 tests)
 
+
+### 2025-06-15
+- [Patch v6.6.13] Fallback to profit column when features missing
+- New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py::test_auto_train_meta_classifiers_fallback_profit
+- QA: pytest -q passed (925 tests)
