@@ -40,6 +40,7 @@ def test_missing_outputs_creates_dummy(monkeypatch, tmp_path, caplog):
     monkeypatch.setitem(sys.modules, "src.main", types.SimpleNamespace(main=dummy_main))
     monkeypatch.setattr(sys, "argv", ["ProjectP.py"])
     script_path = os.path.join(ROOT_DIR, "ProjectP.py")
+    monkeypatch.setenv("TRADE_LOG_MIN_ROWS", "9")
     with caplog.at_level("WARNING"):
         runpy.run_path(script_path, run_name="__main__")
     assert (out_dir / "trade_log_dummy.csv").exists()
