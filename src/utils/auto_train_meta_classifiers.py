@@ -60,15 +60,20 @@ def auto_train_meta_classifiers(
 
     # Ensure 'target' column exists before proceeding
     if "target" not in training_data.columns:
-        if "profit" in training_data.columns:
+        profit_col = next(
+            (c for c in ("profit", "pnl_usd_net", "PnL", "pnl") if c in training_data.columns),
+            None,
+        )
+        if profit_col:
             logger.info(
-                "[Patch v6.6.7] Deriving 'target' from 'profit' column"
+                "[Patch v6.6.11] Auto-generating 'target' from '%s' : profit > 0 -> 1, else 0",
+                profit_col,
             )
             training_data = training_data.copy()
-            training_data["target"] = (training_data["profit"] > 0).astype(int)
+            training_data["target"] = (training_data[profit_col] > 0).astype(int)
         else:
             logger.warning(
-                "[Patch v6.5.10] 'target' column missing, skipping meta-classifier training"
+                "[Patch v6.5.10] 'target' column missing and no profit-like column found – skip meta-classifier training"
             )
             return {}
 
