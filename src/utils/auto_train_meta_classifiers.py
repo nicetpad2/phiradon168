@@ -67,7 +67,10 @@ def auto_train_meta_classifiers(
 
     missing = [c for c in features if c not in training_data.columns]
     if missing:
-        logger.error("[Patch v6.5.5] Training data missing features: %s", missing)
+        logger.warning("[Patch v6.6.6] Training data missing features: %s", missing)
+    available = [c for c in features if c in training_data.columns]
+    if not available:
+        logger.error("[Patch v6.6.6] No available features for training")
         return None
 
     if len(training_data) < 5:
@@ -76,7 +79,7 @@ def auto_train_meta_classifiers(
         )
         return None
 
-    X = training_data[features]
+    X = training_data[available]
     y = training_data["target"]
 
     model = LogisticRegression(max_iter=1000)
@@ -92,4 +95,5 @@ def auto_train_meta_classifiers(
     model_path = os.path.join(models_dir, "meta_classifier.joblib")
     dump(model, model_path)
     logger.info("[Patch v6.5.5] Meta-classifier trained: %s", model_path)
+    logger.info("[Patch v6.6.6] Meta-classifier metrics - accuracy: %.4f, auc: %.4f", acc, auc)
     return {"model_path": model_path, "metrics": {"accuracy": acc, "auc": auc}}
