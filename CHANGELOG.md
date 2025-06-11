@@ -1579,3 +1579,9 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.5.1] Populate dummy trade log with 10 rows
 - Updated ProjectP.py to generate 10 placeholder trades
 - QA: pytest -q passed (663 tests)
+
+### 2025-06-11
+- [Patch v6.5.2] Add MIN_TRADE_ROWS validation
+- Updated config.Config with TRADE_LOG_PATH and MIN_TRADE_ROWS
+- New test tests/test_config_trade_log.py
+- QA: pytest -q passed (894 tests)
