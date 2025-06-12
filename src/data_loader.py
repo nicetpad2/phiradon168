@@ -332,22 +332,22 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
 
     df.columns = [col.lower() for col in df.columns]
 
-    # [Patch v6.8.14] Combine separate date and time columns automatically
+    # [Patch v6.8.16] Vectorized Thai date parsing
     if (
         "datetime" not in df.columns
         and "date" in df.columns
         and ("time" in df.columns or "timestamp" in df.columns)
     ):
         t_col = "time" if "time" in df.columns else "timestamp"
-        df["datetime"] = convert_thai_datetime(
-            df["date"].astype(str) + " " + df[t_col].astype(str), errors="coerce"
-        )
-        df.drop(columns=[t_col], inplace=True)
         logger.info(
             "ตรวจพบคอลัมน์ date/time แยกกัน และได้ทำการรวมเป็น datetime โดยอัตโนมัติ"
         )
+        date_col = _parse_thai_date_fast(df["date"].astype(str))
+        time_col = pd.to_timedelta(df[t_col].astype(str))
+        df["datetime"] = date_col + time_col
+        df.drop(columns=[t_col], inplace=True)
     elif "datetime" in df.columns:
-        df["datetime"] = convert_thai_datetime(df["datetime"], errors="coerce")
+        df["datetime"] = pd.to_datetime(df["datetime"], errors="coerce")
 
     # ตั้งค่า Index และตรวจสอบข้อมูลซ้ำซ้อน
     time_col_name = "time" if "time" in df.columns else "datetime"
@@ -1392,6 +1392,20 @@ def check_data_quality(df, dropna=True, fillna_method=None, subset_dupes=None):
     return df
 
 
+def _parse_thai_date_fast(date_series):
+    """Efficiently parse Thai Buddhist year dates."""
+    if date_series.str.contains('/').any():
+        date_parts = date_series.str.extract(r"(\d{1,2})/(\d{1,2})/(\d{4})", expand=True)
+        date_parts.columns = ["day", "month", "year"]
+    else:
+        date_parts = date_series.str.extract(r"(\d{4})(\d{2})(\d{2})", expand=True)
+        date_parts.columns = ["year", "month", "day"]
+    for col in date_parts.columns:
+        date_parts[col] = pd.to_numeric(date_parts[col], errors="coerce")
+    date_parts["year"] -= 543
+    return pd.to_datetime(date_parts[["year", "month", "day"]], errors="coerce")
+
+
 __all__ = [
     "safe_get_global",
     "setup_output_directory",
@@ -1414,6 +1428,7 @@ __all__ = [
     "deduplicate_and_sort",
     "check_price_jumps",
     "convert_thai_years",
+    "_parse_thai_date_fast",
     "convert_thai_datetime",
     "prepare_datetime_index",
     "validate_m1_data_path",

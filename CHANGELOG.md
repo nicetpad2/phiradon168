@@ -2051,3 +2051,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.8.15] Improve safe_load_csv_auto datetime parsing and duplicate handling
 - New/Updated unit tests added for tests/test_function_registry.py
 - QA: pytest -q passed (979 tests)
+
+### 2025-06-16
+- [Patch v6.8.16] Optimize Thai date parsing with vectorized logic
+- New/Updated unit tests added for tests/test_parse_thai_date_fast.py
+- QA: pytest -q passed (981 tests)
