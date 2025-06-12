@@ -1958,3 +1958,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.8.3] Fix volume dtype to support decimal values
 - New/Updated unit tests added for tests/test_data_loader_additional.py::test_load_data_volume_dtype
 - QA: pytest -q passed (958 tests)
+### 2025-06-11
+- [Patch v6.8.4] Proactive CSV validation for M1/M15 data
+- New/Updated unit tests added for tests/test_data_loader_buddhist.py, tests/test_features_m15_integrity.py
+- QA: pytest -q passed (tests count TBD)
