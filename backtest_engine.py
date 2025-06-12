@@ -84,8 +84,12 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
         raise RuntimeError(f"[backtest_engine] Failed to load price data: {e}") from e
 
     # [Patch v6.7.5] combine Date and Timestamp to unique datetime index if present
-    if {"Date", "Timestamp"}.issubset(df.columns):
-        combined = df["Date"].astype(str) + " " + df["Timestamp"].astype(str)
+    date_cols_upper = {"Date", "Timestamp"}
+    date_cols_lower = {"date", "timestamp"}
+    if date_cols_upper.issubset(df.columns) or date_cols_lower.issubset(df.columns):
+        d_col = "Date" if "Date" in df.columns else "date"
+        t_col = "Timestamp" if "Timestamp" in df.columns else "timestamp"
+        combined = df[d_col].astype(str) + " " + df[t_col].astype(str)
         df.index = pd.to_datetime(combined, format="%Y%m%d %H:%M:%S", errors="coerce")
         # [Patch v6.7.8] Fallback parse without explicit format when too many NaT
         if df.index.isnull().sum() > 0.5 * len(df):
@@ -93,7 +97,7 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
                 "(Warning) การ parse วันที่/เวลา ด้วย format ที่กำหนดไม่สำเร็จ - กำลัง parse ใหม่แบบไม่ระบุ format"
             )
             df.index = pd.to_datetime(combined, errors="coerce", format="mixed")
-        df.drop(columns=["Date", "Timestamp"], inplace=True)
+        df.drop(columns=[d_col, t_col], inplace=True)
     elif not isinstance(df.index, pd.DatetimeIndex):
         # fallback: convert existing index
         df.index = pd.to_datetime(df.index, errors="coerce")
