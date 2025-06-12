@@ -25,14 +25,14 @@ def test_run_pipeline_stage_preprocess(monkeypatch, tmp_path):
     called = {}
     monkeypatch.setattr(main, 'load_data', lambda p, t, **kw: df)
     monkeypatch.setattr(main, 'engineer_m1_features', lambda d: d)
-    def fake_to_parquet(self, path, *a, **k):
+    def fake_save(df_in, path, fmt):
         Path(path).write_text('x')
-        called['saved'] = True
-    monkeypatch.setattr(pd.DataFrame, 'to_parquet', fake_to_parquet)
+        called['saved'] = fmt
+    monkeypatch.setattr(main, 'save_features', fake_save)
     monkeypatch.setattr(main, 'maybe_collect', lambda: called.setdefault('collect', True))
     out = main.run_pipeline_stage('preprocess')
     assert Path(out).exists()
-    assert called['saved'] and called['collect']
+    assert called['saved'] == 'parquet' and called['collect']
 
 
 def test_run_pipeline_stage_backtest_existing(monkeypatch, tmp_path):
@@ -40,7 +40,7 @@ def test_run_pipeline_stage_backtest_existing(monkeypatch, tmp_path):
     preproc = Path(tmp_path) / 'preprocessed.parquet'
     preproc.write_text('dummy')
     df = pd.DataFrame({'A': [1]})
-    monkeypatch.setattr(pd, 'read_parquet', lambda p: df)
+    monkeypatch.setattr(main, 'load_features', lambda p, f: df)
     called = {}
     monkeypatch.setitem(main.__dict__, 'run_backtest_simulation_v34', lambda d, label, initial_capital_segment: called.setdefault('run', True))
     main.run_pipeline_stage('backtest')

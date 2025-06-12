@@ -13,7 +13,7 @@ import logging
 import os
 import sys
 import json
-from src.utils import get_env_float, maybe_collect
+from src.utils import get_env_float, maybe_collect, load_settings
 if 'pytest' in sys.modules:
     cfg = sys.modules.get('src.config')
     if cfg is not None and getattr(cfg, '__file__', None) is None and hasattr(cfg, 'ENTRY_CONFIG_PER_FOLD'):
@@ -63,6 +63,8 @@ from src.features import (
     calculate_m1_entry_signals,
     create_session_column,
     load_features_for_model,
+    save_features,
+    load_features,
 )
 from src.strategy import (
     run_all_folds_with_threshold,
@@ -2028,21 +2030,28 @@ def run_auto_threshold_stage():
 
 
 # [Patch v5.5.9] Pipeline helper for discrete stages
+# [Patch v6.8.5] Support configurable feature format
 def run_pipeline_stage(stage: str):
     """Run a specific pipeline stage."""
+    settings = load_settings()
+    fmt = getattr(settings, "feature_format", "parquet")
+    ext_map = {"parquet": ".parquet", "hdf5": ".h5"}
+    ext = ext_map.get(fmt.lower(), ".csv")
     if stage == 'preprocess':
         df = load_validated_csv(DATA_FILE_PATH_M1, "M1")
         df = engineer_m1_features(df)
-        out_path = os.path.join(OUTPUT_DIR, "preprocessed.parquet")
-        df.to_parquet(out_path)
+        out_path = os.path.join(OUTPUT_DIR, f"preprocessed{ext}")
+        save_features(df, out_path, fmt)
         del df
         maybe_collect()
         logger.info(f"[Pipeline] Preprocess complete -> {out_path}")
         return out_path
     if stage == 'backtest':
-        data_path = os.path.join(OUTPUT_DIR, "preprocessed.parquet")
+        data_path = os.path.join(OUTPUT_DIR, f"preprocessed{ext}")
         if os.path.exists(data_path):
-            df = pd.read_parquet(data_path)
+            df = load_features(data_path, fmt)
+            if df is None:
+                df = load_validated_csv(DATA_FILE_PATH_M1, "M1")
         else:
             df = load_validated_csv(DATA_FILE_PATH_M1, "M1")
         run_backtest_simulation_v34(df, label="WFV", initial_capital_segment=INITIAL_CAPITAL)
