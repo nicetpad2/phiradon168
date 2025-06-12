@@ -4,6 +4,16 @@ import argparse
 import logging
 from typing import Iterable
 
+DEFAULT_REQUIRED_COLS = [
+    "Date",
+    "Timestamp",
+    "Open",
+    "High",
+    "Low",
+    "Close",
+    "Volume",
+]
+
 import pandas as pd
 
 from src import data_cleaner
@@ -18,9 +28,12 @@ def validate_and_convert_csv(
     required_cols: Iterable[str] | None = None,
 ) -> pd.DataFrame:
     """[Patch] Load, clean, validate then optionally save a CSV file."""
+    if required_cols is None:
+        required_cols = DEFAULT_REQUIRED_COLS
     df = data_cleaner.read_csv_auto(path)
+    # validate raw columns first to ensure expected structure
+    validate_csv_data(df, required_cols)
     df = data_cleaner.clean_dataframe(df)
-    df = validate_csv_data(df, required_cols)
     if output:
         df.to_csv(output, index=False)
         logger.info("[Patch] Validated CSV written to %s", output)
