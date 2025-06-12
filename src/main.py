@@ -189,7 +189,21 @@ except NameError:
 
 
 def load_validated_csv(raw_path, timeframe, dtypes=None):
-    """Validate and load CSV, ensuring Buddhist year conversion."""
+    """Validate and load CSV or Parquet, ensuring Buddhist year conversion."""
+    if raw_path.endswith(".parquet"):
+        try:
+            return pd.read_parquet(raw_path)
+        except Exception as e_read:
+            logging.warning(f"(Warning) Failed to read parquet {raw_path}: {e_read}")
+            return load_data(raw_path.replace(".parquet", ".csv"), timeframe, dtypes=dtypes)
+
+    parquet_path = raw_path.replace(".csv", ".parquet")
+    if os.path.exists(parquet_path):
+        try:
+            return pd.read_parquet(parquet_path)
+        except Exception as e_read_cache:
+            logging.warning(f"(Warning) Failed to read parquet {parquet_path}: {e_read_cache}")
+
     clean_path = raw_path.replace(".csv", "_clean.csv")
     if not os.path.exists(clean_path):
         print(
@@ -203,7 +217,15 @@ def load_validated_csv(raw_path, timeframe, dtypes=None):
                 f"เกิดข้อผิดพลาดร้ายแรงระหว่างการตรวจสอบและแปลงไฟล์ CSV: {e}"
             )
             raise
-    return load_data(clean_path, timeframe, dtypes=dtypes)
+
+    df_loaded = load_data(clean_path, timeframe, dtypes=dtypes)
+    try:
+        df_loaded.to_parquet(parquet_path)
+    except Exception as e_save:
+        logging.warning(f"(Warning) Failed to save parquet to {parquet_path}: {e_save}")
+    if df_loaded.empty:
+        logging.warning("(Warning) Loaded DataFrame is empty after CSV load")
+    return df_loaded
 try:
     META_CLASSIFIER_PATH
 except NameError:
@@ -1086,6 +1108,12 @@ def main(run_mode='FULL_PIPELINE', skip_prepare=False, suffix_from_prev_step=Non
                     logging.info(f"   Saving final M1 data to: {m1_save_path}")
                     df_m1_final.to_csv(m1_save_path, index=True, encoding="utf-8", compression="gzip")
                     logging.info(f"   (Success) Saved final M1 data: {os.path.basename(m1_save_path)}")
+                    parquet_path = m1_save_path.replace('.csv.gz', '.parquet')
+                    try:
+                        df_m1_final.to_parquet(parquet_path)
+                        logging.info(f"   (Success) Saved Parquet: {os.path.basename(parquet_path)}")
+                    except Exception as e_parquet:
+                        logging.warning(f"   (Warning) Failed to save Parquet: {e_parquet}")
 
                     log_save_path = os.path.join(OUTPUT_DIR, f"trade_log_v32_walkforward{suffix}.csv.gz")
                     logging.info(f"   Saving generated trade log to: {log_save_path}")
