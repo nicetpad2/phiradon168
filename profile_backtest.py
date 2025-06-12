@@ -84,6 +84,17 @@ def main_profile(
     train_output: str = "models",
 ) -> None:
     """Run the backtest simulation with profiling enabled."""
+    if "_M1" not in os.path.basename(csv_path):
+        guess = csv_path.replace("_M15.csv", "_M1.csv")
+        if guess != csv_path and os.path.exists(guess):
+            logger.warning(
+                "(Warning) Provided CSV not M1; using '%s' instead", guess
+            )
+            csv_path = guess
+        else:
+            logger.warning(
+                "(Warning) CSV path may not be M1 timeframe: %s", csv_path
+            )
     df = safe_load_csv_auto(csv_path, row_limit=num_rows)
     if df is None:
         raise FileNotFoundError(f"File not found: {csv_path}")
