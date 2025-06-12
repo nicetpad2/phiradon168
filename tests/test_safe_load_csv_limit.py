@@ -24,3 +24,19 @@ def test_safe_load_csv_auto_duplicate_time(tmp_path):
     result = dl.safe_load_csv_auto(str(tmp_path / 'dup.csv'))
     assert len(result) == 1
 
+
+def test_safe_load_csv_auto_merge_date_time(tmp_path, caplog):
+    df = pd.DataFrame({
+        'date': ['2024-01-01'],
+        'time': ['00:15:00'],
+        'open': [1],
+        'high': [1],
+        'low': [1],
+        'close': [1],
+    })
+    p = tmp_path / 'mix.csv'
+    df.to_csv(p, index=False)
+    with caplog.at_level('INFO', logger='src.data_loader'):
+        result = dl.safe_load_csv_auto(str(p))
+    assert result.index.name == 'datetime'
+

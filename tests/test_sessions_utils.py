@@ -26,7 +26,7 @@ def test_get_session_tag_custom_naive_tz():
 
 def test_get_session_tag_overlap():
     ts = pd.Timestamp('2024-01-01 14:00', tz='UTC')
-    assert get_session_tag(ts) == 'London/NY'
+    assert get_session_tag(ts) == 'London/New York Overlap'
 
 
 def test_get_session_tag_nat():

@@ -331,6 +331,22 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
 
     df.columns = [col.lower() for col in df.columns]
 
+    # [Patch v6.8.14] Combine separate date and time columns automatically
+    if (
+        'datetime' not in df.columns
+        and 'date' in df.columns
+        and ('time' in df.columns or 'timestamp' in df.columns)
+    ):
+        t_col = 'time' if 'time' in df.columns else 'timestamp'
+        df['datetime'] = pd.to_datetime(
+            df['date'].astype(str) + ' ' + df[t_col].astype(str), errors='coerce'
+        )
+        df.drop(columns=[t_col], inplace=True)
+        logger.info(
+            "ตรวจพบคอลัมน์ date/time แยกกัน และได้ทำการรวมเป็น datetime โดยอัตโนมัติ"
+        )
+
+
     # ตั้งค่า Index และตรวจสอบข้อมูลซ้ำซ้อน
     time_col_name = 'time' if 'time' in df.columns else 'datetime'
     if time_col_name in df.columns:
