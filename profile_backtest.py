@@ -127,8 +127,9 @@ def main_profile(
         df['Trade_Tag'] = ''
         df['Trade_Reason'] = ''
     # [Patch v5.1.0] ตรวจสอบคอลัมน์หลักก่อนเรียก backtest
-    required_cols = ['Open', 'High', 'Low', 'Close']
-    missing = [c for c in required_cols if c not in df.columns]
+    required_cols = ['open', 'high', 'low', 'close']
+    cols_lower = [c.lower() for c in df.columns]
+    missing = [c for c in required_cols if c not in cols_lower]
     if missing:
         msg = f"(Error) Missing required columns in input DataFrame for profile: {missing}"
         logger.error(msg)
