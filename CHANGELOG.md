@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_data_loader_additional.py::test_validate_m15_data_path_ok
 - QA: pytest -q passed (957 tests)
 
+### 2025-06-12
+- [Patch v6.8.5] Support configurable feature_format
+- New/Updated unit tests added for tests/test_features_generic.py, tests/test_main_pipeline_stage.py, tests/test_settings.py
+- QA: pytest -q passed (964 tests)
+
 ### 2025-08-07
 - [Patch v6.7.14] Add debug row limit options to main CLI
 - New/Updated unit tests added for tests/test_main_cli_extended.py::test_main_debug_sets_sample_size

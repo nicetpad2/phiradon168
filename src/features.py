@@ -1661,6 +1661,34 @@ def load_features_parquet(path: str) -> pd.DataFrame | None:
         logging.error(f"(Features) Failed to load features from {path}: {e}", exc_info=True)
         return None
 
+# [Patch v6.8.5] Generic helpers choosing format
+def save_features(df: pd.DataFrame, path: str, fmt: str = "parquet") -> None:
+    """Save DataFrame in the specified format."""
+    fmt_lower = (fmt or "parquet").lower()
+    if fmt_lower == "hdf5":
+        save_features_hdf5(df, path)
+    elif fmt_lower == "parquet":
+        save_features_parquet(df, path)
+    else:
+        df.to_csv(path, index=False)
+        logging.info(f"(Features) Saved features to {path} as CSV")
+
+
+def load_features(path: str, fmt: str = "parquet") -> pd.DataFrame | None:
+    """Load DataFrame from the specified format."""
+    fmt_lower = (fmt or "parquet").lower()
+    if fmt_lower == "hdf5":
+        return load_features_hdf5(path)
+    if fmt_lower == "parquet":
+        return load_features_parquet(path)
+    try:
+        df = pd.read_csv(path)
+        logging.info(f"(Features) Loaded features from {path} as CSV")
+        return df
+    except Exception as e:
+        logging.error(f"(Features) Failed to load features from {path}: {e}", exc_info=True)
+        return None
+
 # --- Advanced Feature Utilities -------------------------------------------------
 # [Patch v5.6.5] Add momentum, cumulative delta, and wave pattern helpers
 
@@ -1811,6 +1839,8 @@ __all__ = [
     "analyze_feature_importance_shap",
     "save_features_parquet",
     "load_features_parquet",
+    "save_features",
+    "load_features",
     "build_feature_catalog",
 ]
 
