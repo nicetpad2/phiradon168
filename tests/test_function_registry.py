@@ -10,6 +10,7 @@ FUNCTIONS_INFO = [
     ("src/config.py", "print_gpu_utilization", 598),
     ("src/config.py", "show_system_status", 650),
 
+
     ("src/data_loader.py", "inspect_file_exists", 935),
     ("src/data_loader.py", "read_csv_with_date_parse", 940),
     ("src/data_loader.py", "check_nan_percent", 947),
@@ -22,6 +23,7 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "load_raw_data_m15", 1103),
     ("src/data_loader.py", "write_test_file", 1109),
     ("src/data_loader.py", "validate_csv_data", 1190),
+
 
     ("src/features.py", "tag_price_structure_patterns", 473),
     ("src/features.py", "calculate_trend_zone", 1572),

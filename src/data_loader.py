@@ -24,6 +24,7 @@
 # <<< MODIFIED v4.8.8 (Patch 26.8): Applied model_diagnostics_unit recommendation to safe_set_datetime for robust dtype handling. >>>
 # <<< MODIFIED v4.8.8 (Patch 26.11): Further refined safe_set_datetime to more aggressively ensure column dtype is datetime64[ns] before assignment. >>>
 import logging
+from src.utils.errors import DataValidationError
 import os
 import sys
 import subprocess
@@ -276,19 +277,33 @@ def safe_load_csv_auto(file_path, row_limit=None, chunk_size=None):  # pragma: n
                     chunks = []
                     for chunk in pd.read_csv(f, **read_csv_kwargs):
                         chunks.append(chunk)
-                    return pd.concat(chunks, ignore_index=False)
-                return pd.read_csv(f, **read_csv_kwargs)
+                    df = pd.concat(chunks, ignore_index=False)
+                else:
+                    df = pd.read_csv(f, **read_csv_kwargs)
         else:
             logging.debug("         -> No .gz extension, using standard pd.read_csv.")
             if "chunksize" in read_csv_kwargs:
                 chunks = []
                 for chunk in pd.read_csv(file_path, **read_csv_kwargs):
                     chunks.append(chunk)
-                return pd.concat(chunks, ignore_index=False)
-            return pd.read_csv(file_path, **read_csv_kwargs)
+                df = pd.concat(chunks, ignore_index=False)
+            else:
+                df = pd.read_csv(file_path, **read_csv_kwargs)
+        if df.index.has_duplicates:
+            dup_count = df.index.duplicated().sum()
+            first_dup = df.index[df.index.duplicated()][0]
+            msg = (
+                f"การตรวจสอบข้อมูลล้มเหลว! พบ Index ซ้ำ {dup_count} รายการในไฟล์ '{file_path}'. "
+                f"ตัวอย่างแรกคือ {first_dup}"
+            )
+            logging.critical(msg)
+            raise DataValidationError(msg)
+        return df
     except pd.errors.EmptyDataError:
         logging.info(f"         (Info) File is empty: {file_path}")
         return pd.DataFrame()
+    except DataValidationError:
+        raise
     except Exception as e:
         logging.error(f"         (Error) Failed to load file '{os.path.basename(file_path)}': {e}", exc_info=True)
         return None
