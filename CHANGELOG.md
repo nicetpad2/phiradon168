@@ -1994,3 +1994,8 @@ QA: pytest -q passed (219 tests)
 ### 2025-08-12
 - [Patch v6.8.6] Handle constant features in select_top_features
 - QA: pytest -q passed (968 tests)
+
+### 2025-08-13
+- [Patch v6.8.6] Auto-clean duplicate indexes in safe_load_csv_auto
+- New/Updated unit tests added for tests/test_safe_load_csv_limit.py, tests/test_function_registry.py
+- QA: pytest -q passed (970 tests)
