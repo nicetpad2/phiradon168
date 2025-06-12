@@ -1958,3 +1958,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.8.3] Fix volume dtype to support decimal values
 - New/Updated unit tests added for tests/test_data_loader_additional.py::test_load_data_volume_dtype
 - QA: pytest -q passed (958 tests)
+
+### 2025-08-10
+- [Patch v6.8.4] Fail fast on duplicate indexes when loading CSV
+- New/Updated unit tests added for tests/test_safe_load_csv_limit.py::test_safe_load_csv_auto_duplicate_index
+- QA: pytest -q passed (959 tests)
