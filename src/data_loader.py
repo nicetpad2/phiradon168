@@ -1248,6 +1248,27 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
             print(f"✔ [AutoConvert] {out_f} OK - {status}ไฟล์")
         except Exception as e:
             print(f"✗ [AutoConvert] Error ({f}): {e}")
+
+# [Patch v6.8.10] Helper to load default project CSV files
+def load_project_csvs(row_limit=None):
+    """Load XAUUSD_M1.csv และ XAUUSD_M15.csv ที่อยู่ในรูทโปรเจค
+
+    Parameters
+    ----------
+    row_limit : int, optional
+        จำกัดจำนวนแถวที่โหลดเพื่อให้การทดสอบทำงานรวดเร็ว
+
+    Returns
+    -------
+    tuple[pd.DataFrame, pd.DataFrame]
+        ข้อมูลจากไฟล์ M1 และ M15 ตามลำดับ
+    """
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    m1_path = os.path.join(base_dir, "XAUUSD_M1.csv")
+    m15_path = os.path.join(base_dir, "XAUUSD_M15.csv")
+    m1_df = safe_load_csv_auto(m1_path, row_limit=row_limit)
+    m15_df = safe_load_csv_auto(m15_path, row_limit=row_limit)
+    return m1_df, m15_df
 # [Patch v5.7.3] Validate DataFrame for required columns and non-emptiness
 def validate_csv_data(df, required_cols=None):
     """Ensure ``df`` is non-empty and contains required columns.
@@ -1378,5 +1399,6 @@ __all__ = [
     "load_final_m1_data",
     "check_data_quality",
     "auto_convert_gold_csv",
+    "load_project_csvs",
 ]
 

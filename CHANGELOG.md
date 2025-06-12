@@ -2014,3 +2014,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.8.9] Enforce CSV validation using project columns
 - New/Updated unit tests added for tests/test_csv_validator.py::test_validate_and_convert_csv_success
 - QA: pytest -q passed (971 tests)
+### 2025-06-12
+- [Patch v6.8.10] Add helper to load default project CSV files
+- New/Updated unit tests added for tests/test_load_project_csvs.py
+- QA: pytest -q passed (tests count TBD)
