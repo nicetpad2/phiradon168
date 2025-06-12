@@ -45,7 +45,7 @@ def test_update_be_trailing_edge_cases(monkeypatch):
 
 
 def test_adaptive_position_size_and_portfolio_stop(monkeypatch):
-    monkeypatch.setattr('src.money_management.atr_position_size', lambda e, a, risk_pct=0.01: (0.5, 1.0))
+    monkeypatch.setattr('src.money_management.volatility_adjusted_lot_size', lambda e, a, risk_pct=0.01: (0.5, 1.0))
     assert adaptive_position_size(1000.0, 0.2) == 0.5
 
     monkeypatch.setattr('src.money_management.check_portfolio_stop', lambda dd, t: dd >= t)

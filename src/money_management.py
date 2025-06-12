@@ -1,6 +1,10 @@
 import logging
 from typing import Tuple, Dict
-from src.adaptive import atr_position_size, compute_trailing_atr_stop, check_portfolio_stop
+from src.adaptive import (
+    compute_trailing_atr_stop,
+    check_portfolio_stop,
+    volatility_adjusted_lot_size,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +68,9 @@ def update_be_trailing(order: Dict, current_price: float, atr: float, side: str,
 
 
 def adaptive_position_size(equity: float, atr: float, risk_pct: float = 0.01) -> float:
-    """Return position size using ATR-based calculation."""
-    lot, _ = atr_position_size(equity, atr, risk_pct=risk_pct)
+    """[Patch v6.8.5] Return position size using volatility-adjusted calculation."""
+    # [Patch] leverage volatility_adjusted_lot_size for dynamic sizing
+    lot, _ = volatility_adjusted_lot_size(equity, atr, risk_pct=risk_pct)
     return lot
 
 
