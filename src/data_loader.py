@@ -345,6 +345,21 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
         df['datetime'] = date_col + time_col
         df.drop(columns=['date', 'time'], inplace=True)
         datetime_col = 'datetime'
+    elif 'local_time' in df.columns:
+        logger.info("ตรวจพบ คอลัมน์ 'local_time', กำลังแปลงข้อมูลเฉพาะรูปแบบ...")
+        datetime_column_name = 'local_time'
+        datetime_format = '%d.%m.%Y %H:%M:%S'
+        series = df[datetime_column_name].astype(str)
+        year_vals = series.str.extract(r'\d{1,2}\.\d{1,2}\.(\d{4})')[0].astype(float)
+        if (year_vals > 2500).any():
+            parts = series.str.split(' ', n=1, expand=True)
+            date_part = parts[0].str.replace('.', '/')
+            time_part = parts[1]
+            df['datetime'] = _parse_thai_date_fast(date_part) + pd.to_timedelta(time_part, errors='coerce')
+        else:
+            df['datetime'] = pd.to_datetime(series, format=datetime_format, errors='coerce')
+        df.drop(columns=[datetime_column_name], inplace=True)
+        datetime_col = 'datetime'
     elif 'datetime' in df.columns:
         logger.info("ตรวจพบ คอลัมน์ 'datetime', กำลังแปลงข้อมูล...")
         datetime_col = 'datetime'
@@ -951,24 +966,6 @@ def prepare_datetime(df, timeframe):  # pragma: no cover
     return df_copy
 # FILLER
 # === END OF PART 4/12 ===
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
-# filler
 # filler
 # filler
 # filler
