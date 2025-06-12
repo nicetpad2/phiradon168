@@ -2041,3 +2041,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.8.13] Fix session tagging and M15 duplicate handling
 - New/Updated unit tests added for tests/test_features_stub_functions.py and tests/test_backtest_engine.py
 - QA: pytest -q passed (975 tests)
+
+### 2025-06-14
+- [Patch v6.8.14] Auto merge date/time columns and refine session overlap
+- New/Updated unit tests added for tests/test_safe_load_csv_limit.py, tests/test_sessions_utils.py, tests/test_session_tag.py
+- QA: pytest -q passed (979 tests)

@@ -107,6 +107,10 @@ def get_session_tag(
                 if warn_once:
                     warned_set.add(hour_key)
             return "N/A"
+
+        if set(sessions) == {"London", "NY"}:
+            return "London/New York Overlap"
+
         return "/".join(sorted(sessions))
     except Exception as e:  # pragma: no cover - unexpected failures
         logger.error(f"   (Error) Error in get_session_tag for {timestamp}: {e}", exc_info=True)

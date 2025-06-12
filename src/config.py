@@ -282,7 +282,9 @@ def _ensure_ta_installed():  # pragma: no cover
                 return
             ta = _ta
         else:
-            logging.error("ไลบรารี 'ta' ไม่ถูกติดตั้ง และ AUTO_INSTALL_LIBS=False")
+            logging.warning(
+                "Library 'ta' not found. Please run 'pip install -r requirements.txt' to install all dependencies."
+            )
             TA_VERSION = None
             return
     TA_VERSION = getattr(ta, "__version__", "N/A")
