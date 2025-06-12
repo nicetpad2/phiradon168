@@ -2046,3 +2046,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.8.14] Auto merge date/time columns and refine session overlap
 - New/Updated unit tests added for tests/test_safe_load_csv_limit.py, tests/test_sessions_utils.py, tests/test_session_tag.py
 - QA: pytest -q passed (979 tests)
+
+### 2025-06-15
+- [Patch v6.8.15] Improve safe_load_csv_auto datetime parsing and duplicate handling
+- New/Updated unit tests added for tests/test_function_registry.py
+- QA: pytest -q passed (979 tests)

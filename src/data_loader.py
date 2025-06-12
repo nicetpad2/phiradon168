@@ -239,10 +239,11 @@ def setup_fonts(output_dir=None):  # pragma: no cover
         logging.error(f"   (Error) Critical error during font setup: {e}", exc_info=True)
 # --- Data Loading Helper ---
 def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
-    """
-    โหลดไฟล์ CSV พร้อมการจัดการข้อผิดพลาดที่มีประสิทธิภาพสูง
-    - ตรวจจับและแปลงไฟล์รูปแบบพิเศษ (ไม่มีตัวคั่น, ปี พ.ศ.) โดยอัตโนมัติ
-    - ตรวจจับและลบข้อมูลเวลาที่ซ้ำซ้อนโดยอัตโนมัติ
+    """โหลดไฟล์ CSV พร้อมการจัดการข้อผิดพลาดที่มีประสิทธิภาพสูง
+
+    การทำงานประกอบด้วยการตรวจจับไฟล์รูปแบบพิเศษและรวมคอลัมน์
+    ``date``/``time`` อัตโนมัติ รวมถึงการลบข้อมูลซ้ำอย่างยืดหยุ่น
+    โดยเก็บแถวสุดท้ายไว้เสมอ
     """
     if not os.path.exists(file_path):
         msg = f"ไม่พบไฟล์ข้อมูลที่ระบุ: {file_path}"
@@ -333,39 +334,48 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
 
     # [Patch v6.8.14] Combine separate date and time columns automatically
     if (
-        'datetime' not in df.columns
-        and 'date' in df.columns
-        and ('time' in df.columns or 'timestamp' in df.columns)
+        "datetime" not in df.columns
+        and "date" in df.columns
+        and ("time" in df.columns or "timestamp" in df.columns)
     ):
-        t_col = 'time' if 'time' in df.columns else 'timestamp'
-        df['datetime'] = pd.to_datetime(
-            df['date'].astype(str) + ' ' + df[t_col].astype(str), errors='coerce'
+        t_col = "time" if "time" in df.columns else "timestamp"
+        df["datetime"] = convert_thai_datetime(
+            df["date"].astype(str) + " " + df[t_col].astype(str), errors="coerce"
         )
         df.drop(columns=[t_col], inplace=True)
         logger.info(
             "ตรวจพบคอลัมน์ date/time แยกกัน และได้ทำการรวมเป็น datetime โดยอัตโนมัติ"
         )
-
+    elif "datetime" in df.columns:
+        df["datetime"] = convert_thai_datetime(df["datetime"], errors="coerce")
 
     # ตั้งค่า Index และตรวจสอบข้อมูลซ้ำซ้อน
-    time_col_name = 'time' if 'time' in df.columns else 'datetime'
+    time_col_name = "time" if "time" in df.columns else "datetime"
     if time_col_name in df.columns:
         if not pd.api.types.is_datetime64_any_dtype(df[time_col_name]):
-            df[time_col_name] = pd.to_datetime(df[time_col_name])
+            df[time_col_name] = pd.to_datetime(df[time_col_name], errors="coerce")
+
+        initial_rows = len(df)
+        df.dropna(subset=[time_col_name], inplace=True)
+        if len(df) < initial_rows:
+            logger.warning(
+                f"   (Warning) Dropped {initial_rows - len(df)} rows with invalid datetime format."
+            )
+
         df = df.set_index(time_col_name)
 
         if df.index.has_duplicates:
-            num_duplicates_before = df.index.duplicated().sum()
-            logger.warning(f"ตรวจพบ Index (เวลา) ที่ซ้ำกัน {num_duplicates_before} รายการ ... กำลังลบข้อมูลซ้ำ")
-
-            original_index_name = df.index.name
-            df.reset_index(inplace=True)
-            df.drop_duplicates(subset=[original_index_name], keep='last', inplace=True)
-            df.sort_values(by=original_index_name, inplace=True)
-            df.set_index(original_index_name, inplace=True)
+            duplicated_indices = df.index.duplicated(keep="last")
+            num_duplicates = duplicated_indices.sum()
+            logger.warning(
+                f"ตรวจพบ Index (เวลา) ที่ซ้ำกัน {num_duplicates} รายการ ... กำลังลบข้อมูลซ้ำ"
+            )
+            df = df[~duplicated_indices]
             logger.info(f"ลบข้อมูลที่ซ้ำซ้อนสำเร็จ! (เหลือ {len(df)} แถว)")
     else:
-        logger.warning(f"ไม่พบคอลัมน์ 'time' หรือ 'datetime' ในไฟล์ '{os.path.basename(file_path)}'")
+        logger.warning(
+            f"ไม่พบคอลัมน์ 'time' หรือ 'datetime' ในไฟล์ '{os.path.basename(file_path)}'"
+        )
 
 
     logger.info(f"Successfully loaded and validated '{os.path.basename(file_path)}'.")
