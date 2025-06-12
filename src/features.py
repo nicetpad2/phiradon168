@@ -1591,7 +1591,10 @@ def create_session_column(df):
     """
 
     # [Patch v6.8.13] Proper session tagging implementation
-    if df is None or df.empty:
+    if df is None:
+        logging.warning("create_session_column received None, returning empty DataFrame")
+        return pd.DataFrame({"session": pd.Categorical([], categories=["Asia", "London", "NY", "Other", "N/A"])} )
+    if df.empty:
         df["session"] = pd.Categorical([], categories=["Asia", "London", "NY", "Other", "N/A"])
         return df
 

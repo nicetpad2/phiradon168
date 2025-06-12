@@ -27,6 +27,20 @@ def test_create_session_column_tags_sessions():
     assert result['session'].tolist() == expected
 
 
+def test_create_session_column_handles_none():
+    result = features.create_session_column(None)
+    assert isinstance(result, pd.DataFrame)
+    assert result.empty
+    assert 'session' in result.columns
+
+
+def test_create_session_column_handles_empty_df():
+    df = pd.DataFrame({'Open': []})
+    result = features.create_session_column(df)
+    assert 'session' in result.columns
+    assert result.empty
+
+
 def test_fill_missing_feature_values_replaces_nan():
     df = pd.DataFrame({'A': [1.0, np.nan]})
     result = features.fill_missing_feature_values(df)
