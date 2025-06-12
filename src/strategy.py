@@ -425,6 +425,9 @@ def train_and_export_meta_model(
             logging.warning(f"[Patch] ไม่สามารถโหลด features_main.json: {e_feat}. ใช้ META_CLASSIFIER_FEATURES แทน")
             feature_list = META_CLASSIFIER_FEATURES
 
+        # [Patch v6.8.8] Normalize feature names to lowercase to match loaded data
+        feature_list = [f.lower() for f in feature_list]
+
         available_features = [f for f in feature_list if f in merged_df.columns]
         missing_features = [f for f in feature_list if f not in merged_df.columns]
         logging.info(f"[Patch] Available Features หลัง Merge: {len(available_features)} รายการ")

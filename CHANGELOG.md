@@ -2005,3 +2005,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_safe_load_csv_limit.py, tests/test_function_registry.py
 - QA: pytest -q passed (970 tests)
 
+
+### 2025-08-14
+- [Patch v6.8.8] Normalize feature names from features_main.json
+- New/Updated unit tests added for tests/test_threshold_tuning.py::test_threshold_tuning_called
+- QA: pytest -q passed (971 tests)
