@@ -2014,3 +2014,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.8.9] Enforce CSV validation using project columns
 - New/Updated unit tests added for tests/test_csv_validator.py::test_validate_and_convert_csv_success
 - QA: pytest -q passed (971 tests)
+### 2025-08-15
+- [Patch v6.8.10] Simplify prepare_datetime with Thai year handling
+- New/Updated unit tests added for tests/test_data_loader_buddhist.py
+- QA: pytest -q passed (971 tests)
+
