@@ -134,6 +134,9 @@ def test_stoploss_utils():
     with pytest.raises(ValueError):
         stoploss_utils.atr_stop_loss(pd.Series([1, 2, 3]), period=5)
 
+    sl_updated = stoploss_utils.atr_trailing_stop(1.0, 1.2, 0.1, "BUY", 0.9)
+    assert sl_updated >= 0.9
+
 
 def test_trade_executor():
     trade = trade_executor.open_trade("BUY", 1.0, 0.9, 1.1, 0.01)

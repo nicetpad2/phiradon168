@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_data_loader_additional.py::test_validate_m15_data_path_ok
 - QA: pytest -q passed (957 tests)
 
+### 2025-06-12
+- [Patch v6.8.5] Support configurable feature_format
+- New/Updated unit tests added for tests/test_features_generic.py, tests/test_main_pipeline_stage.py, tests/test_settings.py
+- QA: pytest -q passed (964 tests)
+
 ### 2025-08-07
 - [Patch v6.7.14] Add debug row limit options to main CLI
 - New/Updated unit tests added for tests/test_main_cli_extended.py::test_main_debug_sets_sample_size
@@ -1970,8 +1975,15 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_safe_load_csv_limit.py::test_safe_load_csv_auto_duplicate_index
 - QA: pytest -q passed (959 tests)
 
+
 ### 2025-06-12
 - [Patch v6.8.5] Add feature selection step and cross-validation sweep
 - New/Updated unit tests added for src/training.py, tuning/hyperparameter_sweep.py
 - QA: pytest -q passed (tests count TBD)
+=======
+### 2025-08-11
+- [Patch v6.8.5] Add volatility-adjusted sizing and trailing stop helpers
+- New/Updated unit tests added for strategy.stoploss_utils, src.money_management
+- QA: pytest -q passed (962 tests)
+
 
