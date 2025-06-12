@@ -15,9 +15,12 @@ def test_safe_load_csv_auto_type_error():
         dl.safe_load_csv_auto(None)
 
 
-def test_safe_load_csv_auto_duplicate_index(tmp_path):
-    df = pd.DataFrame({'A': [1, 2]}, index=[0, 0])
-    df.to_csv(tmp_path / 'dup.csv')
+def test_safe_load_csv_auto_duplicate_time(tmp_path):
+    df = pd.DataFrame({
+        'time': ['2024-01-01 00:00:00', '2024-01-01 00:00:00'],
+        'A': [1, 2]
+    })
+    df.to_csv(tmp_path / 'dup.csv', index=False)
     result = dl.safe_load_csv_auto(str(tmp_path / 'dup.csv'))
     assert len(result) == 1
 

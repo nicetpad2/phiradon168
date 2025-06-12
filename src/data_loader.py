@@ -238,96 +238,122 @@ def setup_fonts(output_dir=None):  # pragma: no cover
     except Exception as e:
         logging.error(f"   (Error) Critical error during font setup: {e}", exc_info=True)
 # --- Data Loading Helper ---
-# [Patch v5.0.2] Exclude safe_load_csv_auto from coverage
-def safe_load_csv_auto(file_path, row_limit=None, chunk_size=None):  # pragma: no cover
-    # [Patch v5.4.5] Support row-limited loading to reduce memory usage
-    # [Patch] Allow chunked reading for large files
+def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     """
-    Loads CSV or .csv.gz file using pandas, automatically handling gzip compression.
-
-    Args:
-        file_path (str): The path to the CSV or gzipped CSV file.
-
-    Returns:
-        pd.DataFrame or None: The loaded DataFrame, an empty DataFrame if the file
-                              is empty, or None if loading fails.
+    โหลดไฟล์ CSV พร้อมการจัดการข้อผิดพลาดที่มีประสิทธิภาพสูง
+    - ตรวจจับและแปลงไฟล์รูปแบบพิเศษ (ไม่มีตัวคั่น, ปี พ.ศ.) โดยอัตโนมัติ
+    - ตรวจจับและลบข้อมูลเวลาที่ซ้ำซ้อนโดยอัตโนมัติ
     """
-    read_csv_kwargs = {"index_col": 0, "parse_dates": False, "low_memory": False}
-    if chunk_size is not None and isinstance(chunk_size, int) and chunk_size > 0:
-        if row_limit is not None:
-            logging.info(
-                "         (Info) chunk_size provided with row_limit; chunk_size overrides row_limit"
-            )
-        read_csv_kwargs["chunksize"] = chunk_size
-    elif row_limit is not None and isinstance(row_limit, int) and row_limit > 0:
-        read_csv_kwargs["nrows"] = row_limit
-    logging.info(f"      (safe_load) Attempting to load: {os.path.basename(file_path)}")
-
-    if not isinstance(file_path, str) or not file_path:
-        raise TypeError("file_path must be a string")
     if not os.path.exists(file_path):
-        logging.error(f"         (Error) File not found: {file_path}")
-        return None
+        msg = f"ไม่พบไฟล์ข้อมูลที่ระบุ: {file_path}"
+        logger.critical(msg)
+        raise FileNotFoundError(msg)
 
+    logger.info(f"      (safe_load) Attempting to load: {os.path.basename(file_path)}")
+
+    # --- 1. ตรวจจับรูปแบบไฟล์อัตโนมัติ ---
+    is_malformed = False
     try:
-        if file_path.lower().endswith(".gz"):
-            logging.debug("         -> Detected .gz extension, using gzip.")
-            with gzip.open(file_path, 'rt', encoding='utf-8') as f:
-                if "chunksize" in read_csv_kwargs:
-                    chunks = []
-                    for chunk in pd.read_csv(f, **read_csv_kwargs):
-                        chunks.append(chunk)
-                    df = pd.concat(chunks, ignore_index=False)
-                else:
-                    df = pd.read_csv(f, **read_csv_kwargs)
-        else:
-            logging.debug("         -> No .gz extension, using standard pd.read_csv.")
-            if "chunksize" in read_csv_kwargs:
-                chunks = []
-                for chunk in pd.read_csv(file_path, **read_csv_kwargs):
-                    chunks.append(chunk)
-                df = pd.concat(chunks, ignore_index=False)
+        open_func = open
+        if file_path.lower().endswith('.gz'):
+            open_func = gzip.open
+        try:
+            with open_func(file_path, 'rt', encoding='utf-8', errors='ignore') as f:
+                sample_line = f.readline().strip()
+        except OSError:
+            if open_func is gzip.open:
+                with open(file_path, 'rt', encoding='utf-8', errors='ignore') as f:
+                    sample_line = f.readline().strip()
             else:
-                df = pd.read_csv(file_path, **read_csv_kwargs)
-        # Now, check for duplicates in the index, and clean if found
+                raise
+            # ตรวจสอบง่ายๆ: ถ้าไม่มี comma และบรรทัดยาวพอสมควร -> สันนิษฐานว่าเป็นรูปแบบพิเศษ
+            if ',' not in sample_line and len(sample_line) > 40:
+                logger.warning(f"ตรวจพบไฟล์ CSV รูปแบบพิเศษ (ไม่มีตัวคั่น) สำหรับ '{os.path.basename(file_path)}'.")
+                is_malformed = True
+    except Exception as e:
+        logger.error(f"ไม่สามารถเปิดไฟล์เพื่อตรวจสอบรูปแบบได้: {e}")
+        raise IOError(f"Cannot read file to inspect format: {file_path}") from e
+
+    # --- 2. เลือกวิธีการอ่านตามรูปแบบไฟล์ ---
+    if is_malformed:
+        # --- โหมดแปลงข้อมูลพิเศษ ---
+        logger.info("...เริ่มต้นกระบวนการแปลงข้อมูลอัตโนมัติ (แยกคอลัมน์และแปลงวันที่)...")
+
+        # Pattern สำหรับแยกข้อมูลที่ติดกัน: (DateTimestamp)(Open)(High)(Low)(Close)(Volume)
+        pattern = re.compile(r"(\d{8}\d{2}:\d{2}:\d{2})(\d+\.\d+)(\d+\.\d+)(\d+\.\d+)(\d+\.\d+)(.+)")
+        data = []
+
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for i, line in enumerate(f):
+                if row_limit and i >= row_limit:
+                    break
+                match = pattern.match(line.strip())
+                if match:
+                    groups = match.groups()
+                    try:
+                        # แปลงปี พ.ศ. -> ค.ศ.
+                        buddhist_dt_str = groups[0]
+                        gregorian_year = int(buddhist_dt_str[:4]) - 543
+                        gregorian_dt_str = f"{gregorian_year}{buddhist_dt_str[4:]}"
+                        time = pd.to_datetime(gregorian_dt_str, format='%Y%m%d%H:%M:%S')
+
+                        # เพิ่มข้อมูลลงใน list
+                        data.append([
+                            time,
+                            float(groups[1]),  # Open
+                            float(groups[2]),  # High
+                            float(groups[3]),  # Low
+                            float(groups[4]),  # Close
+                            float(groups[5])   # Volume
+                        ])
+                    except (ValueError, TypeError):
+                        continue  # ข้ามบรรทัดที่แปลงค่าไม่ได้
+
+        df = pd.DataFrame(data, columns=['time', 'Open', 'High', 'Low', 'Close', 'Volume'])
+        logger.info(f"แปลงข้อมูลจากรูปแบบพิเศษสำเร็จ! โหลดข้อมูลได้ {len(df)} แถว")
+    else:
+        # --- โหมดการอ่าน CSV ปกติ ---
+        logger.info("   (Info) ตรวจพบรูปแบบ CSV มาตรฐาน กำลังโหลดข้อมูล...")
+        try:
+            df = pd.read_csv(file_path, nrows=row_limit, **kwargs)
+        except Exception as e:
+            logger.error(f"อ่านไฟล์ CSV ล้มเหลว: {e}")
+            return None
+        if 'Unnamed: 0' in df.columns:
+            potential_dt = pd.to_datetime(df['Unnamed: 0'], errors='coerce')
+            if potential_dt.notna().all():
+                df.drop(columns=['Unnamed: 0'], inplace=True)
+                df.index = potential_dt
+
+    # --- 3. จัดการข้อมูลหลังการโหลด (ทำเหมือนกันทั้ง 2 โหมด) ---
+    if df.empty:
+        raise DataValidationError(f"ไม่สามารถโหลดข้อมูลจากไฟล์ '{file_path}' หรือไฟล์ว่างเปล่าหลังการแปลง")
+
+    df.columns = [col.lower() for col in df.columns]
+
+    # ตั้งค่า Index และตรวจสอบข้อมูลซ้ำซ้อน
+    time_col_name = 'time' if 'time' in df.columns else 'datetime'
+    if time_col_name in df.columns:
+        if not pd.api.types.is_datetime64_any_dtype(df[time_col_name]):
+            df[time_col_name] = pd.to_datetime(df[time_col_name])
+        df = df.set_index(time_col_name)
+
         if df.index.has_duplicates:
             num_duplicates_before = df.index.duplicated().sum()
-            logger.warning(
-                f"ตรวจพบ Index (เวลา) ที่ซ้ำกัน {num_duplicates_before} รายการในไฟล์ '{os.path.basename(file_path)}'."
-            )
-            logger.info("...เริ่มต้นกระบวนการทำความสะอาดข้อมูลอัตโนมัติ...")
+            logger.warning(f"ตรวจพบ Index (เวลา) ที่ซ้ำกัน {num_duplicates_before} รายการ ... กำลังลบข้อมูลซ้ำ")
 
-            # เก็บชื่อของ index ไว้ (ปกติคือ 'time' หรือ 'datetime')
-            original_index_name = df.index.name or "index"
-
-            # แปลง index กลับมาเป็นคอลัมน์ธรรมดาเพื่อลบข้อมูลซ้ำ
+            original_index_name = df.index.name
             df.reset_index(inplace=True)
-            if original_index_name not in df.columns:
-                original_index_name = df.columns[0]
-
-            # ลบแถวที่ซ้ำซ้อนโดยอิงจากคอลัมน์เวลา (เก็บแถวสุดท้ายไว้)
             df.drop_duplicates(subset=[original_index_name], keep='last', inplace=True)
-
-            # จัดเรียงข้อมูลตามเวลาอีกครั้ง
             df.sort_values(by=original_index_name, inplace=True)
-
-            # ตั้งค่าคอลัมน์เวลาให้กลับไปเป็น Index เหมือนเดิม
             df.set_index(original_index_name, inplace=True)
+            logger.info(f"ลบข้อมูลที่ซ้ำซ้อนสำเร็จ! (เหลือ {len(df)} แถว)")
+    else:
+        logger.warning(f"ไม่พบคอลัมน์ 'time' หรือ 'datetime' ในไฟล์ '{os.path.basename(file_path)}'")
 
-            logger.info(
-                f"ทำความสะอาดข้อมูลสำเร็จ! ข้อมูลที่ซ้ำซ้อนถูกลบออกแล้ว (เหลือ {len(df):,} แถว)"
-            )
 
-        logger.info(f"Successfully loaded and validated '{os.path.basename(file_path)}'.")
-        return df
-    except pd.errors.EmptyDataError:
-        logging.info(f"         (Info) File is empty: {file_path}")
-        return pd.DataFrame()
-    except DataValidationError:
-        raise
-    except Exception as e:
-        logging.error(f"         (Error) Failed to load file '{os.path.basename(file_path)}': {e}", exc_info=True)
-        return None
+    logger.info(f"Successfully loaded and validated '{os.path.basename(file_path)}'.")
+    return df
 
 # --- Configuration Loading Helper ---
 # [Patch v5.0.2] Exclude load_app_config from coverage
@@ -1256,10 +1282,14 @@ def load_final_m1_data(path, trade_log_df=None):
     if df is None or df.empty:
         logging.error("(Error) Failed to load M1 data or file is empty.")
         return None
-    required = ["Open", "High", "Low", "Close"]
-    missing = [c for c in required if c not in df.columns]
+    required = ["open", "high", "low", "close"]
+    cols_lower = [c.lower() for c in df.columns]
+    missing = [c for c in required if c not in cols_lower]
     if missing:
         logging.error(f"(Error) M1 Data missing columns: {missing}")
+        return None
+    if not isinstance(df.index, pd.DatetimeIndex) and not any(c in cols_lower for c in ['time', 'datetime']):
+        logging.error("(Error) Invalid datetime index for M1 data.")
         return None
     df.index = pd.to_datetime(df.index, errors="coerce")
     df = df[df.index.notna()]
