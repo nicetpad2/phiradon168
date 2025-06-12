@@ -17,9 +17,7 @@ def test_validate_and_convert_csv_success(tmp_path):
     csv = tmp_path / 'in.csv'
     df.to_csv(csv, index=False)
     out = tmp_path / 'out.csv'
-    result = csv_validator.validate_and_convert_csv(
-        str(csv), str(out), required_cols=['Open', 'High', 'Low', 'Close', 'Volume']
-    )
+    result = csv_validator.validate_and_convert_csv(str(csv), str(out))
     assert out.exists()
     loaded = pd.read_csv(out)
     assert len(loaded) == 1

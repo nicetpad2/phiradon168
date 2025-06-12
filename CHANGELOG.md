@@ -2010,3 +2010,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.8.8] Normalize feature names from features_main.json
 - New/Updated unit tests added for tests/test_threshold_tuning.py::test_threshold_tuning_called
 - QA: pytest -q passed (971 tests)
+### 2025-06-12
+- [Patch v6.8.9] Enforce CSV validation using project columns
+- New/Updated unit tests added for tests/test_csv_validator.py::test_validate_and_convert_csv_success
+- QA: pytest -q passed (971 tests)
