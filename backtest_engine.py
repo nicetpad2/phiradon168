@@ -8,6 +8,7 @@ import logging
 from src.config import DATA_FILE_PATH_M1, DATA_FILE_PATH_M15
 from src.strategy import run_backtest_simulation_v34
 from src.features import engineer_m1_features, calculate_m15_trend_zone, calculate_m1_entry_signals
+from src.data_loader import deduplicate_and_sort
 
 # [Patch v6.5.14] Force fold 0 of 1 when regenerating the trade log
 DEFAULT_FOLD_CONFIG = {"n_folds": 1}
@@ -76,6 +77,10 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
         df_m15 = pd.read_csv(DATA_FILE_PATH_M15)
     except Exception:
         df_m15 = None
+    # [Patch v6.8.13] Deduplicate raw M15 data before processing
+    if df_m15 is not None:
+        if {"Date", "Timestamp"}.issubset(df_m15.columns):
+            df_m15 = deduplicate_and_sort(df_m15, subset_cols=["Date", "Timestamp"])
     if df_m15 is not None and {"Date", "Timestamp"}.issubset(df_m15.columns):
         combined = df_m15["Date"].astype(str) + " " + df_m15["Timestamp"].astype(str)
         df_m15.index = pd.to_datetime(combined, format="%Y%m%d %H:%M:%S", errors="coerce")
@@ -86,6 +91,13 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
             )
             df_m15.index = pd.to_datetime(combined, errors="coerce", format="mixed")
         df_m15.drop(columns=["Date", "Timestamp"], inplace=True)
+        if df_m15.index.duplicated().any():
+            dup_count = int(df_m15.index.duplicated().sum())
+            logging.warning(
+                "(Warning) พบ duplicate labels ใน index M15 ... Removed %s duplicate rows",
+                dup_count,
+            )
+            df_m15 = df_m15.loc[~df_m15.index.duplicated(keep="first")]
     elif df_m15 is not None and not isinstance(df_m15.index, pd.DatetimeIndex):
         df_m15.index = pd.to_datetime(df_m15.index, errors="coerce")
     if df_m15 is not None and not df_m15.empty:

@@ -18,11 +18,13 @@ def test_calculate_trend_zone_returns_neutral_series():
     assert result.tolist() == ['NEUTRAL'] * 3
 
 
-def test_create_session_column_adds_other():
-    df = pd.DataFrame({'Open': [1]})
+def test_create_session_column_tags_sessions():
+    idx = pd.date_range('2024-01-01 00:00', periods=3, freq='6h')
+    df = pd.DataFrame({'Open': [1, 2, 3]}, index=idx)
     result = features.create_session_column(df.copy())
+    expected = [features.get_session_tag(ts) for ts in idx]
     assert 'session' in result.columns
-    assert (result['session'] == 'Other').all()
+    assert result['session'].tolist() == expected
 
 
 def test_fill_missing_feature_values_replaces_nan():

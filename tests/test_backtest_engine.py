@@ -281,3 +281,32 @@ def test_run_backtest_engine_parse_datetime_fallback(monkeypatch, caplog):
     assert captured['m15_index'][0] == pd.Timestamp('2024-01-01 00:00:00')
     assert any('parse วันที่/เวลา ด้วย format ที่กำหนดไม่สำเร็จ' in msg for msg in caplog.messages)
     assert any('parse วันที่/เวลา (M15) ด้วย format ที่กำหนดไม่สำเร็จ' in msg for msg in caplog.messages)
+
+
+def test_run_backtest_engine_dedup_m15_index(monkeypatch, caplog):
+    m1_df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]})
+    m15_df = pd.DataFrame({
+        'Date': ['2024-01-01', '2024-01-01'],
+        'Timestamp': ['00:00:00', '00:00:00'],
+        'Close': [1, 2]
+    })
+    trade_df = pd.DataFrame({'pnl': [1.0]})
+
+    def fake_read_csv(path, *a, **k):
+        return m1_df if path == be.DATA_FILE_PATH_M1 else m15_df
+
+    monkeypatch.setattr(be.pd, 'read_csv', fake_read_csv)
+    monkeypatch.setattr(be, 'engineer_m1_features', lambda df, **k: df)
+    monkeypatch.setattr(be, 'calculate_m1_entry_signals', lambda df, cfg: df.assign(
+        Entry_Long=0, Entry_Short=0, Trade_Tag='t', Signal_Score=0.0, Trade_Reason='r'))
+    monkeypatch.setattr(be, 'calculate_m15_trend_zone', lambda df: pd.DataFrame({'Trend_Zone': ['UP']}, index=[pd.Timestamp('2024-01-01')]))
+    monkeypatch.setattr(be, 'run_backtest_simulation_v34', lambda df, **k: (None, trade_df))
+
+    with caplog.at_level(logging.WARNING):
+        result = be.run_backtest_engine(pd.DataFrame())
+
+    assert result.equals(trade_df)
+    assert any(
+        'duplicate labels' in msg or 'duplicates based on' in msg
+        for msg in caplog.messages
+    )

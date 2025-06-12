@@ -27,10 +27,10 @@ FUNCTIONS_INFO = [
 
     ("src/features.py", "tag_price_structure_patterns", 473),
     ("src/features.py", "calculate_trend_zone", 1572),
-    ("src/features.py", "create_session_column", 1579),
-    ("src/features.py", "fill_missing_feature_values", 1585),
-    ("src/features.py", "load_feature_config", 1590),
-    ("src/features.py", "calculate_ml_features", 1595),
+    ("src/features.py", "create_session_column", 1583),
+    ("src/features.py", "fill_missing_feature_values", 1609),
+    ("src/features.py", "load_feature_config", 1614),
+    ("src/features.py", "calculate_ml_features", 1619),
 
     ("src/main.py", "parse_arguments", 2005),
     ("src/main.py", "setup_output_directory", 2010),

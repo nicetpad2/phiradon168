@@ -1581,8 +1581,28 @@ def calculate_trend_zone(df):
 
 
 def create_session_column(df):
-    """Stubbed session column creator."""
-    df["session"] = "Other"
+    """Create ``session`` column using :func:`get_session_tag`.
+
+    This replaces the previous stub implementation that filled all rows
+    with ``"Other"``. The function now attempts to convert the DataFrame
+    index to ``DatetimeIndex`` (if necessary) and maps each timestamp to
+    a trading session tag. If tagging fails, the session is set to
+    ``"Other"``.
+    """
+
+    # [Patch v6.8.13] Proper session tagging implementation
+    if df is None or df.empty:
+        df["session"] = pd.Categorical([], categories=["Asia", "London", "NY", "Other", "N/A"])
+        return df
+
+    try:
+        if not isinstance(df.index, pd.DatetimeIndex):
+            df.index = pd.to_datetime(df.index, errors="coerce")
+        sessions = pd.Index(df.index).map(lambda ts: get_session_tag(ts, warn_once=True))
+        df["session"] = pd.Categorical(sessions, categories=["Asia", "London", "NY", "Other", "N/A"])
+    except Exception as e:
+        logging.error(f"   (Error) Session calculation failed: {e}", exc_info=True)
+        df["session"] = pd.Categorical(["Other"] * len(df), categories=["Asia", "London", "NY", "Other", "N/A"])
     return df
 
 
