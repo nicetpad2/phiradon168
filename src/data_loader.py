@@ -368,7 +368,13 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
         datetime_col = 'timestamp'
 
     if datetime_col:
-        df[datetime_col] = pd.to_datetime(df[datetime_col], errors='coerce')
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message="Could not infer format",
+                category=UserWarning,
+            )
+            df[datetime_col] = pd.to_datetime(df[datetime_col], errors="coerce")
     else:
         logger.error(
             f"   (Critical Error) ไม่พบคอลัมน์ Date/Time ที่รู้จัก (date/time, datetime, timestamp) ในไฟล์ {os.path.basename(file_path)}"
