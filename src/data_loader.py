@@ -523,7 +523,18 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
             if max_rows is not None:
                 read_csv_kwargs["nrows"] = max_rows
             df_pd = pd.read_csv(file_path, **read_csv_kwargs)
-            logging.info(f"   ไฟล์ดิบ {timeframe_str}: {df_pd.shape[0]} แถว (max_rows={max_rows})")
+            logging.info(
+                f"   ไฟล์ดิบ {timeframe_str}: {df_pd.shape[0]} แถว (max_rows={max_rows})"
+            )
+
+            if "Date" not in df_pd.columns and "Time" in df_pd.columns:
+                logging.info(
+                    "   [Pre-Validation] Detected 'Time' column without 'Date'/'Timestamp'."
+                )
+                dt_series = pd.to_datetime(df_pd["Time"], errors="coerce")
+                df_pd["Date"] = dt_series.dt.strftime("%Y%m%d")
+                df_pd["Timestamp"] = dt_series.dt.strftime("%H:%M:%S")
+                logging.info("      Reconstructed 'Date' and 'Timestamp' columns from 'Time'.")
         except pd.errors.ParserError as e_parse:
             logging.critical(f"(Error) ไม่สามารถ Parse ไฟล์ CSV '{file_path}': {e_parse}")
             sys.exit(f"ออก: ปัญหาการ Parse ไฟล์ CSV {timeframe_str}")
