@@ -14,3 +14,10 @@ def test_safe_load_csv_auto_type_error():
     with pytest.raises(TypeError):
         dl.safe_load_csv_auto(None)
 
+
+def test_safe_load_csv_auto_duplicate_index(tmp_path):
+    df = pd.DataFrame({'A': [1, 2]}, index=[0, 0])
+    df.to_csv(tmp_path / 'dup.csv')
+    with pytest.raises(dl.DataValidationError):
+        dl.safe_load_csv_auto(str(tmp_path / 'dup.csv'))
+
