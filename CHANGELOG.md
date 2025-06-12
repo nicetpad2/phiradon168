@@ -2036,3 +2036,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.8.12] Validate M1 CSV path in profile_backtest.main_profile
 - New/Updated unit tests added for profile_backtest
 - QA: pytest -q passed (974 tests)
+
+### 2025-06-13
+- [Patch v6.8.13] Fix session tagging and M15 duplicate handling
+- New/Updated unit tests added for tests/test_features_stub_functions.py and tests/test_backtest_engine.py
+- QA: pytest -q passed (975 tests)
