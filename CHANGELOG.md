@@ -1,4 +1,8 @@
 ### 2025-06-12
+- [Patch v6.8.5] Add Parquet support for data loading and saving
+- New/Updated unit tests added for tests/test_load_validated_parquet.py, tests/test_features_lookahead.py
+- QA: pytest -q passed (tests count TBD)
+### 2025-06-12
 - [Patch v6.8.2] Validate XAUUSD_M15 CSV paths
 - New/Updated unit tests added for tests/test_data_loader_additional.py::test_validate_m15_data_path_ok
 - QA: pytest -q passed (957 tests)
