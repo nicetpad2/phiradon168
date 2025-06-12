@@ -1394,6 +1394,8 @@ def check_data_quality(df, dropna=True, fillna_method=None, subset_dupes=None):
 
 def _parse_thai_date_fast(date_series):
     """Efficiently parse Thai Buddhist year dates."""
+    if date_series.str.contains('-').any():
+        return pd.to_datetime(date_series, errors="coerce")
     if date_series.str.contains('/').any():
         date_parts = date_series.str.extract(r"(\d{1,2})/(\d{1,2})/(\d{4})", expand=True)
         date_parts.columns = ["day", "month", "year"]
