@@ -2051,3 +2051,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.8.15] Improve safe_load_csv_auto datetime parsing and duplicate handling
 - New/Updated unit tests added for tests/test_function_registry.py
 - QA: pytest -q passed (979 tests)
+
+### 2025-06-12
+- [Patch v6.8.16] Optimize M15 loading in backtest_engine
+- New/Updated unit tests added for tests/test_backtest_engine.py
+- QA: pytest -q passed (979 tests)
