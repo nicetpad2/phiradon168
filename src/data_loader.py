@@ -289,15 +289,36 @@ def safe_load_csv_auto(file_path, row_limit=None, chunk_size=None):  # pragma: n
                 df = pd.concat(chunks, ignore_index=False)
             else:
                 df = pd.read_csv(file_path, **read_csv_kwargs)
+        # Now, check for duplicates in the index, and clean if found
         if df.index.has_duplicates:
-            dup_count = df.index.duplicated().sum()
-            first_dup = df.index[df.index.duplicated()][0]
-            msg = (
-                f"การตรวจสอบข้อมูลล้มเหลว! พบ Index ซ้ำ {dup_count} รายการในไฟล์ '{file_path}'. "
-                f"ตัวอย่างแรกคือ {first_dup}"
+            num_duplicates_before = df.index.duplicated().sum()
+            logger.warning(
+                f"ตรวจพบ Index (เวลา) ที่ซ้ำกัน {num_duplicates_before} รายการในไฟล์ '{os.path.basename(file_path)}'."
             )
-            logging.critical(msg)
-            raise DataValidationError(msg)
+            logger.info("...เริ่มต้นกระบวนการทำความสะอาดข้อมูลอัตโนมัติ...")
+
+            # เก็บชื่อของ index ไว้ (ปกติคือ 'time' หรือ 'datetime')
+            original_index_name = df.index.name or "index"
+
+            # แปลง index กลับมาเป็นคอลัมน์ธรรมดาเพื่อลบข้อมูลซ้ำ
+            df.reset_index(inplace=True)
+            if original_index_name not in df.columns:
+                original_index_name = df.columns[0]
+
+            # ลบแถวที่ซ้ำซ้อนโดยอิงจากคอลัมน์เวลา (เก็บแถวสุดท้ายไว้)
+            df.drop_duplicates(subset=[original_index_name], keep='last', inplace=True)
+
+            # จัดเรียงข้อมูลตามเวลาอีกครั้ง
+            df.sort_values(by=original_index_name, inplace=True)
+
+            # ตั้งค่าคอลัมน์เวลาให้กลับไปเป็น Index เหมือนเดิม
+            df.set_index(original_index_name, inplace=True)
+
+            logger.info(
+                f"ทำความสะอาดข้อมูลสำเร็จ! ข้อมูลที่ซ้ำซ้อนถูกลบออกแล้ว (เหลือ {len(df):,} แถว)"
+            )
+
+        logger.info(f"Successfully loaded and validated '{os.path.basename(file_path)}'.")
         return df
     except pd.errors.EmptyDataError:
         logging.info(f"         (Info) File is empty: {file_path}")
