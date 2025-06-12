@@ -241,6 +241,8 @@ def setup_fonts(output_dir=None):  # pragma: no cover
 def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     """โหลดไฟล์ CSV พร้อมการจัดการข้อผิดพลาดที่มีประสิทธิภาพสูง
 
+    [Patch v6.9.1] ปรับปรุงการตรวจจับคอลัมน์เวลาและมาตรฐานชื่อคอลัมน์
+
     การทำงานประกอบด้วยการตรวจจับไฟล์รูปแบบพิเศษและรวมคอลัมน์
     ``date``/``time`` อัตโนมัติ รวมถึงการลบข้อมูลซ้ำอย่างยืดหยุ่น
     โดยเก็บแถวสุดท้ายไว้เสมอ
@@ -330,27 +332,36 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     if df.empty:
         raise DataValidationError(f"ไม่สามารถโหลดข้อมูลจากไฟล์ '{file_path}' หรือไฟล์ว่างเปล่าหลังการแปลง")
 
-    df.columns = [col.lower() for col in df.columns]
+    # --- Standardize column names (lowercase & trim) ---
+    df.columns = [str(col).strip().lower() for col in df.columns]
 
-    # [Patch v6.8.16] Vectorized Thai date parsing
-    if (
-        "datetime" not in df.columns
-        and "date" in df.columns
-        and ("time" in df.columns or "timestamp" in df.columns)
-    ):
-        t_col = "time" if "time" in df.columns else "timestamp"
-        logger.info(
-            "ตรวจพบคอลัมน์ date/time แยกกัน และได้ทำการรวมเป็น datetime โดยอัตโนมัติ"
+    datetime_col = None
+
+    # --- Flexible datetime column detection ---
+    if 'date' in df.columns and 'time' in df.columns:
+        logger.info("ตรวจพบ คอลัมน์ 'date' และ 'time', กำลังรวมเป็น datetime...")
+        date_col = _parse_thai_date_fast(df['date'].astype(str))
+        time_col = pd.to_timedelta(df['time'].astype(str), errors='coerce')
+        df['datetime'] = date_col + time_col
+        df.drop(columns=['date', 'time'], inplace=True)
+        datetime_col = 'datetime'
+    elif 'datetime' in df.columns:
+        logger.info("ตรวจพบ คอลัมน์ 'datetime', กำลังแปลงข้อมูล...")
+        datetime_col = 'datetime'
+    elif 'timestamp' in df.columns:
+        logger.info("ตรวจพบ คอลัมน์ 'timestamp', กำลังแปลงข้อมูล...")
+        datetime_col = 'timestamp'
+
+    if datetime_col:
+        df[datetime_col] = pd.to_datetime(df[datetime_col], errors='coerce')
+    else:
+        logger.error(
+            f"   (Critical Error) ไม่พบคอลัมน์ Date/Time ที่รู้จัก (date/time, datetime, timestamp) ในไฟล์ {os.path.basename(file_path)}"
         )
-        date_col = _parse_thai_date_fast(df["date"].astype(str))
-        time_col = pd.to_timedelta(df[t_col].astype(str))
-        df["datetime"] = date_col + time_col
-        df.drop(columns=[t_col], inplace=True)
-    elif "datetime" in df.columns:
-        df["datetime"] = pd.to_datetime(df["datetime"], errors="coerce")
+        logger.error(f"      คอลัมน์ที่มีอยู่คือ: {list(df.columns)}")
 
     # ตั้งค่า Index และตรวจสอบข้อมูลซ้ำซ้อน
-    time_col_name = "time" if "time" in df.columns else "datetime"
+    time_col_name = datetime_col
     if time_col_name in df.columns:
         if not pd.api.types.is_datetime64_any_dtype(df[time_col_name]):
             df[time_col_name] = pd.to_datetime(df[time_col_name], errors="coerce")
@@ -377,6 +388,15 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
             f"ไม่พบคอลัมน์ 'time' หรือ 'datetime' ในไฟล์ '{os.path.basename(file_path)}'"
         )
 
+    # --- Standardize OHLCV columns for compatibility ---
+    rename_map = {
+        'open': 'Open',
+        'high': 'High',
+        'low': 'Low',
+        'close': 'Close',
+        'volume': 'Volume',
+    }
+    df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
 
     logger.info(f"Successfully loaded and validated '{os.path.basename(file_path)}'.")
     return df
