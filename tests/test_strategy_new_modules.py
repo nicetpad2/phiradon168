@@ -14,7 +14,7 @@ from strategy.risk_management import (
     can_open_trade,
     should_hard_cutoff,
 )
-from strategy.stoploss_utils import atr_stop_loss
+from strategy.stoploss_utils import atr_stop_loss, atr_trailing_stop
 from strategy.trade_executor import execute_order
 from strategy.plots import plot_equity_curve
 
@@ -33,6 +33,11 @@ def test_atr_stop_loss_length():
     s = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
     sl = atr_stop_loss(s, period=5)
     assert len(sl) == len(s)
+
+
+def test_atr_trailing_stop():
+    new_sl = atr_trailing_stop(1.0, 1.3, 0.2, "BUY", 0.8)
+    assert new_sl >= 0.8
 
 
 def test_create_and_execute_order():
