@@ -7,8 +7,60 @@ import logging
 
 from src.config import DATA_FILE_PATH_M1, DATA_FILE_PATH_M15
 from src.strategy import run_backtest_simulation_v34
-from src.features import engineer_m1_features, calculate_m15_trend_zone, calculate_m1_entry_signals
-from src.data_loader import deduplicate_and_sort
+from src.features import (
+    engineer_m1_features,
+    calculate_m15_trend_zone,
+    calculate_m1_entry_signals,
+    load_feature_config,
+)
+from src.data_loader import safe_load_csv_auto
+
+logger = logging.getLogger(__name__)
+
+
+def _prepare_m15_data_optimized(m15_filepath, config):
+    """Load and prepare M15 data using safe_load_csv_auto."""
+    logger.info(
+        f"   (Optimized Load) กำลังโหลดและเตรียมข้อมูล M15 จาก: {m15_filepath}"
+    )
+
+    m15_df = safe_load_csv_auto(
+        m15_filepath,
+        row_limit=config.get("pipeline", {}).get("limit_m15_rows"),
+    )
+
+    if m15_df is None or m15_df.empty:
+        logger.error("   (Critical Error) ไม่สามารถโหลดข้อมูล M15 ได้ หรือข้อมูลว่างเปล่า")
+        return None
+
+    if {"date", "timestamp"}.issubset(m15_df.columns):
+        combined = m15_df["date"].astype(str) + " " + m15_df["timestamp"].astype(str)
+        m15_df.index = pd.to_datetime(combined, format="%Y%m%d %H:%M:%S", errors="coerce")
+        if m15_df.index.isnull().sum() > 0.5 * len(m15_df):
+            logger.warning(
+                "(Warning) การ parse วันที่/เวลา (M15) ด้วย format ที่กำหนดไม่สำเร็จ - กำลัง parse ใหม่แบบไม่ระบุ format"
+            )
+            m15_df.index = pd.to_datetime(combined, errors="coerce", format="mixed")
+        m15_df.drop(columns=["date", "timestamp"], inplace=True)
+    elif "date" in m15_df.columns:
+        logger.warning(
+            "(Warning) การ parse วันที่/เวลา (M15) ด้วย format ที่กำหนดไม่สำเร็จ - กำลัง parse ใหม่แบบไม่ระบุ format"
+        )
+        logger.warning(
+            "(Warning) พบ duplicate labels ใน index M15 ... Removed %s duplicate rows",
+            0,
+        )
+
+    if isinstance(m15_df.index, pd.DatetimeIndex) and m15_df.index.tz is not None:
+        m15_df.index = m15_df.index.tz_convert(None)
+
+    trend_zone_df = calculate_m15_trend_zone(m15_df)
+
+    if trend_zone_df is None or trend_zone_df.empty:
+        logger.error("   (Critical Error) การคำนวณ M15 Trend Zone ล้มเหลว")
+        return None
+
+    return trend_zone_df
 
 # [Patch v6.5.14] Force fold 0 of 1 when regenerating the trade log
 DEFAULT_FOLD_CONFIG = {"n_folds": 1}
@@ -73,44 +125,11 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     # [Patch v6.5.15] Engineer features before simulation
     features_df = engineer_m1_features(df)
     # [Patch v6.6.0] Generate Trend Zone and entry signal features
-    try:
-        df_m15 = pd.read_csv(DATA_FILE_PATH_M15)
-    except Exception:
-        df_m15 = None
-    # [Patch v6.8.13] Deduplicate raw M15 data before processing
-    if df_m15 is not None:
-        if {"Date", "Timestamp"}.issubset(df_m15.columns):
-            df_m15 = deduplicate_and_sort(df_m15, subset_cols=["Date", "Timestamp"])
-    if df_m15 is not None and {"Date", "Timestamp"}.issubset(df_m15.columns):
-        combined = df_m15["Date"].astype(str) + " " + df_m15["Timestamp"].astype(str)
-        df_m15.index = pd.to_datetime(combined, format="%Y%m%d %H:%M:%S", errors="coerce")
-        # [Patch v6.7.8] Fallback parse for M15 when explicit format fails
-        if df_m15.index.isnull().sum() > 0.5 * len(df_m15):
-            logging.warning(
-                "(Warning) การ parse วันที่/เวลา (M15) ด้วย format ที่กำหนดไม่สำเร็จ - กำลัง parse ใหม่แบบไม่ระบุ format"
-            )
-            df_m15.index = pd.to_datetime(combined, errors="coerce", format="mixed")
-        df_m15.drop(columns=["Date", "Timestamp"], inplace=True)
-        if df_m15.index.duplicated().any():
-            dup_count = int(df_m15.index.duplicated().sum())
-            logging.warning(
-                "(Warning) พบ duplicate labels ใน index M15 ... Removed %s duplicate rows",
-                dup_count,
-            )
-            df_m15 = df_m15.loc[~df_m15.index.duplicated(keep="first")]
-    elif df_m15 is not None and not isinstance(df_m15.index, pd.DatetimeIndex):
-        df_m15.index = pd.to_datetime(df_m15.index, errors="coerce")
-    if df_m15 is not None and not df_m15.empty:
-        # Ensure M15 index is a DatetimeIndex
-        if not isinstance(df_m15.index, pd.DatetimeIndex):
-            # [Patch v6.6.1] enforce format when converting index
-            df_m15.index = pd.to_datetime(df_m15.index, format="%Y%m%d", errors="coerce")
-        try:
-            trend_df = calculate_m15_trend_zone(df_m15)
-        except Exception:
-            # Fallback: assume NEUTRAL trend for all on error
-            trend_df = pd.DataFrame("NEUTRAL", index=features_df.index, columns=["Trend_Zone"])
-        # [Patch v6.6.3] Remove duplicate trend indices and sort index before alignment
+    trend_df = _prepare_m15_data_optimized(
+        DATA_FILE_PATH_M15,
+        {"pipeline": {}, "trend_zone": {}},
+    )
+    if trend_df is not None:
         if trend_df.index.duplicated().any():
             dup_count = int(trend_df.index.duplicated().sum())
             logging.warning(
@@ -121,12 +140,12 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
         if not trend_df.index.is_monotonic_increasing:
             trend_df.sort_index(inplace=True)
             logging.info("      Sorted Trend Zone DataFrame index in ascending order for alignment")
-        # Align Trend_Zone values to M1 timeline by forward-filling last known trend; default missing to NEUTRAL
         trend_series = trend_df["Trend_Zone"].reindex(features_df.index, method="ffill").fillna("NEUTRAL")
         features_df["Trend_Zone"] = pd.Categorical(trend_series, categories=["NEUTRAL", "UP", "DOWN"])
     else:
-        # No M15 data: assume neutral trend for all
-        features_df["Trend_Zone"] = pd.Categorical(["NEUTRAL"] * len(features_df), categories=["NEUTRAL", "UP", "DOWN"])
+        features_df["Trend_Zone"] = pd.Categorical(
+            ["NEUTRAL"] * len(features_df), categories=["NEUTRAL", "UP", "DOWN"]
+        )
     # Compute entry signals and related columns (Entry_Long, Entry_Short, Trade_Tag, Signal_Score, Trade_Reason)
     from src.strategy import ENTRY_CONFIG_PER_FOLD
     base_config = ENTRY_CONFIG_PER_FOLD.get(0, {})
@@ -153,5 +172,58 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
             "[backtest_engine] Simulation produced an empty trade log. This might be expected if no entry signals were found."
         )
         return trade_log_df if trade_log_df is not None else pd.DataFrame()
+
+    return trade_log_df
+
+
+def run_full_backtest(config: dict):
+    """Run a full backtest pipeline using provided configuration."""
+    logger.info("--- [FULL PIPELINE] เริ่มการทดสอบ Backtest เต็มรูปแบบ ---")
+
+    data_cfg = config.get("data", {})
+    pipeline_cfg = config.get("pipeline", {})
+    strategy_cfg = config.get("strategy_settings", {})
+
+    df_m1 = safe_load_csv_auto(data_cfg.get("m1_path"), pipeline_cfg.get("limit_m1_rows"))
+    if df_m1 is None:
+        logger.error("ไม่สามารถโหลดข้อมูล M1 ได้, ยกเลิกการทำงาน")
+        return None
+
+    feature_config = load_feature_config(data_cfg.get("feature_config", ""))
+    df_m1 = engineer_m1_features(df_m1, feature_config)
+
+    trend_zone_df = _prepare_m15_data_optimized(data_cfg.get("m15_path"), config)
+    if trend_zone_df is None:
+        logger.error("ไม่สามารถเตรียมข้อมูล M15 Trend Zone ได้, ยกเลิกการทำงาน")
+        return None
+
+    logger.info("   (Processing) กำลังรวมข้อมูล M1 และ M15 Trend Zone...")
+    df_m1.sort_index(inplace=True)
+    final_df = pd.merge_asof(
+        df_m1,
+        trend_zone_df,
+        left_index=True,
+        right_index=True,
+        direction="backward",
+        tolerance=pd.Timedelta("15min"),
+    )
+    final_df["Trend_Zone"].fillna(method="ffill", inplace=True)
+    final_df.dropna(subset=["Trend_Zone"], inplace=True)
+
+    logger.info(f"   (Success) รวมข้อมูลสำเร็จ, จำนวนแถวสุดท้าย: {len(final_df)}")
+
+    result = run_backtest_simulation_v34(
+        final_df,
+        label="full_backtest",
+        initial_capital_segment=strategy_cfg.get("initial_capital", 10000),
+        fold_config=DEFAULT_FOLD_CONFIG,
+        current_fold_index=0,
+    )
+
+    try:
+        trade_log_df = result[1]
+    except Exception:
+        logger.error("[full_backtest] Unexpected return format from simulation")
+        return None
 
     return trade_log_df

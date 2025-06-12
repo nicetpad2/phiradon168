@@ -2052,7 +2052,14 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_function_registry.py
 - QA: pytest -q passed (979 tests)
 
+
+### 2025-06-12
+- [Patch v6.8.16] Optimize M15 loading in backtest_engine
+- New/Updated unit tests added for tests/test_backtest_engine.py
+- QA: pytest -q passed (979 tests)
+=======
 ### 2025-06-16
 - [Patch v6.8.16] Optimize Thai date parsing with vectorized logic
 - New/Updated unit tests added for tests/test_parse_thai_date_fast.py
 - QA: pytest -q passed (981 tests)
+
