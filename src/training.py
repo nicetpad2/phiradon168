@@ -63,15 +63,27 @@ def compute_fallback_metrics(df: pd.DataFrame) -> dict:
     return {"accuracy": -1.0, "auc": float("nan")}
 
 
-# [Patch v6.8.5] Simple feature selection helper using ANOVA F-test
+# [Patch v6.8.6] Handle constant features to avoid RuntimeWarning
 def select_top_features(
     X: pd.DataFrame, y: pd.Series, k: int = 10
 ) -> tuple[pd.DataFrame, list[str]]:
-    """Select top-K features and return reduced DataFrame and feature names."""
+    """Select top-K features using ANOVA F-test."""
     if k <= 0 or X.shape[1] <= k:
         return X, X.columns.tolist()
+
+    # Drop columns with zero variance within each class to prevent divide by zero
+    if y.nunique() > 1:
+        constant_cols = []
+        for col in X.columns:
+            if X[col].groupby(y).nunique().eq(1).all():
+                constant_cols.append(col)
+        X = X.drop(columns=constant_cols)
+        if X.empty:
+            return pd.DataFrame(index=X.index), []
+
     selector = SelectKBest(f_classif, k=min(k, X.shape[1]))
-    X_new = selector.fit_transform(X, y)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        X_new = selector.fit_transform(X, y)
     selected = X.columns[selector.get_support()].tolist()
     return pd.DataFrame(X_new, columns=selected), selected
 

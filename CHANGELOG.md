@@ -1987,3 +1987,6 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (962 tests)
 
 
+### 2025-08-12
+- [Patch v6.8.6] Handle constant features in select_top_features
+- QA: pytest -q passed (968 tests)
