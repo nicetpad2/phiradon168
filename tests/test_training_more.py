@@ -261,3 +261,39 @@ def test_real_train_func_single_row(tmp_path, monkeypatch, caplog):
     assert res['model_path']['model'] is None
     assert res['metrics']['accuracy'] == -1.0
     assert not called["dummy"]
+
+
+def test_select_top_features_basic():
+    X = pd.DataFrame({
+        'a': [1, 2, 3, 4, 5, 6],
+        'b': [0, 1, 0, 1, 0, 1],
+        'c': [10, 9, 8, 7, 6, 5],
+        'd': [1, 2, 1, 2, 1, 2],
+    })
+    y = pd.Series([0, 1, 0, 1, 0, 1])
+    X_new, feats = training.select_top_features(X, y, k=2)
+    assert len(feats) == 2
+    assert X_new.shape[1] == 2
+
+
+def test_real_train_func_feature_selection(tmp_path, monkeypatch):
+    trade_path = tmp_path / 'trade.csv'
+    m1_path = tmp_path / 'm1.csv'
+    profits = [1, -1] * 5
+    pd.DataFrame({'profit': profits}).to_csv(trade_path, index=False)
+    pd.DataFrame({
+        'Open': range(1, 11),
+        'High': range(2, 12),
+        'Low': range(0, 10),
+        'Close': [i + 0.5 for i in range(1, 11)],
+        'extra1': range(10),
+        'extra2': range(10),
+    }).to_csv(m1_path, index=False)
+    monkeypatch.setattr(training, 'CatBoostClassifier', None, raising=False)
+    res = training.real_train_func(
+        output_dir=str(tmp_path),
+        trade_log_path=str(trade_path),
+        m1_path=str(m1_path),
+        num_features=3,
+    )
+    assert len(res['features']) == 3

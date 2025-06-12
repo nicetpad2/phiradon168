@@ -302,3 +302,26 @@ def test_run_single_trial_skip_on_small_log(monkeypatch, tmp_path, caplog):
     assert 'yes' not in called
 
 
+def test_run_single_trial_with_cv(monkeypatch, tmp_path):
+    df_log = pd.DataFrame({'profit': [1, -1] * 5})
+    m1_path = tmp_path / 'm1.csv'
+    pd.DataFrame({
+        'Open': range(10),
+        'High': range(10),
+        'Low': range(10),
+        'Close': range(10)
+    }).to_csv(m1_path, index=False)
+
+    def dummy_train(**kwargs):
+        return {
+            'model_path': {'model': str(tmp_path / 'm.joblib')},
+            'features': ['Open'],
+            'metrics': {'accuracy': 1.0}
+        }
+
+    monkeypatch.setattr(hs, 'real_train_func', dummy_train)
+
+    res = hs._run_single_trial({}, df_log, str(tmp_path), str(tmp_path/'log.csv'), str(m1_path))
+    assert 'cv_auc' in res['metrics']
+
+
