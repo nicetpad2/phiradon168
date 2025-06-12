@@ -11,6 +11,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, TimeSeriesSplit, StratifiedKFold
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score
 from sklearn.linear_model import LogisticRegression
+from sklearn.feature_selection import SelectKBest, f_classif
 from src.utils import convert_thai_datetime
 
 try:
@@ -62,6 +63,19 @@ def compute_fallback_metrics(df: pd.DataFrame) -> dict:
     return {"accuracy": -1.0, "auc": float("nan")}
 
 
+# [Patch v6.8.5] Simple feature selection helper using ANOVA F-test
+def select_top_features(
+    X: pd.DataFrame, y: pd.Series, k: int = 10
+) -> tuple[pd.DataFrame, list[str]]:
+    """Select top-K features and return reduced DataFrame and feature names."""
+    if k <= 0 or X.shape[1] <= k:
+        return X, X.columns.tolist()
+    selector = SelectKBest(f_classif, k=min(k, X.shape[1]))
+    X_new = selector.fit_transform(X, y)
+    selected = X.columns[selector.get_support()].tolist()
+    return pd.DataFrame(X_new, columns=selected), selected
+
+
 def train_and_evaluate(df: pd.DataFrame, params: dict) -> dict:
     """Train and evaluate using a simple hold-out split."""
     if "target" not in df.columns:
@@ -95,6 +109,7 @@ def real_train_func(
     seed: int = 42,
     trade_log_path: str | None = None,
     m1_path: str | None = None,
+    num_features: int | None = None,
 ) -> dict:
     """Train a simple model and return model path, used features and metrics."""
     os.makedirs(output_dir, exist_ok=True)
@@ -146,6 +161,9 @@ def real_train_func(
     feature_names = feature_cols
 
     df_X = pd.DataFrame(X, columns=feature_names)
+    # [Patch v6.8.5] Apply feature selection when num_features specified
+    if num_features is not None and df_X.shape[1] > num_features:
+        df_X, feature_names = select_top_features(df_X, pd.Series(y), k=num_features)
     # [Patch v5.4.5] Use stratified split when possible to avoid ROC AUC warnings
     unique, counts = np.unique(y, return_counts=True)
     stratify_arg = y if (len(unique) > 1 and counts.min() >= 2) else None

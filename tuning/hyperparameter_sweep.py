@@ -22,6 +22,9 @@ from datetime import datetime
 from tqdm import tqdm
 import logging
 import numpy as np
+from sklearn.model_selection import StratifiedKFold
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score
 
 from src.config import logger, DefaultConfig, __version__
 
@@ -122,6 +125,19 @@ def export_summary(summary_df: pd.DataFrame, summary_path: str) -> pd.DataFrame:
     return summary_df
 
 
+# [Patch v6.8.5] Cross-validation helper using logistic regression
+def _cv_auc(X: pd.DataFrame, y: pd.Series, seed: int, n_splits: int = 3) -> float:
+    splitter = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+    aucs: list[float] = []
+    for train_idx, val_idx in splitter.split(X, y):
+        model = LogisticRegression(max_iter=1000)
+        model.fit(X.iloc[train_idx], y.iloc[train_idx])
+        prob = model.predict_proba(X.iloc[val_idx])[:, 1]
+        if len(np.unique(y.iloc[val_idx])) > 1:
+            aucs.append(roc_auc_score(y.iloc[val_idx], prob))
+    return float(np.mean(aucs)) if aucs else float("nan")
+
+
 def _run_single_trial(
     params: Dict[str, object],
     df_log: pd.DataFrame,
@@ -138,12 +154,29 @@ def _run_single_trial(
         return None
 
     call_dict = _filter_kwargs(real_train_func, params)
-    return real_train_func(
+
+    m1_df = pd.read_csv(m1_path)
+    feat_cols = m1_df.select_dtypes(include=[np.number]).columns.tolist()
+    min_len = min(len(df_log), len(m1_df))
+    X = m1_df.loc[: min_len - 1, feat_cols]
+    target_col = 'profit'
+    if target_col not in df_log.columns:
+        num_cols = df_log.select_dtypes(include=[np.number]).columns
+        if num_cols.empty:
+            return None
+        target_col = num_cols[0]
+    y = (df_log.loc[: min_len - 1, target_col] > 0).astype(int)
+    cv_auc = _cv_auc(X, y, params.get('seed', 42))
+
+    result = real_train_func(
         output_dir=output_dir,
         trade_log_path=trade_log_path,
         m1_path=m1_path,
         **call_dict,
     )
+    if result is not None and 'metrics' in result:
+        result['metrics']['cv_auc'] = cv_auc
+    return result
 
 
 def run_sweep(
@@ -250,7 +283,9 @@ def run_sweep(
                 continue
             metric_val = None
             if result.get('metrics'):
-                metric_val = list(result['metrics'].values())[0]
+                metric_val = result['metrics'].get('cv_auc')
+                if metric_val is None:
+                    metric_val = list(result['metrics'].values())[0]
             summary_row = {
                 'run_id': run_id,
                 **param_dict,
