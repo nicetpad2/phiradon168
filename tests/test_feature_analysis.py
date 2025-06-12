@@ -114,3 +114,17 @@ def test_feature_analysis_main_smoke(monkeypatch, tmp_path):
     assert isinstance(stats, dict)
     assert isinstance(low_var, list)
     assert isinstance(corr, pd.DataFrame)
+
+
+def test_feature_analysis_main_missing_date(monkeypatch, tmp_path, caplog):
+    """Ensure main handles missing Date/Timestamp columns gracefully"""
+    monkeypatch.chdir(tmp_path)
+    def fake_read_csv(*args, **kwargs):
+        return pd.DataFrame({"Price": [1, 2, 3]})
+    monkeypatch.setattr(pd, "read_csv", fake_read_csv)
+    caplog.set_level("ERROR")
+    stats, low_var, corr = feature_analysis.main(sample_rows=5)
+    assert stats == {}
+    assert low_var == []
+    assert corr.empty
+    assert "Missing Date/Timestamp columns" in caplog.text
