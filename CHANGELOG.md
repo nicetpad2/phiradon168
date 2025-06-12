@@ -1994,3 +1994,8 @@ QA: pytest -q passed (219 tests)
 ### 2025-08-12
 - [Patch v6.8.6] Handle constant features in select_top_features
 - QA: pytest -q passed (968 tests)
+
+### 2025-08-13
+- [Patch v6.8.7] Graceful handling when Date/Timestamp columns missing in feature analysis
+- New/Updated unit tests added for tests/test_feature_analysis.py::test_feature_analysis_main_missing_date
+- QA: pytest -q passed (971 tests)

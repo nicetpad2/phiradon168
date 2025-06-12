@@ -213,9 +213,15 @@ def main(sample_rows: int = 5000):  # pragma: no cover - CLI helper
         os.path.dirname(os.path.dirname(__file__)), "XAUUSD_M1.csv"
     )
     df = pd.read_csv(data_path, nrows=sample_rows)
-    df.index = pd.to_datetime(
-        df["Date"].astype(str) + " " + df["Timestamp"], errors="coerce"
-    )
+    if "Date" in df.columns and "Timestamp" in df.columns:
+        df.index = pd.to_datetime(
+            df["Date"].astype(str) + " " + df["Timestamp"], errors="coerce"
+        )
+    elif "Time" in df.columns:
+        df.index = pd.to_datetime(df["Time"], errors="coerce")
+    else:
+        logger.error("Missing Date/Timestamp columns in dataset")
+        return {}, [], pd.DataFrame()
     df_feat = feat.engineer_m1_features(df)
 
     timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
