@@ -1,4 +1,5 @@
 import pandas as pd
+import logging
 from src import strategy
 import pytest
 
@@ -79,3 +80,30 @@ def test_run_backtest_simulation_ml_feature_check(simple_m1_df, monkeypatch):
     )
     run_summary = result[5]
     assert run_summary['error_in_loop'] is False
+
+
+def test_run_backtest_invalid_index(simple_m1_df, caplog):
+    df = simple_m1_df.reset_index(drop=True)
+    df['ATR_14_Shifted'] = 1.0
+    df['ATR_14'] = 1.0
+    df['ATR_14_Rolling_Avg'] = 0.1
+    required_extra = [
+        'Trend_Zone', 'Gain_Z', 'MACD_hist', 'MACD_hist_smooth', 'Candle_Speed',
+        'Pattern_Label', 'Entry_Long', 'Entry_Short', 'Trade_Tag',
+        'Signal_Score', 'Trade_Reason', 'Volatility_Index', 'ADX', 'RSI',
+        'Wick_Ratio', 'Candle_Body', 'Candle_Range', 'Gain', 'cluster',
+        'spike_score', 'session'
+    ]
+    for col in required_extra:
+        df[col] = 0
+    with caplog.at_level(logging.ERROR):
+        result = strategy.run_backtest_simulation_v34(
+            df,
+            label='TEST',
+            initial_capital_segment=1000,
+            fold_config={},
+            current_fold_index=0,
+        )
+    run_summary = result[5]
+    assert run_summary['error_in_loop']
+    assert 'index is not DatetimeIndex' in caplog.text

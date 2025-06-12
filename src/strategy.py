@@ -1981,14 +1981,16 @@ def run_backtest_simulation_v34(
     meta_proba_tp_for_log = np.nan; meta2_proba_tp_for_log = np.nan; meta_proba_tp_for_fe_log = np.nan; total_ib_lot_accumulator = 0.0
     equity = initial_capital_segment; peak_equity = initial_capital_segment; max_drawdown_pct = 0.0
     active_orders = []; trade_log = []; blocked_order_log = []
-    start_time_equity = df_m1_segment_pd.index[0] if not df_m1_segment_pd.empty else pd.Timestamp.now(tz='UTC')
+    start_time_equity = (
+        df_m1_segment_pd.index[0]
+        if isinstance(df_m1_segment_pd.index, pd.DatetimeIndex) and not df_m1_segment_pd.empty
+        else pd.Timestamp.now(tz="UTC")
+    )
     equity_history = {start_time_equity: initial_capital_segment}
     total_commission_paid = 0.0; total_slippage_loss = 0.0; total_spread_cost = 0.0
     orders_blocked_by_drawdown = 0; orders_blocked_by_cooldown = 0; orders_lot_scaled = 0
     be_sl_triggered_count_run = 0; tsl_triggered_count_run = 0; orders_skipped_ml_l1 = 0; orders_skipped_ml_l2 = 0; meta_filter_block_streak = 0
     reentry_trades_opened = 0; forced_entry_trades_opened = 0
-    min_ts = pd.Timestamp.min.tz_localize('UTC') if not df_m1_segment_pd.empty and df_m1_segment_pd.index.tz is not None else pd.Timestamp.min
-    last_trade_cooldown_end_time = defaultdict(lambda: min_ts); last_tp_time = defaultdict(lambda: min_ts)
     bars_since_last_trade = 0; kill_switch_activated = initial_kill_switch_state; consecutive_losses = initial_consecutive_losses
     forced_entry_consecutive_losses = 0; forced_entry_temporarily_disabled = False; last_n_full_trade_pnls = []
     last_n_full_trade_sides = []
@@ -2007,6 +2009,9 @@ def run_backtest_simulation_v34(
 
     if not isinstance(df_m1_segment_pd, pd.DataFrame): logging.error(f"   (Error) Invalid input: df_m1_segment_pd is not a DataFrame for {label}."); run_summary_error = {"error_in_loop": True, "total_commission": 0, "total_spread": 0, "total_slippage": 0}; return pd.DataFrame(), pd.DataFrame(), initial_capital_segment, equity_history, 0.0, run_summary_error, blocked_order_log, "N/A", "N/A", initial_kill_switch_state, initial_consecutive_losses, 0.0
     if df_m1_segment_pd.empty: logging.warning(f"   (Warning) Input DataFrame is empty for {label}. Skipping simulation."); run_summary_error = {"error_in_loop": False, "total_commission": 0, "total_spread": 0, "total_slippage": 0}; return df_m1_segment_pd, pd.DataFrame(), initial_capital_segment, equity_history, 0.0, run_summary_error, blocked_order_log, "N/A", "N/A", initial_kill_switch_state, initial_consecutive_losses, 0.0
+    if not isinstance(df_m1_segment_pd.index, pd.DatetimeIndex): logging.error(f"   (Error) Input DataFrame index is not DatetimeIndex for {label}."); run_summary_error = {"error_in_loop": True, "total_commission": 0, "total_spread": 0, "total_slippage": 0}; return df_m1_segment_pd, pd.DataFrame(), initial_capital_segment, equity_history, 0.0, run_summary_error, blocked_order_log, "N/A", "N/A", initial_kill_switch_state, initial_consecutive_losses, 0.0
+    min_ts = pd.Timestamp.min.tz_localize('UTC') if df_m1_segment_pd.index.tz is not None else pd.Timestamp.min
+    last_trade_cooldown_end_time = defaultdict(lambda: min_ts); last_tp_time = defaultdict(lambda: min_ts)
     if fold_config is None or not isinstance(fold_config, dict): logging.warning(f"   (Warning) Invalid fold_config provided for {label}. Using empty dict."); fold_config = {}
     if current_fold_index is None or not isinstance(current_fold_index, int) or current_fold_index < 0: logging.error(f"   (Error) Invalid current_fold_index: {current_fold_index} for {label}."); run_summary_error = {"error_in_loop": True, "total_commission": 0, "total_spread": 0, "total_slippage": 0}; return df_m1_segment_pd, pd.DataFrame(), initial_capital_segment, equity_history, 0.0, run_summary_error, blocked_order_log, "N/A", "N/A", initial_kill_switch_state, initial_consecutive_losses, 0.0
     if side not in ["BUY", "SELL"]: logging.error(f"   (Error) Invalid side: {side} for {label}."); run_summary_error = {"error_in_loop": True, "total_commission": 0, "total_spread": 0, "total_slippage": 0}; return df_m1_segment_pd, pd.DataFrame(), initial_capital_segment, equity_history, 0.0, run_summary_error, blocked_order_log, "N/A", "N/A", initial_kill_switch_state, initial_consecutive_losses, 0.0
@@ -2068,8 +2073,8 @@ def run_backtest_simulation_v34(
     if missing_sim_cols_base: logging.error(f"   (Error) Missing required columns in input DataFrame for {label}: {missing_sim_cols_base}"); run_summary_error = {"error_in_loop": True, "total_commission": 0, "total_spread": 0, "total_slippage": 0}; return df_sim, pd.DataFrame(), equity, equity_history, max_drawdown_pct, run_summary_error, blocked_order_log, sim_model_type_l1, sim_model_type_l2, kill_switch_activated, consecutive_losses, total_ib_lot_accumulator
     logging.info(f"Starting simulation loop for {label} ({len(df_sim)} bars)...")
     current_bar_index = 0
-    # <<< [Patch v4.9.0] Use itertuples for faster iteration >>>
-    iterator_obj = df_sim.itertuples(name='Bar')
+    # [Patch v5.9.4] Iterate via index to preserve DatetimeIndex
+    iterator_obj = df_sim.index
     if tqdm:
         iterator = tqdm(iterator_obj, total=df_sim.shape[0], desc=f"  Sim ({label}, {side})", leave=False, mininterval=2.0)
     else:
@@ -2100,8 +2105,8 @@ def run_backtest_simulation_v34(
     run_summary = {}
 
     try:
-        for row in iterator:
-            current_index = row.Index
+        for current_index in iterator:
+            row = df_sim.loc[current_index]
             now = current_index
             equity_at_start_of_bar = equity
             current_equity_change_this_bar = 0.0
