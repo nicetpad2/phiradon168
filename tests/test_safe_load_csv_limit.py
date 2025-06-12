@@ -40,3 +40,32 @@ def test_safe_load_csv_auto_merge_date_time(tmp_path, caplog):
         result = dl.safe_load_csv_auto(str(p))
     assert result.index.name == 'datetime'
 
+
+def test_safe_load_csv_auto_local_time(tmp_path):
+    df = pd.DataFrame({
+        'Local_Time': ['01.01.2024 00:00:00'],
+        'Open': [1],
+        'High': [1],
+        'Low': [1],
+        'Close': [1],
+    })
+    p = tmp_path / 'lt.csv'
+    df.to_csv(p, index=False)
+    result = dl.safe_load_csv_auto(str(p))
+    assert isinstance(result.index, pd.DatetimeIndex)
+    assert result.index[0] == pd.Timestamp('2024-01-01 00:00:00')
+
+
+def test_safe_load_csv_auto_local_time_buddhist(tmp_path):
+    df = pd.DataFrame({
+        'Local_Time': ['01.01.2567 00:00:00'],
+        'Open': [1],
+        'High': [1],
+        'Low': [1],
+        'Close': [1],
+    })
+    p = tmp_path / 'lt_be.csv'
+    df.to_csv(p, index=False)
+    result = dl.safe_load_csv_auto(str(p))
+    assert result.index[0] == pd.Timestamp('2024-01-01 00:00:00')
+
