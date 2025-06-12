@@ -62,6 +62,19 @@ def test_precompute_tp_array_with_atr():
     assert tp[-1] > 0
 
 
+def test_precompute_arrays_fallback_short_series():
+    df = pd.DataFrame({
+        'Open': [1, 2, 3, 4, 5],
+        'High': [1.1, 2.1, 3.1, 4.1, 5.1],
+        'Low': [0.9, 1.9, 2.9, 3.9, 4.9],
+        'Close': [1, 2, 3, 4, 5]
+    })
+    sl = strategy.precompute_sl_array(df)
+    tp = strategy.precompute_tp_array(df)
+    assert sl[-1] > 0
+    assert tp[-1] > 0
+
+
 def test_save_final_data_creates_file(tmp_path):
     df = pd.DataFrame({'A': [1]})
     out_file = tmp_path / 'data.csv'
