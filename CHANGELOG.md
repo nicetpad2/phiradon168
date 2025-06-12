@@ -2026,3 +2026,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_load_project_csvs.py
 - QA: pytest -q passed (tests count TBD)
 
+
+### 2025-06-12
+- [Patch v6.8.11] Normalize price columns to title case in engineer_m1_features
+- New/Updated unit tests added for existing modules
+- QA: pytest -q passed (974 tests)

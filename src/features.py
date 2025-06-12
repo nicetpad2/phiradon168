@@ -626,7 +626,11 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
     logging.info(f"Rows at start: {df_m1.shape[0]}")
     if not isinstance(df_m1, pd.DataFrame): logging.error("Engineer M1 Features Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m1.empty: logging.warning("   (Warning) ข้ามการสร้าง Features M1: DataFrame ว่างเปล่า."); return df_m1
-    df = df_m1.copy(); price_cols = ["Open", "High", "Low", "Close"]
+    df = df_m1.copy()
+    # [Patch v6.8.11] Normalize lowercase price column names
+    rename_map={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume'}
+    df.rename(columns={c:rename_map[c.lower()] for c in df.columns if c.lower() in rename_map}, inplace=True)
+    price_cols = ["Open", "High", "Low", "Close"]
     if any(col not in df.columns for col in price_cols):
         logging.warning(f"   (Warning) ขาดคอลัมน์ราคา M1. บาง Features อาจเป็น NaN.")
         base_feature_cols = ["Candle_Body", "Candle_Range", "Gain", "Candle_Ratio", "Upper_Wick", "Lower_Wick", "Wick_Length", "Wick_Ratio", "Gain_Z", "MACD_line", "MACD_signal", "MACD_hist", "MACD_hist_smooth", "ATR_14", "ATR_14_Shifted", "ATR_14_Rolling_Avg", "Candle_Speed", 'Volatility_Index', 'ADX', 'RSI']
