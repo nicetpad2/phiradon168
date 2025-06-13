@@ -1294,13 +1294,17 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
         try:
             df = pd.read_csv(f)
             df.columns = [c.capitalize() for c in df.columns]
-            if "Date" in df.columns and "Time" in df.columns:
+            possible_cols = ["Date", "Date/Time", "Timestamp", "Datetime", "Time"]
+            if {"Date", "Time"}.issubset(df.columns):
                 dt = pd.to_datetime(df["Date"] + " " + df["Time"], errors="coerce")
-                df["Date"] = dt.map(lambda d: f"{d.year + 543:04d}{d.month:02d}{d.day:02d}")
-                df["Timestamp"] = dt.dt.strftime("%H:%M:%S")
             else:
-                print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
-                continue
+                time_col = next((c for c in df.columns if c in possible_cols), None)
+                if time_col is None:
+                    print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
+                    continue
+                dt = pd.to_datetime(df[time_col], errors="coerce")
+            df["Date"] = dt.map(lambda d: f"{d.year + 543:04d}{d.month:02d}{d.day:02d}")
+            df["Timestamp"] = dt.dt.strftime("%H:%M:%S")
             for col in ["Open", "High", "Low", "Close"]:
                 if col not in df.columns and col.lower() in df.columns:
                     df[col] = df[col.lower()]
