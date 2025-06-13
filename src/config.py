@@ -137,13 +137,17 @@ from IPython import get_ipython
 import shutil
 import gzip
 import requests  # For Font Download
-from src.utils import get_env_float
+from src.utils import get_env_float, load_settings, log_settings
 
 import logging
 
 # [Patch] Ensure a module-level logger is always available for imports
 logger = logging.getLogger('NiceGold')
 logger.setLevel(logging.INFO)
+
+# Load runtime settings and log them
+SETTINGS = load_settings()
+log_settings(SETTINGS, logger)
 
 # -----------------------------------------------------------------------------
 # Fallback defaults for key constants used across the project.
@@ -806,8 +810,10 @@ OMS_MAX_DISTANCE_PIPS = 1000.0  # [Patch v5.5.8] Max allowed SL/TP distance
 
 # --- Entry/Exit Logic Parameters ---
 logging.debug("Setting Entry/Exit Logic Parameters...")
-# [Patch] Allow MIN_SIGNAL_SCORE_ENTRY override via environment
-MIN_SIGNAL_SCORE_ENTRY = get_env_float("MIN_SIGNAL_SCORE_ENTRY", 0.3)
+# [Patch v6.9.16] Load default from settings with env override
+MIN_SIGNAL_SCORE_ENTRY = get_env_float(
+    "MIN_SIGNAL_SCORE_ENTRY", SETTINGS.min_signal_score_entry
+)
 # [Patch v5.3.9] Adaptive threshold settings
 ADAPTIVE_SIGNAL_SCORE_WINDOW = 1000   # Bars used for quantile calculation
 ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.4  # [Patch v5.7.1] Lower quantile (40th)
@@ -901,10 +907,16 @@ logging.info(f"Re-Entry Enabled: {USE_REENTRY} (Cooldown: {REENTRY_COOLDOWN_BARS
 
 # --- Meta Filter Configuration ---
 logging.debug("Setting Meta Filter Configuration...")
-META_FILTER_THRESHOLD = get_env_float("META_FILTER_THRESHOLD", 0.5)
+META_FILTER_THRESHOLD = get_env_float(
+    "META_FILTER_THRESHOLD", SETTINGS.meta_filter_threshold
+)
 # ↓ ลดค่า Meta Filter เพื่อให้ผ่านโลจิก Meta-Model บ่อยขึ้น
-META_FILTER_RELAXED_THRESHOLD = get_env_float("META_FILTER_RELAXED_THRESHOLD", 0.45)
-META_FILTER_RELAX_BLOCKS = int(get_env_float("META_FILTER_RELAX_BLOCKS", 5))
+META_FILTER_RELAXED_THRESHOLD = get_env_float(
+    "META_FILTER_RELAXED_THRESHOLD", SETTINGS.meta_filter_relaxed_threshold
+)
+META_FILTER_RELAX_BLOCKS = int(
+    get_env_float("META_FILTER_RELAX_BLOCKS", SETTINGS.meta_filter_relax_blocks)
+)
 logging.info(
     f"Meta Filter Threshold: {META_FILTER_THRESHOLD} (Relaxed: {META_FILTER_RELAXED_THRESHOLD}, Blocks: {META_FILTER_RELAX_BLOCKS})"
 )
