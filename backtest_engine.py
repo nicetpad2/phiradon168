@@ -116,7 +116,7 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     else:
         time_col = next((c for c in df.columns if c in possible_cols), None)
         if time_col:
-            df.index = pd.to_datetime(df[time_col], errors="coerce")
+            df.index = pd.to_datetime(df[time_col], errors="coerce", format="mixed")
             df.drop(columns=[time_col], inplace=True, errors="ignore")
         elif not isinstance(df.index, pd.DatetimeIndex):
             df.index = pd.to_datetime(df.index, errors="coerce")

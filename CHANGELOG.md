@@ -1,3 +1,7 @@
+### 2025-06-18
+- [Patch v6.9.5] Suppress pandas datetime warnings
+- QA: pytest -q passed (980 tests)
+
 ### 2025-06-17
 - [Patch v6.9.4] Auto-detect datetime column names
 - New/Updated unit tests added for src/feature_analysis.py

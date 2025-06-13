@@ -1302,7 +1302,7 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
                 if time_col is None:
                     print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
                     continue
-                dt = pd.to_datetime(df[time_col], errors="coerce")
+                dt = pd.to_datetime(df[time_col], errors="coerce", format="mixed")
             df["Date"] = dt.map(lambda d: f"{d.year + 543:04d}{d.month:02d}{d.day:02d}")
             df["Timestamp"] = dt.dt.strftime("%H:%M:%S")
             for col in ["Open", "High", "Low", "Close"]:
