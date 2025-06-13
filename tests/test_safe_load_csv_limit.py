@@ -70,3 +70,17 @@ def test_safe_load_csv_auto_local_time_buddhist(tmp_path):
     result = dl.safe_load_csv_auto(str(p))
     assert result.index[0] == pd.Timestamp('2024-01-01 00:00:00')
 
+
+def test_safe_load_csv_auto_timestamp_column(tmp_path):
+    df = pd.DataFrame({
+        'Timestamp': ['2024-01-01 00:00:00'],
+        'Open': [1],
+        'High': [1],
+        'Low': [1],
+        'Close': [1],
+    })
+    p = tmp_path / 'ts.csv'
+    df.to_csv(p, index=False)
+    result = dl.safe_load_csv_auto(str(p))
+    assert isinstance(result.index, pd.DatetimeIndex)
+
