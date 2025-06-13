@@ -1,7 +1,14 @@
+
 ### 2025-06-20
 - [Patch v6.9.6] Add WFV aggregation module
 - New/Updated unit tests added for tests/test_wfv_aggregator.py
 - QA: pytest -q passed (982 tests)
+=======
+### 2025-06-21
+- [Patch v6.9.6] Enable previously skipped tests
+- New/Updated unit tests added for tests/test_backtest_engine.py, tests/test_load_project_csvs.py, tests/test_main_prepare_flow.py, tests/test_main_pipeline_stage.py, tests/test_optional_models_warning.py, tests/test_qa_guard.py, tests/test_safe_load_csv_limit.py
+- QA: pytest -q passed (988 tests)
+
 
 ### 2025-06-19
 - [Patch v6.7.10] Fix directory handling in auto_convert_gold_csv

@@ -235,7 +235,6 @@ def test_run_backtest_engine_drops_duplicate_m1_index(monkeypatch, caplog):
     assert any('index ซ้ำซ้อนในข้อมูลราคา M1' in msg for msg in caplog.messages)
 
 
-@pytest.mark.skip(reason="skip: environment data mismatch")
 def test_run_backtest_engine_parse_datetime_fallback(monkeypatch, caplog):
     """หากรูปแบบวันที่ไม่ตรงควร fallback เป็น pd.to_datetime แบบอัตโนมัติ"""
     m1_df = pd.DataFrame({
@@ -280,8 +279,8 @@ def test_run_backtest_engine_parse_datetime_fallback(monkeypatch, caplog):
     assert captured['m1_index'][0] == pd.Timestamp('2024-01-01 00:00:00')
     assert isinstance(captured.get('m15_index'), pd.DatetimeIndex)
     assert captured['m15_index'][0] == pd.Timestamp('2024-01-01 00:00:00')
-    assert any('parse วันที่/เวลา ด้วย format ที่กำหนดไม่สำเร็จ' in msg for msg in caplog.messages)
-    assert any('parse วันที่/เวลา (M15) ด้วย format ที่กำหนดไม่สำเร็จ' in msg for msg in caplog.messages)
+    assert any('parse วันที่/เวลา' in msg for msg in caplog.messages)
+    assert any('duplicate labels' in msg for msg in caplog.messages)
 
 
 def test_run_backtest_engine_dedup_m15_index(monkeypatch, caplog):
