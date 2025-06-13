@@ -12,7 +12,6 @@ sys.path.insert(0, ROOT_DIR)
 import src.main as main
 
 
-@pytest.mark.skip(reason="skip: optional models missing")
 def test_optional_models_warning(monkeypatch, tmp_path, caplog):
     main.OUTPUT_BASE_DIR = str(tmp_path)
     main.OUTPUT_DIR_NAME = 'out'
@@ -26,6 +25,8 @@ def test_optional_models_warning(monkeypatch, tmp_path, caplog):
     with open(out_dir / 'features_main.json', 'w', encoding='utf-8') as f:
         json.dump([], f)
 
+    df_stub = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]}, index=[pd.Timestamp('2024-01-01')])
+
     class DummyModel:
         def predict_proba(self, X):
             return [0]
@@ -34,6 +35,8 @@ def test_optional_models_warning(monkeypatch, tmp_path, caplog):
     monkeypatch.setattr(main, 'select_model_for_trade', lambda *a, **k: 'main', raising=False)
     monkeypatch.setattr(main, 'load_features_for_model', lambda *a, **k: [], raising=False)
     monkeypatch.setattr(main, 'load', lambda p: DummyModel(), raising=False)
+    monkeypatch.setattr(main, 'load_validated_csv', lambda p, label, dtypes=None: df_stub)
+    monkeypatch.setattr(main, 'prepare_datetime', lambda df, tf: df)
     monkeypatch.setattr(main, 'USE_GPU_ACCELERATION', False, raising=False)
     monkeypatch.setattr(main, 'MULTI_FUND_MODE', False, raising=False)
     monkeypatch.setattr(main, 'FUND_PROFILES', {'DEF': {'risk':1, 'mm_mode':'static'}}, raising=False)

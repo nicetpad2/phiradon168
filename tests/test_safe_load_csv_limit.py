@@ -15,10 +15,9 @@ def test_safe_load_csv_auto_type_error():
         dl.safe_load_csv_auto(None)
 
 
-@pytest.mark.skip(reason="skip: duplicate handling differs")
 def test_safe_load_csv_auto_duplicate_time(tmp_path):
     df = pd.DataFrame({
-        'time': ['2024-01-01 00:00:00', '2024-01-01 00:00:00'],
+        'timestamp': ['2024-01-01 00:00:00', '2024-01-01 00:00:00'],
         'A': [1, 2]
     })
     df.to_csv(tmp_path / 'dup.csv', index=False)

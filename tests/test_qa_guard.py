@@ -10,7 +10,6 @@ sys.path.insert(0, ROOT_DIR)
 import src.main as main
 
 
-@pytest.mark.skip(reason="skip: trade log generation not needed")
 def test_trade_log_created_even_if_empty(monkeypatch, tmp_path):
     main.OUTPUT_BASE_DIR = str(tmp_path)
     main.OUTPUT_DIR_NAME = 'out'
@@ -23,6 +22,9 @@ def test_trade_log_created_even_if_empty(monkeypatch, tmp_path):
     monkeypatch.setattr(main, 'run_all_folds_with_threshold', dummy_run_all_folds_with_threshold)
     monkeypatch.setattr(main, 'select_model_for_trade', lambda *a, **k: None, raising=False)
     monkeypatch.setattr(main, 'load_features_for_model', lambda *a, **k: [], raising=False)
+    df_stub = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [1], 'Close': [1]}, index=[pd.Timestamp('2024-01-01')])
+    monkeypatch.setattr(main, 'load_validated_csv', lambda p, label, dtypes=None: df_stub)
+    monkeypatch.setattr(main, 'prepare_datetime', lambda df, tf: df)
     class CatBoostClassifier:
         def predict_proba(self, X):  # pragma: no cover - simple stub
             return [0]

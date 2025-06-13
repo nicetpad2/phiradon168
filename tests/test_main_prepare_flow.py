@@ -10,7 +10,6 @@ sys.path.insert(0, ROOT_DIR)
 import src.main as main
 
 
-@pytest.mark.skip(reason="skip: complex pipeline not run")
 def test_main_prepare_train_data_flow(monkeypatch, tmp_path):
     main.OUTPUT_BASE_DIR = str(tmp_path)
     main.OUTPUT_DIR_NAME = 'out'
@@ -27,6 +26,7 @@ def test_main_prepare_train_data_flow(monkeypatch, tmp_path):
     })
 
     monkeypatch.setattr(main, 'load_data', lambda p, tf, dtypes=None: df_base.copy())
+    monkeypatch.setattr(main, 'load_validated_csv', lambda p, label, dtypes=None: df_base.copy())
     monkeypatch.setattr(main, 'prepare_datetime', lambda df, tf: df.set_index('datetime'))
     monkeypatch.setattr(main, 'calculate_m15_trend_zone', lambda df: pd.DataFrame({'Trend_Zone': ['NEUTRAL'] * len(df)}, index=df.index))
 
