@@ -13,7 +13,7 @@
 ## การรัน Pipeline
 ใช้งานผ่านสคริปต์หลัก `ProjectP.py` หรือใช้ `profile_backtest.py` เพื่อประเมินประสิทธิภาพ ตัวอย่างเช่น
 ```bash
-python profile_backtest.py XAUUSD_M1.csv --rows 1000 --console_level WARNING
+python profile_backtest.py XAUUSD_M1.csv --console_level WARNING
 ```
 สำหรับการทดสอบรวดเร็ว สามารถระบุ `--debug` เพื่อลดจำนวนแถวที่โหลด
 ```bash

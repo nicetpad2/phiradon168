@@ -539,32 +539,35 @@ if __name__ == "__main__":
             )
     if not trade_log_file:
         if not log_files:
-            logger.warning(
-                "[Patch v6.4.6] No trade_log CSV found in %s; initializing empty trade log.",
-                output_dir,
-            )
-            # [Patch v6.7.2] Create a dummy trade log with placeholder rows (reduce to 9 rows)
-            trade_log_file = os.path.join(output_dir, "trade_log_dummy.csv")
-            dummy_cols = [
-                "entry_time",
-                "exit_time",
-                "entry_price",
-                "exit_price",
-                "side",
-                "profit",
-            ]
-            dummy_rows = [
-                {
-                    "entry_time": "",
-                    "exit_time": "",
-                    "entry_price": 0.0,
-                    "exit_price": 0.0,
-                    "side": "",
-                    "profit": 0.0,
-                }
-                for _ in range(9)
-            ]
-            pd.DataFrame(dummy_rows, columns=dummy_cols).to_csv(trade_log_file, index=False)
+            # [Patch v6.9.16] Prefer real trade_log.csv; fallback to dummy if missing
+            real_log = os.path.join(output_dir, "trade_log.csv")
+            if os.path.exists(real_log):
+                trade_log_file = real_log
+            else:
+                logger.warning(
+                    "trade_log.csv not found in %s; creating dummy log", output_dir
+                )
+                trade_log_file = os.path.join(output_dir, "trade_log_dummy.csv")
+                dummy_cols = [
+                    "entry_time",
+                    "exit_time",
+                    "entry_price",
+                    "exit_price",
+                    "side",
+                    "profit",
+                ]
+                dummy_rows = [
+                    {
+                        "entry_time": "",
+                        "exit_time": "",
+                        "entry_price": 0.0,
+                        "exit_price": 0.0,
+                        "side": "",
+                        "profit": 0.0,
+                    }
+                    for _ in range(9)
+                ]
+                pd.DataFrame(dummy_rows, columns=dummy_cols).to_csv(trade_log_file, index=False)
         else:
             log_files = sorted(log_files, key=lambda f: ("walkforward" not in f, f))
             trade_log_file = log_files[0]
