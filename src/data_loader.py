@@ -1303,8 +1303,14 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
                     print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
                     continue
                 dt = pd.to_datetime(df[time_col], errors="coerce")
-            df["Date"] = dt.map(lambda d: f"{d.year + 543:04d}{d.month:02d}{d.day:02d}")
-            df["Timestamp"] = dt.dt.strftime("%H:%M:%S")
+            # [Patch v6.9.5] Handle unparsable dates gracefully
+            def to_thai_date(d):
+                if pd.isna(d):
+                    return np.nan
+                return f"{int(d.year) + 543:04d}{int(d.month):02d}{int(d.day):02d}"
+
+            df["Date"] = dt.map(to_thai_date)
+            df["Timestamp"] = dt.dt.strftime("%H:%M:%S").fillna("")
             for col in ["Open", "High", "Low", "Close"]:
                 if col not in df.columns and col.lower() in df.columns:
                     df[col] = df[col.lower()]

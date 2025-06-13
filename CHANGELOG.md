@@ -3,6 +3,11 @@
 - New/Updated unit tests added for src/feature_analysis.py
 - QA: pytest -q passed (980 tests)
 
+### 2025-06-18
+- [Patch v6.9.5] Handle invalid dates in auto_convert
+- New/Updated unit tests added for tests/test_auto_convert_csv.py, tests/test_function_registry.py
+- QA: pytest -q passed (981 tests)
+
 ### 2025-06-13
 - [Patch v6.9.3] Restore backtest logic
 - QA: pytest -q passed (977 tests, 7 skipped)

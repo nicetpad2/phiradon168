@@ -43,3 +43,20 @@ def test_auto_convert_gold_csv_batch(tmp_path):
     auto_convert_gold_csv(str(tmp_path), output_path=str(tmp_path))
     assert (tmp_path / 'XAUUSD_M1_thai.csv').exists()
     assert (tmp_path / 'XAUUSD_M15_thai.csv').exists()
+
+
+def test_auto_convert_gold_csv_invalid_date(tmp_path):
+    df = pd.DataFrame({
+        'Date': ['bad'],
+        'Time': ['00:00:00'],
+        'Open': [1.0],
+        'High': [1.1],
+        'Low': [0.9],
+        'Close': [1.0],
+    })
+    csv = tmp_path / 'XAUUSD_M1.csv'
+    df.to_csv(csv, index=False)
+    out_f = tmp_path / 'XAUUSD_M1_thai.csv'
+    auto_convert_gold_csv(str(tmp_path), output_path=str(out_f))
+    out = pd.read_csv(out_f)
+    assert pd.isna(out.iloc[0]['Date'])
