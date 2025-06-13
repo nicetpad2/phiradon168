@@ -4,6 +4,9 @@
 - QA: pytest -q passed (tests count TBD)
 
 # ### 2025-06-27
+- [Patch v6.9.16] Centralize config defaults in YAML
+- New/Updated unit tests added for N/A
+- QA: pytest -q passed (tests count TBD)
 
 - [Patch v6.9.13] Log TA version from metadata
 - New/Updated unit tests added for tests/test_ta_install.py

@@ -26,7 +26,7 @@ from src.utils.resource_plan import get_resource_plan, save_resource_plan
 from src.utils.hardware import estimate_resource_plan
 from src.utils.json_utils import load_json_with_comments
 from src.utils.module_utils import safe_reload
-from src.utils.settings import load_settings, Settings
+from src.utils.settings import load_settings, Settings, log_settings
 from src.utils.leakage import hash_df, timestamp_split, assert_no_overlap
 
 __all__ = [
@@ -57,5 +57,6 @@ __all__ = [
     "assert_no_overlap",
     "load_settings",
     "Settings",
+    "log_settings",
     "safe_reload",
 ]

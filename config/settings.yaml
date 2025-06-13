@@ -1,6 +1,10 @@
 cooldown_secs: 60
 kill_switch_pct: 0.2
 feature_format: parquet
+min_signal_score_entry: 0.3
+meta_filter_threshold: 0.5
+meta_filter_relaxed_threshold: 0.45
+meta_filter_relax_blocks: 5
 
 data:
   data_dir: 'data'

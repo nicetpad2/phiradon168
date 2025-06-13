@@ -13,6 +13,10 @@ class Settings:
     cooldown_secs: int = 60
     kill_switch_pct: float = 0.2
     feature_format: str = "parquet"
+    min_signal_score_entry: float = 0.3
+    meta_filter_threshold: float = 0.5
+    meta_filter_relaxed_threshold: float = 0.45
+    meta_filter_relax_blocks: int = 5
 
 
 def load_settings(path: str = DEFAULT_SETTINGS_FILE) -> Settings:
@@ -23,4 +27,12 @@ def load_settings(path: str = DEFAULT_SETTINGS_FILE) -> Settings:
         # [Patch v6.8.5] Merge YAML values with dataclass defaults
         return Settings(**{**Settings().__dict__, **data})
     return Settings()
+
+
+def log_settings(cfg: Settings, logger) -> None:
+    """Log all setting values via provided logger."""
+    from dataclasses import asdict
+
+    for key, value in asdict(cfg).items():
+        logger.info(f"[Settings] {key} = {value}")
 
