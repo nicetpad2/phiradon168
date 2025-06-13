@@ -15,7 +15,7 @@ import json
 import pandas as pd
 import numpy as np
 from typing import Dict, List
-from src.utils.model_utils import predict
+from src.utils.model_utils import predict_with_time_check
 # [Patch v5.2.0] Use explicit package import for cooldown utilities
 from src.cooldown_utils import (
     is_soft_cooldown_triggered,
@@ -2477,7 +2477,9 @@ def run_backtest_simulation_v34(
                                 cat_cols_ml = X_ml.select_dtypes(exclude=np.number).columns
                                 for cat_col in cat_cols_ml: X_ml[cat_col] = X_ml[cat_col].astype(str).fillna("Missing")
                                 proba_tp = active_l1_model.predict_proba(X_ml)[0, 1]; meta_proba_tp_for_log = proba_tp; logging.debug(f"         ML Model '{selected_model_key}' Predicted Proba(TP): {proba_tp:.4f}")
-                                meta_proba = predict(active_l1_model, X_ml)
+                                meta_proba = predict_with_time_check(
+                                    active_l1_model, X_ml, now
+                                )
                                 if meta_proba < META_FILTER_THRESHOLD:
                                     meta_filter_block_streak += 1
                                     if meta_filter_block_streak >= META_FILTER_RELAX_BLOCKS and meta_proba >= META_FILTER_RELAXED_THRESHOLD:

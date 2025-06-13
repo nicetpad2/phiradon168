@@ -117,6 +117,33 @@ def predict(model: Any, X: pd.DataFrame, class_idx: int = 1) -> Optional[float]:
     return float(proba[0, class_idx])
 
 
+def set_last_training_timestamp(model: Any, timestamp: pd.Timestamp) -> None:
+    """Store last training timestamp on the model object."""
+    try:
+        setattr(model, "last_train_timestamp", pd.Timestamp(timestamp))
+    except Exception as exc:  # pragma: no cover - attribute errors
+        logger.warning(f"Could not set last_train_timestamp: {exc}")
+
+
+def get_last_training_timestamp(model: Any) -> pd.Timestamp | None:
+    """Return previously stored training timestamp if available."""
+    ts = getattr(model, "last_train_timestamp", None)
+    return pd.Timestamp(ts) if ts is not None else None
+
+
+def predict_with_time_check(
+    model: Any,
+    X: pd.DataFrame,
+    current_timestamp: pd.Timestamp,
+    class_idx: int = 1,
+) -> Optional[float]:
+    """Predict while asserting no lookahead bias."""
+    last_ts = get_last_training_timestamp(model)
+    if last_ts is not None:
+        assert pd.Timestamp(current_timestamp) > last_ts, "Lookahead bias detected!"
+    return predict(model, X, class_idx)
+
+
 # [Patch v5.7.3] Utility to validate existence and size of a file
 def validate_file(path: str) -> bool:
     """Return True if file exists and is non-empty."""
