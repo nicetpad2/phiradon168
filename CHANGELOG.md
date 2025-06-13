@@ -1,3 +1,8 @@
+### 2025-06-19
+- [Patch v6.7.10] Fix directory handling in auto_convert_gold_csv
+- New/Updated unit tests added for tests/test_auto_convert_csv.py, tests/test_function_registry.py
+- QA: pytest -q passed (981 tests)
+
 ### 2025-06-17
 - [Patch v6.9.4] Auto-detect datetime column names
 - New/Updated unit tests added for src/feature_analysis.py

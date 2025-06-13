@@ -1273,53 +1273,64 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
     """
     pattern = os.path.join(data_dir, "XAUUSD_M*.csv")
     files = glob.glob(pattern)
-    out_dir = None
-    use_single = False
+
+    # --- START: FIX for Directory Path Error ---
+    target_dir = None
     if output_path:
-        if len(files) > 1 or os.path.isdir(output_path):
-            out_dir = output_path
+        if os.path.isdir(output_path):
+            target_dir = output_path
         else:
-            use_single = True
+            target_dir = os.path.dirname(output_path)
+
+    if not target_dir:
+        target_dir = data_dir
+
+    try:
+        os.makedirs(target_dir, exist_ok=True)
+    except OSError as e:
+        print(
+            f"✗ [AutoConvert] Critical Error: ไม่สามารถสร้างโฟลเดอร์ปลายทางได้ '{target_dir}': {e}"
+        )
+        return
+    # --- END: FIX for Directory Path Error ---
 
     for f in files:
         if f.endswith("_thai.csv"):
             continue
+
         base_out = os.path.basename(f).replace(".csv", "_thai.csv")
-        if use_single:
-            out_f = output_path
-        elif out_dir:
-            out_f = os.path.join(out_dir, base_out)
-        else:
-            out_f = f.replace(".csv", "_thai.csv")
+        out_f = os.path.join(target_dir, base_out)
         try:
             df = pd.read_csv(f)
             df.columns = [c.capitalize() for c in df.columns]
-            possible_cols = ["Date", "Date/Time", "Timestamp", "Datetime", "Time"]
-            if {"Date", "Time"}.issubset(df.columns):
-                dt = pd.to_datetime(df["Date"] + " " + df["Time"], errors="coerce")
-            else:
-                time_col = next((c for c in df.columns if c in possible_cols), None)
-                if time_col is None:
-                    print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
-                    continue
-                dt = pd.to_datetime(df[time_col], errors="coerce")
-            # [Patch v6.9.5] Handle unparsable dates gracefully
-            def to_thai_date(d):
-                if pd.isna(d):
-                    return np.nan
-                return f"{int(d.year) + 543:04d}{int(d.month):02d}{int(d.day):02d}"
+            if "Date" in df.columns and "Time" in df.columns:
+                dt = pd.to_datetime(
+                    df["Date"].astype(str) + " " + df["Time"].astype(str), errors="coerce"
+                )
 
-            df["Date"] = dt.map(to_thai_date)
-            df["Timestamp"] = dt.dt.strftime("%H:%M:%S").fillna("")
+                def format_thai_date(d):
+                    if pd.isna(d):
+                        return None
+                    return f"{d.year + 543:04d}{d.month:02d}{d.day:02d}"
+
+                df["Date"] = dt.map(format_thai_date)
+                df["Timestamp"] = dt.dt.strftime("%H:%M:%S")
+            else:
+                print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
+                continue
+
             for col in ["Open", "High", "Low", "Close"]:
                 if col not in df.columns and col.lower() in df.columns:
                     df[col] = df[col.lower()]
+
+            df.dropna(subset=["Date"], inplace=True)
+
             df2 = df[["Date", "Timestamp", "Open", "High", "Low", "Close"]]
             df2.to_csv(out_f, index=False)
             status = "พบ" if os.path.exists(out_f) else "ไม่พบ"
             print(f"✔ [AutoConvert] {out_f} OK - {status}ไฟล์")
         except Exception as e:
-            print(f"✗ [AutoConvert] Error ({f}): {e}")
+            print(f"✗ [AutoConvert] Error processing file '{f}' to '{out_f}': {e}")
 
 # [Patch v6.8.10] Helper to load default project CSV files
 def load_project_csvs(row_limit=None):
