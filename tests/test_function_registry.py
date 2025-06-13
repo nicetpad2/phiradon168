@@ -22,7 +22,7 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "load_raw_data_m1", 1217),
     ("src/data_loader.py", "load_raw_data_m15", 1227),
     ("src/data_loader.py", "write_test_file", 1233),
-    ("src/data_loader.py", "validate_csv_data", 1335),
+    ("src/data_loader.py", "validate_csv_data", 1345),
 
 
     ("src/features.py", "tag_price_structure_patterns", 473),
