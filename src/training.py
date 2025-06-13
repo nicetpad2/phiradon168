@@ -259,6 +259,17 @@ def real_train_func(
     param_suffix = f"_l2{l2_leaf_reg}" if l2_leaf_reg is not None else ""
     model_filename = f"model_lr{learning_rate}_depth{depth}{param_suffix}"
     model_path = os.path.join(output_dir, f"{model_filename}.joblib")
+    last_ts = None
+    if "Timestamp" in m1_df.columns:
+        try:
+            last_ts = pd.to_datetime(m1_df.loc[min_len - 1, "Timestamp"], errors="raise")
+        except Exception:
+            last_ts = None
+    elif isinstance(m1_df.index, pd.DatetimeIndex):
+        last_ts = m1_df.index[min_len - 1]
+    if last_ts is not None:
+        from src.utils.model_utils import set_last_training_timestamp
+        set_last_training_timestamp(model, last_ts)
     save_model(model, output_dir, model_filename)
 
     return {
