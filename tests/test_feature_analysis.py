@@ -128,3 +128,20 @@ def test_feature_analysis_main_missing_date(monkeypatch, tmp_path, caplog):
     assert low_var == []
     assert corr.empty
     assert "Missing Date/Timestamp columns" in caplog.text
+
+
+def test_feature_analysis_main_autodetect(monkeypatch, tmp_path):
+    """Ensure main detects various datetime column names"""
+    monkeypatch.chdir(tmp_path)
+    df = pd.DataFrame({
+        "Date/Time": ["2024-01-01 00:00:00"],
+        "Open": [1],
+        "High": [1],
+        "Low": [1],
+        "Close": [1],
+    })
+    monkeypatch.setattr(pd, "read_csv", lambda *a, **k: df)
+    stats, low_var, corr = feature_analysis.main(sample_rows=1)
+    assert isinstance(stats, dict)
+    assert isinstance(low_var, list)
+    assert isinstance(corr, pd.DataFrame)

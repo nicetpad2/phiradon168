@@ -1,3 +1,8 @@
+### 2025-06-17
+- [Patch v6.9.4] Auto-detect datetime column names
+- New/Updated unit tests added for src/feature_analysis.py
+- QA: pytest -q passed (980 tests)
+
 ### 2025-06-13
 - [Patch v6.9.3] Restore backtest logic
 - QA: pytest -q passed (977 tests, 7 skipped)
