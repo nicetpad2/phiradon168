@@ -7,6 +7,7 @@ import logging.config
 import yaml
 import pandas as pd
 from src.data_loader import auto_convert_gold_csv
+from src import csv_validator
 
 # [Patch v6.8.17] CSV to Parquet helper for preprocess stage
 def auto_convert_csv_to_parquet(source_path: str, dest_folder) -> None:
@@ -128,6 +129,13 @@ def run_preprocess(config: PipelineConfig, runner=subprocess.run) -> None:
         )
 
     m1_path = config.raw_m1_filename
+    if os.path.exists(m1_path):
+        try:
+            csv_validator.validate_and_convert_csv(m1_path)
+        except Exception as exc:
+            logger.error("[Validation] CSV validation failed: %s", exc)
+    else:
+        logger.warning("[Validation] CSV file not found: %s", m1_path)
     auto_convert_gold_csv(os.path.dirname(m1_path), output_path=m1_path)
     fill_method = getattr(config, "cleaning_fill_method", "drop")
     try:
