@@ -80,7 +80,7 @@ def test_auto_convert_gold_csv_empty_dir(monkeypatch, tmp_path):
 
 def test_auto_convert_gold_csv_timestamp_only(tmp_path):
     df = pd.DataFrame({
-        'Timestamp': ['2024-01-01 00:00:00'],
+        'Timestamp': ['2024.01.01 00:00:00'],
         'Open': [1.0],
         'High': [1.1],
         'Low': [0.9],
