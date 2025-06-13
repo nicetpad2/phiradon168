@@ -1,5 +1,10 @@
 # ### 2025-06-27
 
+- [Patch v6.9.12] Robust TA version detection
+- New/Updated unit tests added for tests/test_ta_install.py and tests/test_function_registry.py
+- QA: pytest -q passed (1001 tests)
+
+
 - [Patch v6.9.12] Improve safe_load_csv_auto root path fallback
 - New/Updated unit tests added for tests/test_safe_load_csv_root.py, tests/test_new_utils.py, tests/test_function_registry.py
 - QA: pytest -q passed (1002 tests)
