@@ -91,7 +91,8 @@ except ImportError:  # pragma: no cover - optional dependency
 except Exception:  # pragma: no cover - NVML failure fallback
     nvml_handle = None
 
-from src.main import main
+from src.main import main, setup_output_directory
+from src.data_loader import auto_convert_gold_csv as auto_convert_csv
 
 def configure_logging():
     """Set up consistent logging configuration."""
@@ -125,7 +126,12 @@ def parse_projectp_args(args=None):
         type=int,
         help="Limit number of rows loaded from data (overrides debug default)",
     )
-    return parser.parse_args(args)
+    parser.add_argument(
+        "--auto-convert",
+        action="store_true",
+        help="แปลงไฟล์ CSV อัตโนมัติ",
+    )
+    return parser.parse_known_args(args)[0]
 
 
 def parse_args(args=None):  # backward compatibility
@@ -370,7 +376,21 @@ def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) ->
 
 if __name__ == "__main__":
     configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
-    args = parse_args([])  # [Patch] ignore external argv to avoid pytest args
+    args = parse_args(sys.argv[1:])
+    if args.auto_convert:
+        source_csv_dir = os.environ.get('SOURCE_CSV_DIR', '')
+        dest_csv_dir = os.environ.get('DEST_CSV_DIR')
+        if not dest_csv_dir:
+            print("INFO: [AutoConvert] DEST_CSV_DIR not set, using default path.")
+            main_output_dir = setup_output_directory(os.getcwd(), 'output_default')
+            dest_csv_dir = os.path.join(main_output_dir, 'converted_csvs')
+        os.makedirs(dest_csv_dir, exist_ok=True)
+        if not source_csv_dir:
+            print("\u2717 [AutoConvert] Error: SOURCE_CSV_DIR environment variable is not set.")
+        else:
+            auto_convert_csv(source_csv_dir, output_path=dest_csv_dir)
+        sys.exit(0)
+    DEBUG_DEFAULT_ROWS = 2000
     DEBUG_DEFAULT_ROWS = 2000
     if args.rows is not None:
         max_rows = args.rows
