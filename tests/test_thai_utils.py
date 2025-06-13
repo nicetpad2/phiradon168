@@ -12,6 +12,12 @@ def test_convert_thai_datetime_basic():
     assert res.iloc[0] == pd.Timestamp('2024-01-01 12:00:00', tz='UTC')
 
 
+def test_convert_thai_datetime_month_name():
+    series = pd.Series(['12-มิ.ย.-2563 00:00'])
+    res = convert_thai_datetime(series)
+    assert res.iloc[0] == pd.Timestamp('2020-06-12 00:00:00', tz='UTC')
+
+
 def test_convert_thai_datetime_error():
     series = pd.Series(['invalid'])
     with pytest.raises(ValueError):

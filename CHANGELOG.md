@@ -2186,3 +2186,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_main_strategy_di.py
 - QA: pytest -q passed (1011 tests)
 
+### 2025-06-20
+- [Patch v6.9.16] Improve Thai datetime parsing
+- New/Updated unit tests added for tests/test_thai_utils.py::test_convert_thai_datetime_month_name
+- QA: pytest -q passed (1004 tests)
+
