@@ -19,10 +19,10 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "convert_thai_years", 1110),
     ("src/data_loader.py", "convert_thai_datetime", 1117),
     ("src/data_loader.py", "prepare_datetime_index", 1145),
-    ("src/data_loader.py", "load_raw_data_m1", 1200),
-    ("src/data_loader.py", "load_raw_data_m15", 1210),
-    ("src/data_loader.py", "write_test_file", 1216),
-    ("src/data_loader.py", "validate_csv_data", 1318),
+    ("src/data_loader.py", "load_raw_data_m1", 1206),
+    ("src/data_loader.py", "load_raw_data_m15", 1216),
+    ("src/data_loader.py", "write_test_file", 1222),
+    ("src/data_loader.py", "validate_csv_data", 1324),
 
 
     ("src/features.py", "tag_price_structure_patterns", 473),

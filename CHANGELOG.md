@@ -1,3 +1,8 @@
+### 2025-06-17
+- [Patch v6.9.3] Restore strategy logic and index fix
+- New/Updated unit tests added for tests/test_loader_main_functions.py, tests/unit/test_data_loader_full.py, tests/test_function_registry.py
+- QA: pytest -q passed (977 tests, 7 skipped)
+
 ### 2025-06-12
 - [Patch v6.9.2] Suppress datetime parsing warning
 - QA: pytest -q passed (977 tests, 7 skipped)

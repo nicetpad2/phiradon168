@@ -114,7 +114,7 @@ def test_convert_thai_datetime_type_error():
         dl.convert_thai_datetime(123)
 
 
-def test_prepare_datetime_index_no_date():
+def test_prepare_datetime_index_no_timestamp():
     df = pd.DataFrame({'A':[1]})
     res = dl.prepare_datetime_index(df.copy())
     assert res.index.equals(df.index)
