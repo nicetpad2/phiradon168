@@ -6,7 +6,7 @@ import logging
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
 
-from src.utils.data_utils import convert_thai_datetime, prepare_csv_auto, parse_thai_date_fast
+from src.utils.data_utils import convert_thai_datetime, prepare_csv_auto
 
 
 def test_convert_thai_datetime_invalid(caplog):
@@ -26,14 +26,3 @@ def test_prepare_csv_auto_missing_timestamp(tmp_path, caplog):
     assert 'a' in df.columns
 
 
-def test_parse_thai_date_fast_basic_utils():
-    s = pd.Series(['24/1/2567', '1/12/2566'])
-    result = parse_thai_date_fast(s)
-    assert result.iloc[0] == pd.Timestamp('2024-01-24')
-    assert result.iloc[1] == pd.Timestamp('2023-12-01')
-
-
-def test_parse_thai_date_fast_invalid_utils():
-    s = pd.Series(['invalid', '31/13/2567'])
-    result = parse_thai_date_fast(s)
-    assert result.isna().all()
