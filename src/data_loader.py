@@ -335,6 +335,13 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     # --- Standardize column names (lowercase & trim) ---
     df.columns = [str(col).strip().lower() for col in df.columns]
 
+    # [Patch] รองรับคอลัมน์ชื่อ 'timestamp' แทน 'date/time'
+    if 'date/time' not in df.columns:
+        if 'timestamp' in df.columns:
+            df.rename(columns={'timestamp': 'date/time'}, inplace=True)
+        else:
+            logger.debug("   (Info) ไม่มีคอลัมน์ date/time หรือ timestamp")
+
     datetime_col = None
 
     # --- Flexible datetime column detection ---
@@ -363,6 +370,9 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     elif 'datetime' in df.columns:
         logger.info("ตรวจพบ คอลัมน์ 'datetime', กำลังแปลงข้อมูล...")
         datetime_col = 'datetime'
+    elif 'date/time' in df.columns:
+        logger.info("ตรวจพบ คอลัมน์ 'date/time', จะใช้เป็น datetime...")
+        datetime_col = 'date/time'
     elif 'timestamp' in df.columns:
         logger.info("ตรวจพบ คอลัมน์ 'timestamp', กำลังแปลงข้อมูล...")
         datetime_col = 'timestamp'
