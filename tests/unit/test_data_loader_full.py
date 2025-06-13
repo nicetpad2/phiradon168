@@ -120,6 +120,13 @@ def test_prepare_datetime_index_no_date():
     assert res.index.equals(df.index)
 
 
+def test_prepare_datetime_index_rename_date():
+    df = pd.DataFrame({'Date': ['2024-01-01']})
+    res = dl.prepare_datetime_index(df.copy())
+    assert isinstance(res.index, pd.DatetimeIndex)
+    assert 'Timestamp' in res.columns
+
+
 def test_load_raw_data_m1_invalid(monkeypatch):
     monkeypatch.setattr(dl, 'validate_m1_data_path', lambda p: False)
     assert dl.load_raw_data_m1('bad') is None
