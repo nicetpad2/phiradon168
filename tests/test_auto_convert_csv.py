@@ -59,4 +59,4 @@ def test_auto_convert_gold_csv_invalid_date(tmp_path):
     out_f = tmp_path / 'XAUUSD_M1_thai.csv'
     auto_convert_gold_csv(str(tmp_path), output_path=str(out_f))
     out = pd.read_csv(out_f)
-    assert pd.isna(out.iloc[0]['Date'])
+    assert out.empty
