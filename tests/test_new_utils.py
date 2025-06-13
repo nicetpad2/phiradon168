@@ -74,7 +74,7 @@ def test_prepare_csv_auto(tmp_path):
     csv_path = tmp_path / "d.csv"
     df.to_csv(csv_path, index=False)
     loaded = utils.prepare_csv_auto(str(csv_path))
-    assert "timestamp" in loaded.columns
+    assert isinstance(loaded.index, pd.DatetimeIndex)
 
 
 def test_convert_thai_datetime_missing_cols():

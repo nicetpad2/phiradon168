@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 import pandas as pd
 import numpy as np
+from src.data_loader import safe_load_csv_auto
 
 
 # [Patch v5.7.3] Utility helpers for data processing and resource planning
@@ -74,7 +75,7 @@ def convert_thai_datetime(df: pd.DataFrame, date_col: str = "Date", time_col: st
 
 def prepare_csv_auto(path: str) -> pd.DataFrame:
     """Load a CSV file and convert Thai datetime columns automatically."""
-    df = pd.read_csv(path)
+    df = safe_load_csv_auto(path)
     df = convert_thai_datetime(df)
     return df
 

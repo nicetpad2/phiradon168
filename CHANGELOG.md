@@ -1,7 +1,18 @@
 # ### 2025-06-27
+
 - [Patch v6.9.12] Robust TA version detection
 - New/Updated unit tests added for tests/test_ta_install.py and tests/test_function_registry.py
 - QA: pytest -q passed (1001 tests)
+
+
+- [Patch v6.9.12] Improve safe_load_csv_auto root path fallback
+- New/Updated unit tests added for tests/test_safe_load_csv_root.py, tests/test_new_utils.py, tests/test_function_registry.py
+- QA: pytest -q passed (1002 tests)
+
+- [Patch v6.9.12] Handle Thai dates in load_data_from_csv
+- New/Updated unit tests added for tests/test_load_data_from_csv.py, tests/test_data_utils_new.py
+- QA: pytest -q passed (tests count TBD)
+
 
 # ### 2025-06-26
 

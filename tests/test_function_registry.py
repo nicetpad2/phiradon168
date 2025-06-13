@@ -11,18 +11,20 @@ FUNCTIONS_INFO = [
     ("src/config.py", "show_system_status", 659),
 
 
-    ("src/data_loader.py", "inspect_file_exists", 1057),
-    ("src/data_loader.py", "read_csv_with_date_parse", 1062),
-    ("src/data_loader.py", "check_nan_percent", 1069),
-    ("src/data_loader.py", "check_duplicates", 1076),
-    ("src/data_loader.py", "check_price_jumps", 1083),
-    ("src/data_loader.py", "convert_thai_years", 1125),
-    ("src/data_loader.py", "convert_thai_datetime", 1132),
-    ("src/data_loader.py", "prepare_datetime_index", 1160),
-    ("src/data_loader.py", "load_raw_data_m1", 1217),
-    ("src/data_loader.py", "load_raw_data_m15", 1227),
-    ("src/data_loader.py", "write_test_file", 1233),
-    ("src/data_loader.py", "validate_csv_data", 1395),
+
+    ("src/data_loader.py", "inspect_file_exists", 1064),
+    ("src/data_loader.py", "read_csv_with_date_parse", 1069),
+    ("src/data_loader.py", "check_nan_percent", 1076),
+    ("src/data_loader.py", "check_duplicates", 1083),
+    ("src/data_loader.py", "check_price_jumps", 1090),
+    ("src/data_loader.py", "convert_thai_years", 1132),
+    ("src/data_loader.py", "convert_thai_datetime", 1139),
+    ("src/data_loader.py", "prepare_datetime_index", 1167),
+    ("src/data_loader.py", "load_raw_data_m1", 1224),
+    ("src/data_loader.py", "load_raw_data_m15", 1234),
+    ("src/data_loader.py", "write_test_file", 1240),
+    ("src/data_loader.py", "validate_csv_data", 1403),
+
 
 
     ("src/features.py", "tag_price_structure_patterns", 473),
