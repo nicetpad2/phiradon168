@@ -6,7 +6,12 @@ import pandas as pd
 import logging
 
 from src.config import DATA_FILE_PATH_M1, DATA_FILE_PATH_M15
-from src.strategy import run_backtest_simulation_v34
+from src.strategy import (
+    run_backtest_simulation_v34,
+    MainStrategy,
+    DefaultEntryStrategy,
+    DefaultExitStrategy,
+)
 from src.features import (
     engineer_m1_features,
     calculate_m15_trend_zone,
@@ -234,6 +239,9 @@ def run_full_backtest(config: dict):
     final_df.dropna(subset=["Trend_Zone"], inplace=True)
 
     logger.info(f"   (Success) รวมข้อมูลสำเร็จ, จำนวนแถวสุดท้าย: {len(final_df)}")
+
+    strategy_comp = MainStrategy(DefaultEntryStrategy(), DefaultExitStrategy())
+    _ = strategy_comp.get_signal(final_df)
 
     result = run_backtest_simulation_v34(
         final_df,
