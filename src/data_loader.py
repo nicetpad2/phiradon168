@@ -658,6 +658,7 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
     Raises:
         SystemExit: If critical errors occur (e.g., file not found, essential columns missing).
     """
+    logger.info(f"--- [DEBUG] กำลังจะเริ่มโหลดไฟล์: {file_path} ---")
     logging.info(f"(Loading) กำลังโหลดข้อมูล {timeframe_str} จาก: {file_path}")
 
     if dtypes is None:
@@ -682,6 +683,7 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
             "Close": 1.0,
         })
         logging.warning("(Patch) Using dummy DataFrame due to missing file.")
+        logger.info(f"--- [DEBUG] สิ้นสุดการทำงานของฟังก์ชัน load_data สำหรับไฟล์ {file_path} ---")
         return df_pd
 
     try:
@@ -690,6 +692,9 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
             if max_rows is not None:
                 read_csv_kwargs["nrows"] = max_rows
             df_pd = pd.read_csv(file_path, **read_csv_kwargs)
+            logger.info(
+                f"--- [DEBUG] โหลดไฟล์ {file_path} สำเร็จ! จำนวนข้อมูล: {len(df_pd)} แถว ---"
+            )
             logging.info(
                 f"   ไฟล์ดิบ {timeframe_str}: {df_pd.shape[0]} แถว (max_rows={max_rows})"
             )
@@ -782,6 +787,7 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
 
         logging.info("NaN count after load_data:\n%s", df_pd.isna().sum().to_string())
         logging.info(f"(Success) โหลดและตรวจสอบข้อมูล {timeframe_str} สำเร็จ: {df_pd.shape[0]} แถว")
+        logger.info(f"--- [DEBUG] สิ้นสุดการทำงานของฟังก์ชัน load_data สำหรับไฟล์ {file_path} ---")
         return df_pd
 
     except SystemExit as se:
@@ -1410,11 +1416,15 @@ def load_project_csvs(row_limit=None):
     tuple[pd.DataFrame, pd.DataFrame]
         ข้อมูลจากไฟล์ M1 และ M15 ตามลำดับ
     """
+    logger.info("--- [DEBUG] เริ่มกระบวนการ load_project_csvs ---")
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     m1_path = os.path.join(base_dir, "XAUUSD_M1.csv")
     m15_path = os.path.join(base_dir, "XAUUSD_M15.csv")
     m1_df = safe_load_csv_auto(m1_path, row_limit=row_limit)
+    logger.info("--- [DEBUG] โหลดข้อมูล M1 สำเร็จ ---")
     m15_df = safe_load_csv_auto(m15_path, row_limit=row_limit)
+    logger.info("--- [DEBUG] โหลดข้อมูล M15 สำเร็จ ---")
+    logger.info("--- [DEBUG] สิ้นสุดการทำงานของฟังก์ชัน load_project_csvs ---")
     return m1_df, m15_df
 
 # [Patch v6.9.0] Utility to convert CSV to Parquet with fallback handling
