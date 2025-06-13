@@ -1149,8 +1149,8 @@ def convert_thai_datetime(series, tz="UTC", errors="raise"):
 
 def prepare_datetime_index(df):
     """Stubbed datetime index preparer."""
-    if 'Date' in df.columns:
-        df.index = pd.to_datetime(df['Date'], errors='coerce')
+    if 'Timestamp' in df.columns:
+        df.index = pd.to_datetime(df['Timestamp'], errors='coerce')
     return df
 
 
