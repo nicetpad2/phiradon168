@@ -1,3 +1,8 @@
+# ### 2025-06-28
+- [Patch v6.9.16] Load real trade log and remove row limit instructions
+- New/Updated unit tests added for N/A
+- QA: pytest -q passed (tests count TBD)
+
 # ### 2025-06-27
 
 - [Patch v6.9.13] Log TA version from metadata
