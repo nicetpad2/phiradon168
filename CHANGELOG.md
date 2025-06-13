@@ -2191,3 +2191,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_thai_utils.py::test_convert_thai_datetime_month_name
 - QA: pytest -q passed (1004 tests)
 
+### 2025-06-30
+- [Patch v6.9.17] Add persistent StateManager module
+- New/Updated unit tests added for tests/test_state_manager.py
+- QA: pytest -q passed (1005 tests)
+

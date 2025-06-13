@@ -8,6 +8,7 @@ import yaml
 import pandas as pd
 from src.data_loader import auto_convert_gold_csv
 from src import csv_validator
+from src.state_manager import StateManager
 
 # [Patch v6.8.17] CSV to Parquet helper for preprocess stage
 def auto_convert_csv_to_parquet(source_path: str, dest_folder) -> None:
@@ -265,6 +266,7 @@ def main(args=None) -> int:
     parsed = parse_args(args)
     config = load_config(parsed.config)
     setup_logging(parsed.log_level or config.log_level)
+    state_manager = StateManager(state_file_path='output/system_state.json')
 
     DEBUG_DEFAULT_ROWS = 2000
     if parsed.rows is not None:
@@ -322,6 +324,9 @@ def main(args=None) -> int:
     except Exception as exc:  # pragma: no cover - unexpected errors
         logger.error("Unexpected error: %s", exc, exc_info=True)
         return 1
+    finally:
+        state_manager.save_state()
+        logger.info("Main script finished. Final state saved.")
     return 0
 
 
