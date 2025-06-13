@@ -1324,7 +1324,14 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
                     df["Date"].astype(str) + " " + df["Time"].astype(str), errors="coerce"
                 )
             elif "Timestamp" in df.columns:
-                dt = convert_thai_datetime(df["Timestamp"].astype(str), errors="coerce").dt.tz_localize(None)
+
+                # [Patch v6.9.14] ระบุรูปแบบวันที่อย่างชัดเจนเพื่อความเร็วและแม่นยำ
+                dt = pd.to_datetime(
+                    df["Timestamp"].astype(str),
+                    format="%Y.%m.%d %H:%M:%S",
+                    errors="coerce",
+                )
+
             else:
                 print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
                 continue
