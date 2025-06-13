@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from src.features import macd, rsi, detect_macd_divergence, sma
+from src.constants import ColumnName
 try:
     from src.config import USE_MACD_SIGNALS, USE_RSI_SIGNALS
 except Exception:  # pragma: no cover - fallback for missing config
@@ -15,36 +16,36 @@ def generate_open_signals(
     trend: str | None = None,
     ma_fast: int = 15,
     ma_slow: int = 50,
-    volume_col: str = "Volume",
+    volume_col: str = ColumnName.VOLUME_CAP,
     vol_window: int = 10,
 ) -> np.ndarray:
     """สร้างสัญญาณเปิด order พร้อมตัวเลือกเปิด/ปิด MACD/RSI และตัวกรอง MTF"""
 
-    price_cond = df["Close"] > df["Close"].shift(1)
+    price_cond = df[ColumnName.CLOSE_CAP] > df[ColumnName.CLOSE_CAP].shift(1)
     signals = [price_cond]
 
     if use_macd:
         if "MACD_hist" not in df.columns:
-            _, _, macd_hist = macd(df["Close"])
+            _, _, macd_hist = macd(df[ColumnName.CLOSE_CAP])
             df = df.copy()
             df["MACD_hist"] = macd_hist
         macd_cond = df["MACD_hist"] > 0
-        if detect_macd_divergence(df["Close"], df["MACD_hist"]) != "bull":
+        if detect_macd_divergence(df[ColumnName.CLOSE_CAP], df["MACD_hist"]) != "bull":
             macd_cond &= False
         signals.append(macd_cond)
     if use_rsi:
         if "RSI" not in df.columns:
             df = df.copy()
-            df["RSI"] = rsi(df["Close"])
+            df["RSI"] = rsi(df[ColumnName.CLOSE_CAP])
         rsi_cond = df["RSI"] > 50
         signals.append(rsi_cond)
 
     if "MA_fast" not in df.columns:
         df = df.copy()
-        df["MA_fast"] = sma(df["Close"], ma_fast)
+        df["MA_fast"] = sma(df[ColumnName.CLOSE_CAP], ma_fast)
     if "MA_slow" not in df.columns:
         df = df.copy()
-        df["MA_slow"] = sma(df["Close"], ma_slow)
+        df["MA_slow"] = sma(df[ColumnName.CLOSE_CAP], ma_slow)
     ma_cond = df["MA_fast"] > df["MA_slow"]
     signals.append(ma_cond)
 
