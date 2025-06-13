@@ -1323,17 +1323,19 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
                 dt = pd.to_datetime(
                     df["Date"].astype(str) + " " + df["Time"].astype(str), errors="coerce"
                 )
-
-                def format_thai_date(d):
-                    if pd.isna(d):
-                        return None
-                    return f"{d.year + 543:04d}{d.month:02d}{d.day:02d}"
-
-                df["Date"] = dt.map(format_thai_date)
-                df["Timestamp"] = dt.dt.strftime("%H:%M:%S")
+            elif "Timestamp" in df.columns:
+                dt = pd.to_datetime(df["Timestamp"].astype(str), errors="coerce")
             else:
                 print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
                 continue
+
+            def format_thai_date(d):
+                if pd.isna(d):
+                    return None
+                return f"{d.year + 543:04d}{d.month:02d}{d.day:02d}"
+
+            df["Date"] = dt.map(format_thai_date)
+            df["Timestamp"] = dt.dt.strftime("%H:%M:%S")
 
             for col in ["Open", "High", "Low", "Close"]:
                 if col not in df.columns and col.lower() in df.columns:
