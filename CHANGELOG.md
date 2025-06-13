@@ -1,3 +1,8 @@
+# ### 2025-06-27
+- [Patch v6.9.12] Improve safe_load_csv_auto root path fallback
+- New/Updated unit tests added for tests/test_safe_load_csv_root.py, tests/test_new_utils.py, tests/test_function_registry.py
+- QA: pytest -q passed (1002 tests)
+
 # ### 2025-06-26
 
 - [Patch v6.9.11] Clarify directory fallback comment in auto_convert_gold_csv

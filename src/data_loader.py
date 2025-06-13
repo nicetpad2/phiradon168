@@ -241,16 +241,23 @@ def setup_fonts(output_dir=None):  # pragma: no cover
 def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     """โหลดไฟล์ CSV พร้อมการจัดการข้อผิดพลาดที่มีประสิทธิภาพสูง
 
-    [Patch v6.9.1] ปรับปรุงการตรวจจับคอลัมน์เวลาและมาตรฐานชื่อคอลัมน์
+    [Patch v6.9.12] รองรับการส่งชื่อไฟล์แบบ relative โดยค้นหาในรูทโปรเจค
+    และหากไม่พบจะแจ้ง FileNotFoundError
 
     การทำงานประกอบด้วยการตรวจจับไฟล์รูปแบบพิเศษและรวมคอลัมน์
     ``date``/``time`` อัตโนมัติ รวมถึงการลบข้อมูลซ้ำอย่างยืดหยุ่น
     โดยเก็บแถวสุดท้ายไว้เสมอ
     """
     if not os.path.exists(file_path):
-        msg = f"ไม่พบไฟล์ข้อมูลที่ระบุ: {file_path}"
-        logger.critical(msg)
-        raise FileNotFoundError(msg)
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        alt_path = os.path.join(base_dir, file_path)
+        if os.path.exists(alt_path):
+            logger.info(f"   (Info) Using project CSV path: {alt_path}")
+            file_path = alt_path
+        else:
+            msg = f"ไม่พบไฟล์ข้อมูลที่ระบุ: {file_path}"
+            logger.critical(msg)
+            raise FileNotFoundError(msg)
 
     logger.info(f"      (safe_load) Attempting to load: {os.path.basename(file_path)}")
 
