@@ -1283,6 +1283,7 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
         if os.path.isdir(output_path):
             target_dir = output_path
         else:
+            # Otherwise, derive the directory from the provided file path
             potential_dir = os.path.dirname(output_path)
             # Only use the directory if it's not an empty string
             if potential_dir:
