@@ -1352,6 +1352,39 @@ def load_project_csvs(row_limit=None):
     m1_df = safe_load_csv_auto(m1_path, row_limit=row_limit)
     m15_df = safe_load_csv_auto(m15_path, row_limit=row_limit)
     return m1_df, m15_df
+
+# [Patch v6.9.0] Utility to convert CSV to Parquet with fallback handling
+def auto_convert_csv_to_parquet(source_path: str, dest_folder) -> None:
+    """Convert ``source_path`` to Parquet inside ``dest_folder``.
+
+    If writing Parquet fails, a CSV fallback is saved instead. Warnings are
+    logged when the source path does not exist or read/save errors occur.
+    """
+    from pathlib import Path
+
+    logger = logging.getLogger(__name__)
+    dest_folder = Path(dest_folder)
+    dest_folder.mkdir(parents=True, exist_ok=True)
+
+    if not source_path or not os.path.exists(source_path):
+        logger.warning("[AutoConvert] Source CSV not found: %s", source_path)
+        return
+
+    try:
+        df = pd.read_csv(source_path)
+    except Exception as exc:  # pragma: no cover - unexpected read error
+        logger.error("[AutoConvert] Failed reading %s: %s", source_path, exc)
+        return
+
+    dest_file = dest_folder / (Path(source_path).stem + ".parquet")
+    try:
+        df.to_parquet(dest_file)
+        logger.info("[AutoConvert] Saved Parquet to %s", dest_file)
+    except Exception as exc:  # pragma: no cover - optional fallback
+        logger.warning(
+            "[AutoConvert] Could not save Parquet (%s). Saving CSV fallback", exc
+        )
+        df.to_csv(dest_file.with_suffix(".csv"), index=False)
 # [Patch v5.7.3] Validate DataFrame for required columns and non-emptiness
 def validate_csv_data(df, required_cols=None):
     """Ensure ``df`` is non-empty and contains required columns.
@@ -1499,6 +1532,7 @@ __all__ = [
     "load_final_m1_data",
     "check_data_quality",
     "auto_convert_gold_csv",
+    "auto_convert_csv_to_parquet",
     "load_project_csvs",
 ]
 

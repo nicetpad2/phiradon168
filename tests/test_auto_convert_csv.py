@@ -1,5 +1,5 @@
 import pandas as pd
-from src.data_loader import auto_convert_gold_csv
+from src.data_loader import auto_convert_gold_csv, auto_convert_csv_to_parquet
 
 
 def test_auto_convert_gold_csv_success(tmp_path):
@@ -60,3 +60,20 @@ def test_auto_convert_gold_csv_invalid_date(tmp_path):
     auto_convert_gold_csv(str(tmp_path), output_path=str(out_f))
     out = pd.read_csv(out_f)
     assert out.empty
+
+
+def test_auto_convert_csv_to_parquet_creates_file(tmp_path):
+    df = pd.DataFrame({'a': [1], 'b': [2]})
+    csv = tmp_path / 'sample.csv'
+    df.to_csv(csv, index=False)
+    dest = tmp_path / 'out'
+    dest.mkdir()
+    auto_convert_csv_to_parquet(str(csv), dest)
+    assert (dest / 'sample.parquet').exists() or (dest / 'sample.csv').exists()
+
+
+def test_auto_convert_csv_to_parquet_missing_source(tmp_path):
+    dest = tmp_path / 'out'
+    dest.mkdir()
+    auto_convert_csv_to_parquet(str(tmp_path / 'missing.csv'), dest)
+    assert not (dest / 'missing.parquet').exists() and not (dest / 'missing.csv').exists()

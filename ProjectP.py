@@ -30,6 +30,7 @@ except ImportError:  # pragma: no cover - fallback when module missing
             "[Patch v6.2.3] generate_dashboard stub invoked; skipping."
         )
 import csv
+import yaml
 from pathlib import Path
 try:  # [Patch v5.10.2] allow import without heavy dependencies
     from src.config import logger, OUTPUT_DIR, DEFAULT_TRADE_LOG_MIN_ROWS
@@ -92,7 +93,10 @@ except Exception:  # pragma: no cover - NVML failure fallback
     nvml_handle = None
 
 from src.main import main, setup_output_directory
-from src.data_loader import auto_convert_gold_csv as auto_convert_csv
+from src.data_loader import (
+    auto_convert_gold_csv as auto_convert_csv,
+    auto_convert_csv_to_parquet,
+)
 
 def configure_logging():
     """Set up consistent logging configuration."""
@@ -390,6 +394,37 @@ if __name__ == "__main__":
         else:
             auto_convert_csv(source_csv_dir, output_path=dest_csv_dir)
         sys.exit(0)
+
+    # --- Parquet auto-conversion using settings.yaml ---
+    cfg_file = Path('config/settings.yaml')
+    if cfg_file.exists():
+        with open(cfg_file, 'r', encoding='utf-8') as fh:
+            cfg_data = yaml.safe_load(fh) or {}
+    else:
+        cfg_data = {}
+
+    data_cfg = cfg_data.get('data', {})
+    parquet_output_dir_str = data_cfg.get('parquet_dir')
+    if not parquet_output_dir_str:
+        base_data_dir = data_cfg.get('data_dir', './data')
+        parquet_output_dir = Path(base_data_dir) / 'parquet_cache'
+        logger.warning(
+            "[AutoConvert] 'data.parquet_dir' not set in config. Defaulting to: %s",
+            parquet_output_dir,
+        )
+    else:
+        parquet_output_dir = Path(parquet_output_dir_str)
+
+    source_csv_path = data_cfg.get('path')
+    if source_csv_path:
+        auto_convert_csv_to_parquet(
+            source_path=source_csv_path,
+            dest_folder=parquet_output_dir,
+        )
+    else:
+        logger.error(
+            "[AutoConvert] 'data.path' is not defined in config. Skipping conversion."
+        )
     DEBUG_DEFAULT_ROWS = 2000
     DEBUG_DEFAULT_ROWS = 2000
     if args.rows is not None:
