@@ -1,7 +1,13 @@
 # ### 2025-06-26
+
 - [Patch v6.9.11] Clarify directory fallback comment in auto_convert_gold_csv
 - New/Updated unit tests added for N/A
 - QA: pytest -q passed (1000 tests)
+
+- [Patch v6.9.11] Handle empty data_dir in auto_convert_gold_csv
+- New/Updated unit tests added for tests/test_auto_convert_csv.py::test_auto_convert_gold_csv_empty_dir
+- QA: pytest -q passed (1001 tests)
+
 
 # ### 2025-06-25
 - [Patch v6.9.10] Improve directory resolution in auto_convert_gold_csv
