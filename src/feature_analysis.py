@@ -213,15 +213,21 @@ def main(sample_rows: int = 5000):  # pragma: no cover - CLI helper
         os.path.dirname(os.path.dirname(__file__)), "XAUUSD_M1.csv"
     )
     df = pd.read_csv(data_path, nrows=sample_rows)
-    if "Date" in df.columns and "Timestamp" in df.columns:
+    # [Patch v6.9.4] Auto-detect datetime column names for robustness
+    possible_time_cols = ["Date", "Date/Time", "Timestamp", "datetime", "Datetime"]
+    if {"Date", "Timestamp"}.issubset(df.columns):
         df.index = pd.to_datetime(
             df["Date"].astype(str) + " " + df["Timestamp"], errors="coerce"
         )
-    elif "Time" in df.columns:
-        df.index = pd.to_datetime(df["Time"], errors="coerce")
     else:
-        logger.error("Missing Date/Timestamp columns in dataset")
-        return {}, [], pd.DataFrame()
+        time_col = next((c for c in df.columns if c in possible_time_cols), None)
+        if time_col is None and "Time" in df.columns:
+            time_col = "Time"
+        if time_col is None:
+            logger.error("Missing Date/Timestamp columns in dataset")
+            return {}, [], pd.DataFrame()
+        df[time_col] = pd.to_datetime(df[time_col], errors="coerce")
+        df.index = df[time_col]
     df_feat = feat.engineer_m1_features(df)
 
     timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")

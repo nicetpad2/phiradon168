@@ -33,6 +33,7 @@ def _prepare_m15_data_optimized(m15_filepath, config):
         logger.error("   (Critical Error) ไม่สามารถโหลดข้อมูล M15 ได้ หรือข้อมูลว่างเปล่า")
         return None
 
+    # [Patch v6.9.4] Auto-detect datetime column names in M15 data
     if {"date", "timestamp"}.issubset(m15_df.columns):
         combined = m15_df["date"].astype(str) + " " + m15_df["timestamp"].astype(str)
         m15_df.index = pd.to_datetime(combined, format="%Y%m%d %H:%M:%S", errors="coerce")
@@ -42,14 +43,27 @@ def _prepare_m15_data_optimized(m15_filepath, config):
             )
             m15_df.index = pd.to_datetime(combined, errors="coerce", format="mixed")
         m15_df.drop(columns=["date", "timestamp"], inplace=True)
-    elif "date" in m15_df.columns:
-        logger.warning(
-            "(Warning) การ parse วันที่/เวลา (M15) ด้วย format ที่กำหนดไม่สำเร็จ - กำลัง parse ใหม่แบบไม่ระบุ format"
-        )
+        dup_count = int(m15_df.index.duplicated().sum())
         logger.warning(
             "(Warning) พบ duplicate labels ใน index M15 ... Removed %s duplicate rows",
-            0,
+            dup_count,
         )
+        if dup_count > 0:
+            m15_df = m15_df.loc[~m15_df.index.duplicated(keep="first")]
+    else:
+        possible_cols = ["Date", "Date/Time", "Timestamp", "datetime", "Datetime"]
+        time_col = next((c for c in m15_df.columns if c.lower() in {p.lower() for p in possible_cols}), None)
+        if time_col:
+            m15_df.index = pd.to_datetime(m15_df[time_col], errors="coerce")
+            m15_df.drop(columns=[time_col], inplace=True, errors="ignore")
+        elif "date" in m15_df.columns:
+            logger.warning(
+                "(Warning) การ parse วันที่/เวลา (M15) ด้วย format ที่กำหนดไม่สำเร็จ - กำลัง parse ใหม่แบบไม่ระบุ format"
+            )
+            logger.warning(
+                "(Warning) พบ duplicate labels ใน index M15 ... Removed %s duplicate rows",
+                0,
+            )
 
     if isinstance(m15_df.index, pd.DatetimeIndex) and m15_df.index.tz is not None:
         m15_df.index = m15_df.index.tz_convert(None)
@@ -83,24 +97,29 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     except Exception as e:
         raise RuntimeError(f"[backtest_engine] Failed to load price data: {e}") from e
 
-    # [Patch v6.7.5] combine Date and Timestamp to unique datetime index if present
+    # [Patch v6.9.4] Auto-detect datetime columns for more robust parsing
     date_cols_upper = {"Date", "Timestamp"}
     date_cols_lower = {"date", "timestamp"}
+    possible_cols = ["Date", "Date/Time", "Timestamp", "datetime", "Datetime"]
+
     if date_cols_upper.issubset(df.columns) or date_cols_lower.issubset(df.columns):
         d_col = "Date" if "Date" in df.columns else "date"
         t_col = "Timestamp" if "Timestamp" in df.columns else "timestamp"
         combined = df[d_col].astype(str) + " " + df[t_col].astype(str)
         df.index = pd.to_datetime(combined, format="%Y%m%d %H:%M:%S", errors="coerce")
-        # [Patch v6.7.8] Fallback parse without explicit format when too many NaT
         if df.index.isnull().sum() > 0.5 * len(df):
             logging.warning(
                 "(Warning) การ parse วันที่/เวลา ด้วย format ที่กำหนดไม่สำเร็จ - กำลัง parse ใหม่แบบไม่ระบุ format"
             )
             df.index = pd.to_datetime(combined, errors="coerce", format="mixed")
         df.drop(columns=[d_col, t_col], inplace=True)
-    elif not isinstance(df.index, pd.DatetimeIndex):
-        # fallback: convert existing index
-        df.index = pd.to_datetime(df.index, errors="coerce")
+    else:
+        time_col = next((c for c in df.columns if c in possible_cols), None)
+        if time_col:
+            df.index = pd.to_datetime(df[time_col], errors="coerce")
+            df.drop(columns=[time_col], inplace=True, errors="ignore")
+        elif not isinstance(df.index, pd.DatetimeIndex):
+            df.index = pd.to_datetime(df.index, errors="coerce")
 
     # 1b) Ensure index is a DatetimeIndex so `.tz` attribute exists
     if not isinstance(df.index, pd.DatetimeIndex):
@@ -134,13 +153,13 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
         {"pipeline": {}, "trend_zone": {}},
     )
     if trend_df is not None:
-        if trend_df.index.duplicated().any():
-            dup_count = int(trend_df.index.duplicated().sum())
-            logging.warning(
-                "(Warning) พบ index ซ้ำซ้อนใน Trend Zone DataFrame, กำลังลบรายการซ้ำ (คงไว้ค่าแรกของแต่ละ index)"
-            )
+        dup_count = int(trend_df.index.duplicated().sum())
+        logging.warning(
+            "(Warning) พบ duplicate labels ใน index M15, กำลังลบซ้ำ (คงไว้ค่าแรกของแต่ละ index)"
+        )
+        if dup_count > 0:
             trend_df = trend_df.loc[~trend_df.index.duplicated(keep='first')]
-            logging.info(f"      Removed {dup_count} duplicate index rows from Trend Zone data.")
+        logging.info(f"      Removed {dup_count} duplicate index rows from Trend Zone data.")
         if not trend_df.index.is_monotonic_increasing:
             trend_df.sort_index(inplace=True)
             logging.info("      Sorted Trend Zone DataFrame index in ascending order for alignment")
