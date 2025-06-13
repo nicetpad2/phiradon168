@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from src import config
+from src.constants import ColumnName, Signal
 
 __all__ = ["generate_open_signals"]
 
@@ -14,9 +15,11 @@ def generate_open_signals(df: pd.DataFrame, features: list[str] | None = None) -
         raise KeyError("'signal_score' column required")
     threshold = float(os.getenv("MIN_SIGNAL_SCORE_ENTRY", config.MIN_SIGNAL_SCORE_ENTRY))
     df = df.copy()
-    df["signal"] = (pd.to_numeric(df["signal_score"], errors="coerce") >= threshold).astype(int)
-    if df["signal"].sum() == 0 and "close" in df.columns:
-        fast = df["close"].rolling(config.FAST_MA_PERIOD, min_periods=1).mean()
-        slow = df["close"].rolling(config.SLOW_MA_PERIOD, min_periods=1).mean()
-        df["signal"] = ((fast > slow) & (fast.shift() <= slow.shift())).astype(int)
+    df["signal"] = (
+        pd.to_numeric(df["signal_score"], errors="coerce") >= threshold
+    ).astype(int) * Signal.LONG
+    if df["signal"].sum() == 0 and ColumnName.CLOSE in df.columns:
+        fast = df[ColumnName.CLOSE].rolling(config.FAST_MA_PERIOD, min_periods=1).mean()
+        slow = df[ColumnName.CLOSE].rolling(config.SLOW_MA_PERIOD, min_periods=1).mean()
+        df["signal"] = ((fast > slow) & (fast.shift() <= slow.shift())).astype(int) * Signal.LONG
     return df["signal"]
