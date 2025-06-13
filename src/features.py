@@ -37,7 +37,7 @@ from sklearn.preprocessing import StandardScaler # For context column calculatio
 import gc # For memory management
 from src.utils.gc_utils import maybe_collect
 from functools import lru_cache
-from src.utils.sessions import get_session_tag  # [Patch v5.1.3]
+from src.utils.sessions import get_session_tag, get_session_tags_vectorized  # [Patch v5.1.3]
 from src.utils import get_env_float, load_json_with_comments
 
 _rsi_cache = {}  # [Patch v4.8.12] Cache RSIIndicator per period
@@ -723,8 +723,7 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
         try:
             if not isinstance(df.index, pd.DatetimeIndex):
                 df.index = pd.to_datetime(df.index, errors='coerce', format='mixed')
-            sessions = pd.Index(df.index).map(lambda ts: get_session_tag(ts, warn_once=True))
-            df['session'] = pd.Series(sessions, index=df.index).astype('category')
+            df['session'] = get_session_tags_vectorized(df.index)
             logging.info(
                 f"         Session distribution:\n{df['session'].value_counts(normalize=True).round(3).to_string()}"
             )
@@ -1601,8 +1600,9 @@ def create_session_column(df):
     try:
         if not isinstance(df.index, pd.DatetimeIndex):
             df.index = pd.to_datetime(df.index, errors="coerce", format="mixed")
-        sessions = pd.Index(df.index).map(lambda ts: get_session_tag(ts, warn_once=True))
-        df["session"] = pd.Categorical(sessions, categories=["Asia", "London", "NY", "Other", "N/A"])
+        df["session"] = get_session_tags_vectorized(df.index).astype(
+            "category"
+        ).cat.set_categories(["Asia", "London", "NY", "Other", "N/A"], ordered=False)
     except Exception as e:
         logging.error(f"   (Error) Session calculation failed: {e}", exc_info=True)
         df["session"] = pd.Categorical(["Other"] * len(df), categories=["Asia", "London", "NY", "Other", "N/A"])
