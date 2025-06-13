@@ -3,20 +3,6 @@ import pytest
 from src.data_loader import load_data_from_csv
 
 
-def test_load_data_from_csv_thai_year(tmp_path):
-    df = pd.DataFrame({
-        'Time': ['1/1/2567 00:00:00'],
-        'Open': [1.0],
-        'High': [1.0],
-        'Low': [1.0],
-        'Close': [1.0],
-        'Volume': [1.0],
-    })
-    p = tmp_path / 'thai.csv'
-    df.to_csv(p, index=False)
-    result = load_data_from_csv(str(p))
-    assert result.index[0] == pd.Timestamp('2024-01-01 00:00:00')
-    assert list(result.columns) == ['Open', 'High', 'Low', 'Close', 'Volume']
 
 
 def test_load_data_from_csv_timestamp(tmp_path):

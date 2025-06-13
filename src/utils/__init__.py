@@ -21,7 +21,7 @@ from src.utils.model_utils import (
 )
 from src.utils.env_utils import get_env_float
 from src.utils.gc_utils import maybe_collect
-from src.utils.data_utils import convert_thai_datetime, prepare_csv_auto, parse_thai_date_fast
+from src.utils.data_utils import convert_thai_datetime, prepare_csv_auto
 from src.utils.resource_plan import get_resource_plan, save_resource_plan
 from src.utils.hardware import estimate_resource_plan
 from src.utils.json_utils import load_json_with_comments
@@ -47,7 +47,6 @@ __all__ = [
     "maybe_collect",
     "convert_thai_datetime",
     "prepare_csv_auto",
-    "parse_thai_date_fast",
     "estimate_resource_plan",
     "get_resource_plan",
     "save_resource_plan",

@@ -38,7 +38,6 @@ import gzip
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 from IPython import get_ipython
-from src.utils.data_utils import parse_thai_date_fast
 try:
     import requests
 except ImportError:  # pragma: no cover - optional dependency for certain features
@@ -356,9 +355,10 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     # --- Flexible datetime column detection ---
     if 'date' in df.columns and 'time' in df.columns:
         logger.info("ตรวจพบ คอลัมน์ 'date' และ 'time', กำลังรวมเป็น datetime...")
-        date_col = _parse_thai_date_fast(df['date'].astype(str))
-        time_col = pd.to_timedelta(df['time'].astype(str), errors='coerce')
-        df['datetime'] = date_col + time_col
+        df['datetime'] = pd.to_datetime(
+            df['date'].astype(str) + ' ' + df['time'].astype(str),
+            errors='coerce'
+        )
         df.drop(columns=['date', 'time'], inplace=True)
         datetime_col = 'datetime'
     elif 'local_time' in df.columns:
@@ -366,14 +366,7 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
         datetime_column_name = 'local_time'
         datetime_format = '%d.%m.%Y %H:%M:%S'
         series = df[datetime_column_name].astype(str)
-        year_vals = series.str.extract(r'\d{1,2}\.\d{1,2}\.(\d{4})')[0].astype(float)
-        if (year_vals > 2500).any():
-            parts = series.str.split(' ', n=1, expand=True)
-            date_part = parts[0].str.replace('.', '/')
-            time_part = parts[1]
-            df['datetime'] = _parse_thai_date_fast(date_part) + pd.to_timedelta(time_part, errors='coerce')
-        else:
-            df['datetime'] = pd.to_datetime(series, format=datetime_format, errors='coerce')
+        df['datetime'] = pd.to_datetime(series, format=datetime_format, errors='coerce')
         df.drop(columns=[datetime_column_name], inplace=True)
         datetime_col = 'datetime'
     elif 'datetime' in df.columns:
@@ -1426,12 +1419,7 @@ def load_data_from_csv(file_path: str, nrows: int = None, auto_convert: bool = T
         temp_df.rename(columns={'Timestamp': 'Time'}, inplace=True)
 
     if auto_convert and 'Time' in temp_df.columns and temp_df['Time'].dtype == 'object':
-        first_sample = str(temp_df['Time'].iloc[0])
-        match = re.search(r"(\d{4})", first_sample)
-        year = int(match.group(1)) if match else None
-        if year and year >= 2500:
-            logger.info("Detected Thai Buddhist year format, converting to Gregorian.")
-            temp_df['Time'] = parse_thai_date_fast(temp_df['Time'])
+        temp_df['Time'] = pd.to_datetime(temp_df['Time'], errors='coerce')
 
     try:
         temp_df['Time'] = pd.to_datetime(temp_df['Time'])
@@ -1553,20 +1541,6 @@ def check_data_quality(df, dropna=True, fillna_method=None, subset_dupes=None):
     return df
 
 
-def _parse_thai_date_fast(date_series):
-    """Efficiently parse Thai Buddhist year dates."""
-    if date_series.str.contains('-').any():
-        return pd.to_datetime(date_series, errors="coerce")
-    if date_series.str.contains('/').any():
-        date_parts = date_series.str.extract(r"(\d{1,2})/(\d{1,2})/(\d{4})", expand=True)
-        date_parts.columns = ["day", "month", "year"]
-    else:
-        date_parts = date_series.str.extract(r"(\d{4})(\d{2})(\d{2})", expand=True)
-        date_parts.columns = ["year", "month", "day"]
-    for col in date_parts.columns:
-        date_parts[col] = pd.to_numeric(date_parts[col], errors="coerce")
-    date_parts["year"] -= 543
-    return pd.to_datetime(date_parts[["year", "month", "day"]], errors="coerce")
 
 
 __all__ = [
@@ -1592,7 +1566,6 @@ __all__ = [
     "deduplicate_and_sort",
     "check_price_jumps",
     "convert_thai_years",
-    "_parse_thai_date_fast",
     "convert_thai_datetime",
     "prepare_datetime_index",
     "validate_m1_data_path",
