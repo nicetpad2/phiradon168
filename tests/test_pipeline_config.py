@@ -19,13 +19,21 @@ def test_load_config_override(tmp_path):
 def test_load_config_data_section(tmp_path):
     conf_path = tmp_path / 'cfg.yaml'
     conf_path.write_text(
-        'data:\n  output_dir: odir\n  features_filename: f.json\n  trade_log_pattern: tl.csv\n  raw_m1_filename: raw.csv\n'
+        'data:\n  output_dir: odir\n  features_filename: f.json\n  trade_log_pattern: tl.csv\n  trade_log_file: real.csv\n  raw_m1_filename: raw.csv\n'
     )
     cfg = pipeline_config.load_config(str(conf_path))
     assert cfg.output_dir == 'odir'
     assert cfg.features_filename == 'f.json'
     assert cfg.trade_log_pattern == 'tl.csv'
     assert cfg.raw_m1_filename == 'raw.csv'
+    assert cfg.trade_log_file == 'real.csv'
+
+
+def test_load_config_trade_log_file(tmp_path):
+    conf_path = tmp_path / 'cfg.yaml'
+    conf_path.write_text('data:\n  trade_log_file: log.csv\n')
+    cfg = pipeline_config.load_config(str(conf_path))
+    assert cfg.trade_log_file == 'log.csv'
 
 
 def test_load_config_cleaning_section(tmp_path):

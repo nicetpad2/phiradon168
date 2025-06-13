@@ -499,6 +499,18 @@ if __name__ == "__main__":
         logger.info("Feature set regenerated with %d rows", len(features_main))
 
     import glob
+    # [Patch v6.9.15] Support explicit trade_log_file in pipeline config
+    trade_log_file = None
+    if pipeline_config.trade_log_file:
+        trade_log_file = pipeline_config.trade_log_file
+        if not os.path.isabs(trade_log_file):
+            trade_log_file = os.path.join(output_dir, trade_log_file)
+        if not os.path.exists(trade_log_file):
+            logger.warning(
+                "Specified trade_log_file not found: %s", trade_log_file
+            )
+            trade_log_file = None
+
     # match both uncompressed (.csv) and gzip-compressed (.csv.gz) trade logs
     trade_pattern = os.path.join(output_dir, pipeline_config.trade_log_pattern)
     log_files = sorted(glob.glob(trade_pattern))
@@ -525,33 +537,37 @@ if __name__ == "__main__":
                 output_dir,
                 FALLBACK_DIR,
             )
-    if not log_files:
-        logger.warning(
-            "[Patch v6.4.6] No trade_log CSV found in %s; initializing empty trade log.",
-            output_dir,
-        )
-        # [Patch v6.7.2] Create a dummy trade log with placeholder rows (reduce to 9 rows)
-        trade_log_file = os.path.join(output_dir, "trade_log_dummy.csv")
-        dummy_cols = [
-            "entry_time", "exit_time", "entry_price",
-            "exit_price", "side", "profit",
-        ]
-        # populate 9 rows so that downstream sees insufficient data and trigger backtest
-        dummy_rows = [
-            {
-                "entry_time": "",
-                "exit_time": "",
-                "entry_price": 0.0,
-                "exit_price": 0.0,
-                "side": "",
-                "profit": 0.0,
-            }
-            for _ in range(9)
-        ]
-        pd.DataFrame(dummy_rows, columns=dummy_cols).to_csv(trade_log_file, index=False)
-    else:
-        log_files = sorted(log_files, key=lambda f: ("walkforward" not in f, f))
-        trade_log_file = log_files[0]
+    if not trade_log_file:
+        if not log_files:
+            logger.warning(
+                "[Patch v6.4.6] No trade_log CSV found in %s; initializing empty trade log.",
+                output_dir,
+            )
+            # [Patch v6.7.2] Create a dummy trade log with placeholder rows (reduce to 9 rows)
+            trade_log_file = os.path.join(output_dir, "trade_log_dummy.csv")
+            dummy_cols = [
+                "entry_time",
+                "exit_time",
+                "entry_price",
+                "exit_price",
+                "side",
+                "profit",
+            ]
+            dummy_rows = [
+                {
+                    "entry_time": "",
+                    "exit_time": "",
+                    "entry_price": 0.0,
+                    "exit_price": 0.0,
+                    "side": "",
+                    "profit": 0.0,
+                }
+                for _ in range(9)
+            ]
+            pd.DataFrame(dummy_rows, columns=dummy_cols).to_csv(trade_log_file, index=False)
+        else:
+            log_files = sorted(log_files, key=lambda f: ("walkforward" not in f, f))
+            trade_log_file = log_files[0]
     logger.info(
         "[Patch v5.8.15] Loaded trade log: %s", os.path.basename(trade_log_file)
     )
