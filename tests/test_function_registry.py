@@ -11,6 +11,7 @@ FUNCTIONS_INFO = [
     ("src/config.py", "show_system_status", 650),
 
 
+
     ("src/data_loader.py", "inspect_file_exists", 1064),
     ("src/data_loader.py", "read_csv_with_date_parse", 1069),
     ("src/data_loader.py", "check_nan_percent", 1076),
@@ -23,6 +24,7 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "load_raw_data_m15", 1234),
     ("src/data_loader.py", "write_test_file", 1240),
     ("src/data_loader.py", "validate_csv_data", 1403),
+
 
 
     ("src/features.py", "tag_price_structure_patterns", 473),

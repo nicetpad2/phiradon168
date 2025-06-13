@@ -30,3 +30,38 @@ def prepare_csv_auto(path: str) -> pd.DataFrame:
         logger.warning("[QA-WARNING] timestamp column missing in %s", path)
         logging.getLogger().warning("[QA-WARNING] timestamp column missing in %s", path)
     return df
+
+
+def parse_thai_date_fast(date_series: pd.Series) -> pd.Series:
+    """Convert Thai Buddhist date strings to Gregorian Timestamps."""
+    parts = date_series.str.split(" ", n=1, expand=True)
+    date_only = parts[0]
+    time_part = pd.to_timedelta(parts[1], errors="coerce") if len(parts.columns) > 1 else None
+
+    if date_only.str.contains("-").any():
+        base = pd.to_datetime(date_only, errors="coerce")
+    elif date_only.str.contains("/").any():
+        date_parts = date_only.str.extract(r"(\d{1,2})/(\d{1,2})/(\d{4})", expand=True)
+        date_parts.columns = ["day", "month", "year"]
+        for col in date_parts.columns:
+            date_parts[col] = pd.to_numeric(date_parts[col], errors="coerce")
+        date_parts["year"] -= 543
+        base = pd.to_datetime(date_parts[["year", "month", "day"]], errors="coerce")
+    else:
+        date_parts = date_only.str.extract(r"(\d{4})(\d{2})(\d{2})", expand=True)
+        date_parts.columns = ["year", "month", "day"]
+        for col in date_parts.columns:
+            date_parts[col] = pd.to_numeric(date_parts[col], errors="coerce")
+        date_parts["year"] -= 543
+        base = pd.to_datetime(date_parts[["year", "month", "day"]], errors="coerce")
+
+    if time_part is not None:
+        base = base + time_part
+    return base
+
+
+__all__ = [
+    "convert_thai_datetime",
+    "prepare_csv_auto",
+    "parse_thai_date_fast",
+]
