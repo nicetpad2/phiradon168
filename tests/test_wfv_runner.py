@@ -18,7 +18,7 @@ def _reload_runner_env(monkeypatch, data_dir, symbol, timeframe):
 
 def _make_csv(path, rows=50):
     df = pd.DataFrame({
-        'Timestamp': pd.date_range('2024-01-01', periods=rows, freq='T'),
+        'Timestamp': pd.date_range('2024-01-01', periods=rows, freq='min'),
         'Open': range(rows),
         'High': range(rows),
         'Low': range(rows),
@@ -74,7 +74,7 @@ def test_run_walkforward_file_not_found(tmp_path, monkeypatch):
 
 def test_run_walkforward_missing_close(tmp_path):
     path = tmp_path / 'data.csv'
-    pd.DataFrame({'Timestamp': pd.date_range('2024-01-01', periods=3, freq='T'),
+    pd.DataFrame({'Timestamp': pd.date_range('2024-01-01', periods=3, freq='min'),
                   'Open': [1,2,3],
                   'High': [1,2,3],
                   'Low': [1,2,3],
