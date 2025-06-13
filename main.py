@@ -8,6 +8,34 @@ import yaml
 import pandas as pd
 from src.data_loader import auto_convert_gold_csv
 
+# [Patch v6.8.17] CSV to Parquet helper for preprocess stage
+def auto_convert_csv_to_parquet(source_path: str, dest_folder) -> None:
+    """Convert CSV file to Parquet in ``dest_folder`` with safe fallback."""
+    from pathlib import Path
+
+    dest_folder = Path(dest_folder)
+    dest_folder.mkdir(parents=True, exist_ok=True)
+
+    if not source_path or not os.path.exists(source_path):
+        logger.warning("[AutoConvert] Source CSV not found: %s", source_path)
+        return
+
+    try:
+        df = pd.read_csv(source_path)
+    except Exception as exc:  # pragma: no cover - unexpected read error
+        logger.error("[AutoConvert] Failed reading %s: %s", source_path, exc)
+        return
+
+    dest_file = dest_folder / (Path(source_path).stem + ".parquet")
+    try:
+        df.to_parquet(dest_file)
+        logger.info("[AutoConvert] Saved Parquet to %s", dest_file)
+    except Exception as exc:
+        logger.warning(
+            "[AutoConvert] Could not save Parquet (%s). Saving CSV fallback", exc
+        )
+        df.to_csv(dest_file.with_suffix(".csv"), index=False)
+
 from src.utils.pipeline_config import (
     load_config,
     PipelineConfig,
@@ -75,6 +103,30 @@ def parse_args(args=None) -> argparse.Namespace:
 def run_preprocess(config: PipelineConfig, runner=subprocess.run) -> None:
     """Run data preprocessing stage."""
     logger.info("[Stage] preprocess")
+
+    from pathlib import Path
+
+    parquet_output_dir_str = getattr(config, "parquet_dir", None)
+    if not parquet_output_dir_str:
+        base_data_dir = getattr(config, "data_dir", "./data")
+        parquet_output_dir = Path(base_data_dir) / "parquet_cache"
+        logger.warning(
+            "[AutoConvert] 'data.parquet_dir' not set in config. Defaulting to: %s",
+            parquet_output_dir,
+        )
+    else:
+        parquet_output_dir = Path(parquet_output_dir_str)
+
+    source_csv_path = getattr(config, "data_path", None) or getattr(
+        config, "raw_m1_filename", None
+    )
+    if source_csv_path:
+        auto_convert_csv_to_parquet(source_path=source_csv_path, dest_folder=parquet_output_dir)
+    else:
+        logger.error(
+            "[AutoConvert] 'data.path' is not defined in config. Skipping conversion."
+        )
+
     m1_path = config.raw_m1_filename
     auto_convert_gold_csv(os.path.dirname(m1_path), output_path=m1_path)
     fill_method = getattr(config, "cleaning_fill_method", "drop")
