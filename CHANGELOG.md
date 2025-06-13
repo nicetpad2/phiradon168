@@ -2164,3 +2164,8 @@ QA: pytest -q passed (219 tests)
   tests/test_data_cleaner.py::test_handle_missing_values_logging
 - QA: pytest -q passed (tests count TBD)
 
+### 2025-06-13
+- [Patch v6.9.13] Convert Thai timestamps to avoid warnings
+- New/Updated unit tests added for N/A
+- QA: pytest -q passed (1009 tests)
+
