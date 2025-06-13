@@ -226,7 +226,7 @@ def main(sample_rows: int = 5000):  # pragma: no cover - CLI helper
         if time_col is None:
             logger.error("Missing Date/Timestamp columns in dataset")
             return {}, [], pd.DataFrame()
-        df[time_col] = pd.to_datetime(df[time_col], errors="coerce")
+        df[time_col] = pd.to_datetime(df[time_col], errors="coerce", format="mixed")
         df.index = df[time_col]
     df_feat = feat.engineer_m1_features(df)
 
