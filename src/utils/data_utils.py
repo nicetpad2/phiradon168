@@ -14,7 +14,7 @@ def convert_thai_datetime(df: pd.DataFrame, column: str) -> pd.DataFrame:
         series = pd.to_datetime(df[column], errors="raise")
     except Exception as e:
         logger.error("convert_thai_datetime failed: %s", e, exc_info=True)
-        series = pd.to_datetime(df[column], errors="coerce")
+        series = pd.to_datetime(df[column], errors="coerce", format="mixed")
     df[column] = series
     return df
 
