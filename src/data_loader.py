@@ -1275,15 +1275,16 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
     files = glob.glob(pattern)
 
     # --- START: FIX for Directory Path Error ---
-    target_dir = None
+    target_dir = data_dir  # Default to data_dir
     if output_path:
+        # If output_path is already a directory, use it
         if os.path.isdir(output_path):
             target_dir = output_path
         else:
-            target_dir = os.path.dirname(output_path)
-
-    if not target_dir:
-        target_dir = data_dir
+            potential_dir = os.path.dirname(output_path)
+            # Only use the directory if it's not an empty string
+            if potential_dir:
+                target_dir = potential_dir
 
     try:
         os.makedirs(target_dir, exist_ok=True)
