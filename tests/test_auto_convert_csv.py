@@ -62,6 +62,22 @@ def test_auto_convert_gold_csv_invalid_date(tmp_path):
     assert out.empty
 
 
+def test_auto_convert_gold_csv_empty_dir(monkeypatch, tmp_path):
+    df = pd.DataFrame({
+        'Date': ['2024-01-01'],
+        'Time': ['00:00:00'],
+        'Open': [1.0],
+        'High': [1.1],
+        'Low': [0.9],
+        'Close': [1.0],
+    })
+    csv = tmp_path / 'XAUUSD_M1.csv'
+    df.to_csv(csv, index=False)
+    monkeypatch.chdir(tmp_path)
+    auto_convert_gold_csv('', output_path='XAUUSD_M1.csv')
+    assert (tmp_path / 'XAUUSD_M1_thai.csv').exists()
+
+
 def test_auto_convert_csv_to_parquet_creates_file(tmp_path):
     df = pd.DataFrame({'a': [1], 'b': [2]})
     csv = tmp_path / 'sample.csv'
