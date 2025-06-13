@@ -219,11 +219,11 @@ logger.info("--- กำลังโหลดไลบรารีและตร
 # --- Library Installation & Checks ---
 # Helper function to check and log library version
 # [Patch v5.0.2] Exclude log_library_version from coverage
-def log_library_version(library_name, library_object):  # pragma: no cover
+def log_library_version(library_name, library_object=None, version=None):  # pragma: no cover
     """Logs the version of the imported library."""
     # [Patch v5.1.0] ยืนยันว่าฟังก์ชันใช้ตัวแปร logger ที่นำเข้าไว้ด้านบน
     try:
-        version = getattr(library_object, '__version__', 'N/A')
+        version = version or getattr(library_object, '__version__', 'N/A')
         logger.info(f"   (Info) Using {library_name} version: {version}")
     except Exception as e:
         logger.warning(f"   (Warning) Could not retrieve {library_name} version: {e}")
@@ -295,7 +295,8 @@ def _ensure_ta_installed():  # pragma: no cover
         except Exception:
             TA_VERSION = "N/A"
     globals()["ta"] = ta
-    log_library_version("TA", ta)
+    # [Patch v6.9.13] Log TA version using resolved TA_VERSION
+    log_library_version("TA", ta, version=TA_VERSION)
 
 
 _ensure_ta_installed()
