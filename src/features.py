@@ -1716,6 +1716,34 @@ def load_features(path: str, fmt: str = "parquet") -> pd.DataFrame | None:
         logging.error(f"(Features) Failed to load features from {path}: {e}", exc_info=True)
         return None
 
+
+# [Patch v6.9.7] Add helper to load or engineer M1 features with caching
+def load_or_engineer_m1_features(
+    df_m1: pd.DataFrame,
+    cache_path: str | None = None,
+    fmt: str = "parquet",
+) -> pd.DataFrame:
+    """Load cached M1 features if available, otherwise engineer and cache them."""
+    if cache_path and os.path.exists(cache_path):
+        cached = load_features(cache_path, fmt=fmt)
+        if isinstance(cached, pd.DataFrame) and not cached.empty:
+            logging.info(f"(Cache) Loaded M1 features from {cache_path}")
+            return cached
+
+    features_df = engineer_m1_features(df_m1)
+
+    if cache_path:
+        try:
+            save_features(features_df, cache_path, fmt=fmt)
+            logging.info(f"(Cache) Saved engineered M1 features to {cache_path}")
+        except Exception as e:
+            logging.error(
+                f"(Cache) Failed to save features to {cache_path}: {e}",
+                exc_info=True,
+            )
+
+    return features_df
+
 # --- Advanced Feature Utilities -------------------------------------------------
 # [Patch v5.6.5] Add momentum, cumulative delta, and wave pattern helpers
 
@@ -1869,6 +1897,7 @@ __all__ = [
     "save_features",
     "load_features",
     "build_feature_catalog",
+    "load_or_engineer_m1_features",
 ]
 
 

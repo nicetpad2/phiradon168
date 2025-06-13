@@ -1,4 +1,9 @@
 
+### 2025-06-22
+- [Patch v6.9.7] Add M1 feature caching helper
+- New/Updated unit tests added for tests/test_features_cache.py
+- QA: pytest -q passed (989 tests)
+
 ### 2025-06-20
 - [Patch v6.9.6] Add WFV aggregation module
 - New/Updated unit tests added for tests/test_wfv_aggregator.py
