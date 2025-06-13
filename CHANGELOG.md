@@ -2173,3 +2173,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for N/A
 - QA: pytest -q passed (1009 tests)
 
+### 2025-06-19
+- [Patch v6.9.15] Refactor strategy with Strategy Pattern
+- New/Updated unit tests added for tests/test_main_strategy_di.py
+- QA: pytest -q passed (1011 tests)
+
