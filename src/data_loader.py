@@ -38,6 +38,8 @@ import gzip
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 from IPython import get_ipython
+import locale
+from dateutil.parser import parse as parse_date
 try:
     import requests
 except ImportError:  # pragma: no cover - optional dependency for certain features
@@ -45,6 +47,45 @@ except ImportError:  # pragma: no cover - optional dependency for certain featur
 
 logger = logging.getLogger(__name__)
 import datetime # <<< ENSURED Standard import 'import datetime'
+
+# --- Locale Setup for Thai date parsing ---
+try:
+    locale.setlocale(locale.LC_TIME, 'th_TH.UTF-8')
+except locale.Error:
+    logging.debug("Locale th_TH not supported, falling back to default.")
+
+
+# --- Robust Thai date parser ---
+THAI_MONTH_MAP = {
+    "ม.ค.": "01",
+    "ก.พ.": "02",
+    "มี.ค.": "03",
+    "เม.ย.": "04",
+    "พ.ค.": "05",
+    "มิ.ย.": "06",
+    "ก.ค.": "07",
+    "ส.ค.": "08",
+    "ก.ย.": "09",
+    "ต.ค.": "10",
+    "พ.ย.": "11",
+    "ธ.ค.": "12",
+}
+
+
+def robust_date_parser(date_string):
+    """Parse Thai date strings with ``dateutil``, handling Buddhist years."""
+    normalized = str(date_string)
+    for th, num in THAI_MONTH_MAP.items():
+        if th in normalized:
+            normalized = normalized.replace(th, num)
+            break
+    try:
+        dt = parse_date(normalized, dayfirst=True)
+    except Exception as e:
+        raise ValueError(f"Cannot parse Thai date: {date_string}") from e
+    if dt.year > 2500:
+        dt = dt.replace(year=dt.year - 543)
+    return dt
 
 # --- JSON Serialization Helper (moved earlier for global availability) ---
 # [Patch v5.2.2] Provide simple_converter for JSON dumps
@@ -1143,13 +1184,18 @@ def convert_thai_datetime(series, tz="UTC", errors="raise"):
         raise TypeError("series must be a pandas Series or str")
 
     def _parse(value):
+        using_robust = False
         try:
             dt = datetime.datetime.fromisoformat(str(value))
         except Exception:
-            if errors == "raise":
-                raise ValueError(f"Cannot parse datetime: {value}")
-            return pd.NaT
-        if dt.year > 2500:
+            try:
+                dt = robust_date_parser(str(value))
+                using_robust = True
+            except Exception:
+                if errors == "raise":
+                    raise ValueError(f"Cannot parse datetime: {value}")
+                return pd.NaT
+        if not using_robust and dt.year > 2500:
             dt = dt.replace(year=dt.year - 543)
         ts = pd.Timestamp(dt)
         return ts.tz_localize(tz) if ts.tzinfo is None else ts.tz_convert(tz)
@@ -1566,6 +1612,7 @@ __all__ = [
     "deduplicate_and_sort",
     "check_price_jumps",
     "convert_thai_years",
+    "robust_date_parser",
     "convert_thai_datetime",
     "prepare_datetime_index",
     "validate_m1_data_path",
