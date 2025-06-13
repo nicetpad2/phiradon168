@@ -59,6 +59,13 @@ def test_run_preprocess_success():
     assert called[0][-2:] == ['--fill', 'drop']
 
 
+def test_run_preprocess_calls_validator(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(pipeline.csv_validator, 'validate_and_convert_csv', lambda p: captured.setdefault('path', p))
+    pipeline.run_preprocess(PipelineConfig(), runner=lambda c, check: None)
+    assert captured['path'].endswith('XAUUSD_M1.csv')
+
+
 def test_run_preprocess_failure():
     def fake_run(cmd, check):
         raise subprocess.CalledProcessError(1, cmd)

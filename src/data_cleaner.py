@@ -46,7 +46,9 @@ def remove_duplicate_times(df: pd.DataFrame, time_col: str = "Time") -> pd.DataF
     if time_col in df.columns:
         dupes = df.duplicated(subset=time_col).sum()
         if dupes:
-            logger.info("[Patch] Removing %s duplicated rows by %s", dupes, time_col)
+            logger.info(
+                "[Patch] พบข้อมูลซ้ำซ้อน %s แถวและได้ทำการลบออก", dupes
+            )
             df = df.drop_duplicates(subset=time_col, keep="first")
     return df
 
@@ -67,11 +69,24 @@ def handle_missing_values(
     if cols is None:
         cols = ["Open", "High", "Low", "Close", "Volume"]
 
+    missing_before = df[cols].isna().sum().sum()
+
     if method == "drop":
         df = df.dropna(subset=list(cols))
+        if missing_before:
+            logger.info("[Patch] พบค่า NaN %s จุดและได้ทำการลบออก", missing_before)
     else:
-        means = df[list(cols)].mean()
-        df[list(cols)] = df[list(cols)].fillna(means)
+        if method == "ffill":
+            df[list(cols)] = df[list(cols)].ffill()
+        else:
+            means = df[list(cols)].mean()
+            df[list(cols)] = df[list(cols)].fillna(means)
+        missing_after = df[cols].isna().sum().sum()
+        filled = missing_before - missing_after
+        if filled:
+            logger.info(
+                "[Patch] ทำการเติมข้อมูลที่หายไป %s จุดด้วยวิธี '%s'", filled, method
+            )
     return df
 
 
