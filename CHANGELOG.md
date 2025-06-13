@@ -2101,3 +2101,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_parse_thai_date_fast.py
 - QA: pytest -q passed (981 tests)
 
+### 2025-06-17
+- [Patch v6.8.17] Robust parquet path handling in run_preprocess
+- New/Updated unit tests added for N/A
+- QA: pytest -q passed (981 tests)
+
