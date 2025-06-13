@@ -1,3 +1,7 @@
+### 2025-06-13
+- [Patch v6.9.3] Restore backtest logic
+- QA: pytest -q passed (977 tests, 7 skipped)
+
 ### 2025-06-12
 - [Patch v6.9.2] Suppress datetime parsing warning
 - QA: pytest -q passed (977 tests, 7 skipped)
