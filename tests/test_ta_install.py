@@ -19,3 +19,20 @@ def test_ensure_ta_installed(monkeypatch):
         monkeypatch.delitem(sys.modules, 'src.config', raising=False)
     config = importlib.import_module('src.config')
     assert config.TA_VERSION == '0.test'
+
+
+def test_ta_version_fallback(monkeypatch):
+    dummy_ta = types.ModuleType('ta')
+    monkeypatch.setitem(sys.modules, 'ta', dummy_ta)
+    monkeypatch.setitem(sys.modules, 'seaborn', types.ModuleType('seaborn'))
+    monkeypatch.setitem(sys.modules, 'requests', types.ModuleType('requests'))
+    monkeypatch.setitem(sys.modules, 'shap', types.ModuleType('shap'))
+    monkeypatch.setattr(
+        importlib.metadata,
+        'version',
+        lambda name: (_ for _ in ()).throw(Exception('not installed')),
+    )
+    if 'src.config' in sys.modules:
+        monkeypatch.delitem(sys.modules, 'src.config', raising=False)
+    config = importlib.import_module('src.config')
+    assert config.TA_VERSION == 'N/A'

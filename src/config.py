@@ -287,7 +287,13 @@ def _ensure_ta_installed():  # pragma: no cover
             )
             TA_VERSION = None
             return
-    TA_VERSION = getattr(ta, "__version__", "N/A")
+    TA_VERSION = getattr(ta, "__version__", None)
+    if TA_VERSION is None:
+        try:
+            from importlib.metadata import version as _v
+            TA_VERSION = _v("ta")
+        except Exception:
+            TA_VERSION = "N/A"
     globals()["ta"] = ta
     log_library_version("TA", ta)
 

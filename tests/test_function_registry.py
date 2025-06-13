@@ -6,9 +6,9 @@ import pytest
 FUNCTIONS_INFO = [
     ("src/config.py", "log_library_version", 222),
     ("src/config.py", "_ensure_ta_installed", 267),
-    ("src/config.py", "is_colab", 498),
-    ("src/config.py", "print_gpu_utilization", 598),
-    ("src/config.py", "show_system_status", 650),
+    ("src/config.py", "is_colab", 506),
+    ("src/config.py", "print_gpu_utilization", 607),
+    ("src/config.py", "show_system_status", 659),
 
 
     ("src/data_loader.py", "inspect_file_exists", 1057),

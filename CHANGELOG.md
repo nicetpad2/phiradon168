@@ -1,3 +1,8 @@
+# ### 2025-06-27
+- [Patch v6.9.12] Robust TA version detection
+- New/Updated unit tests added for tests/test_ta_install.py and tests/test_function_registry.py
+- QA: pytest -q passed (1001 tests)
+
 # ### 2025-06-26
 
 - [Patch v6.9.11] Clarify directory fallback comment in auto_convert_gold_csv
