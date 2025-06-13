@@ -1,5 +1,9 @@
 # ### 2025-06-27
 
+- [Patch v6.9.13] Log TA version from metadata
+- New/Updated unit tests added for tests/test_ta_install.py
+- QA: pytest -q passed (tests count TBD)
+
 - [Patch v6.9.12] Robust TA version detection
 - New/Updated unit tests added for tests/test_ta_install.py and tests/test_function_registry.py
 - QA: pytest -q passed (1001 tests)
