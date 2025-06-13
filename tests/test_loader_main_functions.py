@@ -56,7 +56,7 @@ def test_convert_thai_datetime_invalid():
 
 
 def test_prepare_datetime_index_sets_index():
-    df = pd.DataFrame({'Date': ['2024-01-01']})
+    df = pd.DataFrame({'Timestamp': ['2024-01-01']})
     res = dl.prepare_datetime_index(df.copy())
     assert isinstance(res.index, pd.DatetimeIndex)
 
