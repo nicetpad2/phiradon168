@@ -63,15 +63,18 @@ def handle_missing_values(
     cols: Iterable[str] | None = None,
     method: str = "drop",
 ) -> pd.DataFrame:
-    """[Patch] จัดการค่า NaN ในคอลัมน์ราคาหลัก"""
+    """[Patch v6.9.7] จัดการค่า NaN ในคอลัมน์ราคาหลักพร้อมบันทึกจำนวนที่แก้ไข"""
     if cols is None:
         cols = ["Open", "High", "Low", "Close", "Volume"]
 
+    before = df[list(cols)].isna().sum().sum()
     if method == "drop":
         df = df.dropna(subset=list(cols))
     else:
         means = df[list(cols)].mean()
         df[list(cols)] = df[list(cols)].fillna(means)
+    after = df[list(cols)].isna().sum().sum()
+    logger.info("[Patch] Handle NaN: %s -> %s missing values", before, after)
     return df
 
 

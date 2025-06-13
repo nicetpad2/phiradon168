@@ -16,15 +16,31 @@ def _reload_runner_env(monkeypatch, data_dir, symbol, timeframe):
     return wfv_runner
 
 
-def test_run_walkforward_logs(caplog):
+def _make_csv(path, rows=50):
+    df = pd.DataFrame({
+        'Timestamp': pd.date_range('2024-01-01', periods=rows, freq='T'),
+        'Open': range(rows),
+        'High': range(rows),
+        'Low': range(rows),
+        'Close': range(rows),
+        'Volume': range(rows),
+    })
+    df.to_csv(path, index=False)
+
+
+def test_run_walkforward_logs(caplog, tmp_path):
     caplog.set_level(logging.INFO)
-    wfv_runner.run_walkforward(nrows=20)
+    csv = tmp_path / 'data.csv'
+    _make_csv(csv)
+    wfv_runner.run_walkforward(data_path=str(csv), nrows=20)
     assert any('walk-forward completed' in r.message for r in caplog.records)
 
 
-def test_run_walkforward_return_frame(caplog):
+def test_run_walkforward_return_frame(caplog, tmp_path):
     caplog.set_level(logging.INFO)
-    result = wfv_runner.run_walkforward(nrows=20)
+    csv = tmp_path / 'data.csv'
+    _make_csv(csv)
+    result = wfv_runner.run_walkforward(data_path=str(csv), nrows=20)
     assert result.shape[0] == 5
     assert 'failed' in result.columns
     assert any('walk-forward completed' in r.message for r in caplog.records)
@@ -32,7 +48,9 @@ def test_run_walkforward_return_frame(caplog):
 
 def test_run_walkforward_output_csv(tmp_path):
     path = tmp_path / 'out.csv'
-    res = wfv_runner.run_walkforward(output_path=str(path), nrows=20)
+    csv = tmp_path / 'data.csv'
+    _make_csv(csv)
+    res = wfv_runner.run_walkforward(data_path=str(csv), output_path=str(path), nrows=20)
     assert path.exists()
     df = pd.read_csv(path)
     assert len(df) == len(res)
@@ -41,9 +59,8 @@ def test_run_walkforward_output_csv(tmp_path):
 def test_run_walkforward_resolve_relative(tmp_path, monkeypatch):
     data_dir = tmp_path / 'data'
     data_dir.mkdir()
-    df = pd.DataFrame({'Close': range(50)})
     csv_path = data_dir / 'BTCUSD_M5.csv'
-    df.to_csv(csv_path, index=False)
+    _make_csv(csv_path)
     runner = _reload_runner_env(monkeypatch, data_dir, 'BTCUSD', 'M5')
     result = runner.run_walkforward(nrows=20)
     assert not result.empty
@@ -57,6 +74,10 @@ def test_run_walkforward_file_not_found(tmp_path, monkeypatch):
 
 def test_run_walkforward_missing_close(tmp_path):
     path = tmp_path / 'data.csv'
-    pd.DataFrame({'Open': [1,2,3]}).to_csv(path, index=False)
+    pd.DataFrame({'Timestamp': pd.date_range('2024-01-01', periods=3, freq='T'),
+                  'Open': [1,2,3],
+                  'High': [1,2,3],
+                  'Low': [1,2,3],
+                  'Volume': [1,2,3]}).to_csv(path, index=False)
     with pytest.raises(KeyError):
         wfv_runner.run_walkforward(data_path=str(path), nrows=3)

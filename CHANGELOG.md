@@ -1,3 +1,7 @@
+# ### 2025-06-23
+- [Patch v6.9.7] Enforce CSV validation in walkforward and add NaN log
+- New/Updated unit tests added for tests/test_wfv_runner.py, tests/test_data_cleaner.py
+- QA: pytest -q passed (995 tests)
 
 ### 2025-06-20
 - [Patch v6.9.6] Add WFV aggregation module
