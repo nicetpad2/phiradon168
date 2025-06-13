@@ -5,6 +5,7 @@ import logging
 # Local logger avoids circular import during ``src.config`` initialization.
 logger = logging.getLogger(__name__)
 import pandas as pd
+import numpy as np
 
 # [Patch v5.5.5] Define module-level default to avoid NameError
 SESSION_TIMES_UTC = {"Asia": (22, 8), "London": (7, 16), "NY": (13, 21)}
@@ -115,3 +116,30 @@ def get_session_tag(
     except Exception as e:  # pragma: no cover - unexpected failures
         logger.error(f"   (Error) Error in get_session_tag for {timestamp}: {e}", exc_info=True)
         return "Error_Tagging"
+
+
+def get_session_tags_vectorized(index: pd.Index, session_times_utc=None) -> pd.Series:
+    """Return session tags for an index using vectorized operations."""
+    if session_times_utc is None:
+        session_times_utc = SESSION_TIMES_UTC
+    if not isinstance(index, pd.DatetimeIndex):
+        index = pd.to_datetime(index, errors="coerce")
+    if index.tz is None:
+        index_utc = index.tz_localize("UTC")
+    else:
+        index_utc = index.tz_convert("UTC")
+    hours = index_utc.hour
+    tags = np.array(["" for _ in range(len(index))], dtype=object)
+    session_masks = {}
+    for name, (start, end) in session_times_utc.items():
+        if start <= end:
+            mask = (hours >= start) & (hours <= end)
+        else:
+            mask = (hours >= start) | (hours <= end)
+        session_masks[name] = mask
+        tags[mask] = np.where(tags[mask] == "", name, tags[mask] + "/" + name)
+    if "London" in session_masks and "NY" in session_masks:
+        overlap = session_masks["London"] & session_masks["NY"]
+        tags[overlap] = "London/New York Overlap"
+    tags[tags == ""] = "N/A"
+    return pd.Series(tags, index=index, dtype="category")
