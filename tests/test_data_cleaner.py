@@ -88,10 +88,10 @@ def test_handle_missing_fill_mean():
     assert out.isna().sum().sum() == 0
 
 
-def test_handle_missing_logs(caplog):
+def test_handle_missing_values_logging(caplog):
     df = pd.DataFrame(
         {
-            "Time": [pd.Timestamp("2024-01-01 00:00:00"), pd.NaT],
+            "Time": [pd.Timestamp("2024-01-01 00:00:00"), pd.Timestamp("2024-01-01 00:01:00")],
             "Open": [1.0, None],
             "High": [2.0, None],
             "Low": [0.5, None],
@@ -99,9 +99,9 @@ def test_handle_missing_logs(caplog):
             "Volume": [10.0, None],
         }
     )
-    caplog.set_level(logging.INFO)
-    data_cleaner.handle_missing_values(df.copy(), method="drop")
-    assert any("Handle NaN" in r.message for r in caplog.records)
+    with caplog.at_level(logging.INFO):
+        data_cleaner.handle_missing_values(df.copy(), method="ffill")
+    assert any("ทำการเติมข้อมูลที่หายไป" in m for m in caplog.messages)
 
 
 def test_validate_price_columns_missing():

@@ -4,6 +4,7 @@ from typing import Iterable, Tuple
 import os
 import json
 import pandas as pd
+from src.csv_validator import validate_csv_data
 
 try:
     from sklearn.model_selection import TimeSeriesSplit
@@ -32,6 +33,7 @@ def orchestrate_walk_forward(data: pd.DataFrame, n_splits: int = 5) -> Iterable[
 
 def run_wfv_simple(data: pd.DataFrame, output_dir: str, n_splits: int = 5) -> None:
     """Run a minimal walk-forward loop and aggregate results."""
+    validate_csv_data(data, required_cols=None)
     os.makedirs(output_dir, exist_ok=True)
     for i, (train_df, test_df) in enumerate(orchestrate_walk_forward(data, n_splits)):
         fold_dir = os.path.join(output_dir, f"fold_{i}")
