@@ -30,6 +30,7 @@ import sys
 import subprocess
 import traceback
 import glob
+import re
 import pandas as pd
 import numpy as np
 import json
@@ -37,6 +38,7 @@ import gzip
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 from IPython import get_ipython
+from src.utils.data_utils import parse_thai_date_fast
 try:
     import requests
 except ImportError:  # pragma: no cover - optional dependency for certain features
@@ -1392,6 +1394,53 @@ def auto_convert_csv_to_parquet(source_path: str, dest_folder) -> None:
             "[AutoConvert] Could not save Parquet (%s). Saving CSV fallback", exc
         )
         df.to_csv(dest_file.with_suffix(".csv"), index=False)
+
+
+# [Patch v6.9.12] Simple CSV loader with Thai year handling
+def load_data_from_csv(file_path: str, nrows: int = None, auto_convert: bool = True):
+    """
+    Loads data from a CSV file, handling potential date parsing issues and Thai Buddhist years.
+    """
+    logger.info(f"Loading data from CSV: {file_path}")
+
+    temp_df = pd.read_csv(file_path, nrows=nrows)
+
+    if 'Timestamp' in temp_df.columns:
+        logger.info("Detected 'Timestamp' column, renaming to 'Time'.")
+        temp_df.rename(columns={'Timestamp': 'Time'}, inplace=True)
+
+    if auto_convert and 'Time' in temp_df.columns and temp_df['Time'].dtype == 'object':
+        first_sample = str(temp_df['Time'].iloc[0])
+        match = re.search(r"(\d{4})", first_sample)
+        year = int(match.group(1)) if match else None
+        if year and year >= 2500:
+            logger.info("Detected Thai Buddhist year format, converting to Gregorian.")
+            temp_df['Time'] = parse_thai_date_fast(temp_df['Time'])
+
+    try:
+        temp_df['Time'] = pd.to_datetime(temp_df['Time'])
+        temp_df.set_index('Time', inplace=True)
+    except Exception as e:
+        logger.error(f"Failed to parse datetime after potential conversion: {e}")
+        raise e
+
+    required_cols = {'Open', 'High', 'Low', 'Close', 'Volume'}
+    if not required_cols.issubset(temp_df.columns):
+        missing_cols = required_cols - set(temp_df.columns)
+        raise ValueError(f"CSV file {file_path} is missing required columns: {missing_cols}")
+
+    df = temp_df[['Open', 'High', 'Low', 'Close', 'Volume']].astype(
+        {
+            'Open': 'float32',
+            'High': 'float32',
+            'Low': 'float32',
+            'Close': 'float32',
+            'Volume': 'float32'
+        }
+    )
+
+    logger.info(f"Successfully loaded and processed {len(df)} rows from {file_path}")
+    return df
 # [Patch v5.7.3] Validate DataFrame for required columns and non-emptiness
 def validate_csv_data(df, required_cols=None):
     """Ensure ``df`` is non-empty and contains required columns.
@@ -1512,6 +1561,7 @@ __all__ = [
     "configure_matplotlib_fonts",
     "setup_fonts",
     "safe_load_csv_auto",
+    "load_data_from_csv",
     "load_app_config",
     "safe_set_datetime",
     "load_data",

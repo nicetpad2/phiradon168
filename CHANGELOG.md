@@ -1,3 +1,8 @@
+# ### 2025-06-27
+- [Patch v6.9.12] Handle Thai dates in load_data_from_csv
+- New/Updated unit tests added for tests/test_load_data_from_csv.py, tests/test_data_utils_new.py
+- QA: pytest -q passed (tests count TBD)
+
 # ### 2025-06-26
 
 - [Patch v6.9.11] Clarify directory fallback comment in auto_convert_gold_csv
