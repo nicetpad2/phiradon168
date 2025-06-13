@@ -1296,13 +1296,22 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
             df.columns = [c.capitalize() for c in df.columns]
             possible_cols = ["Date", "Date/Time", "Timestamp", "Datetime", "Time"]
             if {"Date", "Time"}.issubset(df.columns):
-                dt = pd.to_datetime(df["Date"] + " " + df["Time"], errors="coerce")
+                # "YYYY-MM-DD" + "HH:MM:SS" -> specify format to avoid warnings
+                dt = pd.to_datetime(
+                    df["Date"] + " " + df["Time"],
+                    format="%Y-%m-%d %H:%M:%S",
+                    errors="coerce",
+                )
             else:
                 time_col = next((c for c in df.columns if c in possible_cols), None)
                 if time_col is None:
                     print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
                     continue
-                dt = pd.to_datetime(df[time_col], errors="coerce")
+                dt = pd.to_datetime(
+                    df[time_col],
+                    format="%Y-%m-%d %H:%M:%S",
+                    errors="coerce",
+                )
             # [Patch v6.9.5] Handle unparsable dates gracefully
             def to_thai_date(d):
                 if pd.isna(d):
