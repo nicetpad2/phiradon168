@@ -5,3 +5,4 @@ feature_format: parquet
 data:
   data_dir: 'data'
   parquet_dir: 'data/parquet_cache'
+  path: 'data/XAUUSD_M1.csv'
