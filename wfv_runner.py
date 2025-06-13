@@ -4,6 +4,8 @@ from typing import Dict
 import pandas as pd
 import os
 
+from src.csv_validator import validate_and_convert_csv
+
 from src.config import DATA_DIR, SYMBOL, TIMEFRAME
 from src.wfv_monitor import walk_forward_loop
 
@@ -35,10 +37,13 @@ def run_walkforward(
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"Data file not found: {data_path}")
 
-    df = pd.read_csv(data_path, nrows=nrows)
-    if "Close" not in df.columns:
+    # [Patch v6.9.7] Validate source CSV before slicing data
+    required = ["Timestamp", "Open", "High", "Low", "Close", "Volume"]
+    validated_df = validate_and_convert_csv(data_path, required_cols=required)
+    df_full = validated_df.head(nrows)
+    if "Close" not in df_full.columns:
         raise KeyError("'Close' column missing from dataset")
-    df = df.reset_index(drop=True)[["Close"]]
+    df = df_full.reset_index(drop=True)[["Close"]]
 
     kpi = {"profit": 0.0, "winrate": 0.5, "maxdd": 0.1, "auc": 0.6}
     result = walk_forward_loop(
