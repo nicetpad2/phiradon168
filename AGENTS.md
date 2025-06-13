@@ -344,3 +344,4 @@
 - Added `some_module` module providing `compute_metrics` helper function.
 - Added `backtest_engine` module for trade log regeneration.
 - Added `trade_log_pipeline` module for safe trade log regeneration.
+- Added `wfv_aggregator` module for fold result aggregation.
