@@ -29,6 +29,7 @@ FUNCTIONS_INFO = [
 
 
 
+
     ("src/features.py", "tag_price_structure_patterns", 473),
     ("src/features.py", "calculate_trend_zone", 1572),
     ("src/features.py", "create_session_column", 1583),
