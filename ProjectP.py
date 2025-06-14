@@ -32,6 +32,7 @@ except ImportError:  # pragma: no cover - fallback when module missing
         )
 import csv
 import yaml
+import time
 from pathlib import Path
 try:  # [Patch v5.10.2] allow import without heavy dependencies
     from src.config import logger, OUTPUT_DIR, DEFAULT_TRADE_LOG_MIN_ROWS
@@ -217,11 +218,21 @@ def run_report() -> None:
     pipeline.run_report(config)
 
 
+def _execute_step(name: str, func, *args, **kwargs):
+    """[Patch v6.9.23] Execute a pipeline step with timing and logs."""
+    start = time.perf_counter()
+    logger.info("[Patch v6.9.23] Starting %s", name)
+    result = func(*args, **kwargs)
+    elapsed = time.perf_counter() - start
+    logger.info("[Patch v6.9.23] %s completed in %.2fs", name, elapsed)
+    return result
+
+
 def run_full_pipeline() -> None:
     """รันทุกโหมดต่อเนื่องกัน."""
-    run_preprocess()
+    _execute_step("preprocess", run_preprocess)
     # Step 2: Hyperparameter Sweep
-    run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
+    _execute_step("sweep", run_hyperparameter_sweep, DEFAULT_SWEEP_PARAMS)
     # Step 3: Auto-apply best hyperparameters from sweep
     summary_file = os.path.join(config.OUTPUT_DIR, 'hyperparameter_summary.csv')
     if os.path.exists(summary_file):
@@ -244,15 +255,21 @@ def run_full_pipeline() -> None:
             f"Hyperparameter summary not found at {summary_file}, using default parameters."
         )
 
-    run_threshold_optimization()
-    run_backtest()
+    _execute_step("threshold", run_threshold_optimization)
+    _execute_step("backtest", run_backtest)
     metrics_path = os.path.join(config.OUTPUT_DIR, "metrics_summary_v32.csv")
     if os.path.exists(metrics_path):
         results_df = pd.read_csv(metrics_path)
     else:
         results_df = pd.DataFrame()
-    generate_dashboard(results=results_df, output_filepath=os.path.join(config.OUTPUT_DIR, "dashboard.html"))
-    run_report()
+    _execute_step(
+        "dashboard",
+        generate_dashboard,
+        results=results_df,
+        output_filepath=os.path.join(config.OUTPUT_DIR, "dashboard.html"),
+    )
+    _execute_step("report", run_report)
+    ensure_output_files([metrics_path])
 
 
 def release_gpu_resources(handle, use_gpu: bool) -> None:

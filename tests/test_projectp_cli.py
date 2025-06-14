@@ -88,8 +88,9 @@ def test_run_full_pipeline_sequence(monkeypatch):
     )
     monkeypatch.setattr(proj, 'run_backtest', lambda: calls.append('back'))
     monkeypatch.setattr(proj, 'run_report', lambda: calls.append('rep'))
+    monkeypatch.setattr(proj, 'ensure_output_files', lambda files: calls.append('ensure'))
     proj.run_full_pipeline()
-    assert calls == ['pre', 'sweep', 'th', 'back', 'rep']
+    assert calls == ['pre', 'sweep', 'th', 'back', 'rep', 'ensure']
 
 
 def test_run_mode_wfv(monkeypatch):

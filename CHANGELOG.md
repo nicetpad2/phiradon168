@@ -2241,3 +2241,7 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_main_cli_extended.py::test_main_debug_sets_sample_size
 - QA: pytest -q passed (1011 tests)
 
+### 2025-07-06
+- [Patch v6.9.23] Enterprise run_full_pipeline logging and verification
+- New/Updated unit tests added for tests/test_projectp_execute_step.py
+- QA: pytest -q passed (partial)
