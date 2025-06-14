@@ -1853,7 +1853,8 @@ def build_feature_catalog(data_dir: str, output_dir: str) -> list:
     m1_path = os.path.join(data_dir, "XAUUSD_M1.csv")
     if not os.path.exists(m1_path):
         raise FileNotFoundError(f"M1 data not found: {m1_path}")
-    df_sample = pd.read_csv(m1_path, nrows=500)
+    # [Patch v6.9.29] ใช้ข้อมูลทุกแถวจาก CSV
+    df_sample = pd.read_csv(m1_path)
     features = [
         c
         for c in df_sample.columns
