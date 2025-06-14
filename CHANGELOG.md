@@ -1,3 +1,8 @@
+# ### 2025-07-03
+- [Patch v6.8.7] Fix Thai date parsing & feature fallback
+- New/Updated unit tests added for tests/test_safe_load_csv_limit.py
+- QA: pytest -q passed (tests count TBD)
+
 # ### 2025-07-02
 - [Patch v6.8.7] Normalize ปี พ.ศ. → ค.ศ. ก่อน parse
 - New/Updated unit tests added for tests/test_safe_load_csv_limit.py

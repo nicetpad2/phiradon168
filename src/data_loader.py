@@ -387,7 +387,7 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     df.columns = [str(col).strip().lower() for col in df.columns]
 
     if 'timestamp' in df.columns:
-        df['timestamp'] = df['timestamp'].astype(str).apply(_normalize_thai_date)
+        df['timestamp'] = df['timestamp'].astype(str).apply(normalize_thai_date)
 
     # [Patch] รองรับคอลัมน์ชื่อ 'timestamp' แทน 'date/time'
     if 'date/time' not in df.columns:
@@ -1622,6 +1622,11 @@ def _normalize_thai_date(ts: str) -> str:
         return ts
 
 
+def normalize_thai_date(ts: str) -> str:
+    """Public wrapper for normalizing Thai Buddhist years."""
+    return _normalize_thai_date(ts)
+
+
 
 
 __all__ = [
@@ -1662,5 +1667,6 @@ __all__ = [
     "auto_convert_gold_csv",
     "auto_convert_csv_to_parquet",
     "load_project_csvs",
+    "normalize_thai_date",
 ]
 
