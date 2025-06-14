@@ -1,3 +1,8 @@
+# ### 2025-07-02
+- [Patch v6.8.7] Normalize ปี พ.ศ. → ค.ศ. ก่อน parse
+- New/Updated unit tests added for tests/test_safe_load_csv_limit.py
+- QA: pytest -q passed (1010 tests)
+
 # ### 2025-07-01
 - [Patch v6.9.18] เพิ่ม log debug ใน safe_load_csv_auto และฟังก์ชันโหลดอื่นๆ
 - New/Updated unit tests added for tests/test_function_registry.py

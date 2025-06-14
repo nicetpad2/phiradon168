@@ -71,3 +71,22 @@ def test_safe_load_csv_auto_timestamp_column(tmp_path):
     result = dl.safe_load_csv_auto(str(p))
     assert isinstance(result.index, pd.DatetimeIndex)
 
+
+def test_normalize_thai_date():
+    assert dl._normalize_thai_date('2567-01-01 00:00:00') == '2024-01-01 00:00:00'
+    assert dl._normalize_thai_date('2024-01-01 00:00:00') == '2024-01-01 00:00:00'
+
+
+def test_safe_load_csv_auto_timestamp_thai_year(tmp_path):
+    df = pd.DataFrame({
+        'Timestamp': ['2567-01-01 00:00:00'],
+        'Open': [1],
+        'High': [1],
+        'Low': [1],
+        'Close': [1],
+    })
+    p = tmp_path / 'thai.csv'
+    df.to_csv(p, index=False)
+    result = dl.safe_load_csv_auto(str(p))
+    assert result.index[0] == pd.Timestamp('2024-01-01 00:00:00')
+
