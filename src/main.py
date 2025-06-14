@@ -1818,7 +1818,7 @@ def execute_mt5_order(action_type=0, symbol="XAUUSD", lot_size=0.01, price=None,
     return None # Return None as it's a placeholder
 
 # --- Main Live Trading Loop (Conceptual Placeholder) ---
-def run_live_trading_loop():
+def run_live_trading_loop(max_iterations: int = 1):
     """
     Conceptual placeholder for the main live trading loop.
     This would involve getting live data, calculating features/signals,
@@ -1830,7 +1830,8 @@ def run_live_trading_loop():
         return
 
     try:
-        while True: # Loop indefinitely (or based on some condition)
+        loop_count = 0
+        while loop_count < max_iterations:  # Loop only up to max_iterations
             logging.info("Live Loop Iteration...")
             # 1. Get Live Data
             # live_data = get_live_data("XAUUSD", timeframe=1, count=500) # Use integer timeframe
@@ -1869,7 +1870,8 @@ def run_live_trading_loop():
 
             # 7. Wait for the next bar/interval
             logging.info("Live loop iteration complete (Placeholder). Sleeping...")
-            time.sleep(60) # Example: Wait for 1 minute
+            loop_count += 1
+            time.sleep(60)  # Example: Wait for 1 minute
 
     except KeyboardInterrupt:
         logging.info("Live trading loop interrupted by user.")
