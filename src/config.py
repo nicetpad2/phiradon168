@@ -532,8 +532,12 @@ def is_colab():
 
 FILE_BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 FILE_BASE_OVERRIDE = os.getenv("FILE_BASE_OVERRIDE")
+DRIVE_BASE_PATH = "/content/drive/MyDrive/Phiradon168"
 if FILE_BASE_OVERRIDE and os.path.isdir(FILE_BASE_OVERRIDE):
     FILE_BASE = FILE_BASE_OVERRIDE
+elif os.path.isdir(DRIVE_BASE_PATH):
+    # [Patch] ใช้โฟลเดอร์ Google Drive หากมีให้บริการแม้ไม่อยู่ใน Colab
+    FILE_BASE = DRIVE_BASE_PATH
 elif is_colab():
     from google.colab import drive
     logging.info("(Info) รันบน Google Colab – กำลัง mount Google Drive...")
