@@ -2268,3 +2268,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_main_cli_extended.py::test_parse_args_live_loop_default and test_main_live_loop_called
 - QA: pytest -q failed (10 tests failed)
 
+### 2025-07-11
+- [Patch v6.9.28] Use run_full_pipeline for ProjectP --mode all
+- New/Updated unit tests added for tests/test_projectp_cli.py::test_run_mode_all
+- QA: pytest -q passed (1019 tests)
+

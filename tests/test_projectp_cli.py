@@ -102,15 +102,9 @@ def test_run_mode_wfv(monkeypatch):
 
 def test_run_mode_all(monkeypatch, tmp_path):
     calls = []
-    monkeypatch.setattr(proj, 'run_hyperparameter_sweep', lambda params: calls.append('sweep'))
-    best = tmp_path / 'best_params.json'
-    best.write_text('{"MIN_SIGNAL_SCORE_ENTRY": 0.9}')
-    monkeypatch.setattr(proj.os.path, 'join', lambda *a: str(best))
-    monkeypatch.setattr(proj.os.path, 'exists', lambda p: True)
-    monkeypatch.setattr(proj, 'update_config_from_dict', lambda d: calls.append('update'))
-    monkeypatch.setattr(proj, 'run_walkforward', lambda: calls.append('wfv'))
+    monkeypatch.setattr(proj, 'run_full_pipeline', lambda: calls.append('full'))
     proj.run_mode('all')
-    assert calls == ['sweep', 'update', 'wfv']
+    assert calls == ['full']
 
 
 

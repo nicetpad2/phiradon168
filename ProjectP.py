@@ -221,10 +221,13 @@ def run_report() -> None:
 def _execute_step(name: str, func, *args, **kwargs):
     """[Patch v6.9.23] Execute a pipeline step with timing and logs."""
     start = time.perf_counter()
+    logger.setLevel(logging.INFO)
     logger.info("[Patch v6.9.23] Starting %s", name)
     result = func(*args, **kwargs)
     elapsed = time.perf_counter() - start
-    logger.info("[Patch v6.9.23] %s completed in %.2fs", name, elapsed)
+    msg = f"[Patch v6.9.23] {name} completed in {elapsed:.2f}s"
+    logger.warning(msg)
+    logging.getLogger().warning(msg)
     return result
 
 
@@ -301,20 +304,8 @@ def run_mode(mode):
     elif mode == "wfv":
         run_walkforward()  # [Patch] call simplified WFV runner
     elif mode == "all":
-        # [Patch] Sweep then update config and run WFV
-        run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
-        # [Patch v6.3.1] Use os.path.join to support test monkeypatch for best_params
-        candidates = [
-            os.path.join(str(OUTPUT_DIR), "best_param.json"),
-            os.path.join(str(OUTPUT_DIR), "best_params.json"),
-        ]
-        for cand in candidates:
-            if os.path.exists(cand):
-                with open(cand, "r", encoding="utf-8") as fh:
-                    best_params = json.load(fh)
-                update_config_from_dict(best_params)
-                break
-        run_walkforward()
+        # [Patch v6.9.28] Execute full pipeline sequence
+        run_full_pipeline()
     else:
         raise ValueError(f"Unknown mode: {mode}")
 
