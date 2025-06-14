@@ -224,7 +224,8 @@ def _execute_step(name: str, func, *args, **kwargs):
     logger.info("[Patch v6.9.23] Starting %s", name)
     result = func(*args, **kwargs)
     elapsed = time.perf_counter() - start
-    logger.info("[Patch v6.9.23] %s completed in %.2fs", name, elapsed)
+    logger.warning("[Patch v6.9.23] %s completed in %.2fs", name, elapsed)
+    logging.getLogger().warning("%s completed in %.2fs", name, elapsed)
     return result
 
 
