@@ -446,32 +446,40 @@ if __name__ == "__main__":
     features_path = os.path.join(output_dir, features_filename)
 
     if not os.path.exists(features_path):
-        logger.warning(
-            f"features_main.json not found in {output_dir}; attempting to generate it."
-        )
-        try:
-            from src import config as cfg
-            os.makedirs(output_dir, exist_ok=True)
-            feature_catalog = build_feature_catalog(
-                data_dir=getattr(cfg, "DATA_DIR", output_dir),
-                output_dir=output_dir,
-            )
-            with open(features_path, "w", encoding="utf-8") as fp:
-                json.dump(feature_catalog, fp, ensure_ascii=False, indent=2)
+        root_path = project_root / features_filename
+        if root_path.exists():
             logger.info(
-                "Generated features_main.json with %d entries.",
-                len(feature_catalog),
+                "[Patch v6.9.21] Using project root features_main.json: %s",
+                root_path,
             )
-        except ImportError as ie:
-            logger.error("Cannot import feature builder: %s. Aborting.", ie)
-            sys.exit(1)
-        except Exception as ex:
+            features_path = str(root_path)
+        else:
             logger.warning(
-                "[Patch v6.8.7] Failed to generate features_main.json: %s. Continuing with minimal feature set",
-                ex,
+                f"features_main.json not found in {output_dir}; attempting to generate it."
             )
-            features_main = []
-            save_features(features_main, features_path)
+            try:
+                from src import config as cfg
+                os.makedirs(output_dir, exist_ok=True)
+                feature_catalog = build_feature_catalog(
+                    data_dir=getattr(cfg, "DATA_DIR", output_dir),
+                    output_dir=output_dir,
+                )
+                with open(features_path, "w", encoding="utf-8") as fp:
+                    json.dump(feature_catalog, fp, ensure_ascii=False, indent=2)
+                logger.info(
+                    "Generated features_main.json with %d entries.",
+                    len(feature_catalog),
+                )
+            except ImportError as ie:
+                logger.error("Cannot import feature builder: %s. Aborting.", ie)
+                sys.exit(1)
+            except Exception as ex:
+                logger.warning(
+                    "[Patch v6.8.7] Failed to generate features_main.json: %s. Continuing with minimal feature set",
+                    ex,
+                )
+                features_main = []
+                save_features(features_main, features_path)
     else:
         logger.info(
             "Loaded existing features_main.json (%d bytes)",
