@@ -20,7 +20,7 @@ def test_generate_all_features_basic(tmp_path):
     csv = tmp_path / "data.csv"
     df.to_csv(csv, index=False)
     feats = ProjectP.generate_all_features([str(csv)])
-    assert "A" in feats and "B" in feats and "label" not in feats
+    assert feats == ProjectP.DEFAULT_META_CLASSIFIER_FEATURES
 
 
 def test_generate_all_features_missing_file(caplog):
@@ -39,5 +39,4 @@ def test_generate_all_features_excludes_date_columns(tmp_path):
     csv = tmp_path / "data.csv"
     df.to_csv(csv, index=False)
     feats = ProjectP.generate_all_features([str(csv)])
-    assert "Date" not in feats and "Timestamp" not in feats
-    assert "A" in feats and "B" in feats
+    assert feats == ProjectP.DEFAULT_META_CLASSIFIER_FEATURES
