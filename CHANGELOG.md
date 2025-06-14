@@ -2221,3 +2221,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_log_analysis.py::test_parse_gz_log
 - QA: pytest -q passed (567 tests)
 
+### 2025-07-02
+- [Patch v6.9.19] Fix Buddhist year conversion in prepare_datetime_index
+- New/Updated unit tests added for tests/test_loader_main_functions.py::test_prepare_datetime_index_buddhist_year
+- QA: pytest -q passed (1010 tests)
+
