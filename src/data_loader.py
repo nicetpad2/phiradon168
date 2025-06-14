@@ -1374,20 +1374,28 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
             df = pd.read_csv(f)
             df.columns = [c.strip() for c in df.columns]
 
-            # [Patch] รองรับคอลัมน์ชื่ออื่น ๆ เช่น "DateTime" หรือ "Datetime"
-            alt_time_cols = ["DateTime", "Datetime", "datetime", "date/time"]
+            # [Patch v6.9.30] รองรับการตรวจสอบชื่อคอลัมน์แบบไม่สนตัวพิมพ์
+            col_map = {c.strip().lower(): c.strip() for c in df.columns}
+
+            alt_time_cols = ["datetime", "date/time", "timestamp"]
             for alt in alt_time_cols:
-                if alt in df.columns and "Timestamp" not in df.columns:
-                    df.rename(columns={alt: "Timestamp"}, inplace=True)
+                if alt in col_map and "Timestamp" not in df.columns:
+                    df.rename(columns={col_map[alt]: "Timestamp"}, inplace=True)
                     break
 
-            if "Date" in df.columns and "Time" in df.columns:
-                ts = df["Date"].astype(str) + " " + df["Time"].astype(str)
+            if {"date", "time"}.issubset(col_map) and "Timestamp" not in df.columns:
+                date_col, time_col = col_map["date"], col_map["time"]
+                ts = df[date_col].astype(str) + " " + df[time_col].astype(str)
                 converted = ts.apply(_extract_thai_date_time)
                 df["Date"] = [c[0] for c in converted]
                 df["Timestamp"] = [c[1] for c in converted]
             elif "Timestamp" in df.columns:
                 converted = df["Timestamp"].apply(_extract_thai_date_time)
+                df["Date"] = [c[0] for c in converted]
+                df["Timestamp"] = [c[1] for c in converted]
+            elif {"date", "time"}.issubset(df.columns):
+                ts = df["Date"].astype(str) + " " + df["Time"].astype(str)
+                converted = ts.apply(_extract_thai_date_time)
                 df["Date"] = [c[0] for c in converted]
                 df["Timestamp"] = [c[1] for c in converted]
             else:
