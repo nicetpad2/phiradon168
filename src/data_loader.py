@@ -677,20 +677,15 @@ def load_data(file_path, timeframe_str="", price_jump_threshold=0.10, nan_thresh
                 dtypes = None
 
     if not os.path.exists(file_path):
-        logging.critical(f"(Error) ไม่พบไฟล์: {file_path}")
-        # [Patch] Provide dummy data when file is missing for offline execution
-        dummy_dates = pd.date_range("2020-01-01", periods=10, freq="1min")
-        df_pd = pd.DataFrame({
-            "Date": dummy_dates.date,
-            "Timestamp": dummy_dates,
-            "Open": 1.0,
-            "High": 1.0,
-            "Low": 1.0,
-            "Close": 1.0,
-        })
-        logging.warning("(Patch) Using dummy DataFrame due to missing file.")
-        logger.info(f"--- [DEBUG] สิ้นสุดการทำงานของฟังก์ชัน load_data สำหรับไฟล์ {file_path} ---")
-        return df_pd
+        # [Patch v6.9.25] Remove dummy fallback and search project CSV path
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        alt_path = os.path.join(base_dir, file_path)
+        if os.path.exists(alt_path):
+            logging.info(f"(Info) ใช้เส้นทาง CSV ในโปรเจค: {alt_path}")
+            file_path = alt_path
+        else:
+            logging.critical(f"(Error) ไม่พบไฟล์: {file_path}")
+            sys.exit(f"ออก: ไม่พบไฟล์ CSV {timeframe_str}")
 
     try:
         try:

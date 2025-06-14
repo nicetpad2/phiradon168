@@ -212,3 +212,11 @@ def test_load_data_volume_dtype(tmp_path):
     df.to_csv(csv_path, index=False)
     loaded = dl.load_data(str(csv_path), 'M1')
     assert loaded['Volume'].dtype == 'float32'
+
+
+def test_load_data_missing_file(tmp_path, caplog):
+    missing = tmp_path / 'missing.csv'
+    with caplog.at_level('CRITICAL'):
+        with pytest.raises(SystemExit):
+            dl.load_data(str(missing), 'M1')
+    assert 'ไม่พบไฟล์' in caplog.text
