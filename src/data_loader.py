@@ -1225,7 +1225,8 @@ def prepare_datetime_index(df):
     if 'Timestamp' not in df.columns and 'Date' in df.columns:
         df = df.rename(columns={'Date': 'Timestamp'})
     if 'Timestamp' in df.columns:
-        df.index = pd.to_datetime(df['Timestamp'], errors='coerce')
+        ts = df['Timestamp'].astype(str).apply(normalize_thai_date)
+        df.index = pd.to_datetime(ts, errors='coerce')
     return df
 
 
@@ -1608,6 +1609,11 @@ def _normalize_thai_date(ts: str) -> str:
         return ts
     except Exception:
         return ts
+
+
+def normalize_thai_date(ts: str) -> str:
+    """Public wrapper for :func:`_normalize_thai_date`."""
+    return _normalize_thai_date(ts)
 
 
 

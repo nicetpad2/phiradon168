@@ -61,6 +61,12 @@ def test_prepare_datetime_index_sets_index():
     assert isinstance(res.index, pd.DatetimeIndex)
 
 
+def test_prepare_datetime_index_buddhist_year():
+    df = pd.DataFrame({'Timestamp': ['2563-06-12 03:00:00']})
+    res = dl.prepare_datetime_index(df.copy())
+    assert res.index[0] == pd.Timestamp('2020-06-12 03:00:00')
+
+
 def test_drop_nan_rows_drops_na():
     df = pd.DataFrame({'A': [1, np.nan]})
     res = main.drop_nan_rows(df)
