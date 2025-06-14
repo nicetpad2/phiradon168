@@ -2226,3 +2226,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_loader_main_functions.py::test_prepare_datetime_index_buddhist_year
 - QA: pytest -q passed (1010 tests)
 
+### 2025-07-03
+- [Patch v6.9.20] Load M1 data via safe_load_csv_auto
+- New/Updated unit tests added for tests/test_backtest_engine.py
+- QA: pytest -q passed (1011 tests)
+
