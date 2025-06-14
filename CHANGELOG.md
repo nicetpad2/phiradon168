@@ -2206,3 +2206,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_state_manager.py
 - QA: pytest -q passed (1005 tests)
 
+### 2025-07-01
+- [Patch v6.9.18] Support gzipped trade logs
+- New/Updated unit tests added for tests/test_log_analysis.py::test_parse_gz_log
+- QA: pytest -q passed (567 tests)
+

@@ -1,5 +1,6 @@
 import os
 import sys
+import gzip
 import pandas as pd
 import tempfile
 import pytest
@@ -84,6 +85,14 @@ def test_invalid_log_path(tmp_path):
         parse_trade_logs(str(tmp_path / "missing.txt"))
     with pytest.raises(ValueError):
         parse_trade_logs(str(tmp_path / "invalid.csv"))
+
+
+def test_parse_gz_log(tmp_path):
+    log_file = tmp_path / "test.log.gz"
+    with gzip.open(log_file, "wt", encoding="utf-8") as fh:
+        fh.write(SAMPLE_LOG)
+    df = parse_trade_logs(str(log_file))
+    assert len(df) == 2
 
 
 def test_export_and_plot(tmp_path):
