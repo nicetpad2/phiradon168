@@ -2245,3 +2245,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.23] Enterprise run_full_pipeline logging and verification
 - New/Updated unit tests added for tests/test_projectp_execute_step.py
 - QA: pytest -q passed (partial)
+
+### 2025-07-07
+- [Patch v6.9.24] Remove unused matplotlib dependency
+- New/Updated unit tests added for N/A
+- QA: pytest -q passed (426 tests)
