@@ -2278,3 +2278,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_load_project_csvs.py::test_load_project_csvs_clean
 - QA: pytest -q passed (427 tests)
 
+### 2025-07-12
+- [Patch v6.9.30] Use base CSV paths in backtest engine
+- New/Updated unit tests added for tests/test_backtest_engine.py
+- QA: pytest -q passed (tests count TBD)
+
