@@ -1373,11 +1373,19 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
         try:
             df = pd.read_csv(f)
             df.columns = [c.strip() for c in df.columns]
-            df.columns = [c.capitalize() for c in df.columns]
 
-            # [Patch v6.9.33] Handle alternative datetime column names
-            if "Date" in df.columns and "Time" in df.columns:
-                ts = df["Date"].astype(str) + " " + df["Time"].astype(str)
+            # [Patch v6.9.30] รองรับการตรวจสอบชื่อคอลัมน์แบบไม่สนตัวพิมพ์
+            col_map = {c.strip().lower(): c.strip() for c in df.columns}
+
+            alt_time_cols = ["datetime", "date/time", "timestamp"]
+            for alt in alt_time_cols:
+                if alt in col_map and "Timestamp" not in df.columns:
+                    df.rename(columns={col_map[alt]: "Timestamp"}, inplace=True)
+                    break
+
+            if {"date", "time"}.issubset(col_map) and "Timestamp" not in df.columns:
+                date_col, time_col = col_map["date"], col_map["time"]
+                ts = df[date_col].astype(str) + " " + df[time_col].astype(str)
                 converted = ts.apply(_extract_thai_date_time)
                 df["Date"] = [c[0] for c in converted]
                 df["Timestamp"] = [c[1] for c in converted]
@@ -1385,17 +1393,14 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
                 converted = df["Timestamp"].apply(_extract_thai_date_time)
                 df["Date"] = [c[0] for c in converted]
                 df["Timestamp"] = [c[1] for c in converted]
+            elif {"date", "time"}.issubset(df.columns):
+                ts = df["Date"].astype(str) + " " + df["Time"].astype(str)
+                converted = ts.apply(_extract_thai_date_time)
+                df["Date"] = [c[0] for c in converted]
+                df["Timestamp"] = [c[1] for c in converted]
             else:
-                for alt in ["Datetime", "Date/time", "DateTime", "datetime"]:
-                    if alt in df.columns:
-                        df.rename(columns={alt: "Timestamp"}, inplace=True)
-                        converted = df["Timestamp"].apply(_extract_thai_date_time)
-                        df["Date"] = [c[0] for c in converted]
-                        df["Timestamp"] = [c[1] for c in converted]
-                        break
-                else:
-                    print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
-                    continue
+                print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
+                continue
 
             for col in ["Open", "High", "Low", "Close"]:
                 if col not in df.columns and col.lower() in df.columns:

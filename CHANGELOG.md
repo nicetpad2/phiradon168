@@ -2298,3 +2298,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_backtest_engine.py
 
 
+
+### 2025-07-14
+- [Patch v6.9.30] ปรับปรุงการตรวจสอบคอลัมน์ datetime
+- New/Updated unit tests added for tests/test_function_registry.py
+- QA: pytest -q passed (428 tests)
