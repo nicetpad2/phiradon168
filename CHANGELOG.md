@@ -2273,3 +2273,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for ProjectP._execute_step
 - QA: pytest -q passed (1019 tests)
 
+### 2025-07-11
+- [Patch v6.9.29] Optionally clean project CSVs before loading
+- New/Updated unit tests added for tests/test_load_project_csvs.py::test_load_project_csvs_clean
+- QA: pytest -q passed (427 tests)
+

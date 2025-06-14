@@ -24,7 +24,7 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "load_raw_data_m15", 1287),
     ("src/data_loader.py", "write_test_file", 1293),
 
-    ("src/data_loader.py", "validate_csv_data", 1504),
+    ("src/data_loader.py", "validate_csv_data", 1512),
 
 
 
