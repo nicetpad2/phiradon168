@@ -22,9 +22,10 @@ FUNCTIONS_INFO = [
     ("src/data_loader.py", "prepare_datetime_index", 1220),
     ("src/data_loader.py", "load_raw_data_m1", 1277),
     ("src/data_loader.py", "load_raw_data_m15", 1287),
-    ("src/data_loader.py", "write_test_file", 1293),
+    ("src/data_loader.py", "write_test_file", 1299),
 
-    ("src/data_loader.py", "validate_csv_data", 1543),
+    ("src/data_loader.py", "validate_csv_data", 1538),
+
 
 
 
