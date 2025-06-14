@@ -50,6 +50,11 @@ def test_parse_args_debug_rows():
     assert args.rows == 123
 
 
+def test_parse_args_live_loop_default():
+    args = pipeline.parse_args([])
+    assert args.live_loop == 0
+
+
 def test_run_preprocess_success():
     called = []
     def fake_run(cmd, check):
@@ -191,3 +196,16 @@ def test_main_rows_override(monkeypatch):
     pipeline.main(['--rows', '123'])
     assert src_main.sample_size == 123
     assert strategy.sample_size == 123
+
+
+def test_main_live_loop_called(monkeypatch):
+    called = {}
+    monkeypatch.setattr(pipeline, 'run_backtest', lambda c: None)
+    monkeypatch.setattr(pipeline, 'run_all', lambda c: None)
+    monkeypatch.setattr(pipeline, 'setup_logging', lambda level: None)
+    monkeypatch.setattr(pipeline, 'load_config', lambda p: PipelineConfig())
+    monkeypatch.setattr(pipeline, 'has_gpu', lambda: False)
+    import src.main as src_main
+    monkeypatch.setattr(src_main, 'run_live_trading_loop', lambda n: called.setdefault('loop', n))
+    pipeline.main(['--mode', 'backtest', '--live-loop', '3'])
+    assert called.get('loop') == 3
