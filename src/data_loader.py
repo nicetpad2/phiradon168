@@ -1396,13 +1396,16 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
             print(f"✗ [AutoConvert] Error processing file '{f}' to '{out_f}': {e}")
 
 # [Patch v6.8.10] Helper to load default project CSV files
-def load_project_csvs(row_limit=None):
+def load_project_csvs(row_limit=None, clean=False):
     """Load XAUUSD_M1.csv และ XAUUSD_M15.csv ที่อยู่ในรูทโปรเจค
 
     Parameters
     ----------
     row_limit : int, optional
         จำกัดจำนวนแถวที่โหลดเพื่อให้การทดสอบทำงานรวดเร็ว
+    clean : bool, optional
+        หาก ``True`` จะใช้ :func:`csv_validator.validate_and_convert_csv`
+        ทำความสะอาดไฟล์ก่อนโหลด
 
     Returns
     -------
@@ -1413,10 +1416,19 @@ def load_project_csvs(row_limit=None):
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     m1_path = os.path.join(base_dir, "XAUUSD_M1.csv")
     m15_path = os.path.join(base_dir, "XAUUSD_M15.csv")
-    m1_df = safe_load_csv_auto(m1_path, row_limit=row_limit)
-    logger.info("--- [DEBUG] โหลดข้อมูล M1 สำเร็จ ---")
-    m15_df = safe_load_csv_auto(m15_path, row_limit=row_limit)
-    logger.info("--- [DEBUG] โหลดข้อมูล M15 สำเร็จ ---")
+    if clean:
+        # [Patch v6.9.29] เพิ่มตัวเลือกทำความสะอาดไฟล์ก่อนโหลด
+        from src import csv_validator  # นำเข้าแบบ lazy เพื่อลดปัญหา circular import
+        m1_df = csv_validator.validate_and_convert_csv(m1_path)
+        m15_df = csv_validator.validate_and_convert_csv(m15_path)
+        if row_limit:
+            m1_df = m1_df.head(row_limit)
+            m15_df = m15_df.head(row_limit)
+    else:
+        m1_df = safe_load_csv_auto(m1_path, row_limit=row_limit)
+        logger.info("--- [DEBUG] โหลดข้อมูล M1 สำเร็จ ---")
+        m15_df = safe_load_csv_auto(m15_path, row_limit=row_limit)
+        logger.info("--- [DEBUG] โหลดข้อมูล M15 สำเร็จ ---")
     logger.info("--- [DEBUG] สิ้นสุดการทำงานของฟังก์ชัน load_project_csvs ---")
     return m1_df, m15_df
 
