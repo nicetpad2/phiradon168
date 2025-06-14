@@ -2278,3 +2278,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_load_project_csvs.py::test_load_project_csvs_clean
 - QA: pytest -q passed (427 tests)
 
+### 2025-07-12
+- [Patch v6.9.30] Remove row limit in build_feature_catalog
+- New/Updated unit tests added for tests/test_feature_catalog.py::test_build_feature_catalog_uses_all_rows
+- QA: pytest -q passed (427 tests)
+
