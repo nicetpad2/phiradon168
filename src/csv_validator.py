@@ -31,7 +31,7 @@ def validate_and_convert_csv(
         required_cols = DEFAULT_REQUIRED_COLS
     df = data_cleaner.read_csv_auto(path)
     # [Patch v6.9.31] รองรับชื่อคอลัมน์เวลาอื่น ๆ และรวม Date/Time อัตโนมัติ
-    df.columns = [c.strip() for c in df.columns]
+    df.columns = [c.strip().replace("\ufeff", "") for c in df.columns]
     if "Timestamp" not in df.columns:
         for alt in ["DateTime", "Datetime", "datetime", "date/time", "Time", "time"]:
             if alt in df.columns:

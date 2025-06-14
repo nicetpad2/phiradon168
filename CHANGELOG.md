@@ -2303,3 +2303,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.30] ปรับปรุงการตรวจสอบคอลัมน์ datetime
 - New/Updated unit tests added for tests/test_function_registry.py
 - QA: pytest -q passed (428 tests)
+
+### 2025-07-15
+- [Patch v6.9.31] Improve timestamp column detection in auto_convert_gold_csv
+- New/Updated unit tests added for tests/test_auto_convert_csv.py::test_auto_convert_gold_csv_bom_header
+- QA: pytest -q passed (1 test)
