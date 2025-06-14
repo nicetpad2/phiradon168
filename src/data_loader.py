@@ -1373,38 +1373,26 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
         try:
             df = pd.read_csv(f)
             df.columns = [c.capitalize() for c in df.columns]
+
             if "Date" in df.columns and "Time" in df.columns:
-                dt = pd.to_datetime(
-                    df["Date"].astype(str) + " " + df["Time"].astype(str), errors="coerce"
-                )
+                ts = df["Date"].astype(str) + " " + df["Time"].astype(str)
+                converted = ts.apply(_extract_thai_date_time)
+                df["Date"] = [c[0] for c in converted]
+                df["Timestamp"] = [c[1] for c in converted]
             elif "Timestamp" in df.columns:
-
-                # [Patch v6.9.14] ระบุรูปแบบวันที่อย่างชัดเจนเพื่อความเร็วและแม่นยำ
-                dt = pd.to_datetime(
-                    df["Timestamp"].astype(str),
-                    format="%Y.%m.%d %H:%M:%S",
-                    errors="coerce",
-                )
-
+                converted = df["Timestamp"].apply(_extract_thai_date_time)
+                df["Date"] = [c[0] for c in converted]
+                df["Timestamp"] = [c[1] for c in converted]
             else:
                 print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
                 continue
-
-            def format_thai_date(d):
-                if pd.isna(d):
-                    return None
-                return f"{d.year + 543:04d}{d.month:02d}{d.day:02d}"
-
-            df["Date"] = dt.map(format_thai_date)
-            df["Timestamp"] = dt.dt.strftime("%H:%M:%S")
 
             for col in ["Open", "High", "Low", "Close"]:
                 if col not in df.columns and col.lower() in df.columns:
                     df[col] = df[col.lower()]
 
-            df.dropna(subset=["Date"], inplace=True)
-
             df2 = df[["Date", "Timestamp", "Open", "High", "Low", "Close"]]
+            df2.dropna(subset=["Date", "Timestamp"], inplace=True)
             df2.to_csv(out_f, index=False)
             status = "พบ" if os.path.exists(out_f) else "ไม่พบ"
             print(f"✔ [AutoConvert] {out_f} OK - {status}ไฟล์")
@@ -1622,9 +1610,34 @@ def _normalize_thai_date(ts: str) -> str:
         return ts
 
 
-def normalize_thai_date(ts: str) -> str:
-    """Public wrapper for normalizing Thai Buddhist years."""
-    return _normalize_thai_date(ts)
+
+def _extract_thai_date_time(ts: str) -> tuple[str | None, str | None]:
+    """Extract Thai-style date (Buddhist year) and time from ``ts``.
+
+    Handles both Gregorian and Buddhist year inputs. Returns ``(date, time)``
+    in the format ``YYYYMMDD`` and ``HH:MM:SS`` respectively, or ``(None, None)``
+    if parsing fails.
+    """
+    try:
+        ts = str(ts).replace(".", "-")
+        date_part, time_part = ts.split(" ")
+        y, m, d = date_part.split("-")
+        year = int(y)
+        greg_year = year - 543 if year >= 2500 else year
+        dt = pd.to_datetime(
+            f"{greg_year}-{m}-{d} {time_part}",
+            format="%Y-%m-%d %H:%M:%S",
+            errors="coerce",
+        )
+        if pd.isna(dt):
+            return None, None
+        thai_year = dt.year + 543
+        date_out = f"{thai_year:04d}{dt.month:02d}{dt.day:02d}"
+        time_out = dt.strftime("%H:%M:%S")
+        return date_out, time_out
+    except Exception:
+        return None, None
+
 
 
 
