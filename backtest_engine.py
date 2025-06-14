@@ -96,9 +96,9 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A DataFrame of trades (timestamp, price, signal, etc.).
     """
-    # 1) Load the raw M1 price data
+    # 1) Load the raw M1 price data using safe_load_csv_auto
     try:
-        df = pd.read_csv(DATA_FILE_PATH_M1)
+        df = safe_load_csv_auto(DATA_FILE_PATH_M1)
     except Exception as e:
         raise RuntimeError(f"[backtest_engine] Failed to load price data: {e}") from e
 
