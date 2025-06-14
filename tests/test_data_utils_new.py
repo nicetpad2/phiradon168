@@ -26,3 +26,33 @@ def test_prepare_csv_auto_missing_timestamp(tmp_path, caplog):
     assert 'a' in df.columns
 
 
+def test_prepare_csv_auto_date_time(tmp_path):
+    df = pd.DataFrame(
+        {
+            'Date': ['25670101', '25670101'],
+            'Timestamp': ['00:00:00', '00:01:00'],
+            'A': [1, 2],
+        }
+    )
+    p = tmp_path / 'dt.csv'
+    df.to_csv(p, index=False)
+    res = prepare_csv_auto(str(p))
+    assert isinstance(res.index, pd.DatetimeIndex)
+    assert res.index[0] == pd.Timestamp('2024-01-01 00:00:00')
+    assert len(res) == 2
+
+
+def test_prepare_csv_auto_drop_duplicates(tmp_path):
+    df = pd.DataFrame(
+        {
+            'Timestamp': ['2024-01-01 00:00:00', '2024-01-01 00:00:00'],
+            'A': [1, 2],
+        }
+    )
+    p = tmp_path / 'dup.csv'
+    df.to_csv(p, index=False)
+    res = prepare_csv_auto(str(p))
+    assert len(res) == 1
+    assert isinstance(res.index, pd.DatetimeIndex)
+
+
