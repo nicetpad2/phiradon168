@@ -466,8 +466,12 @@ if __name__ == "__main__":
             logger.error("Cannot import feature builder: %s. Aborting.", ie)
             sys.exit(1)
         except Exception as ex:
-            logger.error("Failed to generate features_main.json: %s. Aborting.", ex)
-            sys.exit(1)
+            logger.warning(
+                "[Patch v6.8.7] Failed to generate features_main.json: %s. Continuing with minimal feature set",
+                ex,
+            )
+            features_main = []
+            save_features(features_main, features_path)
     else:
         logger.info(
             "Loaded existing features_main.json (%d bytes)",
