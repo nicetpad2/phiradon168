@@ -2257,6 +2257,9 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (tests count TBD)
 
 ### 2025-07-09
+
+- New/Updated unit tests added for tests/test_csv_validator.py
+=======
 - [Patch v6.9.26] Rename Timestamp column to Date in CSVs
-- New/Updated unit tests added for N/A
+
 - QA: pytest -q passed (tests count TBD)
