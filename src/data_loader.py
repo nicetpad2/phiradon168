@@ -1455,12 +1455,15 @@ def load_project_csvs(row_limit=None, clean=False):
     logger.info("--- [DEBUG] สิ้นสุดการทำงานของฟังก์ชัน load_project_csvs ---")
     return m1_df, m15_df
 
-# [Patch v6.9.0] Utility to convert CSV to Parquet with fallback handling
+# [Patch v6.9.33] Utility to convert CSV to Parquet with graceful fallback
 def auto_convert_csv_to_parquet(source_path: str, dest_folder) -> None:
     """Convert ``source_path`` to Parquet inside ``dest_folder``.
 
-    If writing Parquet fails, a CSV fallback is saved instead. Warnings are
-    logged when the source path does not exist or read/save errors occur.
+    If the required Parquet engine (``pyarrow`` or ``fastparquet``) is not
+    available, the function logs a warning and skips conversion instead of
+    attempting a slow CSV fallback. Any other write errors still trigger the
+    original CSV fallback behaviour. Warnings are logged when ``source_path``
+    does not exist or read/save errors occur.
     """
     from pathlib import Path
 
@@ -1482,6 +1485,11 @@ def auto_convert_csv_to_parquet(source_path: str, dest_folder) -> None:
     try:
         df.to_parquet(dest_file)
         logger.info("[AutoConvert] Saved Parquet to %s", dest_file)
+    except ImportError as exc:  # pragma: no cover - missing engine
+        logger.warning(
+            "[AutoConvert] Parquet engine missing (%s). Skipping conversion", exc
+        )
+        return
     except Exception as exc:  # pragma: no cover - optional fallback
         logger.warning(
             "[AutoConvert] Could not save Parquet (%s). Saving CSV fallback", exc

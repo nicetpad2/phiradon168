@@ -133,7 +133,23 @@ def test_auto_convert_csv_to_parquet_creates_file(tmp_path):
     dest = tmp_path / 'out'
     dest.mkdir()
     auto_convert_csv_to_parquet(str(csv), dest)
-    assert (dest / 'sample.parquet').exists() or (dest / 'sample.csv').exists()
+
+    parquet_file = dest / 'sample.parquet'
+    csv_file = dest / 'sample.csv'
+    try:
+        import pyarrow  # noqa: F401
+        engine_available = True
+    except Exception:
+        try:
+            import fastparquet  # noqa: F401
+            engine_available = True
+        except Exception:
+            engine_available = False
+
+    if engine_available:
+        assert parquet_file.exists()
+    else:
+        assert not parquet_file.exists() and not csv_file.exists()
 
 
 def test_auto_convert_csv_to_parquet_missing_source(tmp_path):

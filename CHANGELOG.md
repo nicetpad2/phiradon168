@@ -2313,3 +2313,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.32] Add script to clean project CSVs
 - New script scripts/clean_project_csvs.py
 - QA: pytest -q passed (432 tests)
+
+### 2025-07-17
+- [Patch v6.9.33] Skip CSV fallback when parquet engine missing
+- Updated auto_convert_csv_to_parquet tests
+- QA: pytest -q passed (431 tests)
