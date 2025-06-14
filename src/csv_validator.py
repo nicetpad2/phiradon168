@@ -31,6 +31,15 @@ def validate_and_convert_csv(
     if required_cols is None:
         required_cols = DEFAULT_REQUIRED_COLS
     df = data_cleaner.read_csv_auto(path)
+    if "Date" not in df.columns and "Timestamp" in df.columns:
+        parts = df["Timestamp"].astype(str).str.split(" ", n=1, expand=True)
+        if parts.shape[1] == 2:
+            date_part = parts[0].str.replace("-", "")
+            year = date_part.str[:4].astype(int, errors="ignore")
+            date_part = year.where(year < 2500, year - 543).astype(str).str.zfill(4) + date_part.str[4:]
+            df["Date"] = date_part
+            df["Timestamp"] = parts[1]
+            logger.info("[Patch] Split combined Timestamp into 'Date' and 'Timestamp'")
     # validate raw columns first to ensure expected structure
     validate_csv_data(df, required_cols)
     df = data_cleaner.clean_dataframe(df)
