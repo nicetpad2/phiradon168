@@ -68,3 +68,22 @@ def test_validate_and_convert_csv_timestamp_only(tmp_path):
     result = csv_validator.validate_and_convert_csv(str(csv))
     assert "Time" in result.columns
     assert result.iloc[0]["Time"] == pd.Timestamp("2020-06-12 03:00:00")
+
+
+def test_validate_and_convert_csv_date_and_time(tmp_path):
+    df = pd.DataFrame(
+        {
+            "Date": ["25670101"],
+            "Time": ["00:00:00"],
+            "Open": [1.0],
+            "High": [2.0],
+            "Low": [0.5],
+            "Close": [1.5],
+            "Volume": [10],
+        }
+    )
+    csv = tmp_path / "dt.csv"
+    df.to_csv(csv, index=False)
+    result = csv_validator.validate_and_convert_csv(str(csv))
+    assert "Time" in result.columns
+    assert result.iloc[0]["Time"] == pd.Timestamp("2024-01-01 00:00:00")
