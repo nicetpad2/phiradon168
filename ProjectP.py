@@ -12,6 +12,7 @@ if str(project_root) not in sys.path:
 os.chdir(project_root)
 
 import logging
+from src.features import DEFAULT_META_CLASSIFIER_FEATURES
 
 # [Patch v6.3.0] Stub imports for missing features
 try:
@@ -354,13 +355,20 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
         # Proceed with no features if raw data is unavailable
 
         return []
-    return [
+    features = [
         c
         for c in df_sample.columns
         if pd.api.types.is_numeric_dtype(df_sample[c])
         and c not in {"datetime", "is_tp", "is_sl", "Date", "Timestamp"}  # [Patch v6.7.2] skip date columns
         and c.lower() not in {"label", "target"}
     ]
+    if len(features) < 10:
+        logger.warning(
+            "[Patch v6.9.22] Fewer than 10 numeric columns found (%d). Using DEFAULT_META_CLASSIFIER_FEATURES",
+            len(features),
+        )
+        return DEFAULT_META_CLASSIFIER_FEATURES
+    return features
 
 
 def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) -> pd.DataFrame:

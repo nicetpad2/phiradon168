@@ -25,4 +25,4 @@ def test_projectp_fallback_dir(monkeypatch, tmp_path):
     import ProjectP
     importlib.reload(ProjectP)
     feats = ProjectP.generate_all_features([str(tmp_path / "XAUUSD_M1.csv")])
-    assert feats == ["A", "B"]
+    assert feats == ProjectP.DEFAULT_META_CLASSIFIER_FEATURES
