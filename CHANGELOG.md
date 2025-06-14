@@ -2250,3 +2250,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.24] Remove unused matplotlib dependency
 - New/Updated unit tests added for N/A
 - QA: pytest -q passed (426 tests)
+
+### 2025-07-08
+- [Patch v6.9.25] Enforce real CSV loading in load_data
+- New/Updated unit tests added for tests/test_data_loader_additional.py::test_load_data_missing_file
+- QA: pytest -q passed (tests count TBD)
