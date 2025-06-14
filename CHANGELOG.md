@@ -1,3 +1,8 @@
+# ### 2025-07-05
+- [Patch v6.9.33] ปรับปรุงตัวแปลงวันที่ใน auto_convert_gold_csv
+- New/Updated unit tests added for tests/test_auto_convert_csv.py
+- QA: pytest -q passed (435 tests)
+
 # ### 2025-07-04
 - [Patch v6.9.32] Fix ProjectP preprocess mode dispatch
 - New/Updated unit tests added for N/A

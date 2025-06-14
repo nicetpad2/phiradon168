@@ -96,6 +96,24 @@ def test_auto_convert_gold_csv_timestamp_only(tmp_path):
     assert out.iloc[0]['Date'].startswith('2567')
 
 
+def test_auto_convert_gold_csv_datetime_alias(tmp_path):
+    df = pd.DataFrame({
+        'DateTime': ['2024-01-01 00:00:00'],
+        'Open': [1.0],
+        'High': [1.1],
+        'Low': [0.9],
+        'Close': [1.0],
+    })
+    csv = tmp_path / 'XAUUSD_M1.csv'
+    df.to_csv(csv, index=False)
+    out_f = tmp_path / 'XAUUSD_M1_thai.csv'
+    auto_convert_gold_csv(str(tmp_path), output_path=str(out_f))
+    assert out_f.exists()
+    out = pd.read_csv(out_f, dtype=str)
+    assert out.iloc[0]['Timestamp'] == '00:00:00'
+    assert out.iloc[0]['Date'].startswith('2567')
+
+
 def test_auto_convert_csv_to_parquet_creates_file(tmp_path):
     df = pd.DataFrame({'a': [1], 'b': [2]})
     csv = tmp_path / 'sample.csv'

@@ -1373,14 +1373,9 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
         try:
             df = pd.read_csv(f)
             df.columns = [c.strip() for c in df.columns]
+            df.columns = [c.capitalize() for c in df.columns]
 
-            # [Patch] รองรับคอลัมน์ชื่ออื่น ๆ เช่น "DateTime" หรือ "Datetime"
-            alt_time_cols = ["DateTime", "Datetime", "datetime", "date/time"]
-            for alt in alt_time_cols:
-                if alt in df.columns and "Timestamp" not in df.columns:
-                    df.rename(columns={alt: "Timestamp"}, inplace=True)
-                    break
-
+            # [Patch v6.9.33] Handle alternative datetime column names
             if "Date" in df.columns and "Time" in df.columns:
                 ts = df["Date"].astype(str) + " " + df["Time"].astype(str)
                 converted = ts.apply(_extract_thai_date_time)
@@ -1391,8 +1386,16 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
                 df["Date"] = [c[0] for c in converted]
                 df["Timestamp"] = [c[1] for c in converted]
             else:
-                print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
-                continue
+                for alt in ["Datetime", "Date/time", "DateTime", "datetime"]:
+                    if alt in df.columns:
+                        df.rename(columns={alt: "Timestamp"}, inplace=True)
+                        converted = df["Timestamp"].apply(_extract_thai_date_time)
+                        df["Date"] = [c[0] for c in converted]
+                        df["Timestamp"] = [c[1] for c in converted]
+                        break
+                else:
+                    print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
+                    continue
 
             for col in ["Open", "High", "Low", "Close"]:
                 if col not in df.columns and col.lower() in df.columns:
