@@ -71,6 +71,7 @@ import main as pipeline
 from config_loader import update_config_from_dict  # [Patch] dynamic config update
 from wfv_runner import run_walkforward  # [Patch] walk-forward helper
 from src.features import build_feature_catalog
+from main import run_preprocess as pipeline_run_preprocess  # [Patch v6.9.32] use pipeline preprocess
 # Default grid for hyperparameter sweep
 DEFAULT_SWEEP_PARAMS: Dict[str, List[float]] = {
     "learning_rate": [0.01, 0.05],
@@ -146,7 +147,7 @@ def parse_args(args=None):  # backward compatibility
 
 def run_preprocess():
     """รันขั้นตอนเตรียมข้อมูลและฝึกโมเดล."""
-    return main()
+    pipeline_run_preprocess(pipeline_config)
 
 
 def _run_script(relative_path: str) -> None:
@@ -405,7 +406,7 @@ def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) ->
 
 
 if __name__ == "__main__":
-    configure_logging()  # [Patch v5.5.14] Ensure consistent logging format
+    configure_logging()
     args = parse_args(sys.argv[1:])
     if args.auto_convert:
         source_csv_dir = os.environ.get('SOURCE_CSV_DIR', '')
@@ -460,12 +461,12 @@ if __name__ == "__main__":
     else:
         max_rows = None
     if max_rows:
-        print(f"--- [DEBUG MODE] กำหนด max_rows={max_rows} ---")
+        print(f"--- [DEBUG MODE] \u0e01\u0e33\u0e2b\u0e19\u0e14 max_rows={max_rows} ---")
         pipeline.sample_size = max_rows
         import src.strategy as strategy
         strategy.sample_size = max_rows
     else:
-        print("--- [FULL PIPELINE] ใช้ข้อมูลทั้งหมด ---")
+        print("--- [FULL PIPELINE] \u0e43\u0e0a\u0e49\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14 ---")
     # [Patch v6.3.5] ตรวจสอบไฟล์ผลลัพธ์ก่อนและหลังการทำงาน
     output_dir = getattr(config, "OUTPUT_DIR", Path(pipeline_config.output_dir))
     features_filename = pipeline_config.features_filename
@@ -545,7 +546,8 @@ if __name__ == "__main__":
             trade_log_file = os.path.join(output_dir, trade_log_file)
         if not os.path.exists(trade_log_file):
             logger.warning(
-                "Specified trade_log_file not found: %s", trade_log_file
+                "Specified trade_log_file not found: %s",
+                trade_log_file,
             )
             trade_log_file = None
 
@@ -613,8 +615,5 @@ if __name__ == "__main__":
         "[Patch v5.8.15] Loaded trade log: %s", os.path.basename(trade_log_file)
     )
 
-
-if __name__ == "__main__":
-    configure_logging()
-    from main import main as entry_main
-    sys.exit(entry_main())
+    run_mode(args.mode)
+    sys.exit(0)

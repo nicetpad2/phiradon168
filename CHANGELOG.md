@@ -1,3 +1,8 @@
+# ### 2025-07-04
+- [Patch v6.9.32] Fix ProjectP preprocess mode dispatch
+- New/Updated unit tests added for N/A
+- QA: pytest -q passed (428 tests)
+
 # ### 2025-07-03
 - [Patch v6.8.7] Fix Thai date parsing & feature fallback
 - New/Updated unit tests added for tests/test_safe_load_csv_limit.py
