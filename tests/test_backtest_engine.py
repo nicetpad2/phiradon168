@@ -112,7 +112,7 @@ def test_run_backtest_engine_generates_trend_and_signals(monkeypatch):
     trade_df = pd.DataFrame({'pnl': [1.0]})
 
     def fake_read_csv(path, *a, **k):
-        return m1_df if path == be.DATA_FILE_PATH_M1 else m15_df
+        return m1_df if path == be.DEFAULT_CSV_PATH_M1 else m15_df
 
     monkeypatch.setattr(be, 'safe_load_csv_auto', fake_read_csv)
     monkeypatch.setattr(be, 'engineer_m1_features', lambda df, **k: df)
@@ -155,7 +155,7 @@ def test_run_backtest_engine_drops_duplicate_trend_index(monkeypatch, caplog):
     trade_df = pd.DataFrame({'pnl': [1.0]})
 
     def fake_read_csv(path, *a, **k):
-        return m1_df if path == be.DATA_FILE_PATH_M1 else m15_df
+        return m1_df if path == be.DEFAULT_CSV_PATH_M1 else m15_df
 
     monkeypatch.setattr(be, 'safe_load_csv_auto', fake_read_csv)
     monkeypatch.setattr(be, 'engineer_m1_features', lambda df, **k: df)
@@ -180,7 +180,7 @@ def test_run_backtest_engine_sorts_trend_index(monkeypatch, caplog):
     trade_df = pd.DataFrame({'pnl': [1.0]})
 
     def fake_read_csv(path, *a, **k):
-        return m1_df if path == be.DATA_FILE_PATH_M1 else m15_df
+        return m1_df if path == be.DEFAULT_CSV_PATH_M1 else m15_df
 
     monkeypatch.setattr(be, 'safe_load_csv_auto', fake_read_csv)
     monkeypatch.setattr(be, 'engineer_m1_features', lambda df, **k: df)
@@ -253,7 +253,7 @@ def test_run_backtest_engine_parse_datetime_fallback(monkeypatch, caplog):
     trade_df = pd.DataFrame({'pnl': [1.0]})
 
     def fake_read_csv(path, *a, **k):
-        return m1_df if path == be.DATA_FILE_PATH_M1 else m15_df
+        return m1_df if path == be.DEFAULT_CSV_PATH_M1 else m15_df
 
     captured = {}
 
@@ -293,7 +293,7 @@ def test_run_backtest_engine_dedup_m15_index(monkeypatch, caplog):
     trade_df = pd.DataFrame({'pnl': [1.0]})
 
     def fake_read_csv(path, *a, **k):
-        return m1_df if path == be.DATA_FILE_PATH_M1 else m15_df
+        return m1_df if path == be.DEFAULT_CSV_PATH_M1 else m15_df
 
     monkeypatch.setattr(be, 'safe_load_csv_auto', fake_read_csv)
     monkeypatch.setattr(be, 'engineer_m1_features', lambda df, **k: df)

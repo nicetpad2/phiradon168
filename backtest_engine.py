@@ -5,7 +5,7 @@ Provides a function to regenerate the trade log via your core backtest simulatio
 import pandas as pd
 import logging
 
-from src.config import DATA_FILE_PATH_M1, DATA_FILE_PATH_M15
+from src.config import DEFAULT_CSV_PATH_M1, DEFAULT_CSV_PATH_M15
 from src.strategy import (
     run_backtest_simulation_v34,
     MainStrategy,
@@ -98,7 +98,7 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     """
     # 1) Load the raw M1 price data using safe_load_csv_auto
     try:
-        df = safe_load_csv_auto(DATA_FILE_PATH_M1)
+        df = safe_load_csv_auto(DEFAULT_CSV_PATH_M1)
     except Exception as e:
         raise RuntimeError(f"[backtest_engine] Failed to load price data: {e}") from e
 
@@ -154,7 +154,7 @@ def run_backtest_engine(features_df: pd.DataFrame) -> pd.DataFrame:
     features_df = engineer_m1_features(df)
     # [Patch v6.6.0] Generate Trend Zone and entry signal features
     trend_df = _prepare_m15_data_optimized(
-        DATA_FILE_PATH_M15,
+        DEFAULT_CSV_PATH_M15,
         {"pipeline": {}, "trend_zone": {}},
     )
     if trend_df is not None:
