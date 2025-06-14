@@ -2263,3 +2263,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.26] Rename Timestamp column to Date in CSVs
 
 - QA: pytest -q passed (tests count TBD)
+### 2025-07-10
+- [Patch v6.9.27] Add --live-loop option for live trading loop
+- New/Updated unit tests added for tests/test_main_cli_extended.py::test_parse_args_live_loop_default and test_main_live_loop_called
+- QA: pytest -q failed (10 tests failed)
+

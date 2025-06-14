@@ -96,6 +96,12 @@ def parse_args(args=None) -> argparse.Namespace:
         default="backtest_profile.prof",
         help="Profiling output file",
     )
+    parser.add_argument(
+        "--live-loop",
+        type=int,
+        default=0,
+        help="Run live trading loop after pipeline (number of iterations)",
+    )
     return parser.parse_args(args)
 
 
@@ -312,6 +318,10 @@ def main(args=None) -> int:
             run_report(config)
         else:
             run_all(config)
+
+        if parsed.live_loop > 0:
+            import src.main as src_main
+            src_main.run_live_trading_loop(parsed.live_loop)
     except PipelineError as exc:
         logger.error("Pipeline error: %s", exc, exc_info=True)
         return 1
