@@ -424,6 +424,9 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     elif 'timestamp' in df.columns:
         logger.info("ตรวจพบ คอลัมน์ 'timestamp', กำลังแปลงข้อมูล...")
         datetime_col = 'timestamp'
+    elif 'time' in df.columns and datetime_col is None:
+        logger.info("ตรวจพบ คอลัมน์ 'time', กำลังแปลงข้อมูล...")
+        datetime_col = 'time'
 
     if datetime_col:
         with warnings.catch_warnings():
