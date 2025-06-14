@@ -1273,22 +1273,26 @@ def validate_m15_data_path(file_path):
         raise RuntimeError(msg)
     return True
 
-def load_raw_data_m1(path):
+def load_raw_data_m1(path=None):
     """Load raw M1 data after validating the file path.
-
+    If ``path`` is ``None`` the project's default ``XAUUSD_M1.csv`` is used.
     After loading, ``engineer_m1_features`` from :mod:`features` is typically
-    called to compute indicators.
-    """
+    called to compute indicators."""
+    if path is None:
+        m1_df, _ = get_base_csv_data()
+        return m1_df
     if not validate_m1_data_path(path):
         return None
     return safe_load_csv_auto(path)
-
-def load_raw_data_m15(path):
-    """Load raw M15 data after validating the file path."""
+def load_raw_data_m15(path=None):
+    """Load raw M15 data after validating the file path.
+    If ``path`` is ``None`` the project's default ``XAUUSD_M15.csv`` is used."""
+    if path is None:
+        _, m15_df = get_base_csv_data()
+        return m15_df
     if not validate_m15_data_path(path):
         return None
     return safe_load_csv_auto(path)
-
 def write_test_file(path):
     """Stubbed helper to write a simple file."""
     with open(path, "w", encoding="utf-8") as f:
@@ -1622,6 +1626,39 @@ def normalize_thai_date(ts: str) -> str:
     """Public wrapper for :func:`_normalize_thai_date`."""
     return _normalize_thai_date(ts)
 
+# [Patch v7.0.0] Cached loader for base project CSVs
+_BASE_M1_CACHE = None
+_BASE_M15_CACHE = None
+
+def get_base_csv_data(row_limit=None, force_reload=False):
+    """Return cached DataFrames for project CSVs.
+
+    Parameters
+    ----------
+    row_limit : int, optional
+        Limit number of rows returned from each DataFrame.
+    force_reload : bool, optional
+        Reload CSVs from disk even if cached.
+
+    Returns
+    -------
+    tuple[pd.DataFrame, pd.DataFrame]
+        DataFrames for M1 and M15 CSV files.
+    """
+    global _BASE_M1_CACHE, _BASE_M15_CACHE
+
+    if force_reload or _BASE_M1_CACHE is None or _BASE_M15_CACHE is None:
+        _BASE_M1_CACHE, _BASE_M15_CACHE = load_project_csvs()
+
+    m1_df = _BASE_M1_CACHE
+    m15_df = _BASE_M15_CACHE
+
+    if row_limit:
+        m1_df = m1_df.head(row_limit)
+        m15_df = m15_df.head(row_limit)
+
+    return m1_df, m15_df
+
 
 
 def _extract_thai_date_time(ts: str) -> tuple[str | None, str | None]:
@@ -1693,6 +1730,7 @@ __all__ = [
     "auto_convert_gold_csv",
     "auto_convert_csv_to_parquet",
     "load_project_csvs",
+    "get_base_csv_data",
     "normalize_thai_date",
 ]
 
