@@ -1372,7 +1372,14 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
         out_f = os.path.join(target_dir, base_out)
         try:
             df = pd.read_csv(f)
-            df.columns = [c.capitalize() for c in df.columns]
+            df.columns = [c.strip() for c in df.columns]
+
+            # [Patch] รองรับคอลัมน์ชื่ออื่น ๆ เช่น "DateTime" หรือ "Datetime"
+            alt_time_cols = ["DateTime", "Datetime", "datetime", "date/time"]
+            for alt in alt_time_cols:
+                if alt in df.columns and "Timestamp" not in df.columns:
+                    df.rename(columns={alt: "Timestamp"}, inplace=True)
+                    break
 
             if "Date" in df.columns and "Time" in df.columns:
                 ts = df["Date"].astype(str) + " " + df["Time"].astype(str)
