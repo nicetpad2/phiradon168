@@ -2308,3 +2308,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.31] Improve timestamp column detection in auto_convert_gold_csv
 - New/Updated unit tests added for tests/test_auto_convert_csv.py::test_auto_convert_gold_csv_bom_header
 - QA: pytest -q passed (1 test)
+
+### 2025-07-16
+- [Patch v6.9.32] Add script to clean project CSVs
+- New script scripts/clean_project_csvs.py
+- QA: pytest -q passed (432 tests)

@@ -239,3 +239,10 @@ Patch 5.7.8 resolves font configuration parsing errors when plotting.
 เมื่อรัน `python tuning/hyperparameter_sweep.py` จนครบทุกค่าแล้ว ให้นำผล AUC/K-Fold จากแต่ละรอบมาเขียนลงไฟล์ `metrics_summary.csv` และแสดงคอนฟิกที่มีค่า AUC สูงสุด 5 อันดับแรกบนหน้าจอ
 ## Vendored Libraries
 ไลบรารี `ta` ติดตั้งผ่าน `requirements.txt` แล้ว ตั้งแต่แพตช์นี้จึงลบโฟลเดอร์ `vendor/ta` ออก
+
+### Cleaning CSV files
+หากพบปัญหาไฟล์ `XAUUSD_M1.csv` หรือ `XAUUSD_M15.csv` มีบรรทัดว่างหรือรูปแบบปีพุทธศักราชไม่ตรงตามต้องการ สามารถรันสคริปต์
+```bash
+python scripts/clean_project_csvs.py
+```
+เพื่อทำความสะอาดและแปลงคอลัมน์เวลาให้อยู่ในรูปแบบ `Time` ที่ถูกต้อง
