@@ -5,7 +5,6 @@ import logging
 from typing import Iterable
 
 DEFAULT_REQUIRED_COLS = [
-    "Date",
     "Timestamp",
     "Open",
     "High",

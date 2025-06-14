@@ -41,6 +41,28 @@ def convert_buddhist_year(
     return df
 
 
+def convert_buddhist_timestamp(
+    df: pd.DataFrame,
+    timestamp_col: str = "Timestamp",
+    out_col: str = "Time",
+) -> pd.DataFrame:
+    """[Patch v6.9.25] แปลงคอลัมน์ ``Timestamp`` ที่มีวันที่แบบพ.ศ. ให้เป็น ``Time``
+
+    กรณีที่ไม่มีคอลัมน์ ``Date`` ฟังก์ชันนี้จะพิจารณาปีในคอลัมน์ ``Timestamp``
+    หากปีมากกว่าหรือเท่ากับ 2500 จะลบ 543 ปีเพื่อแปลงเป็นค.ศ.
+    """
+    if timestamp_col not in df.columns:
+        return df
+
+    raw = df[timestamp_col].astype(str)
+    years = raw.str[:4].astype(int, errors="ignore")
+    adjusted_years = years.where(years < 2500, years - 543).astype(str)
+    series = pd.to_datetime(adjusted_years + raw.str[4:], errors="coerce")
+    df[out_col] = series
+    df.drop(columns=[timestamp_col], inplace=True)
+    return df
+
+
 def remove_duplicate_times(df: pd.DataFrame, time_col: str = "Time") -> pd.DataFrame:
     """[Patch] ลบแถวที่มีเวลาซ้ำกัน"""
     if time_col in df.columns:
@@ -110,8 +132,12 @@ def validate_price_columns(df: pd.DataFrame, cols: Iterable[str] | None = None) 
 def clean_dataframe(df: pd.DataFrame, fill_method: str = "drop") -> pd.DataFrame:
     """[Patch] ขั้นตอนทำความสะอาดข้อมูลแบบครบถ้วน"""
     logger.info(f"Rows before clean_dataframe: {len(df)}")
-    df = convert_buddhist_year(df)
-    logger.info(f"Rows after convert_buddhist_year: {len(df)}")
+    if {"Date", "Timestamp"}.issubset(df.columns):
+        df = convert_buddhist_year(df)
+        logger.info(f"Rows after convert_buddhist_year: {len(df)}")
+    elif "Timestamp" in df.columns:
+        df = convert_buddhist_timestamp(df)
+        logger.info(f"Rows after convert_buddhist_timestamp: {len(df)}")
     df = remove_duplicate_times(df)
     logger.info(f"Rows after remove_duplicate_times: {len(df)}")
     df = sort_by_time(df)
