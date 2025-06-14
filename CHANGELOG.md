@@ -2236,3 +2236,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_data_utils_new.py
 - QA: pytest -q passed (1011 tests)
 
+### 2025-07-05
+- [Patch v6.9.22] Use full CSV data by default
+- New/Updated unit tests added for tests/test_main_cli_extended.py::test_main_debug_sets_sample_size
+- QA: pytest -q passed (1011 tests)
+

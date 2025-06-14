@@ -177,7 +177,7 @@ def profile_from_cli() -> None:
     parser.add_argument('--train-output', default='models', help='Training output directory')
     parser.add_argument('--console_level', default='INFO', help='Console log level')
     args = parser.parse_args()
-    num_rows = args.rows if args.rows is not None else (1000 if args.debug else 5000)
+    num_rows = args.rows if args.rows is not None else (1000 if args.debug else None)
     level = getattr(logging, args.console_level.upper(), logging.INFO)
     for h in logging.getLogger().handlers:
         if isinstance(h, logging.StreamHandler):
