@@ -386,6 +386,9 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     # --- Standardize column names (lowercase & trim) ---
     df.columns = [str(col).strip().lower() for col in df.columns]
 
+    if 'timestamp' in df.columns:
+        df['timestamp'] = df['timestamp'].astype(str).apply(_normalize_thai_date)
+
     # [Patch] รองรับคอลัมน์ชื่อ 'timestamp' แทน 'date/time'
     if 'date/time' not in df.columns:
         if 'timestamp' in df.columns:
@@ -1603,6 +1606,20 @@ def check_data_quality(df, dropna=True, fillna_method=None, subset_dupes=None):
             df.drop_duplicates(subset=subset_dupes, keep="first", inplace=True)
 
     return df
+
+
+def _normalize_thai_date(ts: str) -> str:
+    """Normalize Thai Buddhist year timestamps to Gregorian."""
+    try:
+        parts = ts.split(" ")
+        date_parts = parts[0].split("-")
+        year = int(date_parts[0])
+        if year >= 2500:
+            date_parts[0] = str(year - 543)
+            return "-".join(date_parts) + " " + parts[1]
+        return ts
+    except Exception:
+        return ts
 
 
 
