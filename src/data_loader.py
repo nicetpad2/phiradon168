@@ -1371,11 +1371,15 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
         base_out = os.path.basename(f).replace(".csv", "_thai.csv")
         out_f = os.path.join(target_dir, base_out)
         try:
-            df = pd.read_csv(f)
-            df.columns = [c.strip() for c in df.columns]
+            df = pd.read_csv(f, encoding="utf-8-sig")
+            # [Patch v6.9.31] Clean BOM and whitespace from column names
+            df.columns = [c.strip().replace("\ufeff", "") for c in df.columns]
 
             # [Patch v6.9.30] รองรับการตรวจสอบชื่อคอลัมน์แบบไม่สนตัวพิมพ์
             col_map = {c.strip().lower(): c.strip() for c in df.columns}
+            # [Patch v6.9.31] Normalize any form of 'timestamp'
+            if "timestamp" in col_map and col_map["timestamp"] != "Timestamp":
+                df.rename(columns={col_map["timestamp"]: "Timestamp"}, inplace=True)
 
             alt_time_cols = ["datetime", "date/time", "timestamp"]
             for alt in alt_time_cols:
