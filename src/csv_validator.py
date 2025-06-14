@@ -30,6 +30,19 @@ def validate_and_convert_csv(
     if required_cols is None:
         required_cols = DEFAULT_REQUIRED_COLS
     df = data_cleaner.read_csv_auto(path)
+    # [Patch v6.9.31] รองรับชื่อคอลัมน์เวลาอื่น ๆ และรวม Date/Time อัตโนมัติ
+    df.columns = [c.strip() for c in df.columns]
+    if "Timestamp" not in df.columns:
+        for alt in ["DateTime", "Datetime", "datetime", "date/time", "Time", "time"]:
+            if alt in df.columns:
+                df.rename(columns={alt: "Timestamp"}, inplace=True)
+                logger.info("[Patch] Renamed column '%s' to 'Timestamp'", alt)
+                break
+
+    if "Timestamp" not in df.columns and {"Date", "Time"}.issubset(df.columns):
+        df["Timestamp"] = df["Date"].astype(str) + " " + df["Time"].astype(str)
+        logger.info("[Patch] Combined 'Date' and 'Time' into 'Timestamp'")
+
     if "Date" not in df.columns and "Timestamp" in df.columns:
         parts = df["Timestamp"].astype(str).str.split(" ", n=1, expand=True)
         if parts.shape[1] == 2:
