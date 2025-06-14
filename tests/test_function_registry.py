@@ -7,8 +7,8 @@ FUNCTIONS_INFO = [
     ("src/config.py", "log_library_version", 222),
     ("src/config.py", "_ensure_ta_installed", 267),
     ("src/config.py", "is_colab", 506),
-    ("src/config.py", "print_gpu_utilization", 607),
-    ("src/config.py", "show_system_status", 659),
+    ("src/config.py", "print_gpu_utilization", 616),
+    ("src/config.py", "show_system_status", 668),
 
 
 

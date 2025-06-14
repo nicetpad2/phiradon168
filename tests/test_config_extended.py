@@ -85,3 +85,19 @@ def test_file_base_mount_failure_fallback(monkeypatch, tmp_path):
     config = _import_config(monkeypatch)
     expected = os.path.abspath(os.path.join(os.path.dirname(config.__file__), '..'))
     assert config.FILE_BASE == expected
+
+
+def test_file_base_detect_drive(monkeypatch):
+    """FILE_BASE should point to Google Drive path when available."""
+    monkeypatch.delenv('FILE_BASE_OVERRIDE', raising=False)
+    monkeypatch.delenv('COLAB_RELEASE_TAG', raising=False)
+    monkeypatch.delenv('COLAB_GPU', raising=False)
+    # Patch os.path.isdir to simulate Drive folder present
+    original_isdir = os.path.isdir
+    def fake_isdir(path):
+        if path == '/content/drive/MyDrive/Phiradon168':
+            return True
+        return original_isdir(path)
+    monkeypatch.setattr(os.path, 'isdir', fake_isdir)
+    config = _import_config(monkeypatch)
+    assert config.FILE_BASE == '/content/drive/MyDrive/Phiradon168'
