@@ -6,6 +6,7 @@ from __future__ import annotations
 import pandas as pd
 import re
 import logging
+import gzip
 from datetime import datetime
 from pathlib import Path
 
@@ -28,7 +29,7 @@ def parse_trade_logs(log_path: str) -> pd.DataFrame:
     Parameters
     ----------
     log_path : str
-        Path to the log file.
+        Path to the log file. ``.log``, ``.txt`` and compressed ``.log.gz`` are supported.
 
     Returns
     -------
@@ -36,7 +37,14 @@ def parse_trade_logs(log_path: str) -> pd.DataFrame:
         DataFrame with columns EntryTime, CloseTime, Reason, PnL.
     """
     path = Path(log_path)
-    if path.suffix not in {".txt", ".log"}:
+    opener = lambda p: open(p, "r", encoding="utf-8")
+    if path.suffix == ".gz":
+        opener = lambda p: gzip.open(p, "rt", encoding="utf-8")
+        base_suffix = path.with_suffix("").suffix
+        if base_suffix not in {".txt", ".log"}:
+            logging.error("Invalid log file extension: %s", path.suffix)
+            raise ValueError(f"Invalid log file extension: {path.suffix}")
+    elif path.suffix not in {".txt", ".log"}:
         logging.error("Invalid log file extension: %s", path.suffix)
         raise ValueError(f"Invalid log file extension: {path.suffix}")
     if not path.exists():
@@ -44,7 +52,7 @@ def parse_trade_logs(log_path: str) -> pd.DataFrame:
         raise FileNotFoundError(f"Log file not found: {log_path}")
 
     entries = []
-    with open(path, "r", encoding="utf-8") as f:
+    with opener(path) as f:
         line_buffer = []
         for chunk in iter(lambda: f.readlines(100_000), []):
             line_buffer.extend(chunk)
