@@ -2231,3 +2231,8 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_backtest_engine.py
 - QA: pytest -q passed (1011 tests)
 
+### 2025-07-04
+- [Patch v6.9.21] Improve prepare_csv_auto robustness
+- New/Updated unit tests added for tests/test_data_utils_new.py
+- QA: pytest -q passed (1011 tests)
+

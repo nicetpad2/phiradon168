@@ -20,15 +20,40 @@ def convert_thai_datetime(df: pd.DataFrame, column: str) -> pd.DataFrame:
 
 
 def prepare_csv_auto(path: str) -> pd.DataFrame:
-    """Load CSV file gracefully even if ``timestamp`` column is missing."""
+    """Load a CSV file with Thai datetime conversion and basic cleaning."""
     if not os.path.exists(path):
         logger.error("prepare_csv_auto: file not found %s", path)
         logging.getLogger().error("prepare_csv_auto: file not found %s", path)
         return pd.DataFrame()
-    df = pd.read_csv(path)
-    if "timestamp" not in df.columns:
+
+    # ใช้ตัวอ่าน CSV ที่ตรวจสอบตัวคั่นอัตโนมัติจาก data_cleaner
+    from src.data_cleaner import read_csv_auto, convert_buddhist_year
+
+    df = read_csv_auto(path)
+
+    # Normalize common timestamp column names
+    if "Timestamp" in df.columns and "timestamp" not in df.columns:
+        df.rename(columns={"Timestamp": "timestamp"}, inplace=True)
+
+    # กรณีมีคอลัมน์ Date/Timestamp ให้แปลงปี พ.ศ. และรวมเป็น timestamp
+    if {"Date", "timestamp"}.issubset(df.columns):
+        df.rename(columns={"timestamp": "Timestamp"}, inplace=True)
+        df = convert_buddhist_year(df)
+        df.rename(columns={"Time": "timestamp"}, inplace=True)
+
+    if "timestamp" in df.columns:
+        df = convert_thai_datetime(df, "timestamp")
+        df.dropna(subset=["timestamp"], inplace=True)
+        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+        dupes = df.duplicated(subset="timestamp").sum()
+        if dupes:
+            logger.info("[Patch] Removing %s duplicate timestamps", dupes)
+            df = df.drop_duplicates(subset="timestamp", keep="last")
+        df.set_index("timestamp", inplace=True)
+    else:
         logger.warning("[QA-WARNING] timestamp column missing in %s", path)
         logging.getLogger().warning("[QA-WARNING] timestamp column missing in %s", path)
+
     return df
 
 
