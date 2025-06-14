@@ -290,6 +290,8 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     ``date``/``time`` อัตโนมัติ รวมถึงการลบข้อมูลซ้ำอย่างยืดหยุ่น
     โดยเก็บแถวสุดท้ายไว้เสมอ
     """
+    logger.info(f"--- [DEBUG] เริ่มฟังก์ชัน safe_load_csv_auto สำหรับไฟล์: {file_path} ---")
+
     if not os.path.exists(file_path):
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         alt_path = os.path.join(base_dir, file_path)
@@ -473,6 +475,7 @@ def safe_load_csv_auto(file_path, row_limit=None, **kwargs):
     df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
 
     logger.info(f"Successfully loaded and validated '{os.path.basename(file_path)}'.")
+    logger.info(f"--- [DEBUG] สิ้นสุด safe_load_csv_auto สำหรับไฟล์: {file_path} ---")
     return df
 
 # --- Configuration Loading Helper ---
@@ -820,6 +823,8 @@ def load_data_cached(file_path, timeframe_str="", cache_format=None, **kwargs):
         Loaded DataFrame, either from CSV or cached file.
     """
 
+    logger.info(f"--- [DEBUG] เริ่มฟังก์ชัน load_data_cached สำหรับไฟล์: {file_path} ---")
+
     ext_map = {
         "parquet": ".parquet",
         "feather": ".feather",
@@ -862,6 +867,7 @@ def load_data_cached(file_path, timeframe_str="", cache_format=None, **kwargs):
                     f"(Cache) Failed to save {cache_format} file {cache_path}: {e_save}"
                 )
 
+    logger.info(f"--- [DEBUG] สิ้นสุดการทำงานของฟังก์ชัน load_data_cached สำหรับไฟล์ {file_path} ---")
     return df_loaded
 
 # --- Datetime Helper Functions ---
@@ -1466,6 +1472,7 @@ def load_data_from_csv(file_path: str, nrows: int = None, auto_convert: bool = T
     """
     Loads data from a CSV file, handling potential date parsing issues and Thai Buddhist years.
     """
+    logger.info(f"--- [DEBUG] เริ่มฟังก์ชัน load_data_from_csv สำหรับไฟล์: {file_path} ---")
     logger.info(f"Loading data from CSV: {file_path}")
 
     temp_df = pd.read_csv(file_path, nrows=nrows)
@@ -1500,6 +1507,7 @@ def load_data_from_csv(file_path: str, nrows: int = None, auto_convert: bool = T
     )
 
     logger.info(f"Successfully loaded and processed {len(df)} rows from {file_path}")
+    logger.info(f"--- [DEBUG] สิ้นสุดการทำงานของฟังก์ชัน load_data_from_csv สำหรับไฟล์ {file_path} ---")
     return df
 # [Patch v5.7.3] Validate DataFrame for required columns and non-emptiness
 def validate_csv_data(df, required_cols=None):

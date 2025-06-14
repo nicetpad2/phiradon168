@@ -1,3 +1,8 @@
+# ### 2025-07-01
+- [Patch v6.9.18] เพิ่ม log debug ใน safe_load_csv_auto และฟังก์ชันโหลดอื่นๆ
+- New/Updated unit tests added for tests/test_function_registry.py
+- QA: pytest -q passed (1007 tests)
+
 # ### 2025-06-29
 - [Patch v6.9.17] Add debug logs when loading data
 - New/Updated unit tests added for N/A
