@@ -2418,3 +2418,7 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for ProjectP parsing
 - QA: pytest -q passed
 
+### 2025-07-25
+- [Patch v6.9.44] Update ProjectP CLI to new mode-based syntax
+- New/Updated unit tests added for N/A
+- QA: pytest -q passed (existing tests)

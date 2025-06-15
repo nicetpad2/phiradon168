@@ -436,228 +436,70 @@ def load_trade_log(
     )
 
 
-if __name__ == "__main__":
-    configure_logging()
-    args = parse_args(sys.argv[1:])
-    if args.auto_convert:
-        source_csv_dir = os.environ.get("SOURCE_CSV_DIR", "")
-        dest_csv_dir = os.environ.get("DEST_CSV_DIR")
-        if not dest_csv_dir:
-            print("INFO: [AutoConvert] DEST_CSV_DIR not set, using default path.")
-            main_output_dir = setup_output_directory(os.getcwd(), "output_default")
-            dest_csv_dir = os.path.join(main_output_dir, "converted_csvs")
-        os.makedirs(dest_csv_dir, exist_ok=True)
-        if not source_csv_dir:
-            print(
-                "\u2717 [AutoConvert] Error: SOURCE_CSV_DIR environment variable is not set."
-            )
-        else:
-            auto_convert_csv(source_csv_dir, output_path=dest_csv_dir)
-        sys.exit(0)
-
-    # --- Parquet auto-conversion using settings.yaml ---
-    cfg_file = Path("config/settings.yaml")
-    if cfg_file.exists():
-        with open(cfg_file, "r", encoding="utf-8") as fh:
-            cfg_data = yaml.safe_load(fh) or {}
-    else:
-        cfg_data = {}
-
-    data_cfg = cfg_data.get("data", {})
-    parquet_output_dir_str = data_cfg.get("parquet_dir")
-    if not parquet_output_dir_str:
-        base_data_dir = data_cfg.get("data_dir", "./data")
-        parquet_output_dir = Path(base_data_dir) / "parquet_cache"
-        logger.warning(
-            "[AutoConvert] 'data.parquet_dir' not set in config. Defaulting to: %s",
-            parquet_output_dir,
-        )
-    else:
-        parquet_output_dir = Path(parquet_output_dir_str)
-
-    source_csv_path = data_cfg.get("path")
-    if source_csv_path:
-        auto_convert_csv_to_parquet(
-            source_path=source_csv_path,
-            dest_folder=parquet_output_dir,
-        )
-    else:
-        logger.error(
-            "[AutoConvert] 'data.path' is not defined in config. Skipping conversion."
-        )
-    DEBUG_DEFAULT_ROWS = 2000
-    if args.rows is not None:
-        max_rows = args.rows
-    elif args.debug:
-        max_rows = DEBUG_DEFAULT_ROWS
-    else:
-        max_rows = None
-    if max_rows:
-        print(
-            f"--- [DEBUG MODE] \u0e01\u0e33\u0e2b\u0e19\u0e14 max_rows={max_rows} ---"
-        )
-        pipeline.sample_size = max_rows
-        import src.strategy as strategy
-
-        strategy.sample_size = max_rows
-    else:
-        print(
-            "--- [FULL PIPELINE] \u0e43\u0e0a\u0e49\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14 ---"
-        )
-    # [Patch v6.3.5] ตรวจสอบไฟล์ผลลัพธ์ก่อนและหลังการทำงาน
-    output_dir = getattr(config, "OUTPUT_DIR", Path(pipeline_config.output_dir))
-    features_filename = pipeline_config.features_filename
-    features_path = os.path.join(output_dir, features_filename)
-
-    if not os.path.exists(features_path):
-        root_path = project_root / features_filename
-        if root_path.exists():
-            logger.info(
-                "[Patch v6.9.21] Using project root features_main.json: %s",
-                root_path,
-            )
-            features_path = str(root_path)
-        else:
-            logger.warning(
-                f"features_main.json not found in {output_dir}; attempting to generate it."
-            )
-            try:
-                from src import config as cfg
-
-                os.makedirs(output_dir, exist_ok=True)
-                feature_catalog = build_feature_catalog(
-                    data_dir=getattr(cfg, "DATA_DIR", output_dir),
-                    output_dir=output_dir,
-                )
-                with open(features_path, "w", encoding="utf-8") as fp:
-                    json.dump(feature_catalog, fp, ensure_ascii=False, indent=2)
-                logger.info(
-                    "Generated features_main.json with %d entries.",
-                    len(feature_catalog),
-                )
-            except ImportError as ie:
-                logger.error("Cannot import feature builder: %s. Aborting.", ie)
-                sys.exit(1)
-            except Exception as ex:
-                logger.warning(
-                    "[Patch v6.8.7] Failed to generate features_main.json: %s. Continuing with minimal feature set",
-                    ex,
-                )
-                features_main = []
-                save_features(features_main, features_path)
-    else:
-        logger.info(
-            "Loaded existing features_main.json (%d bytes)",
-            os.path.getsize(features_path),
-        )
-
-    features_main = load_features(features_path)
-    if features_main is None or len(features_main) < 10:
-        logger.info("Generating fresh feature set...")
-        raw_data_paths = [
-            os.path.join(output_dir, "XAUUSD_M1.csv"),
-            os.path.join(output_dir, "XAUUSD_M15.csv"),
-        ]
-        # [Patch v6.4.9] Fall back to default CSV paths from config
-        if not os.path.exists(raw_data_paths[0]):
-            try:
-                from src import config as cfg
-
-                raw_data_paths[0] = getattr(
-                    cfg, "DEFAULT_CSV_PATH_M1", raw_data_paths[0]
-                )
-            except Exception:  # pragma: no cover - config import failure
-                pass
-        if len(raw_data_paths) > 1 and not os.path.exists(raw_data_paths[1]):
-            try:
-                from src import config as cfg
-
-                raw_data_paths[1] = getattr(
-                    cfg, "DEFAULT_CSV_PATH_M15", raw_data_paths[1]
-                )
-            except Exception:  # pragma: no cover - config import failure
-                pass
-        features_main = generate_all_features(raw_data_paths)
-        save_features(features_main, features_path)
-        logger.info("Feature set regenerated with %d rows", len(features_main))
-
-    import glob
-
-    # [Patch v6.9.15] Support explicit trade_log_file in pipeline config
-    trade_log_file = None
-    if pipeline_config.trade_log_file:
-        trade_log_file = pipeline_config.trade_log_file
-        if not os.path.isabs(trade_log_file):
-            trade_log_file = os.path.join(output_dir, trade_log_file)
-        if not os.path.exists(trade_log_file):
-            logger.warning(
-                "Specified trade_log_file not found: %s",
-                trade_log_file,
-            )
-            trade_log_file = None
-
-    # match both uncompressed (.csv) and gzip-compressed (.csv.gz) trade logs
-    trade_pattern = os.path.join(output_dir, pipeline_config.trade_log_pattern)
-    log_files = sorted(glob.glob(trade_pattern))
-    if not log_files:
-
-        logger.error(
-            "[Patch v6.4.5] No trade_log CSV or CSV.GZ found in %s; aborting.",
-            output_dir,
-        )
-
-        trade_pattern_gz = os.path.join(
-            output_dir, pipeline_config.trade_log_pattern.replace(".csv*", ".csv.gz")
-        )
-        log_files = glob.glob(trade_pattern_gz)
-    if not log_files and FALLBACK_DIR:
-        fallback_pattern = os.path.join(FALLBACK_DIR, pipeline_config.trade_log_pattern)
-        log_files = sorted(glob.glob(fallback_pattern))
-        if log_files:
-            logger.warning(
-                "Trade log not found in %s; using fallback directory %s",
-                output_dir,
-                FALLBACK_DIR,
-            )
-    if not trade_log_file:
-        if not log_files:
-            # [Patch v6.9.16] Prefer real trade_log.csv; fallback to dummy if missing
-            real_log = os.path.join(output_dir, "trade_log.csv")
-            if os.path.exists(real_log):
-                trade_log_file = real_log
-            else:
-                logger.warning(
-                    "trade_log.csv not found in %s; creating dummy log", output_dir
-                )
-                trade_log_file = os.path.join(output_dir, "trade_log_dummy.csv")
-                dummy_cols = [
-                    "entry_time",
-                    "exit_time",
-                    "entry_price",
-                    "exit_price",
-                    "side",
-                    "profit",
-                ]
-                dummy_rows = [
-                    {
-                        "entry_time": "",
-                        "exit_time": "",
-                        "entry_price": 0.0,
-                        "exit_price": 0.0,
-                        "side": "",
-                        "profit": 0.0,
-                    }
-                    for _ in range(9)
-                ]
-                pd.DataFrame(dummy_rows, columns=dummy_cols).to_csv(
-                    trade_log_file, index=False
-                )
-        else:
-            log_files = sorted(log_files, key=lambda f: ("walkforward" not in f, f))
-            trade_log_file = log_files[0]
-    logger.info(
-        "[Patch v5.8.15] Loaded trade log: %s", os.path.basename(trade_log_file)
+def main():
+    """Main entry point for the ProjectP command-line interface."""
+    parser = argparse.ArgumentParser(
+        description="ProjectP Pipeline Manager.",
+        usage="python ProjectP.py <mode> [--all] [--step-name <step>]",
     )
 
-    run_mode(args.mode)
-    sys.exit(0)
+    parser.add_argument(
+        "mode",
+        nargs="?",
+        help="The mode to run. Available modes: 'wfv', 'tune', 'backtest', 'step'.",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="A flag to run the full process. Primarily used with 'wfv' mode.",
+    )
+    parser.add_argument(
+        "--step-name",
+        type=str,
+        help="Specify the step name from pipeline.yaml. Used with 'step' mode.",
+    )
+
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
+    args = parser.parse_args()
+
+    if args.mode == "wfv":
+        if args.all:
+            print("\nINFO: Mode 'wfv --all' selected.")
+            print("INFO: Starting the full Walk-Forward Validation (WFV) pipeline...")
+            try:
+                from wfv_orchestrator import main as run_wfv_pipeline
+                run_wfv_pipeline()
+            except ImportError:
+                print(
+                    "WARNING: Could not import wfv_orchestrator directly. Running as a subprocess."
+                )
+                subprocess.run(["python", "wfv_orchestrator.py"], check=True)
+
+            print("INFO: Full WFV pipeline has completed.")
+        else:
+            print("\nERROR: The 'wfv' mode requires the '--all' flag.")
+            print("Usage: python ProjectP.py wfv --all")
+            sys.exit(1)
+
+    elif args.mode == "step":
+        if args.step_name:
+            print(f"\nINFO: Mode 'step' selected. Executing step: '{args.step_name}'...")
+            print(f"INFO: Logic for step '{args.step_name}' should be implemented here.")
+        else:
+            print("\nERROR: The 'step' mode requires the '--step-name' argument.")
+            print("Usage: python ProjectP.py step --step-name <name_of_your_step>")
+            sys.exit(1)
+
+    else:
+        print(
+            f"\nERROR: Invalid or incomplete command. Mode '{args.mode}' is not recognized or is missing arguments."
+        )
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
