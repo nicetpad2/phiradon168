@@ -169,7 +169,12 @@ def parse_args(args=None):  # backward compatibility
 
 def run_preprocess():
     """รันขั้นตอนเตรียมข้อมูลและฝึกโมเดล."""
-    pipeline_run_preprocess(pipeline_config)
+    # [Patch v6.9.42] Set flag to avoid recursive subprocess calls
+    os.environ["FROM_PROJECTP"] = "1"
+    try:
+        pipeline_run_preprocess(pipeline_config)
+    finally:
+        os.environ.pop("FROM_PROJECTP", None)
 
 
 def _run_script(relative_path: str) -> None:

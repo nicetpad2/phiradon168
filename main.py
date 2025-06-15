@@ -156,7 +156,9 @@ def run_preprocess(config: PipelineConfig, runner=subprocess.run) -> None:
             ],
             check=True,
         )
-        runner([os.environ.get("PYTHON", "python"), "ProjectP.py"], check=True)
+        # [Patch v6.9.42] Prevent infinite recursion when ProjectP calls pipeline
+        if not os.getenv("FROM_PROJECTP"):
+            runner([os.environ.get("PYTHON", "python"), "ProjectP.py"], check=True)
     except subprocess.CalledProcessError as exc:
         logger.error("Preprocess failed", exc_info=True)
         raise PipelineError("preprocess stage failed") from exc
