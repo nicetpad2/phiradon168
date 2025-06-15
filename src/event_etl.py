@@ -18,6 +18,8 @@ from sqlalchemy import (
     create_engine,
 )
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import SQLAlchemyError
+import logging
 
 # --- SQLAlchemy table setup -------------------------------------------------
 metadata = MetaData()
@@ -79,8 +81,12 @@ def ingest_log_to_db(log_path: str, engine: Engine) -> int:
         events = _parse_events(f)
     if not events:
         return 0
-    with engine.begin() as conn:
-        conn.execute(trade_events.insert(), events)
+    try:
+        with engine.begin() as conn:
+            conn.execute(trade_events.insert(), events)
+    except SQLAlchemyError as exc:
+        logging.getLogger(__name__).error("ingest_log_to_db failed: %s", exc)
+        return 0
     return len(events)
 
 

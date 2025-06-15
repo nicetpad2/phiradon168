@@ -1,5 +1,11 @@
 
 ### 2025-07-28
+- [Patch v6.9.47] Simplify preprocess pipeline and handle DB errors
+- New/Updated unit tests added for tests/test_event_etl.py::test_ingest_log_to_db_exception
+- QA: pytest -q passed (subset)
+=======
+
+### 2025-07-28
 - [Patch v6.9.47] Add ConfigManager singleton for YAML settings
 - New/Updated unit tests added for tests/test_config_loader.py
 - QA: pytest -q passed (4 tests)
@@ -9,6 +15,7 @@
 - [Patch v6.9.47] Measure test coverage in CI
 - New/Updated unit tests added for N/A
 - QA: pytest --cov (357 passed)
+
 
 
 ### 2025-07-26
