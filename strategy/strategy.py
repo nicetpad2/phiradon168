@@ -12,7 +12,8 @@ from .risk_management import (
     OrderStatus as OrderStatusRM,
 )
 from .stoploss_utils import atr_sl_tp_wrapper
-from .trade_executor import execute_order, open_trade
+from .trade_executor import execute_order
+from .order_management import create_order as legacy_order
 
 
 def apply_strategy(df: pd.DataFrame) -> pd.DataFrame:
@@ -28,7 +29,7 @@ def apply_strategy(df: pd.DataFrame) -> pd.DataFrame:
 __all__ = ["apply_strategy"]
 
 
-def run_backtest(df: pd.DataFrame, initial_balance: float, risk_pct: float = 0.01) -> list:
+def run_backtest(df: pd.DataFrame, initial_balance: float, risk_pct: float = 0.01, allow_short: bool = True) -> list:
     """Run a minimal backtest using generated signals.
 
     Parameters
@@ -51,7 +52,9 @@ def run_backtest(df: pd.DataFrame, initial_balance: float, risk_pct: float = 0.0
     if initial_balance <= 0 or df.empty:
         return []
 
-    data = apply_strategy(df)
+    data = df.copy()
+    data["Entry"] = generate_open_signals(df, allow_short=allow_short)
+    data["Exit"] = generate_close_signals(df)
     order_mgr = OrderManager()
     risk_mgr = RiskManager()
 
@@ -61,11 +64,19 @@ def run_backtest(df: pd.DataFrame, initial_balance: float, risk_pct: float = 0.0
 
     for idx, row in data.iterrows():
         if current_trade:
-            if (
-                row["Exit"] == 1
-                or row["Close"] <= current_trade["sl_price"]
-                or row["Close"] >= current_trade["tp_price"]
-            ):
+            sl_key = "sl_price" if "sl_price" in current_trade else "sl"
+            tp_key = "tp_price" if "tp_price" in current_trade else "tp"
+            sl_hit = (
+                row["Close"] <= current_trade[sl_key]
+                if current_trade.get("side") == "BUY"
+                else row["Close"] >= current_trade[sl_key]
+            )
+            tp_hit = (
+                row["Close"] >= current_trade[tp_key]
+                if current_trade.get("side") == "BUY"
+                else row["Close"] <= current_trade[tp_key]
+            )
+            if row["Exit"] == 1 or sl_hit or tp_hit:
                 profit = execute_order(current_trade, row["Close"])
                 balance += profit * current_trade["size"]
                 trades.append(
@@ -81,14 +92,16 @@ def run_backtest(df: pd.DataFrame, initial_balance: float, risk_pct: float = 0.0
                 if risk_mgr.check_kill_switch() is OrderStatusRM.KILL_SWITCH:
                     break
         else:
-            if row["Entry"] == 1:
+            if row["Entry"] in (1, -1):
+                side = "BUY" if row["Entry"] == 1 else "SELL"
                 status = order_mgr.place_order({}, idx)
                 if status is OrderStatusOM.OPEN:
-                    sl, tp = atr_sl_tp_wrapper(row["Close"], row.get("ATR_14", 1.0), "BUY")
+                    sl, tp = atr_sl_tp_wrapper(row["Close"], row.get("ATR_14", 1.0), side)
                     size = calculate_position_size(
                         balance, risk_pct, abs(row["Close"] - sl)
                     )
-                    current_trade = open_trade("BUY", row["Close"], sl, tp, size)
+                    current_trade = legacy_order(side, row["Close"], sl, tp)
+                    current_trade["size"] = size
                     current_trade["entry_idx"] = idx
 
     return trades

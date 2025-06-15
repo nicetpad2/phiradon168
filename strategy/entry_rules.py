@@ -18,8 +18,12 @@ def generate_open_signals(
     ma_slow: int = 50,
     volume_col: str = ColumnName.VOLUME_CAP,
     vol_window: int = 10,
+    allow_short: bool = False,
 ) -> np.ndarray:
-    """สร้างสัญญาณเปิด order พร้อมตัวเลือกเปิด/ปิด MACD/RSI และตัวกรอง MTF"""
+    """สร้างสัญญาณเปิด order พร้อมตัวเลือกเปิด/ปิด MACD/RSI และตัวกรอง MTF
+
+    หาก ``allow_short`` เป็น ``True`` จะคืนค่า ``-1`` เมื่อสัญญาณเข้าฝั่งขาย
+    """
 
     price_cond = df[ColumnName.CLOSE_CAP] > df[ColumnName.CLOSE_CAP].shift(1)
     signals = [price_cond]
@@ -56,11 +60,37 @@ def generate_open_signals(
         signals.append(vol_cond)
 
     signal_strength = sum(sig.astype(int) for sig in signals)
-    open_mask = price_cond & (signal_strength >= 2)
+    open_long = price_cond & (signal_strength >= 2)
+
+    if allow_short:
+        price_cond_s = df[ColumnName.CLOSE_CAP] < df[ColumnName.CLOSE_CAP].shift(1)
+        signals_s = [price_cond_s]
+        if use_macd:
+            macd_cond_s = df["MACD_hist"] < 0
+            if detect_macd_divergence(df[ColumnName.CLOSE_CAP], df["MACD_hist"]) != "bear":
+                macd_cond_s &= False
+            signals_s.append(macd_cond_s)
+        if use_rsi:
+            rsi_cond_s = df["RSI"] < 50
+            signals_s.append(rsi_cond_s)
+        ma_cond_s = df["MA_fast"] < df["MA_slow"]
+        signals_s.append(ma_cond_s)
+        if volume_col in df.columns:
+            vol = pd.to_numeric(df[volume_col], errors="coerce")
+            avg_vol = vol.rolling(vol_window, min_periods=1).mean()
+            vol_cond_s = vol > avg_vol * 1.5
+            signals_s.append(vol_cond_s)
+        signal_strength_s = sum(sig.astype(int) for sig in signals_s)
+        open_short = price_cond_s & (signal_strength_s >= 2)
+    else:
+        open_short = pd.Series(False, index=df.index)
 
     if trend == "UP":
-        open_mask &= True
+        open_long &= True
+        open_short &= False
     elif trend == "DOWN":
-        open_mask &= False
+        open_long &= False
+        open_short &= True
 
-    return open_mask.fillna(0).astype(np.int8).to_numpy()
+    result = open_long.astype(int) - open_short.astype(int)
+    return result.fillna(0).astype(np.int8).to_numpy()
