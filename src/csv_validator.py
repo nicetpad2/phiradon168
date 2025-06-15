@@ -4,6 +4,17 @@ import argparse
 import logging
 from typing import Iterable
 
+POSSIBLE_DATETIME_COLS = [
+    "Time",
+    "Date/Time",
+    "Timestamp",
+    "DateTime",
+    "Datetime",
+    "datetime",
+    "date/time",
+    "time",
+]
+
 DEFAULT_REQUIRED_COLS = [
     "Timestamp",
     "Open",
@@ -21,6 +32,27 @@ from src.data_loader import validate_csv_data
 logger = logging.getLogger(__name__)
 
 
+def find_and_rename_datetime_column(df: pd.DataFrame) -> pd.DataFrame:
+    """[Patch v6.9.41] Find and standardize datetime column names."""
+    datetime_col_found = None
+    for col_name in POSSIBLE_DATETIME_COLS:
+        if col_name in df.columns:
+            datetime_col_found = col_name
+            break
+
+    if datetime_col_found:
+        if datetime_col_found != "Time":
+            df.rename(columns={datetime_col_found: "Time"}, inplace=True)
+            logger.info("[Patch] Renamed column '%s' to 'Time'", datetime_col_found)
+    elif {"Date", "Time"}.issubset(df.columns):
+        df["Time"] = df["Date"].astype(str) + " " + df["Time"].astype(str)
+        logger.info("[Patch] Combined 'Date' and 'Time' into 'Time'")
+    else:
+        raise ValueError("Critical Error: Datetime column not found in CSV.")
+
+    return df
+
+
 def validate_and_convert_csv(
     path: str,
     output: str | None = None,
@@ -30,18 +62,11 @@ def validate_and_convert_csv(
     if required_cols is None:
         required_cols = DEFAULT_REQUIRED_COLS
     df = data_cleaner.read_csv_auto(path)
-    # [Patch v6.9.31] รองรับชื่อคอลัมน์เวลาอื่น ๆ และรวม Date/Time อัตโนมัติ
+    # [Patch v6.9.41] ใช้ฟังก์ชันค้นหาและเปลี่ยนชื่อคอลัมน์เวลาให้เป็นมาตรฐาน
     df.columns = [c.strip().replace("\ufeff", "") for c in df.columns]
-    if "Timestamp" not in df.columns:
-        for alt in ["DateTime", "Datetime", "datetime", "date/time", "Time", "time"]:
-            if alt in df.columns:
-                df.rename(columns={alt: "Timestamp"}, inplace=True)
-                logger.info("[Patch] Renamed column '%s' to 'Timestamp'", alt)
-                break
-
-    if "Timestamp" not in df.columns and {"Date", "Time"}.issubset(df.columns):
-        df["Timestamp"] = df["Date"].astype(str) + " " + df["Time"].astype(str)
-        logger.info("[Patch] Combined 'Date' and 'Time' into 'Timestamp'")
+    df = find_and_rename_datetime_column(df)
+    if "Timestamp" not in df.columns and "Time" in df.columns:
+        df["Timestamp"] = df["Time"]
 
     if "Date" not in df.columns and "Timestamp" in df.columns:
         parts = df["Timestamp"].astype(str).str.split(" ", n=1, expand=True)

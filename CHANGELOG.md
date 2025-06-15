@@ -1,3 +1,8 @@
+### 2025-07-22
+- [Patch v6.9.41] เพิ่มฟังก์ชันค้นหาและเปลี่ยนชื่อคอลัมน์เวลา
+- New/Updated unit tests added for tests/test_csv_validator.py
+- QA: pytest -q passed (6 tests)
+
 ### 2025-07-18
 - [Patch v6.9.35] Split src/main.py into smaller modules
 - New/Updated unit tests added for src/main_helpers.py and others
