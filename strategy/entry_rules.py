@@ -37,7 +37,18 @@ def generate_open_signals(
         if "RSI" not in df.columns:
             df = df.copy()
             df["RSI"] = rsi(df[ColumnName.CLOSE_CAP])
-        rsi_cond = df["RSI"] > 50
+        threshold_series = 50
+        if "session" in df.columns and "Volatility_Index" in df.columns:
+            from src.feature_analysis import get_dynamic_rsi_threshold
+
+            threshold_series = pd.Series(
+                [
+                    get_dynamic_rsi_threshold(s, v)
+                    for s, v in zip(df["session"], df["Volatility_Index"])
+                ],
+                index=df.index,
+            )
+        rsi_cond = df["RSI"] > threshold_series
         signals.append(rsi_cond)
 
     if "MA_fast" not in df.columns:
