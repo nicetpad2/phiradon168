@@ -1,3 +1,16 @@
+
+### 2025-07-28
+- [Patch v6.9.47] Add ConfigManager singleton for YAML settings
+- New/Updated unit tests added for tests/test_config_loader.py
+- QA: pytest -q passed (4 tests)
+
+# v6.9.47
+### 2025-07-28
+- [Patch v6.9.47] Measure test coverage in CI
+- New/Updated unit tests added for N/A
+- QA: pytest --cov (357 passed)
+
+
 ### 2025-07-26
 - [Patch v6.9.45] Add full_pipeline CLI command to ProjectP
 - New/Updated unit tests added for tests/test_projectp_cli.py::test_run_mode_full_pipeline
@@ -7,6 +20,11 @@
 - [Patch v6.9.46] Import run_backtest_simulation_v34 in main module
 - New/Updated unit tests added for N/A
 - QA: pytest -q passed (356 tests)
+
+### 2025-07-27
+- [Patch v6.9.47] Add script to convert project CSVs to Parquet
+- New/Updated unit tests added for tests/test_convert_project_csvs.py
+- QA: pytest -q failed (environment limits)
 
 ### 2025-07-25
 - [Patch v6.9.44] Vectorize Thai datetime extraction
@@ -2442,3 +2460,15 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.45] Improve time column detection for auto_convert_gold_csv
 - New/Updated unit tests added for tests/test_auto_convert_csv.py
 - QA: pytest -q passed
+
+### 2025-06-15
+- [Patch v6.9.46] Centralize config and add Parquet support
+- New/Updated unit tests added for src/config_manager.py, src/evaluation.py
+- QA: pytest -q passed (added coverage)
+
+
+### 2025-07-27
+- [Patch v6.9.46] Allow env override for adaptive signal quantile
+- New/Updated unit tests added for tests/test_env_utils.py
+- QA: pytest -q passed (358 tests)
+

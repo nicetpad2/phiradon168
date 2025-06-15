@@ -1,3 +1,4 @@
+
 import pandas as pd
 import pytest
 from src.evaluation import (
@@ -27,3 +28,4 @@ def test_calculate_max_drawdown_and_underwater():
     uw = compute_underwater_curve(equity)
     assert len(uw) == 4
     assert uw.min() < 0
+

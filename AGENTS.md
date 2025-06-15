@@ -66,7 +66,7 @@
   - Manage CLI pipeline stages and configuration loading
   - Detect GPU availability and adjust runtime logging
   - Raise `PipelineError` when stages fail
-- **Modules:** `src/utils/pipeline_config.py`, `src/main.py`, `src/pipeline_manager.py`
+- **Modules:** `src/utils/pipeline_config.py`, `src/main.py`, `src/pipeline_manager.py`, `src/config_manager.py`
 
 
 ### [GoldSurvivor_RnD](strategy/)
