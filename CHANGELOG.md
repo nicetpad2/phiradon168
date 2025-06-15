@@ -1,3 +1,8 @@
+### 2025-06-16
+- [Patch v6.9.54] Improve fast test mode in run_tests
+- New/Updated unit tests added for tests/test_run_tests.py
+- QA: pytest -q passed (9 tests)
+
 ### 2025-08-02
 - [Patch v6.9.52] Validate DatetimeIndex for WFV
 - New/Updated unit tests added for tests/test_wfv_index_conversion.py
