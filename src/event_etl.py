@@ -15,6 +15,7 @@ from sqlalchemy import (
     String,
     DateTime,
     MetaData,
+    Index,
     create_engine,
 )
 from sqlalchemy.engine import Engine
@@ -30,6 +31,8 @@ trade_events = Table(
     Column("event_type", String(32), nullable=False),
     Column("detail", String, nullable=True),
 )
+Index("ix_trade_events_timestamp", trade_events.c.timestamp)
+Index("ix_trade_events_event_type", trade_events.c.event_type)
 
 
 def init_db(engine: Engine) -> None:
