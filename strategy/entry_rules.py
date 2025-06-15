@@ -18,6 +18,9 @@ def generate_open_signals(
     ma_slow: int = 50,
     volume_col: str = ColumnName.VOLUME_CAP,
     vol_window: int = 10,
+    rsi_threshold: float = 45,
+    volume_mult: float = 1.2,
+    require_divergence: bool = False,
 ) -> np.ndarray:
     """สร้างสัญญาณเปิด order พร้อมตัวเลือกเปิด/ปิด MACD/RSI และตัวกรอง MTF"""
 
@@ -30,14 +33,14 @@ def generate_open_signals(
             df = df.copy()
             df["MACD_hist"] = macd_hist
         macd_cond = df["MACD_hist"] > 0
-        if detect_macd_divergence(df[ColumnName.CLOSE_CAP], df["MACD_hist"]) != "bull":
+        if require_divergence and detect_macd_divergence(df[ColumnName.CLOSE_CAP], df["MACD_hist"]) != "bull":
             macd_cond &= False
         signals.append(macd_cond)
     if use_rsi:
         if "RSI" not in df.columns:
             df = df.copy()
             df["RSI"] = rsi(df[ColumnName.CLOSE_CAP])
-        rsi_cond = df["RSI"] > 50
+        rsi_cond = df["RSI"] > rsi_threshold
         signals.append(rsi_cond)
 
     if "MA_fast" not in df.columns:
@@ -52,7 +55,7 @@ def generate_open_signals(
     if volume_col in df.columns:
         vol = pd.to_numeric(df[volume_col], errors="coerce")
         avg_vol = vol.rolling(vol_window, min_periods=1).mean()
-        vol_cond = vol > avg_vol * 1.5
+        vol_cond = vol > avg_vol * volume_mult
         signals.append(vol_cond)
 
     signal_strength = sum(sig.astype(int) for sig in signals)
