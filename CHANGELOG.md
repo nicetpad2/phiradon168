@@ -1,3 +1,8 @@
+### 2025-08-02
+- [Patch v6.9.52] Validate DatetimeIndex for WFV
+- New/Updated unit tests added for tests/test_wfv_index_conversion.py
+- QA: pytest -q passed (451 tests)
+
 ### 2025-08-01
 
 - [Patch v6.9.51] Allow custom ATR multipliers for SL/TP
