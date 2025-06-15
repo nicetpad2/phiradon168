@@ -5,6 +5,7 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
 
 import main as pipeline
+from src.utils.pipeline_config import PipelineConfig
 
 
 class DummyManager:
@@ -17,11 +18,18 @@ class DummyManager:
 
 
 
-def test_run_all_order(monkeypatch):
-    mgr = DummyManager(None)
-    monkeypatch.setattr(pipeline, "PipelineManager", lambda cfg: mgr)
+def test_run_all_order(monkeypatch, tmp_path):
+    order = []
+    monkeypatch.setattr(pipeline, "run_preprocess", lambda c: order.append("preprocess"))
+    monkeypatch.setattr(pipeline, "run_sweep", lambda c: order.append("sweep"))
+    monkeypatch.setattr(pipeline, "run_threshold", lambda c: order.append("threshold"))
+    monkeypatch.setattr(pipeline, "run_backtest", lambda c: order.append("backtest"))
+    monkeypatch.setattr(pipeline, "run_report", lambda c: order.append("report"))
+    monkeypatch.setattr(pipeline, "setup_logging", lambda level: None)
+    monkeypatch.setattr(pipeline, "load_config", lambda p: PipelineConfig(model_dir=str(tmp_path)))
     pipeline.main(["--mode", "all"])
-    assert mgr.order == ["load", "sweep", "wfv", "save", "qa"]
+    assert order == ["preprocess", "sweep", "threshold", "backtest", "report"]
+    assert (tmp_path / ".qa_pipeline.log").exists()
 
 
 def test_profile_argument(monkeypatch):

@@ -262,9 +262,17 @@ from src.pipeline_manager import PipelineManager
 
 
 def run_all(config: PipelineConfig) -> None:
-    """Run full pipeline via :class:`PipelineManager`."""
+    """Run all pipeline stages sequentially."""
     logger.info("[Stage] all")
-    PipelineManager(config).run_all()
+    run_preprocess(config)
+    run_sweep(config)
+    run_threshold(config)
+    run_backtest(config)
+    run_report(config)
+    qa_path = os.path.join(config.model_dir, ".qa_pipeline.log")
+    with open(qa_path, "a", encoding="utf-8") as fh:
+        fh.write("qa completed\n")
+    logger.info("[Stage] all completed")
 
 
 def main(args=None) -> int:
