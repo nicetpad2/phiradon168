@@ -90,7 +90,7 @@
   - Prototype and validate novel ML architectures (e.g., LSTM, CNN, Transformers) for TP2 prediction
   - Maintain lightweight LSTM/CNN helpers for quick experimentation
   - Ensure no data leakage, perform early-warning model drift checks
-- **Modules:** `src/training.py`, `src/features.py`,
+- **Modules:** `src/training.py`, `src/features/`,
   `src/utils/auto_train_meta_classifiers.py`
 
 
@@ -212,7 +212,7 @@
   - Scan trade logs for repeated stop-loss patterns or “false breakouts”
   - Use clustering or sequence-mining to identify time-of-day anomalies
   - Flag sessions or folds with anomalously low winrates for deeper review
-- **Modules:** `src/features.py`
+- **Modules:** `src/features/`
 
 ### [Session_Research_Unit](src/feature_analysis.py)
 - **Main Role:** Session Behavior Analysis  
@@ -222,13 +222,13 @@
   - Recommend session-tailored thresholds (e.g., loosen RSI filters during high volatility)
 - **Modules:** `src/utils/sessions.py`
 
-### [Wave_Marker_Unit](src/features.py)
+### [Wave_Marker_Unit](src/features/)
 - **Main Role:** Elliott Wave Tagging & Labelling  
 - **Key Responsibilities:**
   - Automatically label price structure (impulse / corrective waves) using zigzag or fractal algorithms
   - Integrate wave labels into DataFrame for “wave-aware” entry/exit filters
   - Validate wave counts against known retracement ratios (38.2 %, 61.8 %)
-- **Modules:** `src/features.py`
+- **Modules:** `src/features/`
 
 ### [Insight_Visualizer](src/dashboard.py)
 - **Main Role:** Data Visualization  
@@ -346,3 +346,4 @@
 - Added `trade_log_pipeline` module for safe trade log regeneration.
 - Added `wfv_aggregator` module for fold result aggregation.
 - Added `state_manager` module for persistent system state management.
+- Added `main_helpers`, `model_helpers`, and `pipeline_helpers` modules to organize main functions.
