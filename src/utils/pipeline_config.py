@@ -19,6 +19,7 @@ class PipelineConfig:
     trade_log_file: str | None = None
     raw_m1_filename: str = 'XAUUSD_M1.csv'
     cleaning_fill_method: str = 'drop'
+    parquet_dir: str | None = None
 
 
 def load_config(path: str = DEFAULT_CONFIG_FILE) -> 'PipelineConfig':
