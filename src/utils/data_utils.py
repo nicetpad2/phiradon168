@@ -58,12 +58,16 @@ def prepare_csv_auto(path: str) -> pd.DataFrame:
 
 
 def safe_read_csv(path: str) -> pd.DataFrame:
-    """Return DataFrame from ``path`` or empty DataFrame on error."""
+    """Return DataFrame from ``path`` or empty DataFrame on error.
+
+    Supports CSV and Parquet files automatically.
+    """
     try:
         from src.data_cleaner import read_csv_auto, convert_buddhist_year
 
-        if str(path).endswith(".gz") or str(path).endswith(".zip"):
-            # [Patch v6.9.42] Support gzip/zip via pandas compression inference
+        if str(path).endswith(".parquet"):
+            df = pd.read_parquet(path)
+        elif str(path).endswith(".gz") or str(path).endswith(".zip"):
             df = pd.read_csv(path, compression="infer")
         else:
             df = read_csv_auto(path)
