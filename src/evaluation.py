@@ -12,11 +12,62 @@ from sklearn.metrics import (
     recall_score,
 )
 from scipy.stats import wasserstein_distance
+try:
+    import shap
+except Exception:  # pragma: no cover - optional dependency
+    shap = None
 from src.config import logger
 from src.utils import load_json_with_comments
 from src.utils.auto_train_meta_classifiers import (
     auto_train_meta_classifiers,
 )
+
+
+def sortino_ratio(returns: Iterable[float]) -> float:
+    """Calculate Sortino ratio of series of returns."""
+    r = np.asarray(list(returns), dtype=float)
+    if r.size == 0:
+        return float('nan')
+    downside = r[r < 0]
+    downside_std = downside.std(ddof=1)
+    mean_ret = r.mean()
+    if downside_std == 0:
+        return float('inf') if mean_ret > 0 else 0.0
+    return mean_ret / downside_std
+
+
+def calmar_ratio(equity: Iterable[float]) -> float:
+    """Calculate Calmar ratio from equity curve."""
+    eq = np.asarray(list(equity), dtype=float)
+    if eq.size < 2:
+        return float('nan')
+    returns = np.diff(eq) / eq[:-1]
+    max_dd = 0.0
+    peak = eq[0]
+    for val in eq:
+        if val > peak:
+            peak = val
+        drawdown = (peak - val) / peak
+        if drawdown > max_dd:
+            max_dd = drawdown
+    ann_ret = returns.mean() * 252
+    if max_dd == 0:
+        return float('inf') if ann_ret > 0 else 0.0
+    return ann_ret / max_dd
+
+
+def compute_shap_values(model, X: pd.DataFrame) -> np.ndarray | None:
+    """Return SHAP values array if ``shap`` is available."""
+    if shap is None:
+        logger.warning("shap not installed, skipping SHAP computation")
+        return None
+    try:
+        explainer = shap.Explainer(model)
+        shap_values = explainer(X)
+        return np.array(shap_values.values)
+    except Exception as exc:  # pragma: no cover - unexpected errors
+        logger.error("SHAP computation failed: %s", exc)
+        return None
 
 
 def find_best_threshold(

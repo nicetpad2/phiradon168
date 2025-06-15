@@ -26,6 +26,10 @@ jobs:
         run: flake8 .
       - name: Format
         run: black --check .
+
+      - name: Run tests
+        run: pytest --cov=src --cov-report=xml -q
+
       - name: Run tests with coverage
         run: |
           pytest --cov=src --cov-report=xml --cov-fail-under=85
@@ -33,4 +37,5 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
+
 

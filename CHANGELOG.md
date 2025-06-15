@@ -2449,7 +2449,14 @@ QA: pytest -q passed (219 tests)
 - New/Updated unit tests added for tests/test_auto_convert_csv.py
 - QA: pytest -q passed
 
+### 2025-06-15
+- [Patch v6.9.46] Centralize config and add Parquet support
+- New/Updated unit tests added for src/config_manager.py, src/evaluation.py
+- QA: pytest -q passed (added coverage)
+
+
 ### 2025-07-27
 - [Patch v6.9.46] Allow env override for adaptive signal quantile
 - New/Updated unit tests added for tests/test_env_utils.py
 - QA: pytest -q passed (358 tests)
+
