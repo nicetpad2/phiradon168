@@ -501,7 +501,6 @@ if __name__ == "__main__":
             "[AutoConvert] 'data.path' is not defined in config. Skipping conversion."
         )
     DEBUG_DEFAULT_ROWS = 2000
-    DEBUG_DEFAULT_ROWS = 2000
     if args.rows is not None:
         max_rows = args.rows
     elif args.debug:

@@ -2395,3 +2395,9 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.37] Move entry gating and lot sizing helpers to strategy package
 - New/Updated unit tests added for strategy modules
 - QA: pytest -q passed
+
+### 2025-07-21
+- [Patch v6.9.38] Remove duplicate debug rows assignment
+- New/Updated unit tests added for ProjectP parsing
+- QA: pytest -q passed
+
