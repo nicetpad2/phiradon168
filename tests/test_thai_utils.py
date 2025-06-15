@@ -34,6 +34,30 @@ def test_validate_csv_data_empty():
         validate_csv_data(pd.DataFrame(), ['A'])
 
 
+def test_validate_csv_data_type_fail():
+    df = pd.DataFrame({'Open': ['x'], 'High': [1], 'Low': [0], 'Close': [1], 'Volume': [1]})
+    with pytest.raises(TypeError):
+        validate_csv_data(df, ['Open', 'High', 'Low', 'Close', 'Volume'])
+
+
+def test_validate_csv_data_integrity_fail():
+    df = pd.DataFrame({'Open': [1], 'High': [0], 'Low': [1], 'Close': [1], 'Volume': [1]})
+    with pytest.raises(ValueError):
+        validate_csv_data(df, ['Open', 'High', 'Low', 'Close', 'Volume'])
+
+
+def test_validate_csv_data_negative_volume():
+    df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [0], 'Close': [1], 'Volume': [-1]})
+    with pytest.raises(ValueError):
+        validate_csv_data(df, ['Open', 'High', 'Low', 'Close', 'Volume'])
+
+
+def test_validate_csv_data_missing_value():
+    df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [0], 'Close': [None], 'Volume': [1]})
+    with pytest.raises(ValueError):
+        validate_csv_data(df, ['Open', 'High', 'Low', 'Close', 'Volume'])
+
+
 def test_estimate_resource_plan_defaults(monkeypatch):
     monkeypatch.delitem(sys.modules, 'psutil', raising=False)
     plan = estimate_resource_plan()
