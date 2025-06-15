@@ -106,7 +106,7 @@ except ImportError:  # pragma: no cover - optional dependency
 except Exception:  # pragma: no cover - NVML failure fallback
     nvml_handle = None
 
-from src.main import main, setup_output_directory
+from src.main import main, setup_output_directory, OUTPUT_BASE_DIR, OUTPUT_DIR_NAME
 from src.data_loader import (
     auto_convert_gold_csv as auto_convert_csv,
     auto_convert_csv_to_parquet,
@@ -378,28 +378,30 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
     if not raw_data_paths:
         return []
     path = raw_data_paths[0]
-    if not os.path.exists(path) and FALLBACK_DIR:
-        fallback_path = os.path.join(FALLBACK_DIR, os.path.basename(path))
-        if os.path.exists(fallback_path):
+    if not os.path.exists(path):
+        if FALLBACK_DIR:
+            fallback_path = os.path.join(FALLBACK_DIR, os.path.basename(path))
+            if os.path.exists(fallback_path):
+                logger.warning(
+                    "Raw data file not found: %s; using fallback %s",
+                    path,
+                    fallback_path,
+                )
+                path = fallback_path
+            else:
+                logger.warning(
+                    "[Patch v6.4.6] Raw data file not found: %s. Proceeding with empty feature list.",
+                    path,
+                )
+                return []
+        else:
             logger.warning(
-                "Raw data file not found: %s; using fallback %s",
+                "[Patch v6.4.6] Raw data file not found: %s. Proceeding with empty feature list.",
                 path,
-                fallback_path,
             )
-            path = fallback_path
-    try:
-        from src.utils.data_utils import safe_read_csv
-
-        df_sample = safe_read_csv(path).head(500)
-    except FileNotFoundError:
-
-        logger.warning(
-            "[Patch v6.4.6] Raw data file not found: %s. Proceeding with empty feature list.",
-            raw_data_paths[0],
-        )
-        # Proceed with no features if raw data is unavailable
-
-        return []
+            return []
+    from src.utils.data_utils import safe_read_csv
+    df_sample = safe_read_csv(path).head(500)
     features = [
         c
         for c in df_sample.columns
@@ -510,5 +512,19 @@ def main():
         sys.exit(1)
 
 
+def _script_main():
+    args = parse_projectp_args()
+    if getattr(args, "auto_convert", False):
+        src_dir = os.getenv("SOURCE_CSV_DIR", "data")
+        dest_dir = os.getenv("DEST_CSV_DIR")
+        base = setup_output_directory(OUTPUT_BASE_DIR, OUTPUT_DIR_NAME)
+        dest = dest_dir or os.path.join(base, "converted_csvs")
+        os.makedirs(dest, exist_ok=True)
+        auto_convert_csv(src_dir, output_path=dest)
+        sys.exit(0)
+    import main as pipeline_main
+    pipeline_main.main()
+
+
 if __name__ == "__main__":
-    main()
+    _script_main()

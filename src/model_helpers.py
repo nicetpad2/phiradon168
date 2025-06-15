@@ -78,6 +78,7 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
     if not missing_models:
         logging.info("   (Success) Model files and feature lists already exist.")
         return
+    logging.warning("Triggering Auto-Training for Missing Models")
     if skip_auto_train:
         logging.warning("   SKIP_AUTO_TRAIN enabled - creating placeholder model files.")
         os.makedirs(output_dir, exist_ok=True)

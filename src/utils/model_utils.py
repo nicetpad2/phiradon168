@@ -174,7 +174,11 @@ def get_latest_model_and_threshold(
             if "best_threshold" in df.columns:
                 val = df["best_threshold"].iloc[0] if take_first else df["best_threshold"].median()
             else:
-                val = df.median(numeric_only=True).mean()
+                # If expected column missing, consider threshold unavailable
+                logger.warning(
+                    "best_threshold column missing in %s", thresh_path
+                )
+                return model_path, None
             if not pd.isna(val):
                 threshold = float(val)
         except (FileNotFoundError, pd.errors.EmptyDataError, ValueError) as exc:
