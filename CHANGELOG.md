@@ -2552,3 +2552,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.50] แก้เทสต์ล้มเหลวและเพิ่มความยืดหยุ่นการล็อก
 - New/Updated unit tests added for utils.py, ProjectP.py, realtime_dashboard.py, data_loader.py, technical indicators
 - QA: pytest -q passed (364 tests)
+
+### 2025-07-30
+- [Patch v6.9.51] ปรับปรุง run_tests เพิ่ม coverage และ rerun
+- New/Updated unit tests added for tests/test_run_tests.py
+- QA: pytest -q passed (368 tests)

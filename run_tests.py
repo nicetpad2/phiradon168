@@ -4,7 +4,7 @@ import os
 import sys
 import pytest
 
-# [Patch v6.9.50] Improve test speed with auto xdist and --last-failed
+# [Patch v6.9.51] เพิ่มตัวเลือก coverage และ rerun เพื่อลดเวลาและตรวจสอบครบถ้วน
 
 class _SummaryPlugin:
     """Plugin เก็บสถิติผลการทดสอบ"""
@@ -25,6 +25,14 @@ class _SummaryPlugin:
                 self.skipped += 1
 
 
+def _has_plugin(module: str) -> bool:
+    try:
+        __import__(module)
+        return True
+    except ImportError:
+        return False
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='รัน test suite')
     parser.add_argument('--fast', '--smoke', action='store_true', dest='fast',
@@ -33,6 +41,12 @@ def main() -> None:
                         help='จำนวน process สำหรับรันแบบขนาน (pytest-xdist)')
     parser.add_argument('--lf', '--last-failed', action='store_true', dest='last_failed',
                         help='รันเฉพาะเทสที่ล้มเหลวครั้งก่อน')
+    parser.add_argument('--cov', action='store_true',
+                        help='เปิดการวัด coverage หากมี pytest-cov')
+    parser.add_argument('--no-cov', action='store_true',
+                        help='ปิดการวัด coverage แม้มี pytest-cov')
+    parser.add_argument('--reruns', type=int, default=0,
+                        help='จำนวนครั้ง rerun เมื่อเทสล้มเหลว (pytest-rerunfailures)')
     args, extra_args = parser.parse_known_args()
 
     os.environ.setdefault('COMPACT_LOG', '1')
@@ -60,6 +74,16 @@ def main() -> None:
 
     if args.last_failed:
         pytest_args += ['--last-failed', '--last-failed-no-failures', 'all']
+
+    if args.reruns and _has_plugin('pytest_rerunfailures'):
+        pytest_args += ['--reruns', str(args.reruns)]
+
+    use_cov = args.cov or (os.environ.get('PYTEST_COV') and not args.no_cov)
+    if use_cov and _has_plugin('pytest_cov'):
+        pytest_args += ['--cov=src', '--cov-report=term-missing']
+        fail_under = os.environ.get('COV_FAIL_UNDER')
+        if fail_under:
+            pytest_args += ['--cov-fail-under', fail_under]
 
     summary = _SummaryPlugin()
     exit_code = pytest.main(pytest_args, plugins=[summary])

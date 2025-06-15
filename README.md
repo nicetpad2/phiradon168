@@ -151,6 +151,7 @@ COMPACT_LOG=1 python ProjectP.py --mode full_pipeline
 
 ### การรันชุดทดสอบ
 ใช้สคริปต์ `run_tests.py` เพื่อรัน `pytest` โดยเปิดโหมด COMPACT_LOG อัตโนมัติ
+รองรับตัวเลือก `--cov` และ `--reruns` เพื่อเพิ่มความครอบคลุมและลดการแก้ไขเทสที่ flake
 
 ```bash
 python run_tests.py

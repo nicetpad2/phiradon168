@@ -36,3 +36,25 @@ def test_run_tests_last_failed(monkeypatch):
     with pytest.raises(SystemExit):
         run_tests.main()
     assert '--last-failed' in called['args']
+
+
+def test_run_tests_with_coverage(monkeypatch):
+    called = {}
+    _patch_pytest(monkeypatch, called)
+    monkeypatch.setattr(run_tests, '_has_plugin', lambda m: True)
+    monkeypatch.setenv('PYTEST_COV', '1')
+    monkeypatch.setattr(sys, 'argv', ['run_tests.py'])
+    with pytest.raises(SystemExit):
+        run_tests.main()
+    assert '--cov=src' in called['args']
+
+
+def test_run_tests_reruns(monkeypatch):
+    called = {}
+    _patch_pytest(monkeypatch, called)
+    monkeypatch.setattr(run_tests, '_has_plugin', lambda m: True)
+    monkeypatch.setattr(sys, 'argv', ['run_tests.py', '--reruns', '2'])
+    with pytest.raises(SystemExit):
+        run_tests.main()
+    assert '--reruns' in called['args']
+    assert '2' in called['args']
