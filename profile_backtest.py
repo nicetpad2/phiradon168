@@ -20,7 +20,7 @@ from multiprocessing import get_context
 
 from src.strategy import run_backtest_simulation_v34
 from src.data_loader import safe_load_csv_auto
-from src.features import engineer_m1_features  # [Patch v5.1.5]
+from src.features import engineer_m1_features, calculate_m1_entry_signals  # [Patch v5.1.5]
 
 logger = logging.getLogger(__name__)
 
@@ -131,12 +131,10 @@ def main_profile(
         except FileNotFoundError:
             logger.warning(f"(Warning) M15 file not found: {m15_csv} – skipping Trend_Zone merge.")
 
-        # (3) Stub entry/exit columns so backtester won't crash [Patch v5.1.6]
-        df['Entry_Long'] = False
-        df['Entry_Short'] = False
-        df['Signal_Score'] = 0.0
-        df['Trade_Tag'] = ''
-        df['Trade_Reason'] = ''
+        # (3) Calculate entry signals using default config
+        from src.strategy import ENTRY_CONFIG_PER_FOLD
+        base_cfg = ENTRY_CONFIG_PER_FOLD.get(0, {})
+        df = calculate_m1_entry_signals(df, base_cfg)
     # [Patch v5.1.0] ตรวจสอบคอลัมน์หลักก่อนเรียก backtest
     required_cols = ['open', 'high', 'low', 'close']
     cols_lower = [c.lower() for c in df.columns]
