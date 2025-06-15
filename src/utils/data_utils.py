@@ -62,7 +62,12 @@ def safe_read_csv(path: str) -> pd.DataFrame:
     try:
         from src.data_cleaner import read_csv_auto, convert_buddhist_year
 
-        df = read_csv_auto(path)
+        if str(path).endswith(".gz") or str(path).endswith(".zip"):
+            # [Patch v6.9.42] Support gzip/zip via pandas compression inference
+            df = pd.read_csv(path, compression="infer")
+        else:
+            df = read_csv_auto(path)
+
         if {"Date", "Timestamp"}.issubset(df.columns):
             df = convert_buddhist_year(df)
         return df
