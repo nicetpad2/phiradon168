@@ -28,3 +28,13 @@ def test_setup_output_directory(tmp_path):
     base = tmp_path
     result = dl.setup_output_directory(str(base), 'out')
     assert os.path.isdir(result)
+
+
+def test_extract_thai_date_time_vec():
+    ts_series = pd.Series(["2024-01-01 00:00:00", "2567-01-02 01:02:03", "bad"])
+    result = dl._extract_thai_date_time_vec(ts_series)
+    assert result.loc[0, "Date"] == "2567" + "0101"
+    assert result.loc[0, "Timestamp"] == "00:00:00"
+    assert result.loc[1, "Date"] == "2567" + "0102"
+    assert result.loc[1, "Timestamp"] == "01:02:03"
+    assert pd.isna(result.loc[2, "Date"]) and pd.isna(result.loc[2, "Timestamp"])
