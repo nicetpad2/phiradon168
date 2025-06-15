@@ -39,7 +39,7 @@ def test_generate_open_signals_all(monkeypatch):
     df = pd.DataFrame({"Close": [1, 2, 3, 4], "Volume": [100, 120, 130, 150]})
     monkeypatch.setattr(entry_rules, "macd", lambda x: (None, None, pd.Series([0.1] * len(x))))
     monkeypatch.setattr(entry_rules, "rsi", lambda x: pd.Series([60] * len(x)))
-    monkeypatch.setattr(entry_rules, "detect_macd_divergence", lambda a, b: "bull")
+    monkeypatch.setattr(entry_rules, "detect_macd_divergence", lambda a, b: "none")
     monkeypatch.setattr(entry_rules, "sma", lambda s, p: pd.Series([p] * len(s)))
     res = entry_rules.generate_open_signals(df, trend="UP")
     assert res.dtype == np.int8 and res.sum() >= 1
@@ -71,7 +71,9 @@ def test_precompute_arrays(monkeypatch):
     sl = exit_rules.precompute_sl_array(df)
     tp = exit_rules.precompute_tp_array(df)
     assert sl.tolist() == pytest.approx([0.2, 0.4])
+
     assert tp.tolist() == pytest.approx([0.4, 0.8])
+
 
 
 def test_calculate_metrics_edge_cases():

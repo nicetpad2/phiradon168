@@ -24,6 +24,9 @@ def generate_open_signals(
     ma_slow: int = 50,
     volume_col: str = "Volume",
     vol_window: int = 10,
+    rsi_threshold: float = 45,
+    volume_mult: float = 1.2,
+    require_divergence: bool = False,
 ) -> np.ndarray:
     """Generate binary open signals with optional MACD/RSI filters."""
     from strategy.entry_rules import generate_open_signals as _impl  # delegated
@@ -37,6 +40,9 @@ def generate_open_signals(
         ma_slow=ma_slow,
         volume_col=volume_col,
         vol_window=vol_window,
+        rsi_threshold=rsi_threshold,
+        volume_mult=volume_mult,
+        require_divergence=require_divergence,
     )
 
     open_mask = df["Close"] > df["Close"].shift(1)
@@ -46,13 +52,13 @@ def generate_open_signals(
             df = df.copy()
             df["MACD_hist"] = macd_hist
         open_mask &= df["MACD_hist"] > 0
-        if detect_macd_divergence(df["Close"], df["MACD_hist"]) != "bull":
+        if require_divergence and detect_macd_divergence(df["Close"], df["MACD_hist"]) != "bull":
             open_mask[:] = False
     if use_rsi:
         if "RSI" not in df.columns:
             df = df.copy()
             df["RSI"] = rsi(df["Close"])
-        open_mask &= df["RSI"] > 50
+        open_mask &= df["RSI"] > rsi_threshold
     return result
 
 

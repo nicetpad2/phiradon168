@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+import logging
 from src import strategy
 
 class DummyCat:
@@ -52,3 +53,40 @@ def test_train_and_export_meta_model(tmp_path, monkeypatch):
     )
     assert saved is None
     assert feats == []
+
+
+def test_train_and_export_meta_model_index_conversion(tmp_path, monkeypatch, caplog):
+    trade_log = pd.DataFrame({
+        'entry_time': pd.date_range('2024-01-01', periods=3, freq='min'),
+        'exit_reason': ['TP', 'SL', 'TP']
+    })
+    m1 = pd.DataFrame({
+        'Open': [1.0, 1.1, 1.2],
+        'High': [1.1, 1.2, 1.3],
+        'Low': [0.9, 1.0, 1.1],
+        'Close': [1.0, 1.1, 1.2],
+        'ATR_14': [0.1, 0.1, 0.1],
+        'datetime': pd.date_range('2024-01-01', periods=3, freq='min')
+    })
+    m1_path = tmp_path / 'm1_range.csv'
+    m1.to_csv(m1_path, index=False)
+
+    monkeypatch.setattr(strategy, 'USE_GPU_ACCELERATION', False, raising=False)
+    monkeypatch.setattr(strategy, 'CatBoostClassifier', DummyCat)
+    monkeypatch.setattr(strategy, 'Pool', DummyPool)
+    monkeypatch.setattr(strategy, 'joblib_dump', lambda obj, path: open(path, 'wb').write(b'd'))
+    monkeypatch.setattr(strategy, 'load_final_m1_data', lambda p, t: pd.read_csv(p))
+
+    out_dir = tmp_path / 'out2'
+    out_dir.mkdir()
+
+    with caplog.at_level(logging.INFO):
+        strategy.train_and_export_meta_model(
+            trade_log_df_override=trade_log,
+            m1_data_path=str(m1_path),
+            output_dir=str(out_dir),
+            enable_dynamic_feature_selection=False,
+            enable_optuna_tuning=False,
+            model_type_to_train='catboost'
+        )
+    assert 'Successfully converted index of M1 DataFrame to DatetimeIndex.' in caplog.text
