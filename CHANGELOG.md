@@ -1,3 +1,8 @@
+### 2025-07-25
+- [Patch v6.9.44] Vectorize Thai datetime extraction
+- New/Updated unit tests added for tests/unit/test_data_loader.py::test_extract_thai_date_time_vec
+- QA: pytest -q passed (432 tests)
+
 ### 2025-07-23
 - [Patch v6.9.42] Support gzipped CSV in read_csv_auto
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py

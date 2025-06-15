@@ -1403,18 +1403,18 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
             if {"date", "time"}.issubset(col_map) and "Timestamp" not in df.columns:
                 date_col, time_col = col_map["date"], col_map["time"]
                 ts = df[date_col].astype(str) + " " + df[time_col].astype(str)
-                converted = ts.apply(_extract_thai_date_time)
-                df["Date"] = [c[0] for c in converted]
-                df["Timestamp"] = [c[1] for c in converted]
+                converted = _extract_thai_date_time_vec(ts)
+                df["Date"] = converted["Date"]
+                df["Timestamp"] = converted["Timestamp"]
             elif "Timestamp" in df.columns:
-                converted = df["Timestamp"].apply(_extract_thai_date_time)
-                df["Date"] = [c[0] for c in converted]
-                df["Timestamp"] = [c[1] for c in converted]
+                converted = _extract_thai_date_time_vec(df["Timestamp"].astype(str))
+                df["Date"] = converted["Date"]
+                df["Timestamp"] = converted["Timestamp"]
             elif {"date", "time"}.issubset(df.columns):
                 ts = df["Date"].astype(str) + " " + df["Time"].astype(str)
-                converted = ts.apply(_extract_thai_date_time)
-                df["Date"] = [c[0] for c in converted]
-                df["Timestamp"] = [c[1] for c in converted]
+                converted = _extract_thai_date_time_vec(ts)
+                df["Date"] = converted["Date"]
+                df["Timestamp"] = converted["Timestamp"]
             else:
                 print(f"ข้าม {f}: ไม่พบคอลัมน์ Date/Time")
                 continue
@@ -1747,6 +1747,53 @@ def _extract_thai_date_time(ts: str) -> tuple[str | None, str | None]:
         return date_out, time_out
     except Exception:
         return None, None
+
+
+def _extract_thai_date_time_vec(ts_series: pd.Series) -> pd.DataFrame:
+    """Vectorized Thai date/time extraction.
+
+    Parameters
+    ----------
+    ts_series : pandas.Series
+        Series of timestamp strings.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with ``Date`` and ``Timestamp`` columns using Buddhist year
+        format. Invalid rows yield ``None`` values.
+    """
+
+    # [Patch v6.9.44] Vectorized Thai datetime extraction
+    ts_series = ts_series.astype(str).str.replace(".", "-")
+    date_time = ts_series.str.split(" ", n=1, expand=True)
+    if date_time.shape[1] < 2:
+        date_time = pd.DataFrame({0: date_time[0], 1: None})
+
+    date_part = (
+        date_time[0]
+        .str.split("-", expand=True)
+        .reindex(columns=[0, 1, 2])
+    )
+    time_part = date_time[1]
+
+    year = pd.to_numeric(date_part[0], errors="coerce").astype("Int64")
+    greg_year = year.where(year < 2500, year - 543)
+
+    dt = pd.to_datetime(
+        greg_year.astype(str) + "-" + date_part[1] + "-" + date_part[2] + " " + time_part,
+        format="%Y-%m-%d %H:%M:%S",
+        errors="coerce",
+    )
+
+    thai_year = (dt.dt.year + 543).astype("Int64")
+    date_out = thai_year.astype(str).str.zfill(4) + dt.dt.month.astype(str).str.zfill(2) + dt.dt.day.astype(str).str.zfill(2)
+    time_out = dt.dt.strftime("%H:%M:%S")
+
+    date_out = date_out.where(~dt.isna())
+    time_out = time_out.where(~dt.isna())
+
+    return pd.DataFrame({"Date": date_out, "Timestamp": time_out})
 
 
 # [Patch v6.9.38] Schema และ loader รวมการทำความสะอาดข้อมูล
