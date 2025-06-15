@@ -41,3 +41,10 @@ def test_load_config_cleaning_section(tmp_path):
     conf_path.write_text('cleaning:\n  fill_method: mean\n')
     cfg = pipeline_config.load_config(str(conf_path))
     assert cfg.cleaning_fill_method == 'mean'
+
+
+def test_load_config_parquet_dir(tmp_path):
+    conf_path = tmp_path / 'cfg.yaml'
+    conf_path.write_text('data:\n  parquet_dir: cache\n')
+    cfg = pipeline_config.load_config(str(conf_path))
+    assert cfg.parquet_dir == 'cache'

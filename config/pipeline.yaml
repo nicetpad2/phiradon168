@@ -7,5 +7,6 @@ data:
   trade_log_pattern: "trade_log_*.csv*"
   trade_log_file: "trade_log.csv"
   raw_m1_filename: "XAUUSD_M1.csv"
+  parquet_dir: "data/parquet_cache"
 cleaning:
   fill_method: "drop"
