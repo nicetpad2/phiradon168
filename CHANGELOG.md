@@ -2528,3 +2528,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.48] Handle KeyboardInterrupt and YAML parse errors gracefully
 - New/Updated unit tests added for tests/test_main_keyboardinterrupt.py, tests/test_pipeline_config.py
 - QA: pytest -q passed (368 tests)
+
+### 2025-07-29
+- [Patch v6.9.49] เพิ่มเมนู CLI แบบโต้ตอบใน ProjectP
+- New/Updated unit tests added for tests/test_projectp_menu.py
+- QA: pytest -q passed (369 tests)

@@ -140,6 +140,24 @@ def custom_helper_function():
     return True
 
 
+def interactive_menu() -> str:
+    """แสดงเมนูโต้ตอบและคืนค่าโหมดที่เลือก."""
+    options = {
+        "1": "full_pipeline",
+        "2": "preprocess",
+        "3": "sweep",
+        "4": "threshold",
+        "5": "backtest",
+        "6": "report",
+        "7": "wfv",
+        "0": "exit",
+    }
+    for key, val in options.items():
+        print(f"[{key}] {val}")
+    choice = input("เลือกโหมด: ").strip()
+    return options.get(choice)
+
+
 def parse_projectp_args(args=None):
     """Parse command line arguments for ProjectP."""
     parser = argparse.ArgumentParser(description="สคริปต์ควบคุมโหมดการทำงาน")
@@ -173,6 +191,11 @@ def parse_projectp_args(args=None):
         "--auto-convert",
         action="store_true",
         help="แปลงไฟล์ CSV อัตโนมัติ",
+    )
+    parser.add_argument(
+        "--menu",
+        action="store_true",
+        help="แสดงเมนูโต้ตอบเพื่อเลือกโหมด",
     )
     return parser.parse_known_args(args)[0]
 
@@ -457,6 +480,12 @@ def main():
     """Main entry point for the ProjectP command-line interface."""
     print_logo()
     args = parse_args()
+
+    if getattr(args, "menu", False):
+        selected = interactive_menu()
+        if not selected or selected == "exit":
+            return
+        args.mode = selected
 
     if args.auto_convert:
         src_dir = os.getenv("SOURCE_CSV_DIR", "data")
