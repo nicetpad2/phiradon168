@@ -385,6 +385,30 @@ def train_and_export_meta_model(
         if m1_df is None:
             return None, []
 
+        # [Patch v6.12.0] Ensure index is DatetimeIndex for robustness
+        if not isinstance(m1_df.index, pd.DatetimeIndex):
+            logger.warning(
+                "Input M1 DataFrame index is not a DatetimeIndex. Attempting to convert."
+            )
+            try:
+                m1_df.index = pd.to_datetime(m1_df.index, errors="coerce")
+                if pd.api.types.is_datetime64_any_dtype(m1_df.index):
+                    logger.info(
+                        "Successfully converted index of M1 DataFrame to DatetimeIndex."
+                    )
+                else:
+                    logger.critical(
+                        "Failed to convert DataFrame index to DatetimeIndex for training."
+                    )
+                    raise TypeError(
+                        "Index could not be converted to DatetimeIndex, halting training."
+                    )
+            except Exception as e:
+                logger.critical(
+                    f"A critical error occurred during DatetimeIndex conversion: {e}"
+                )
+                return None, []
+
         logging.info(
             f"   โหลดและเตรียม M1 สำเร็จ ({len(m1_df)} แถว). จำนวน Features เริ่มต้น: {len(m1_df.columns)}"
         )
