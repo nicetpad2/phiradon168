@@ -60,6 +60,8 @@ def test_meta_threshold_env(monkeypatch):
     monkeypatch.setenv("REENTRY_MIN_PROBA_THRESH", "0.35")
     if 'src.features' in sys.modules:
         monkeypatch.delitem(sys.modules, 'src.features', raising=False)
+    if 'src.features.engineering' in sys.modules:
+        monkeypatch.delitem(sys.modules, 'src.features.engineering', raising=False)
     ft = importlib.import_module('src.features')
     assert ft.META_MIN_PROBA_THRESH == 0.4
     assert ft.REENTRY_MIN_PROBA_THRESH == 0.35

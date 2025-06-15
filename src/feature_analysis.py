@@ -212,7 +212,9 @@ def main(sample_rows: int = 5000):  # pragma: no cover - CLI helper
     data_path = os.path.join(
         os.path.dirname(os.path.dirname(__file__)), "XAUUSD_M1.csv"
     )
-    df = pd.read_csv(data_path, nrows=sample_rows)
+    from src.utils.data_utils import safe_read_csv
+
+    df = safe_read_csv(data_path).head(sample_rows)
     # [Patch v6.9.4] Auto-detect datetime column names for robustness
     possible_time_cols = ["Date", "Date/Time", "Timestamp", "datetime", "Datetime"]
     if {"Date", "Timestamp"}.issubset(df.columns):

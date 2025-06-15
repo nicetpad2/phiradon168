@@ -57,9 +57,22 @@ def prepare_csv_auto(path: str) -> pd.DataFrame:
     return df
 
 
+def safe_read_csv(path: str) -> pd.DataFrame:
+    """Return DataFrame from ``path`` or empty DataFrame on error."""
+    try:
+        from src.data_cleaner import read_csv_auto, convert_buddhist_year
+
+        df = read_csv_auto(path)
+        if {"Date", "Timestamp"}.issubset(df.columns):
+            df = convert_buddhist_year(df)
+        return df
+    except Exception as exc:  # pragma: no cover - unexpected IO error
+        logger.error("safe_read_csv failed: %s", exc, exc_info=True)
+        return pd.DataFrame()
 
 
 __all__ = [
     "convert_thai_datetime",
     "prepare_csv_auto",
+    "safe_read_csv",
 ]

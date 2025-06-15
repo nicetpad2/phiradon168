@@ -48,7 +48,9 @@ def find_best_threshold(
     }
 
 
-def evaluate_meta_classifier(model_path: str, validation_path: str, features_path: str | None = None):
+def evaluate_meta_classifier(
+    model_path: str, validation_path: str, features_path: str | None = None
+):
     """Evaluate a saved meta-classifier using validation data."""
     if not os.path.exists(model_path):
         logger.error(f"Model file not found: {model_path}")
@@ -73,7 +75,11 @@ def evaluate_meta_classifier(model_path: str, validation_path: str, features_pat
 
     dtype_map = {c: "float32" for c in features}
     try:
-        df = pd.read_csv(validation_path, dtype=dtype_map, low_memory=False)
+        from src.utils.data_utils import safe_read_csv
+
+        df = safe_read_csv(validation_path)
+        for col in features:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
     except Exception as e:
         logger.error(f"Failed to load validation data: {e}")
         return None
@@ -111,6 +117,7 @@ def evaluate_meta_classifier(model_path: str, validation_path: str, features_pat
 
 # --- Walk-Forward Overfitting Utilities ---
 
+
 def walk_forward_yearly_validation(
     df: pd.DataFrame,
     backtest_func: Callable[[pd.DataFrame], Dict[str, float]],
@@ -131,22 +138,24 @@ def walk_forward_yearly_validation(
         train_end = year
         test_start = year + 1
         test_end = test_start + test_years - 1
-        train_df = df[str(train_start): str(train_end)]
-        test_df = df[str(test_start): str(test_end)]
+        train_df = df[str(train_start) : str(train_end)]
+        test_df = df[str(test_start) : str(test_end)]
         if train_df.empty or test_df.empty:
             continue
         train_m = backtest_func(train_df)
         test_m = backtest_func(test_df)
-        results.append({
-            "fold": fold,
-            "train_period": f"{train_start}-{train_end}",
-            "test_period": f"{test_start}-{test_end}",
-            "train_winrate": float(train_m.get("winrate", float("nan"))),
-            "train_pnl": float(train_m.get("pnl", float("nan"))),
-            "test_winrate": float(test_m.get("winrate", float("nan"))),
-            "test_pnl": float(test_m.get("pnl", float("nan"))),
-            "test_maxdd": float(test_m.get("maxdd", float("nan"))),
-        })
+        results.append(
+            {
+                "fold": fold,
+                "train_period": f"{train_start}-{train_end}",
+                "test_period": f"{test_start}-{test_end}",
+                "train_winrate": float(train_m.get("winrate", float("nan"))),
+                "train_pnl": float(train_m.get("pnl", float("nan"))),
+                "test_winrate": float(test_m.get("winrate", float("nan"))),
+                "test_pnl": float(test_m.get("pnl", float("nan"))),
+                "test_maxdd": float(test_m.get("maxdd", float("nan"))),
+            }
+        )
         fold += 1
     return pd.DataFrame(results)
 

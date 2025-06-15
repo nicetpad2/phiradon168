@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import pandas as pd
 from src.utils import download_model_if_missing, download_feature_list_if_missing, validate_file
 from src.data_loader import safe_load_csv_auto
 
@@ -103,7 +104,15 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
             open(os.path.join(output_dir, required[key][0]), "a").close()
             open(os.path.join(output_dir, required[key][1]), "a").close()
         return
-    trade_log_df = safe_load_csv_auto(train_log_path)
+    try:
+        trade_log_df = safe_load_csv_auto(train_log_path)
+    except Exception as e:
+        logging.error("   (Error) Failed safe_load_csv_auto: %s", e, exc_info=True)
+        try:
+            trade_log_df = pd.read_csv(train_log_path)
+        except Exception as e2:
+            logging.error("   (Error) Fallback read_csv failed: %s", e2, exc_info=True)
+            trade_log_df = None
     if trade_log_df is None or trade_log_df.empty:
         logging.error("   (Error) Loaded trade log is empty. Creating placeholder model files.")
         os.makedirs(output_dir, exist_ok=True)
@@ -111,12 +120,16 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
             open(os.path.join(output_dir, required[key][0]), "a").close()
             open(os.path.join(output_dir, required[key][1]), "a").close()
         return
+
     # [Patch v6.9.38] fill missing exit_reason column for auto-train stub
     if 'exit_reason' not in trade_log_df.columns:
         trade_log_df['exit_reason'] = 'TP'
+
     for key in missing_models:
         try:
-            from src.main import train_and_export_meta_model
+            from importlib import import_module
+            main_mod = import_module('src.main')
+            train_and_export_meta_model = getattr(main_mod, 'train_and_export_meta_model')
             saved_paths, features = train_and_export_meta_model(
                 trade_log_path=None,
                 m1_data_path=m1_path,
