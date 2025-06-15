@@ -16,6 +16,7 @@ from src.log_analysis import (
     compile_log_summary,
     summarize_block_reasons,
     plot_expectancy_by_period,
+    detect_stop_loss_streaks,
 )
 
 
@@ -78,3 +79,8 @@ def test_plot_expectancy_by_period():
     exp = pd.Series([0.1, -0.2], index=['a', 'b'])
     fig = plot_expectancy_by_period(exp)
     assert hasattr(fig, 'savefig')
+
+def test_detect_stop_loss_streaks():
+    df = pd.DataFrame({"Reason": ["SL", "SL", "TP", "SL", "SL", "SL", "TP"]})
+    streaks = detect_stop_loss_streaks(df, min_streak=2)
+    assert streaks == [(0, 2), (3, 3)]

@@ -240,3 +240,8 @@ def test_calculate_momentum_divergence_basic():
     close = pd.Series([1, 2, 3, 4, 5], dtype='float32')
     res = features.calculate_momentum_divergence(close)
     assert len(res) == len(close)
+
+def test_flag_corrective_waves_basic():
+    df = pd.DataFrame({'Wave_Pattern': ['Impulse', 'ABC', 'WXY', 'Impulse']})
+    res = features.flag_corrective_waves(df)
+    assert res['Is_Corrective'].tolist() == [False, True, True, False]
