@@ -4,9 +4,15 @@
 - QA: pytest -q passed (354 tests)
 
 ### 2025-07-24
+
+- [Patch v6.9.43] Improve backtest helpers and exception handling
+- New/Updated unit tests added for tests/test_model_select.py
+- QA: pytest -q passed (350 tests)
+
 - [Patch v6.9.43] Add parquet_dir to pipeline config
 - New/Updated unit tests added for tests/test_pipeline_config.py::test_load_config_parquet_dir
 - QA: pytest -q passed (438 tests)
+
 
 
 ### 2025-07-22

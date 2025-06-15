@@ -13,6 +13,7 @@
 ## Features
 - ระบบมีตัวกรอง ATR และ Median เพื่อช่วยลด Noise ในกรอบเวลา M1
 - ฟังก์ชัน `auto_convert_gold_csv` สำหรับแปลงไฟล์ XAUUSD_M*.csv เป็นปีพุทธศักราชและบันทึกไปยังเส้นทางที่กำหนด
+- ฟังก์ชัน `get_latest_model_and_threshold` ช่วยค้นหาโมเดลและค่า threshold ล่าสุด
 
 ## Installation
 ```bash
