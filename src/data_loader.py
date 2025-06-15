@@ -1523,12 +1523,10 @@ def load_data_from_csv(file_path: str, nrows: int = None, auto_convert: bool = T
     except Exception as e:
         logger.error(f"Failed to parse datetime after potential conversion: {e}")
         raise e
-
     required_cols = {'Open', 'High', 'Low', 'Close', 'Volume'}
     if not required_cols.issubset(temp_df.columns):
         missing_cols = required_cols - set(temp_df.columns)
         raise ValueError(f"CSV file {file_path} is missing required columns: {missing_cols}")
-
     df = temp_df[['Open', 'High', 'Low', 'Close', 'Volume']].astype(
         {
             'Open': 'float32',
@@ -1538,7 +1536,6 @@ def load_data_from_csv(file_path: str, nrows: int = None, auto_convert: bool = T
             'Volume': 'float32'
         }
     )
-
     logger.info(f"Successfully loaded and processed {len(df)} rows from {file_path}")
     logger.info(f"--- [DEBUG] สิ้นสุดการทำงานของฟังก์ชัน load_data_from_csv สำหรับไฟล์ {file_path} ---")
     return df

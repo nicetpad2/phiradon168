@@ -26,6 +26,7 @@ _SUBMODULES = [
     "order_manager",
     "realtime_dashboard",
     "signal_classifier",
+    "signal_utils",
     "entry_rules",
     "strategy",
     "csv_validator",

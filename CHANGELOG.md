@@ -2329,6 +2329,11 @@ QA: pytest -q passed (219 tests)
 - No code changes. AutoConvert verified
 - QA: pytest tests/test_projectp_auto_convert.py -q passed
 
+### 2025-06-15
+- [Patch v6.9.35] Extract signal wrappers to new module
+- New/Updated unit tests added for tests/test_signal_utils_module.py
+- QA: pytest -q passed
+=======
 ### 2025-07-18
 - [Patch v6.9.35] Split features into package modules
 - New/Updated unit tests added for N/A
