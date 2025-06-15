@@ -5,6 +5,11 @@ from dataclasses import dataclass, field
 from enum import Enum
 from threading import Lock
 import logging
+import math
+from typing import Sequence
+
+import pandas as pd
+import numpy as np
 
 from src.utils import load_settings, Settings
 
@@ -119,6 +124,162 @@ def should_hard_cutoff(
     return False
 
 
+def adjust_lot_recovery_mode(
+    base_lot: float,
+    consecutive_losses: int,
+    loss_threshold: int,
+    multiplier: float,
+    min_lot: float,
+) -> tuple[float, str]:
+    """Increase lot size when losses exceed threshold."""
+    if consecutive_losses >= loss_threshold:
+        adjusted_lot = max(base_lot * multiplier, min_lot)
+        if not math.isclose(adjusted_lot, base_lot):
+            logging.info(
+                "      (Recovery Mode Active) Losses: %s. Lot adjusted: %.2f -> %.2f",
+                consecutive_losses,
+                base_lot,
+                adjusted_lot,
+            )
+        return adjusted_lot, "recovery"
+    return base_lot, "normal"
+
+
+def calculate_aggressive_lot(equity: float, max_lot: float, min_lot: float) -> float:
+    """Return lot size using tiered equity levels."""
+    if equity < 100:
+        lot = 0.01
+    elif equity < 500:
+        lot = 0.05
+    elif equity < 1000:
+        lot = 0.10
+    elif equity < 3000:
+        lot = 0.30
+    elif equity < 5000:
+        lot = 0.50
+    elif equity < 8000:
+        lot = 1.00
+    else:
+        lot = 2.00
+    final_lot = round(min(lot, max_lot), 2)
+    return max(final_lot, min_lot)
+
+
+def calculate_lot_size_fixed_risk(
+    equity: float,
+    risk_per_trade: float,
+    sl_delta_price: float,
+    point_value: float,
+    min_lot: float,
+    max_lot: float,
+) -> float:
+    """Lot size based on fixed fractional risk."""
+    equity_num = pd.to_numeric(equity, errors="coerce")
+    risk_num = pd.to_numeric(risk_per_trade, errors="coerce")
+    sl_delta_num = pd.to_numeric(sl_delta_price, errors="coerce")
+    if (
+        pd.isna(equity_num)
+        or np.isinf(equity_num)
+        or equity_num <= 0
+        or pd.isna(risk_num)
+        or np.isinf(risk_num)
+        or risk_num <= 0
+        or pd.isna(sl_delta_num)
+        or np.isinf(sl_delta_num)
+        or sl_delta_num <= 1e-9
+    ):
+        return min_lot
+    try:
+        risk_amount_usd = equity_num * risk_num
+        sl_points = sl_delta_num * 10.0
+        risk_per_001_lot = sl_points * point_value
+        if risk_per_001_lot <= 1e-9:
+            return min_lot
+        raw_lot_units = risk_amount_usd / risk_per_001_lot
+        lot_size = raw_lot_units * 0.01
+        lot_size = round(lot_size, 2)
+        lot_size = max(min_lot, lot_size)
+        lot_size = min(max_lot, lot_size)
+        return lot_size
+    except Exception:
+        return min_lot
+
+
+def adjust_lot_tp2_boost(
+    trade_history: Sequence[str], base_lot: float, min_lot: float
+) -> float:
+    """Increase lot size slightly after consecutive TP trades."""
+    boost_factor = 1.2
+    streak_length = 2
+    if len(trade_history) < streak_length:
+        return base_lot
+    full_trade_reasons = [str(reason) for reason in trade_history if not str(reason).startswith("Partial")]
+    if len(full_trade_reasons) >= streak_length and all(t.upper() == "TP" for t in full_trade_reasons[-streak_length:]):
+        boosted_lot = round(base_lot * boost_factor, 2)
+        final_lot = max(boosted_lot, min_lot)
+        if final_lot > base_lot:
+            logging.info(
+                "      (TP Boost) Last %s full trades were TP. Lot boosted: %.2f -> %.2f",
+                streak_length,
+                base_lot,
+                final_lot,
+            )
+        return final_lot
+    return base_lot
+
+
+def calculate_lot_by_fund_mode(
+    mm_mode: str,
+    risk_pct: float,
+    equity: float,
+    atr_at_entry: float,
+    sl_delta_price: float,
+    min_lot: float,
+    max_lot: float,
+    point_value: float,
+) -> float:
+    """Determine base lot size based on money management mode."""
+    base_lot = min_lot
+    if mm_mode in ["conservative", "mirror"]:
+        base_lot = calculate_lot_size_fixed_risk(
+            equity,
+            risk_pct,
+            sl_delta_price,
+            point_value,
+            min_lot,
+            max_lot,
+        )
+    elif mm_mode == "balanced":
+        base_lot = calculate_aggressive_lot(equity, max_lot, min_lot)
+    elif mm_mode == "high_freq":
+        if equity < 100:
+            base_lot = 0.01
+        elif equity < 500:
+            base_lot = 0.02
+        elif equity < 1000:
+            base_lot = 0.03
+        else:
+            base_lot = 0.05
+    elif mm_mode == "spike_only":
+        atr_threshold = 2.0
+        atr_at_entry_num = pd.to_numeric(atr_at_entry, errors="coerce")
+        if pd.notna(atr_at_entry_num) and atr_at_entry_num > atr_threshold:
+            base_lot = calculate_aggressive_lot(equity, max_lot, min_lot)
+        else:
+            base_lot = calculate_lot_size_fixed_risk(
+                equity,
+                risk_pct,
+                sl_delta_price,
+                point_value,
+                min_lot,
+                max_lot,
+            )
+    else:
+        base_lot = calculate_aggressive_lot(equity, max_lot, min_lot)
+    final_lot = round(min(base_lot, max_lot), 2)
+    return max(final_lot, min_lot)
+
+
 @dataclass
 class RiskManager:
     """Track drawdown and enforce kill switch."""
@@ -150,6 +311,11 @@ __all__ = [
     "check_trailing_equity_stop",
     "can_open_trade",
     "should_hard_cutoff",
+    "adjust_lot_recovery_mode",
+    "calculate_aggressive_lot",
+    "calculate_lot_size_fixed_risk",
+    "adjust_lot_tp2_boost",
+    "calculate_lot_by_fund_mode",
     "RiskManager",
     "OrderStatus",
 ]
