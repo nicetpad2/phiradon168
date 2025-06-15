@@ -2338,3 +2338,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.35] Split features into package modules
 - New/Updated unit tests added for N/A
 - QA: pytest -q failed
+
+### 2025-07-19
+- [Patch v6.9.36] Move OMS helpers to order_management module
+- New/Updated unit tests added for N/A
+- QA: pytest -q failed (environment limits)

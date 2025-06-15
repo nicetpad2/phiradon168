@@ -1513,58 +1513,21 @@ def update_trailing_tp2(order, atr, multiplier):
     return order
 
 
-# [Patch v5.5.8] OMS_Guardian helpers
-def adjust_sl_tp_oms(entry_price, sl_price, tp_price, atr, side,
-                     margin_pips, max_pips):
-    """Validate SL/TP distance and auto-adjust if outside allowed range."""
-    if any(pd.isna(v) for v in [entry_price, sl_price, tp_price, atr]):
-        return sl_price, tp_price
-
-    sl_dist = abs(entry_price - sl_price) * 10.0
-    tp_dist = abs(tp_price - entry_price) * 10.0
-
-    if sl_dist < margin_pips:
-        adj = atr if pd.notna(atr) and atr > 1e-9 else margin_pips / 10.0
-        sl_price = entry_price - adj if side == "BUY" else entry_price + adj
-        logging.info(f"[OMS_Guardian] Adjust SL to margin level: {sl_price:.5f}")
-
-    if sl_dist > max_pips:
-        sl_price = entry_price - atr if side == "BUY" else entry_price + atr
-        logging.info(f"[OMS_Guardian] SL distance too wide. Adjusted to {sl_price:.5f}")
-
-    if tp_dist > max_pips:
-        tp_price = entry_price + atr if side == "BUY" else entry_price - atr
-        logging.info(f"[OMS_Guardian] TP distance too wide. Adjusted to {tp_price:.5f}")
-
-    return sl_price, tp_price
+# [Patch v6.9.31] Delegate OMS_Guardian helpers to strategy.order_management
+from strategy.order_management import (
+    adjust_sl_tp_oms as _adjust_sl_tp_oms,
+    update_breakeven_half_tp as _update_be_half_tp,
+)
 
 
-def update_breakeven_half_tp(order, current_high, current_low, now, entry_buffer=0.0001):
-    """Move SL to breakeven when price moves halfway to TP1."""
-    if order.get("be_triggered", False):
-        return order, False
+def adjust_sl_tp_oms(*args, **kwargs):
+    """Wrapper for :func:`strategy.order_management.adjust_sl_tp_oms`."""
+    return _adjust_sl_tp_oms(*args, **kwargs)
 
-    side = order.get("side")
-    entry = pd.to_numeric(order.get("entry_price"), errors="coerce")
-    tp1 = pd.to_numeric(order.get("tp1_price"), errors="coerce")
-    sl = pd.to_numeric(order.get("sl_price"), errors="coerce")
 
-    if any(pd.isna(v) for v in [side, entry, tp1, sl]):
-        return order, False
-
-    trigger = entry + 0.5 * (tp1 - entry) if side == "BUY" else entry - 0.5 * (entry - tp1)
-    hit = (side == "BUY" and current_high >= trigger) or (side == "SELL" and current_low <= trigger)
-
-    if hit:
-        new_sl = entry + entry_buffer if side == "BUY" else entry - entry_buffer
-        if not math.isclose(sl, new_sl, rel_tol=1e-9, abs_tol=1e-9):
-            order["sl_price"] = new_sl
-            order["be_triggered"] = True
-            order["be_triggered_time"] = now
-            logging.info(f"Move to Breakeven at price {new_sl:.5f}")
-            return order, True
-
-    return order, False
+def update_breakeven_half_tp(*args, **kwargs):
+    """Wrapper for :func:`strategy.order_management.update_breakeven_half_tp`."""
+    return _update_be_half_tp(*args, **kwargs)
 
 
 def spike_guard_london(row, session, consecutive_losses):
