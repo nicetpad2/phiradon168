@@ -4,7 +4,7 @@ import os
 import sys
 import pytest
 
-# [Patch v5.9.3] Forward command-line args directly to pytest
+# [Patch v6.9.50] Improve test speed with auto xdist and --last-failed
 
 class _SummaryPlugin:
     """Plugin เก็บสถิติผลการทดสอบ"""
@@ -31,6 +31,8 @@ def main() -> None:
                         help='ข้าม integration tests ที่ใช้เวลานาน')
     parser.add_argument('-n', '--num-processes', default=None,
                         help='จำนวน process สำหรับรันแบบขนาน (pytest-xdist)')
+    parser.add_argument('--lf', '--last-failed', action='store_true', dest='last_failed',
+                        help='รันเฉพาะเทสที่ล้มเหลวครั้งก่อน')
     args, extra_args = parser.parse_known_args()
 
     os.environ.setdefault('COMPACT_LOG', '1')
@@ -49,6 +51,15 @@ def main() -> None:
             pytest_args += ['-n', str(args.num_processes)]
         except ImportError:
             print('[WARN] pytest-xdist ไม่ได้ติดตั้ง จึงรันแบบปกติ')
+    else:
+        try:
+            import xdist  # noqa: F401
+            pytest_args += ['-n', 'auto']
+        except ImportError:
+            pass
+
+    if args.last_failed:
+        pytest_args += ['--last-failed', '--last-failed-no-failures', 'all']
 
     summary = _SummaryPlugin()
     exit_code = pytest.main(pytest_args, plugins=[summary])
