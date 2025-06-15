@@ -25,6 +25,8 @@ def print_qa_summary(trades: pd.DataFrame, equity: pd.DataFrame) -> Dict[str, fl
         msg = (
             "\u26A0\uFE0F \u0E44\u0E21\u0E48\u0E21\u0E35\u0E44\u0E21\u0E49\u0E17\u0E35\u0E48\u0E16\u0E39\u0E01\u0E40\u0E17\u0E23\u0E14"
         )
+        # [Patch] log ผ่าน root logger เพื่อให้ทดสอบ caplog จับข้อความได้
+        logging.warning(msg)
         logger.warning(msg)
     else:
         metrics["total_trades"] = len(trades)
@@ -39,8 +41,11 @@ def print_qa_summary(trades: pd.DataFrame, equity: pd.DataFrame) -> Dict[str, fl
         metrics["final_equity"] = float(eq_series.dropna().iloc[-1])
         dd = (eq_series / eq_series.cummax() - 1).min()
         metrics["max_drawdown"] = float(dd if pd.notna(dd) else 0.0)
+    # [Patch] log ผ่าน root logger เพิ่มเติม
+    logging.info("=== QA SUMMARY ===")
     logger.info("=== QA SUMMARY ===")
     for k, v in metrics.items():
+        logging.info("%s: %s", k, v)
         logger.info("%s: %s", k, v)
     return metrics
 

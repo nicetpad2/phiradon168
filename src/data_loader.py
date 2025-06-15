@@ -1585,7 +1585,7 @@ def validate_csv_data(df, required_cols=None):
         if col in sample.columns:
             converted = pd.to_numeric(sample[col], errors="coerce")
             if converted.isna().any():
-                raise ValueError(f"Column {col} contains non-numeric values")
+                raise TypeError(f"Column {col} contains non-numeric values")
 
     if {"High", "Low"}.issubset(sample.columns):
         if not (sample["High"] >= sample["Low"]).all():
@@ -1792,7 +1792,13 @@ def _extract_thai_date_time_vec(ts_series: pd.Series) -> pd.DataFrame:
     )
 
     thai_year = (dt.dt.year + 543).astype("Int64")
-    date_out = thai_year.astype(str).str.zfill(4) + dt.dt.month.astype(str).str.zfill(2) + dt.dt.day.astype(str).str.zfill(2)
+    month = dt.dt.month.astype("Int64")
+    day = dt.dt.day.astype("Int64")
+    date_out = (
+        thai_year.astype(str).str.zfill(4)
+        + month.astype(str).str.zfill(2)
+        + day.astype(str).str.zfill(2)
+    )
     time_out = dt.dt.strftime("%H:%M:%S")
 
     date_out = date_out.where(~dt.isna())

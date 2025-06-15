@@ -100,7 +100,8 @@ def run_streamlit_dashboard(
     st.set_page_config(page_title="Real-Time Dashboard")
     placeholder = st.empty()
     while True:  # pragma: no cover - loop for UI
-        threshold_pct = st.sidebar.slider(
+        slider_host = getattr(st, "sidebar", st)
+        threshold_pct = slider_host.slider(
             "ระดับเตือน Drawdown (%)",
             min_value=1.0,
             max_value=20.0,

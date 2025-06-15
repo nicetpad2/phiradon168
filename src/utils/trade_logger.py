@@ -183,8 +183,8 @@ def print_qa_summary(output_dir: str) -> str:
     qa_dir = os.path.join(output_dir, "qa_logs")
     if not os.path.isdir(qa_dir):
         msg = f"[QA-WARNING] QA summary directory not found: {qa_dir}"
-        logger.warning(msg)
         logging.getLogger().warning(msg)
+        logger.warning(msg)
         return ""
     summaries = []
     for fname in os.listdir(qa_dir):
@@ -195,9 +195,11 @@ def print_qa_summary(output_dir: str) -> str:
                     summaries.append(f.read().strip())
             except Exception as e:
                 msg = f"[QA-WARNING] Failed reading {path}: {e}"
+                logging.getLogger().error(msg)
                 logger.error(msg, exc_info=True)
     summary_text = "\n".join(summaries)
     if summary_text:
+        logging.getLogger().info(summary_text)
         logger.info(summary_text)
     return summary_text
 

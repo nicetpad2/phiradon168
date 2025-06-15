@@ -48,8 +48,8 @@ def rsi(series, period=14):
         return pd.Series(np.nan, index=series.index, dtype='float32')
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
     pkg = sys.modules.get("src.features")
-    ta_lib = ta if ta is not None else getattr(pkg, "ta", None)
-    ta_available = _TA_AVAILABLE and ta_lib is not None
+    ta_lib = getattr(pkg, "ta", ta)
+    ta_available = getattr(pkg, "_TA_AVAILABLE", _TA_AVAILABLE) and ta_lib is not None
     if not ta_available:
         logging.warning("   (Warning) Using pandas fallback RSI because 'ta' library not loaded.")
         if series_numeric.empty or len(series_numeric) < period:
@@ -177,8 +177,8 @@ def macd(series, window_slow=26, window_fast=12, window_sign=9):
         return nan, nan.copy(), nan.copy()
     s = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
     pkg = sys.modules.get("src.features")
-    ta_lib = ta if ta is not None else getattr(pkg, "ta", None)
-    ta_available = _TA_AVAILABLE and ta_lib is not None
+    ta_lib = getattr(pkg, "ta", ta)
+    ta_available = getattr(pkg, "_TA_AVAILABLE", _TA_AVAILABLE) and ta_lib is not None
     if not ta_available:
         logging.warning("   (Warning) Using pandas fallback MACD because 'ta' library not loaded.")
         if s.empty or len(s) < window_slow:
