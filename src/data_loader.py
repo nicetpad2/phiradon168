@@ -1585,7 +1585,7 @@ def validate_csv_data(df, required_cols=None):
         if col in sample.columns:
             converted = pd.to_numeric(sample[col], errors="coerce")
             if converted.isna().any():
-                raise TypeError(f"Column {col} contains non-numeric values")
+                raise ValueError(f"Column {col} contains non-numeric values")
 
     if {"High", "Low"}.issubset(sample.columns):
         if not (sample["High"] >= sample["Low"]).all():

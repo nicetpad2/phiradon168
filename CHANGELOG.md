@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_run_tests.py
 - QA: pytest -q passed (2 tests)
 
+### 2025-08-01
+- [Patch v6.9.51] Add terminal log capture for CLI execution
+- New/Updated unit tests added for tests/test_terminal_logger.py
+- QA: pytest -q passed (?? tests)
+
 ### 2025-07-30
 - [Patch v6.9.49] Use timezone-aware datetime in AuthManager
 - New/Updated unit tests added for tests/test_auth_manager.py

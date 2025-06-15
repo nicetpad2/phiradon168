@@ -500,7 +500,7 @@ def main():
         sys.exit(0)
 
     if args.mode == "full_pipeline":
-        run_full_pipeline()
+        run_mode("full_pipeline")
         return
 
     if args.mode == "wfv" and args.all:
@@ -538,7 +538,13 @@ def _script_main():
         auto_convert_csv(src_dir, output_path=dest)
         sys.exit(0)
     import main as pipeline_main
-    pipeline_main.main()
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        sys.exit(pipeline_main.main())
+    else:
+        from src.utils.terminal_logger import terminal_logger
+        term_log = os.path.join(OUTPUT_BASE_DIR, "terminal.log")
+        with terminal_logger(term_log):
+            sys.exit(pipeline_main.main())
 
 
 if __name__ == "__main__":
