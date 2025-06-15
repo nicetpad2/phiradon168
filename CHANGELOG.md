@@ -1,3 +1,8 @@
+### 2025-08-03
+- [Patch v6.9.57] Add keyword filter option in run_tests
+- New/Updated unit tests added for tests/test_run_tests.py
+- QA: pytest -q passed (12 tests)
+
 ### 2025-06-16
 - [Patch v6.9.55] Adjust menu full_pipeline and return code
 - New/Updated unit tests added for tests/test_projectp_script.py

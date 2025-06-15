@@ -127,3 +127,13 @@ def test_run_tests_durations(monkeypatch):
         run_tests.main()
     assert '--durations' in called['args']
     assert '5' in called['args']
+
+
+def test_run_tests_keyword(monkeypatch):
+    called = {}
+    _patch_pytest(monkeypatch, called)
+    monkeypatch.setattr(sys, 'argv', ['run_tests.py', '-k', 'expr'])
+    with pytest.raises(SystemExit):
+        run_tests.main()
+    assert '-k' in called['args']
+    assert 'expr' in called['args']
