@@ -6,6 +6,7 @@ import subprocess
 import pytest
 
 # [Patch v6.9.52] Add coverage and maxfail options, auto maxfail with --fast
+# [Patch v6.9.54] Auto-select changed tests with --fast and add --durations option
 
 class _SummaryPlugin:
     """Plugin เก็บสถิติผลการทดสอบ"""
@@ -41,7 +42,7 @@ def find_changed_tests(base_ref: str) -> list[str]:
 def main() -> None:
     parser = argparse.ArgumentParser(description='รัน test suite')
     parser.add_argument('--fast', '--smoke', action='store_true', dest='fast',
-                        help='ข้าม integration tests ที่ใช้เวลานาน')
+                        help='ข้าม integration tests ที่ใช้เวลานาน และรันเฉพาะไฟล์ที่แก้ไข')
     parser.add_argument('-n', '--num-processes', default=None,
                         help='จำนวน process สำหรับรันแบบขนาน (pytest-xdist)')
     parser.add_argument('--lf', '--last-failed', action='store_true', dest='last_failed',
@@ -50,6 +51,8 @@ def main() -> None:
                         help='วัด coverage ของ TARGET (ค่าเริ่มต้น src)')
     parser.add_argument('--maxfail', type=int, default=None, metavar='N',
                         help='หยุดทันทีเมื่อมี N เทสล้มเหลว')
+    parser.add_argument('--durations', type=int, default=None, metavar='N',
+                        help='แสดงรายการเทสที่ช้าที่สุด N อันดับ')
     parser.add_argument('-c', '--changed', nargs='?', const='HEAD~1', default=None,
                         metavar='BASE',
                         help='รันเฉพาะเทสที่เปลี่ยนจาก BASE (ค่าเริ่มต้น HEAD~1)')
@@ -60,10 +63,13 @@ def main() -> None:
 
     pytest_args = extra_args
     if not pytest_args:
-        if args.changed:
-            pytest_args = find_changed_tests(args.changed)
+        base = args.changed
+        if args.fast and base is None:
+            base = 'HEAD~1'
+        if base:
+            pytest_args = find_changed_tests(base)
             if pytest_args:
-                print(f'[INFO] Running changed tests since {args.changed}')
+                print(f'[INFO] Running changed tests since {base}')
         if not pytest_args:
             pytest_args = ['tests']
     pytest_args.insert(0, '-q')
@@ -93,6 +99,9 @@ def main() -> None:
 
     if args.maxfail is not None:
         pytest_args += ['--maxfail', str(args.maxfail)]
+
+    if args.durations is not None:
+        pytest_args += ['--durations', str(args.durations)]
 
     summary = _SummaryPlugin()
     exit_code = pytest.main(pytest_args, plugins=[summary])
