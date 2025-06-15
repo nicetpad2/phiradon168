@@ -280,3 +280,60 @@ def calculate_drift_summary(
         drift_feats = sorted(report.loc[report["drift"], "feature"].unique())
         logger.warning("Drift detected: %s", drift_feats)
     return report
+
+# [Patch v7.0.0] Additional performance metrics
+
+def calculate_sortino_ratio(returns: pd.Series) -> float:
+    """Return Sortino ratio from a series of returns."""
+    if returns is None or returns.empty:
+        return 0.0
+    returns = pd.to_numeric(returns, errors="coerce").dropna()
+    if returns.empty:
+        return 0.0
+    downside = returns[returns < 0]
+    downside_std = downside.std(ddof=1)
+    mean_ret = returns.mean()
+    if downside_std is None or pd.isna(downside_std) or downside_std <= 1e-9:
+        return float(np.inf if mean_ret > 0 else 0.0)
+    ratio = mean_ret / downside_std
+    if isinstance(ratio, complex):
+        ratio = 0.0
+    return float(ratio)
+
+
+def calculate_max_drawdown(equity: pd.Series) -> float:
+    """Return maximum drawdown from an equity curve."""
+    if equity is None or equity.empty:
+        return 0.0
+    equity = pd.to_numeric(equity, errors="coerce").ffill()
+    running_max = equity.cummax()
+    drawdown = equity - running_max
+    return float(drawdown.min())
+
+
+def calculate_calmar_ratio(returns: pd.Series, max_drawdown: float) -> float:
+    """Return Calmar ratio using annualized returns and max drawdown."""
+    if returns is None or returns.empty:
+        return 0.0
+    returns = pd.to_numeric(returns, errors="coerce").dropna()
+    if returns.empty:
+        return 0.0
+    annualized_return = returns.mean() * 252
+    if max_drawdown > 1e-9:
+        ratio = annualized_return / abs(max_drawdown)
+    else:
+        ratio = np.inf if annualized_return > 0 else 0.0
+    if isinstance(ratio, complex):
+        ratio = 0.0
+    return float(ratio)
+
+
+def compute_underwater_curve(equity: pd.Series) -> pd.Series:
+    """Return underwater drawdown curve from equity series."""
+    if equity is None or equity.empty:
+        return pd.Series(dtype=float)
+    equity = pd.to_numeric(equity, errors="coerce").ffill()
+    running_max = equity.cummax()
+    underwater = (equity - running_max) / running_max
+    return underwater.fillna(0.0)
+

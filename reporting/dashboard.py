@@ -57,3 +57,18 @@ def generate_dashboard(results: Any, output_filepath: str) -> str:
 
     logger.info("[Patch v6.6.7] Dashboard saved to %s", output_filepath)
     return output_filepath
+
+# [Patch v7.0.0] Underwater plot utility
+
+def plot_underwater_curve(equity: pd.Series) -> go.Figure:
+    """Return Plotly Figure of underwater drawdown curve."""
+    if equity is None or equity.empty:
+        raise ValueError("equity series is empty")
+    equity = pd.to_numeric(equity, errors="coerce").dropna()
+    running_max = equity.cummax()
+    underwater = (equity - running_max) / running_max
+    fig = go.Figure()
+    fig.add_scatter(x=equity.index, y=underwater, name="Underwater")
+    fig.update_layout(title="Underwater Plot", height=400, width=700)
+    return fig
+
