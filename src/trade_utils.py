@@ -85,9 +85,31 @@ def get_dynamic_signal_score_thresholds(series: pd.Series, window: int = 1000, q
     return thresh.to_numpy()
 
 
+def get_dynamic_signal_score_thresholds_atr(
+    signal_series: pd.Series,
+    atr_series: pd.Series,
+    atr_avg_series: pd.Series,
+    window: int = 1000,
+    quantile: float = 0.7,
+    slope: float = 0.2,
+    min_val: float = 0.5,
+    max_val: float = 3.0,
+) -> np.ndarray:
+    """Return dynamic signal score thresholds adjusted by ATR ratio."""
+    scores = pd.to_numeric(signal_series, errors="coerce")
+    base = scores.rolling(window=window, min_periods=1).quantile(quantile)
+    atr = pd.to_numeric(atr_series, errors="coerce")
+    atr_avg = pd.to_numeric(atr_avg_series, errors="coerce")
+    ratio = atr / atr_avg.replace(0, np.nan)
+    dynamic = slope * (ratio - 1.0)
+    thresh = (base + dynamic).clip(lower=min_val, upper=max_val).fillna(min_val)
+    return thresh.to_numpy()
+
+
 __all__ = [
     "dynamic_tp2_multiplier",
     "get_adaptive_tsl_step",
     "get_dynamic_signal_score_entry",
     "get_dynamic_signal_score_thresholds",
+    "get_dynamic_signal_score_thresholds_atr",
 ]

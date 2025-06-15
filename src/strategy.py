@@ -1138,6 +1138,8 @@ DEFAULT_ADAPTIVE_SIGNAL_SCORE_QUANTILE = 0.7
 DEFAULT_MIN_SIGNAL_SCORE_ENTRY_MIN = 0.5
 DEFAULT_MIN_SIGNAL_SCORE_ENTRY_MAX = 3.0
 DEFAULT_USE_ADAPTIVE_SIGNAL_SCORE = True
+DEFAULT_USE_ATR_SIGNAL_THRESHOLD = True
+DEFAULT_ATR_SIGNAL_THRESH_SLOPE = 0.2
 DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES = 4
 DEFAULT_RECOVERY_MODE_LOT_MULTIPLIER = 0.5
 DEFAULT_MIN_LOT_SIZE = 0.01
@@ -1207,6 +1209,8 @@ ADAPTIVE_SIGNAL_SCORE_QUANTILE = safe_get_global('ADAPTIVE_SIGNAL_SCORE_QUANTILE
 MIN_SIGNAL_SCORE_ENTRY_MIN = safe_get_global('MIN_SIGNAL_SCORE_ENTRY_MIN', DEFAULT_MIN_SIGNAL_SCORE_ENTRY_MIN)
 MIN_SIGNAL_SCORE_ENTRY_MAX = safe_get_global('MIN_SIGNAL_SCORE_ENTRY_MAX', DEFAULT_MIN_SIGNAL_SCORE_ENTRY_MAX)
 USE_ADAPTIVE_SIGNAL_SCORE = safe_get_global('USE_ADAPTIVE_SIGNAL_SCORE', DEFAULT_USE_ADAPTIVE_SIGNAL_SCORE)
+USE_ATR_SIGNAL_THRESHOLD = safe_get_global('USE_ATR_SIGNAL_THRESHOLD', DEFAULT_USE_ATR_SIGNAL_THRESHOLD)
+ATR_SIGNAL_THRESH_SLOPE = safe_get_global('ATR_SIGNAL_THRESH_SLOPE', DEFAULT_ATR_SIGNAL_THRESH_SLOPE)
 RECOVERY_MODE_CONSECUTIVE_LOSSES = safe_get_global('RECOVERY_MODE_CONSECUTIVE_LOSSES', DEFAULT_RECOVERY_MODE_CONSECUTIVE_LOSSES)
 RECOVERY_MODE_LOT_MULTIPLIER = safe_get_global('RECOVERY_MODE_LOT_MULTIPLIER', DEFAULT_RECOVERY_MODE_LOT_MULTIPLIER)
 MIN_LOT_SIZE = safe_get_global('MIN_LOT_SIZE', DEFAULT_MIN_LOT_SIZE)
@@ -1950,10 +1954,19 @@ def run_backtest_simulation_v34(
     adaptive_score_thresh_arr = None
     if USE_ADAPTIVE_SIGNAL_SCORE and 'Signal_Score' in df_sim.columns:
         signal_scores_num = pd.to_numeric(df_sim['Signal_Score'], errors='coerce')
-        adaptive_score_thresh_arr = (
+        base_thresh = (
             signal_scores_num.shift(1)
             .rolling(ADAPTIVE_SIGNAL_SCORE_WINDOW, min_periods=1)
             .quantile(ADAPTIVE_SIGNAL_SCORE_QUANTILE)
+        )
+        if USE_ATR_SIGNAL_THRESHOLD:
+            atr_series = pd.to_numeric(df_sim['ATR_14'], errors='coerce')
+            atr_avg_series = pd.to_numeric(df_sim['ATR_14_Rolling_Avg'], errors='coerce')
+            ratio = atr_series / atr_avg_series.replace(0, np.nan)
+            dynamic = ATR_SIGNAL_THRESH_SLOPE * (ratio - 1.0)
+            base_thresh = base_thresh + dynamic
+        adaptive_score_thresh_arr = (
+            base_thresh
             .clip(MIN_SIGNAL_SCORE_ENTRY_MIN, MIN_SIGNAL_SCORE_ENTRY_MAX)
             .fillna(MIN_SIGNAL_SCORE_ENTRY)
             .to_numpy()
