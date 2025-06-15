@@ -1557,10 +1557,33 @@ def validate_csv_data(df, required_cols=None):
     """
     if df is None or df.empty:
         raise ValueError("CSV data is empty")
+
     if required_cols:
         missing = [c for c in required_cols if c not in df.columns]
         if missing:
             raise KeyError(f"Missing columns: {missing}")
+
+    sample = df.head(100)
+    price_cols = ["Open", "High", "Low", "Close"]
+    vol_col = "Volume"
+
+    for col in price_cols + [vol_col]:
+        if col in sample.columns:
+            converted = pd.to_numeric(sample[col], errors="coerce")
+            if converted.isna().any():
+                raise TypeError(f"Column {col} contains non-numeric values")
+
+    if {"High", "Low"}.issubset(sample.columns):
+        if not (sample["High"] >= sample["Low"]).all():
+            raise ValueError("High < Low detected")
+
+    if vol_col in sample.columns:
+        if (sample[vol_col] < 0).any():
+            raise ValueError("Volume contains negative values")
+
+    if sample[price_cols + [vol_col]].isna().any().any():
+        raise ValueError("Missing values detected in price columns")
+
     return df
 
 
@@ -1716,6 +1739,35 @@ def _extract_thai_date_time(ts: str) -> tuple[str | None, str | None]:
         return None, None
 
 
+# [Patch v6.9.38] Schema และ loader รวมการทำความสะอาดข้อมูล
+CSV_SCHEMA = {
+    "Open": "float64",
+    "High": "float64",
+    "Low": "float64",
+    "Close": "float64",
+    "Volume": "int64",
+}
+
+
+def safe_load_csv(path: str, fill_method: str = "ffill") -> pd.DataFrame:
+    """Load CSV and clean using :mod:`data_cleaner`."""
+    from src import data_cleaner
+    df = safe_load_csv_auto(path)
+    validate_csv_data(df, list(CSV_SCHEMA.keys()))
+    df = data_cleaner.clean_dataframe(df, fill_method)
+    for col, dtype in CSV_SCHEMA.items():
+        if col in df.columns:
+            df[col] = df[col].astype(dtype, errors="ignore")
+    if "Time" in df.columns:
+        df = data_cleaner.remove_duplicate_times(df)
+        df = data_cleaner.sort_by_time(df)
+        df.set_index("Time", inplace=True)
+    jumps = check_price_jumps(df, threshold=0.05)
+    if jumps:
+        logger.warning(f"[Patch] Detected {jumps} potential outliers in {path}")
+    return df
+
+
 
 
 
@@ -1727,6 +1779,7 @@ __all__ = [
     "configure_matplotlib_fonts",
     "setup_fonts",
     "safe_load_csv_auto",
+    "safe_load_csv",
     "load_data_from_csv",
     "load_app_config",
     "safe_set_datetime",
