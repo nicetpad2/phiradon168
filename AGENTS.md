@@ -363,4 +363,5 @@
 - Moved entry filter helpers to `strategy.trend_filter` and lot sizing utilities to `strategy.risk_management`.
 =======
 - Added `main_utils` module for CSV loading and output directory helpers.
+- Added `terminal_logger` module for redirecting stdout/stderr to log files.
 
