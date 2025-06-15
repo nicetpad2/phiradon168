@@ -14,6 +14,7 @@
   - [OMS_Guardian](#oms_guardian)
   - [System_Deployer](#system_deployer)
   - [Param_Tuner_AI](#param_tuner_ai)
+  - [Auth_Manager](#auth_manager)
 - [🧪 Test & Mocking](#-test--mocking)
   - [Execution_Test_Unit](#execution_test_unit)
   - [Colab_Navigator](#colab_navigator)
@@ -156,6 +157,15 @@
   - Manage adaptive risk and SL/TP scaling modules
   - Jointly optimize model and strategy parameters with Optuna, evaluating AUC per fold
 - **Modules:** `tuning/joint_optuna.py`, `tuning/hyperparameter_sweep.py`
+### [Auth_Manager](src/auth_manager.py)
+- **Main Role:** User Authentication
+- **Key Responsibilities:**
+  - Manage user registration and login
+  - Hash passwords with PBKDF2 and random salts
+  - Issue session tokens and validate expiration
+  - Provide logout utilities for dashboards
+- **Status:** Initial implementation
+
 
 ---
 

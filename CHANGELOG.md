@@ -24,6 +24,11 @@
 - QA: pytest -q passed (existing tests)
 
 ### 2025-07-27
+- [Patch v6.9.47] Add login module for dashboard
+- New/Updated unit tests added for tests/test_auth_manager.py
+- QA: pytest -q passed (357 tests)
+
+### 2025-07-27
 - [Patch v6.9.46] Import run_backtest_simulation_v34 in main module
 - New/Updated unit tests added for N/A
 - QA: pytest -q passed (356 tests)
