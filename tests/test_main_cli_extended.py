@@ -137,11 +137,17 @@ def test_run_report_failure(monkeypatch):
         pipeline.run_report(PipelineConfig())
 
 
-def test_run_all_sequence(monkeypatch):
-    manager = DummyManager(None)
-    monkeypatch.setattr(pipeline, 'PipelineManager', lambda cfg: manager)
-    pipeline.run_all(PipelineConfig())
-    assert manager.order == ['load', 'sweep', 'wfv', 'save', 'qa']
+def test_run_all_sequence(monkeypatch, tmp_path):
+    order = []
+    monkeypatch.setattr(pipeline, 'run_preprocess', lambda c: order.append('preprocess'))
+    monkeypatch.setattr(pipeline, 'run_sweep', lambda c: order.append('sweep'))
+    monkeypatch.setattr(pipeline, 'run_threshold', lambda c: order.append('threshold'))
+    monkeypatch.setattr(pipeline, 'run_backtest', lambda c: order.append('backtest'))
+    monkeypatch.setattr(pipeline, 'run_report', lambda c: order.append('report'))
+    cfg = PipelineConfig(model_dir=str(tmp_path))
+    pipeline.run_all(cfg)
+    assert order == ['preprocess', 'sweep', 'threshold', 'backtest', 'report']
+    assert (tmp_path / '.qa_pipeline.log').exists()
 
 
 def test_main_handles_pipeline_error(monkeypatch):
