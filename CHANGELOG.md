@@ -1,3 +1,8 @@
+### 2025-07-18
+- [Patch v6.9.35] Split src/main.py into smaller modules
+- New/Updated unit tests added for src/main_helpers.py and others
+- QA: pytest -q passed (tests count TBD)
+
 # ### 2025-07-05
 - [Patch v6.9.33] ปรับปรุงตัวแปลงวันที่ใน auto_convert_gold_csv
 - New/Updated unit tests added for tests/test_auto_convert_csv.py
