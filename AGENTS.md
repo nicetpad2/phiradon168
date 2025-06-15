@@ -346,3 +346,4 @@
 - Added `trade_log_pipeline` module for safe trade log regeneration.
 - Added `wfv_aggregator` module for fold result aggregation.
 - Added `state_manager` module for persistent system state management.
+- Added `main_helpers`, `model_helpers`, and `pipeline_helpers` modules to organize main functions.
