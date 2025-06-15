@@ -1,4 +1,5 @@
 from .common import *
+import sys
 
 def ema(series, period):
     if not isinstance(series, pd.Series): logging.error(f"EMA Error: Input must be a pandas Series, got {type(series)}"); raise TypeError("Input must be a pandas Series.")
@@ -46,7 +47,10 @@ def rsi(series, period=14):
         logging.debug("RSI: Input series is empty, returning NaN-aligned series.")
         return pd.Series(np.nan, index=series.index, dtype='float32')
     series_numeric = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
-    if not _TA_AVAILABLE or ta is None:
+    pkg = sys.modules.get("src.features")
+    ta_lib = ta if ta is not None else getattr(pkg, "ta", None)
+    ta_available = _TA_AVAILABLE and ta_lib is not None
+    if not ta_available:
         logging.warning("   (Warning) Using pandas fallback RSI because 'ta' library not loaded.")
         if series_numeric.empty or len(series_numeric) < period:
             logging.warning(
@@ -62,7 +66,7 @@ def rsi(series, period=14):
         rs = avg_gain / avg_loss_safe
         rsi_series = (100 - 100 / (1 + rs)).fillna(100)
         return rsi_series.reindex(series.index).ffill().astype('float32')
-    ta_loaded = 'ta' in globals() and ta is not None
+    ta_loaded = ta_lib is not None
     if not ta_loaded:
         logging.error("   (Error) RSI calculation failed: 'ta' library not loaded.")
     if series_numeric.empty or len(series_numeric) < period:
@@ -76,11 +80,11 @@ def rsi(series, period=14):
     if series_numeric.index.duplicated().any():
         series_numeric = series_numeric.groupby(series_numeric.index).last()
     cache_key = period
-    use_ta = hasattr(ta, 'momentum') and hasattr(ta.momentum, 'RSIIndicator')
+    use_ta = hasattr(ta_lib, 'momentum') and hasattr(ta_lib.momentum, 'RSIIndicator')
     if use_ta:
         try:
             if cache_key not in _rsi_cache:
-                _rsi_cache[cache_key] = ta.momentum.RSIIndicator(close=series_numeric, window=period, fillna=False)
+                _rsi_cache[cache_key] = ta_lib.momentum.RSIIndicator(close=series_numeric, window=period, fillna=False)
             else:
                 _rsi_cache[cache_key]._close = series_numeric
             rsi_series = _rsi_cache[cache_key].rsi()
@@ -172,7 +176,10 @@ def macd(series, window_slow=26, window_fast=12, window_sign=9):
         logging.debug(f"MACD: Input series too short after dropna ({len(series.dropna())} < {window_slow}).")
         return nan, nan.copy(), nan.copy()
     s = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan).dropna()
-    if not _TA_AVAILABLE or ta is None:
+    pkg = sys.modules.get("src.features")
+    ta_lib = ta if ta is not None else getattr(pkg, "ta", None)
+    ta_available = _TA_AVAILABLE and ta_lib is not None
+    if not ta_available:
         logging.warning("   (Warning) Using pandas fallback MACD because 'ta' library not loaded.")
         if s.empty or len(s) < window_slow:
             logging.warning(
@@ -191,7 +198,7 @@ def macd(series, window_slow=26, window_fast=12, window_sign=9):
             )
             return nan, nan.copy(), nan.copy()
         try:
-            ind = ta.trend.MACD(close=s, window_slow=window_slow, window_fast=window_fast, window_sign=window_sign, fillna=False)
+            ind = ta_lib.trend.MACD(close=s, window_slow=window_slow, window_fast=window_fast, window_sign=window_sign, fillna=False)
             line = ind.macd()
             signal = ind.macd_signal()
             diff = ind.macd_diff()

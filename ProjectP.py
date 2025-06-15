@@ -106,7 +106,7 @@ except ImportError:  # pragma: no cover - optional dependency
 except Exception:  # pragma: no cover - NVML failure fallback
     nvml_handle = None
 
-from src.main import main, setup_output_directory
+from src.main import main, setup_output_directory, OUTPUT_BASE_DIR, OUTPUT_DIR_NAME
 from src.data_loader import (
     auto_convert_gold_csv as auto_convert_csv,
     auto_convert_csv_to_parquet,
@@ -121,6 +121,18 @@ def configure_logging():
         format="%(asctime)s [%(levelname)s][%(filename)s:%(lineno)d] - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+
+
+def print_logo() -> None:
+    """แสดงโลโก้ Project P บนหน้าจอ."""
+    logo = r"""
+ ____            _            ____  ____  
+|  _ \ ___  __ _| | _____    |  _ \|  _ \ 
+| |_) / _ \/ _` | |/ / _ \   | |_) | |_) |
+|  __/  __/ (_| |   <  __/   |  __/|  __/ 
+|_|   \___|\__,_|_|\_\___|   |_|   |_|    
+    """
+    print(logo)
 
 
 def custom_helper_function():
@@ -378,28 +390,30 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
     if not raw_data_paths:
         return []
     path = raw_data_paths[0]
-    if not os.path.exists(path) and FALLBACK_DIR:
-        fallback_path = os.path.join(FALLBACK_DIR, os.path.basename(path))
-        if os.path.exists(fallback_path):
+    if not os.path.exists(path):
+        if FALLBACK_DIR:
+            fallback_path = os.path.join(FALLBACK_DIR, os.path.basename(path))
+            if os.path.exists(fallback_path):
+                logger.warning(
+                    "Raw data file not found: %s; using fallback %s",
+                    path,
+                    fallback_path,
+                )
+                path = fallback_path
+            else:
+                logger.warning(
+                    "[Patch v6.4.6] Raw data file not found: %s. Proceeding with empty feature list.",
+                    path,
+                )
+                return []
+        else:
             logger.warning(
-                "Raw data file not found: %s; using fallback %s",
+                "[Patch v6.4.6] Raw data file not found: %s. Proceeding with empty feature list.",
                 path,
-                fallback_path,
             )
-            path = fallback_path
-    try:
-        from src.utils.data_utils import safe_read_csv
-
-        df_sample = safe_read_csv(path).head(500)
-    except FileNotFoundError:
-
-        logger.warning(
-            "[Patch v6.4.6] Raw data file not found: %s. Proceeding with empty feature list.",
-            raw_data_paths[0],
-        )
-        # Proceed with no features if raw data is unavailable
-
-        return []
+            return []
+    from src.utils.data_utils import safe_read_csv
+    df_sample = safe_read_csv(path).head(500)
     features = [
         c
         for c in df_sample.columns
@@ -441,74 +455,57 @@ def load_trade_log(
 
 def main():
     """Main entry point for the ProjectP command-line interface."""
-    parser = argparse.ArgumentParser(
-        description="ProjectP Pipeline Manager.",
-        usage="python ProjectP.py <mode> [--all] [--step-name <step>]",
-    )
+    print_logo()
+    args = parse_args()
 
-    parser.add_argument(
-        "mode",
-        nargs="?",
-        help=(
-            "The mode to run. Available modes: 'full_pipeline', 'wfv', "
-            "'tune', 'backtest', 'step'."
-        ),
-    )
-    parser.add_argument(
-        "--all",
-        action="store_true",
-        help="A flag to run the full process. Primarily used with 'wfv' mode.",
-    )
-    parser.add_argument(
-        "--step-name",
-        type=str,
-        help="Specify the step name from pipeline.yaml. Used with 'step' mode.",
-    )
+    if args.auto_convert:
+        src_dir = os.getenv("SOURCE_CSV_DIR", "data")
+        dest_dir = os.getenv("DEST_CSV_DIR")
+        out_base = dest_dir or setup_output_directory(os.getcwd(), "converted_csvs")
+        auto_convert_csv(src_dir, output_path=os.path.join(out_base, "XAUUSD_M1_thai.csv"))
+        sys.exit(0)
 
-    if len(sys.argv) == 1:
-        parser.print_help(sys.stderr)
-        sys.exit(1)
-
-    args = parser.parse_args()
-
-    if args.mode == "wfv":
-        if args.all:
-            print("\nINFO: Mode 'wfv --all' selected.")
-            print("INFO: Starting the full Walk-Forward Validation (WFV) pipeline...")
-            try:
-                from wfv_orchestrator import main as run_wfv_pipeline
-                run_wfv_pipeline()
-            except ImportError:
-                print(
-                    "WARNING: Could not import wfv_orchestrator directly. Running as a subprocess."
-                )
-                subprocess.run(["python", "wfv_orchestrator.py"], check=True)
-
-            print("INFO: Full WFV pipeline has completed.")
-        else:
-            print("\nERROR: The 'wfv' mode requires the '--all' flag.")
-            print("Usage: python ProjectP.py wfv --all")
-            sys.exit(1)
-
-    elif args.mode == "full_pipeline":
+    if args.mode == "full_pipeline":
         run_full_pipeline()
+        return
 
-    elif args.mode == "step":
-        if args.step_name:
-            print(f"\nINFO: Mode 'step' selected. Executing step: '{args.step_name}'...")
-            print(f"INFO: Logic for step '{args.step_name}' should be implemented here.")
-        else:
-            print("\nERROR: The 'step' mode requires the '--step-name' argument.")
-            print("Usage: python ProjectP.py step --step-name <name_of_your_step>")
-            sys.exit(1)
+    if args.mode == "wfv" and args.all:
+        print("\nINFO: Mode 'wfv --all' selected.")
+        print("INFO: Starting the full Walk-Forward Validation (WFV) pipeline...")
+        try:
+            from wfv_orchestrator import main as run_wfv_pipeline
+            run_wfv_pipeline()
+        except ImportError:
+            print(
+                "WARNING: Could not import wfv_orchestrator directly. Running as a subprocess."
+            )
+            subprocess.run(["python", "wfv_orchestrator.py"], check=True)
+        print("INFO: Full WFV pipeline has completed.")
+        return
 
-    else:
-        print(
-            f"\nERROR: Invalid or incomplete command. Mode '{args.mode}' is not recognized or is missing arguments."
-        )
-        parser.print_help(sys.stderr)
+    if args.mode == "wfv" and not args.all:
+        print("\nERROR: The 'wfv' mode requires the '--all' flag.")
+        print("Usage: python ProjectP.py --mode wfv --all")
         sys.exit(1)
+
+    run_mode(args.mode)
+    return
+
+
+
+def _script_main():
+    args = parse_projectp_args()
+    if getattr(args, "auto_convert", False):
+        src_dir = os.getenv("SOURCE_CSV_DIR", "data")
+        dest_dir = os.getenv("DEST_CSV_DIR")
+        base = setup_output_directory(OUTPUT_BASE_DIR, OUTPUT_DIR_NAME)
+        dest = dest_dir or os.path.join(base, "converted_csvs")
+        os.makedirs(dest, exist_ok=True)
+        auto_convert_csv(src_dir, output_path=dest)
+        sys.exit(0)
+    import main as pipeline_main
+    pipeline_main.main()
 
 
 if __name__ == "__main__":
-    main()
+    _script_main()

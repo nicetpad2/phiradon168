@@ -10,7 +10,7 @@
 
 - **Data Pipeline**: โมดูลในโฟลเดอร์ `src/` จัดการโหลดข้อมูลดิบและสร้างฟีเจอร์สำหรับโมเดล
 - **Strategy Engine**: กฎเทรดหลักและตัวกรองเทรนด์อยู่ในโฟลเดอร์ `strategy/` โดยใช้ตัวกรอง ATR และ Median เพื่อลด Noise พร้อมโมเดล ML ประเมินความน่าจะเป็นของ TP2
-- **Orchestrator**: ไฟล์ `main.py` ทำหน้าที่ควบคุมขั้นตอนทั้งหมดตั้งแต่เตรียมข้อมูล ไปจนถึงฝึก MetaModel และสร้างรายงาน Walk-Forward Validation
+- **Orchestrator**: ใช้ `ProjectP.py` เป็น CLI หลักเรียกใช้งาน โดยภายในเรียก `main.py` ควบคุมขั้นตอนทั้งหมดตั้งแต่เตรียมข้อมูลไปจนถึงฝึก MetaModel และสร้างรายงาน Walk-Forward Validation
 - **Risk Management**: ระบบคำนวณ Stop Loss/Take Profit ด้วย ATR พร้อมจัดการขนาดลอตตามความเสี่ยงที่กำหนด
 
 ภาพรวมนี้ช่วยให้ผู้ใช้เห็นลำดับการทำงานตั้งแต่รับข้อมูล จนถึงการวัดผลลัพธ์ของกลยุทธ์
@@ -39,11 +39,11 @@ pip install -r dev-requirements.txt
 
 ## Usage
 ```bash
-python main.py --mode backtest
-python main.py --mode all
-python main.py --stage backtest       # รันเฉพาะขั้นตอน backtest
-python main.py --stage preprocess    # เตรียมข้อมูลและสร้างฟีเจอร์
-python main.py --stage report        # สรุปผลและสร้างกราฟรายงาน
+python ProjectP.py --mode backtest
+python ProjectP.py --mode full_pipeline
+python ProjectP.py --mode wfv --all      # รัน Walk-Forward Validation ทั้งชุด
+python ProjectP.py --mode preprocess     # เตรียมข้อมูลและสร้างฟีเจอร์
+python ProjectP.py --mode report         # สรุปผลและสร้างกราฟรายงาน
 # ฝึกโมเดลใหม่หลายค่าพารามิเตอร์
 python tuning/hyperparameter_sweep.py
 ```
@@ -86,12 +86,12 @@ python tuning/hyperparameter_sweep.py
     ค่าเริ่มต้นคือ `False` เพื่อควบคุมความปลอดภัย ควรติดตั้งไลบรารีผ่าน `pip install -r requirements.txt` ก่อนใช้งานจริง
 
 ### คำสั่งเพิ่มเติม
-- `python main.py --mode all` เตรียมข้อมูลและรันขั้นตอนหลักครบถ้วน
+- `python ProjectP.py --mode full_pipeline` เตรียมข้อมูลและรันขั้นตอนหลักครบถ้วน
 - `python tuning/hyperparameter_sweep.py` รันฝึกโมเดลหลายค่าพารามิเตอร์
-- ก่อนรัน sweep ควรสั่ง `python main.py --stage all` เพื่อสร้างไฟล์ `logs/trade_log_<DATE>.csv` ให้ครบถ้วน
+- ก่อนรัน sweep ควรสั่ง `python ProjectP.py --mode wfv --all` เพื่อสร้างไฟล์ `logs/trade_log_<DATE>.csv` ให้ครบถ้วน
 - `python threshold_optimization.py` หา threshold ที่ดีที่สุดด้วย Optuna
-- `python main.py --stage backtest` รัน backtest พร้อม config ใน `config/pipeline.yaml`
-- `python main.py --stage all` ทำ Walk-Forward Validation ทั้งชุด
+- `python ProjectP.py --mode backtest` รัน backtest พร้อม config ใน `config/pipeline.yaml`
+- `python ProjectP.py --mode wfv --all` ทำ Walk-Forward Validation ทั้งชุด
 - `python profile_backtest.py <CSV>` วิเคราะห์คอขวดประสิทธิภาพ
 - `python qa_output_default.py` สรุปรายงานไฟล์ QA ใน `output_default`
 - `python scripts/validate_features.py features_main.json` ตรวจสอบรายชื่อฟีเจอร์
@@ -113,7 +113,7 @@ threshold_file: threshold_wfv_optuna_results.csv
 ก่อนรันโปรแกรมได้ เช่น
 ```bash
 export DRIFT_WASSERSTEIN_THRESHOLD=0.2
-python main.py --mode all
+python ProjectP.py --mode full_pipeline
 ```
 
 
@@ -139,10 +139,10 @@ python profile_backtest.py XAUUSD_M1.csv --fund AGGRESSIVE --train --train-outpu
 
 ## การลดข้อความ Log
 หากต้องการให้โปรแกรมแสดงเฉพาะคำเตือนและสรุปผลแบบย่อ สามารถตั้งค่า
-ตัวแปรสภาพแวดล้อม `COMPACT_LOG=1` ก่อนรัน `main.py` เช่น
+ตัวแปรสภาพแวดล้อม `COMPACT_LOG=1` ก่อนรัน `ProjectP.py` เช่น
 
 ```bash
-COMPACT_LOG=1 python main.py --mode all
+COMPACT_LOG=1 python ProjectP.py --mode full_pipeline
 ```
 ค่าดังกล่าวจะปรับระดับ log เป็น `WARNING` อัตโนมัติ ทำให้เห็นเฉพาะ
 ข้อความสำคัญและผลลัพธ์สรุปท้ายรัน
@@ -202,7 +202,7 @@ Before running tests in Colab:
   ไฟล์บันทึกของ Wave_Marker_Unit
 ## การรันบน Colab และ VPS
 - ระบบจะตรวจสอบโดยอัตโนมัติว่ารันบน Google Colab หรือไม่ผ่านฟังก์ชัน `is_colab()` ใน `src/config.py`
-- หากเป็น Colab จะทำการ mount Google Drive และติดตั้งฟอนต์ให้เอง สามารถรัน `python main.py --mode all` ได้ทันที
+- หากเป็น Colab จะทำการ mount Google Drive และติดตั้งฟอนต์ให้เอง สามารถรัน `python ProjectP.py --mode full_pipeline` ได้ทันที
 - หากรันบน VPS ไม่จำเป็นต้อง mount Drive และสามารถกำหนดเส้นทางด้วยตัวแปร `FILE_BASE_OVERRIDE` เพื่อชี้ไปยังโฟลเดอร์ข้อมูล
 
 
@@ -273,3 +273,14 @@ python scripts/convert_project_csvs.py --dest parquet
 ```
 ไฟล์ `.parquet` จะถูกบันทึกในโฟลเดอร์ที่ระบุ ซึ่งสามารถนำไปใช้กับ
 `data_loader.auto_convert_csv_to_parquet` เพื่อความรวดเร็วในการอ่านข้อมูล
+
+## Security Hardening
+โครงการเน้นประมวลผลแบบออฟไลน์ แต่ยังควรปฏิบัติตามแนวทางความปลอดภัยต่อไปนี้
+
+- ใช้ **SQLAlchemy** หรือการ bind parameter เพื่อป้องกัน SQL Injection หากจำเป็นต้องเขียนคำสั่ง SQL เอง
+- หลีกเลี่ยงการเรนเดอร์ HTML ที่มาจากภายนอกใน Streamlit เว้นแต่จะมีการกรอง/escape อักขระพิเศษเพื่อลดความเสี่ยง XSS
+- การเชื่อมต่อกับบริการภายนอกควรใช้ **HTTPS** และตรวจสอบ certificate รวมถึงตั้ง timeout ที่เหมาะสม หากต้องดาวน์โหลดไฟล์ควรตรวจสอบ checksum
+- เก็บรหัสผ่านหรือ API keys ไว้ในไฟล์ `.env` และตั้งสิทธิ์ให้เฉพาะผู้ดูแลอ่านได้ เพื่อไม่ให้ข้อมูลหลุดผ่าน Git
+- ใช้โมดูล `csv_validator.validate_and_convert_csv` ตรวจสอบรูปแบบไฟล์ที่รับเข้าระบบ และตรวจสอบค่าพารามิเตอร์จากผู้ใช้อย่างเคร่งครัด
+- พิจารณารันกระบวนการหลักใน container ที่ไม่ใช่ root อัปเดต dependencies เป็นประจำ และตั้ง firewall หรือ whitelist IP หากเปิด Dashboard ในเครือข่าย
+- ตั้งเวลาหมดอายุ session เพื่อลดความเสี่ยงจากการเปิดหน้าจอค้างไว้

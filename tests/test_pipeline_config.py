@@ -1,4 +1,5 @@
 from src.utils import pipeline_config
+import pytest
 
 
 def test_load_config_defaults(tmp_path):
@@ -48,3 +49,11 @@ def test_load_config_parquet_dir(tmp_path):
     conf_path.write_text('data:\n  parquet_dir: cache\n')
     cfg = pipeline_config.load_config(str(conf_path))
     assert cfg.parquet_dir == 'cache'
+
+
+def test_load_config_invalid_yaml(tmp_path):
+    conf_path = tmp_path / 'bad.yaml'
+    conf_path.write_text('log_level: [INFO')
+    with pytest.raises(pipeline_config.PipelineError) as exc:
+        pipeline_config.load_config(str(conf_path))
+    assert 'line' in str(exc.value)

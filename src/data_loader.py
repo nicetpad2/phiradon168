@@ -1585,7 +1585,7 @@ def validate_csv_data(df, required_cols=None):
         if col in sample.columns:
             converted = pd.to_numeric(sample[col], errors="coerce")
             if converted.isna().any():
-                raise TypeError(f"Column {col} contains non-numeric values")
+                raise ValueError(f"Column {col} contains non-numeric values")
 
     if {"High", "Low"}.issubset(sample.columns):
         if not (sample["High"] >= sample["Low"]).all():
@@ -1595,7 +1595,8 @@ def validate_csv_data(df, required_cols=None):
         if (sample[vol_col] < 0).any():
             raise ValueError("Volume contains negative values")
 
-    if sample[price_cols + [vol_col]].isna().any().any():
+    subset = [c for c in price_cols + [vol_col] if c in sample.columns]
+    if subset and sample[subset].isna().any().any():
         raise ValueError("Missing values detected in price columns")
 
     return df
@@ -1769,7 +1770,7 @@ def _extract_thai_date_time_vec(ts_series: pd.Series) -> pd.DataFrame:
     """
 
     # [Patch v6.9.44] Vectorized Thai datetime extraction
-    ts_series = ts_series.astype(str).str.replace(".", "-")
+    ts_series = ts_series.astype(str).str.replace(".", "-", regex=False)
     date_time = ts_series.str.split(" ", n=1, expand=True)
     if date_time.shape[1] < 2:
         date_time = pd.DataFrame({0: date_time[0], 1: None})

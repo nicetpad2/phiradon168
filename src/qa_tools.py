@@ -16,17 +16,16 @@ def quick_qa_output(
     issues = []
     p = Path(output_dir)
     for f in p.glob("*.csv.gz"):
-        try:
-            from src.utils.data_utils import safe_read_csv
-
-            df = safe_read_csv(f)
-            missing_cols = [c for c in ["pnl", "entry_price"] if c not in df.columns]
-            if df.empty:
-                issues.append(f"{f.name}: No trades")
-            elif missing_cols:
-                issues.append(f"{f.name}: Missing columns {','.join(missing_cols)}")
-        except Exception as e:
-            issues.append(f"{f.name}: Error {e}")
+        from src.utils.data_utils import safe_read_csv
+        df = safe_read_csv(f)
+        if df.empty and not df.columns.tolist():
+            issues.append(f"{f.name}: Error unreadable file")
+            continue
+        missing_cols = [c for c in ["pnl", "entry_price"] if c not in df.columns]
+        if df.empty:
+            issues.append(f"{f.name}: No trades")
+        elif missing_cols:
+            issues.append(f"{f.name}: Missing columns {','.join(missing_cols)}")
     report_path = p / report_file
     with open(report_path, "w", encoding="utf-8") as fh:
         for line in issues:

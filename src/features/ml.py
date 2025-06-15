@@ -330,9 +330,12 @@ def analyze_feature_importance_shap(model, model_type, data_sample, features, ou
     (v4.8.8 Patch 1: Enhanced robustness for SHAP value structure and feature validation)
     """
     global shap
-    if not shap:
+    pkg = sys.modules.get("src.features")
+    shap_lib = shap if shap is not None else getattr(pkg, "shap", None)
+    if not shap_lib:
         logging.warning("   (Warning) Skipping SHAP: 'shap' library not found.")
         return
+    shap = shap_lib
     if model is None:
         logging.warning("   (Warning) Skipping SHAP: Model is None.")
         return
