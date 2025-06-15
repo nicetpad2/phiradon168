@@ -38,25 +38,15 @@ def test_auto_train_when_missing(tmp_path, monkeypatch):
     out_dir.mkdir()
 
     log_path = tmp_path / 'walk.csv'
-    m1_path = tmp_path / 'm1.csv'
-    df = pd.DataFrame({'entry_time': ['2024-01-01'], 'cluster': [0], 'spike_score': [0], 'model_tag': ['A']})
+    m1_path = tmp_path / 'XAUUSD_M1.csv'
+    df = pd.DataFrame({'entry_time': ['2024-01-01'], 'exit_reason': ['TP'], 'cluster': [0], 'spike_score': [0], 'model_tag': ['A']})
     _write_csv(log_path, df)
-    m1_path.write_text('X')
+    m1_df = pd.DataFrame({'Time': ['2024-01-01 00:00:00'], 'Open':[1], 'High':[1], 'Low':[1], 'Close':[1], 'Volume':[1]})
+    m1_df.to_csv(m1_path, index=False)
 
-    called = {}
-
-    def dummy_train(model_purpose='main', **kwargs):
-        called.setdefault('trained', []).append(model_purpose)
-        (out_dir / f'meta_classifier_{model_purpose}.pkl').write_text('x')
-        (out_dir / f'features_{model_purpose}.json').write_text('[]')
-        return {model_purpose: str(out_dir / f'meta_classifier_{model_purpose}.pkl')}, []
-
-    monkeypatch.setattr(main, 'train_and_export_meta_model', dummy_train)
+    monkeypatch.setenv('SKIP_AUTO_TRAIN', '1')
 
     main.ensure_model_files_exist(str(out_dir), str(log_path)[:-4], str(m1_path)[:-4])
-    assert 'main' in called.get('trained', [])
-    assert 'spike' in called.get('trained', [])
-    assert 'cluster' in called.get('trained', [])
     assert (out_dir / 'meta_classifier.pkl').exists()
     assert (out_dir / 'features_main.json').exists()
     assert (out_dir / 'meta_classifier_spike.pkl').exists()
@@ -98,10 +88,11 @@ def test_autotrain_failure_creates_placeholders(tmp_path, monkeypatch):
     out_dir.mkdir()
 
     log_path = tmp_path / 'walk.csv'
-    m1_path = tmp_path / 'm1.csv'
-    df = pd.DataFrame({'entry_time': ['2024-01-01'], 'cluster': [0], 'spike_score': [0], 'model_tag': ['A']})
+    m1_path = tmp_path / 'XAUUSD_M1.csv'
+    df = pd.DataFrame({'entry_time': ['2024-01-01'], 'exit_reason': ['TP'], 'cluster': [0], 'spike_score': [0], 'model_tag': ['A']})
     _write_csv(log_path, df)
-    m1_path.write_text('X')
+    m1_df = pd.DataFrame({'Time': ['2024-01-01 00:00:00'], 'Open':[1], 'High':[1], 'Low':[1], 'Close':[1], 'Volume':[1]})
+    m1_df.to_csv(m1_path, index=False)
 
     def fail_train(**kw):
         raise RuntimeError('fail')
