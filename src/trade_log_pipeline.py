@@ -8,10 +8,14 @@ from src.utils.errors import PipelineError
 logger = logging.getLogger(__name__)
 
 
-def load_or_generate_trade_log(log_path: str, min_rows: int = 10, features_path: str | None = None) -> pd.DataFrame:
+def load_or_generate_trade_log(
+    log_path: str, min_rows: int = 10, features_path: str | None = None
+) -> pd.DataFrame:
     """Load trade log from ``log_path`` or regenerate via backtest."""
     try:
-        df = pd.read_csv(log_path)
+        from src.utils.data_utils import safe_read_csv
+
+        df = safe_read_csv(log_path)
     except Exception:
         df = pd.DataFrame()
 
@@ -21,7 +25,9 @@ def load_or_generate_trade_log(log_path: str, min_rows: int = 10, features_path:
         return df
 
     logger.warning(
-        "[Patch v6.7.4] trade_log has %d/%d rows – regenerating via backtest", len(df), min_rows
+        "[Patch v6.7.4] trade_log has %d/%d rows – regenerating via backtest",
+        len(df),
+        min_rows,
     )
     try:
         from backtest_engine import run_backtest_engine
@@ -52,9 +58,13 @@ def load_or_generate_trade_log(log_path: str, min_rows: int = 10, features_path:
         )
     except Exception as exc:
         logger.error(
-            "Trade log generation via backtest failed unexpectedly: %s", exc, exc_info=True
+            "Trade log generation via backtest failed unexpectedly: %s",
+            exc,
+            exc_info=True,
         )
-        raise PipelineError("trade log generation process encountered an error") from exc
+        raise PipelineError(
+            "trade log generation process encountered an error"
+        ) from exc
 
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     new_df.to_csv(log_path, index=False)

@@ -26,14 +26,21 @@ class Order:
         return asdict(self)
 
 
-def setup_trade_logger(log_file: str, max_bytes: int = 1_000_000, backup_count: int = 5) -> logging.Logger:
+def setup_trade_logger(
+    log_file: str, max_bytes: int = 1_000_000, backup_count: int = 5
+) -> logging.Logger:
     """[Patch v5.6.1] Setup rotating logger for trade logs."""
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    handler = RotatingFileHandler(log_file, maxBytes=max_bytes, backupCount=backup_count, encoding="utf-8")
+    handler = RotatingFileHandler(
+        log_file, maxBytes=max_bytes, backupCount=backup_count, encoding="utf-8"
+    )
     formatter = logging.Formatter("%(asctime)s %(levelname)s:%(message)s")
     handler.setFormatter(formatter)
     trade_logger = logging.getLogger("trade_logger")
-    if not any(isinstance(h, RotatingFileHandler) and h.baseFilename == handler.baseFilename for h in trade_logger.handlers):
+    if not any(
+        isinstance(h, RotatingFileHandler) and h.baseFilename == handler.baseFilename
+        for h in trade_logger.handlers
+    ):
         trade_logger.addHandler(handler)
     trade_logger.setLevel(logging.INFO)
     return trade_logger
@@ -53,7 +60,9 @@ def export_trade_log(trades, output_dir, label, fund_name=None):
         trades.to_csv(path, index=False)
         logger.info(f"[QA] Output file {path} saved successfully.")
         # [Patch] Save QA summary per trade log export
-        with open(os.path.join(qa_dir, f"qa_summary_{label}.log"), "w", encoding="utf-8") as f:
+        with open(
+            os.path.join(qa_dir, f"qa_summary_{label}.log"), "w", encoding="utf-8"
+        ) as f:
             f.write(f"Trade Log QA: {len(trades)} trades, saved {path}\n")
     else:
         logger.warning(f"[QA-WARNING] No trades in {label}. Creating empty trade log.")
@@ -66,10 +75,15 @@ def export_trade_log(trades, output_dir, label, fund_name=None):
     # [Patch v5.9.2] Ensure BUY/SELL/NORMAL logs exist for QA
     try:
         from src.utils.trade_splitter import split_trade_log, has_buy_sell
+
         if trades is not None and not trades.empty and has_buy_sell(trades):
             split_trade_log(trades, output_dir)
         else:
-            for fname in ("trade_log_BUY.csv", "trade_log_SELL.csv", "trade_log_NORMAL.csv"):
+            for fname in (
+                "trade_log_BUY.csv",
+                "trade_log_SELL.csv",
+                "trade_log_NORMAL.csv",
+            ):
                 fpath = os.path.join(output_dir, fname)
                 if not os.path.exists(fpath):
                     pd.DataFrame().to_csv(fpath, index=False)
@@ -82,9 +96,7 @@ def suggest_threshold_relaxation(qa_dir: str, label: str) -> None:
     os.makedirs(qa_dir, exist_ok=True)
     suggestion_file = os.path.join(qa_dir, f"relax_threshold_{label}.log")
     with open(suggestion_file, "w", encoding="utf-8") as f:
-        f.write(
-            "No trades generated. Consider relaxing ML_META_FILTER or entry\n"
-        )
+        f.write("No trades generated. Consider relaxing ML_META_FILTER or entry\n")
     logger.info(f"[QA] Threshold relaxation suggestion saved to {suggestion_file}")
 
 
@@ -94,7 +106,9 @@ def aggregate_trade_logs(fold_dirs, output_file, label):
     for directory in fold_dirs:
         path = os.path.join(directory, f"trade_log_{label}.csv")
         if os.path.exists(path):
-            df = pd.read_csv(path)
+            from src.utils.data_utils import safe_read_csv
+
+            df = safe_read_csv(path)
             if not df.empty:
                 dfs.append(df)
     combined = pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
@@ -135,9 +149,7 @@ def log_close_order(
     """Log order closing info with appropriate level."""
     ts_close = _ensure_ts(close_time)
     ts_entry = _ensure_ts(order.open_time)
-    msg = (
-        f"Order Closing: Time={ts_close.isoformat()}, Reason={reason}, ExitPrice={exit_price}, EntryTime={ts_entry.isoformat()}"
-    )
+    msg = f"Order Closing: Time={ts_close.isoformat()}, Reason={reason}, ExitPrice={exit_price}, EntryTime={ts_entry.isoformat()}"
     if "SL" in reason.upper() or "STOP LOSS" in reason.upper():
         trade_log.warning(msg)
     else:
