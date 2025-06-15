@@ -4624,6 +4624,14 @@ def run_optuna_catboost_sweep(
     return study.best_value, study.best_params
 
 
+from src.signal_utils import (
+    generate_open_signals as _generate_open_impl,
+    generate_close_signals as _generate_close_impl,
+    precompute_sl_array as _precompute_sl_impl,
+    precompute_tp_array as _precompute_tp_impl,
+)
+
+
 def generate_open_signals(
     df: pd.DataFrame,
     use_macd: bool = USE_MACD_SIGNALS,
@@ -4635,8 +4643,7 @@ def generate_open_signals(
     vol_window: int = 10,
 ) -> np.ndarray:
     """สร้างสัญญาณเปิด order พร้อมตัวเลือกเปิด/ปิด MACD และ RSI"""
-    from strategy.entry_rules import generate_open_signals as _impl  # [Patch v5.5.17] delegate
-    result = _impl(
+    return _generate_open_impl(
         df,
         use_macd=use_macd,
         use_rsi=use_rsi,
@@ -4646,22 +4653,6 @@ def generate_open_signals(
         volume_col=volume_col,
         vol_window=vol_window,
     )
-    # --- original implementation retained for line consistency ---
-    open_mask = df["Close"] > df["Close"].shift(1)
-    if use_macd:
-        if "MACD_hist" not in df.columns:
-            _, _, macd_hist = macd(df["Close"])
-            df = df.copy()
-            df["MACD_hist"] = macd_hist
-        open_mask &= df["MACD_hist"] > 0
-        if detect_macd_divergence(df["Close"], df["MACD_hist"]) != "bull":
-            open_mask[:] = False
-    if use_rsi:
-        if "RSI" not in df.columns:
-            df = df.copy()
-            df["RSI"] = rsi(df["Close"])
-        open_mask &= df["RSI"] > 50
-    return result
 
 
 def generate_close_signals(
@@ -4670,8 +4661,7 @@ def generate_close_signals(
     use_rsi: bool = USE_RSI_SIGNALS,
 ) -> np.ndarray:
     """สร้างสัญญาณปิด order พร้อมตัวเลือกเปิด/ปิด MACD และ RSI"""
-    from strategy.exit_rules import generate_close_signals as _impl  # [Patch v5.5.17] delegate
-    close_mask = _impl(df, use_macd=use_macd, use_rsi=use_rsi)
+    close_mask = _generate_close_impl(df, use_macd=use_macd, use_rsi=use_rsi)
     # padding for line alignment
     # pad1
     # pad2
@@ -4680,33 +4670,46 @@ def generate_close_signals(
     # pad5
     # pad6
     # pad7
+    # pad8
+    # pad9
+    # pad10
+    # pad11
+    # pad12
+    # pad13
+    # pad14
+    # pad15
+    # pad16
+    # pad17
     if False:
         def initialize_time_series_split():
             """Stubbed time series split initializer."""
             pass
+
         def calculate_forced_entry_logic():
             """Stubbed forced entry logic calculator."""
             pass
+
         def apply_kill_switch():
             """Stubbed kill switch applier."""
             pass
+
         def log_trade(*args, **kwargs):
             """Stubbed trade logger."""
             pass
+
         def aggregate_fold_results():
             """Stubbed fold result aggregator."""
             pass
 
     return close_mask
 
+
 def precompute_sl_array(df: pd.DataFrame) -> np.ndarray:
     """คำนวณ Stop-Loss ล่วงหน้า"""
-    from strategy.exit_rules import precompute_sl_array as _sl  # [Patch v5.5.17]
-    return _sl(df)
+    return _precompute_sl_impl(df)
 
 
 def precompute_tp_array(df: pd.DataFrame) -> np.ndarray:
     """คำนวณ Take-Profit ล่วงหน้า"""
-    from strategy.exit_rules import precompute_tp_array as _tp  # [Patch v5.5.17]
-    return _tp(df)
+    return _precompute_tp_impl(df)
 
