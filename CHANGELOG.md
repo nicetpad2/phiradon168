@@ -1,3 +1,8 @@
+### 2025-07-22
+- [Patch v6.9.41] Fix environment overrides and auto-train helper
+- New/Updated unit tests added for tests/test_env_utils.py and tests/test_ensure_model_files_exist.py
+- QA: pytest -q failed (1 failed)
+
 ### 2025-07-18
 - [Patch v6.9.35] Split src/main.py into smaller modules
 - New/Updated unit tests added for src/main_helpers.py and others
