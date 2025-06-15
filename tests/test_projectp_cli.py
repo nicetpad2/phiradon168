@@ -9,6 +9,7 @@ def test_parse_args_modes():
     assert proj.parse_args([]).mode == "preprocess"
     assert proj.parse_args(["--mode", "hyper_sweep"]).mode == "hyper_sweep"
     assert proj.parse_args(["--mode", "wfv"]).mode == "wfv"
+    assert proj.parse_args(["--mode", "full_pipeline"]).mode == "full_pipeline"
 
 
 def test_run_mode_invalid():
@@ -111,6 +112,13 @@ def test_run_mode_all(monkeypatch, tmp_path):
     monkeypatch.setattr(proj, 'run_walkforward', lambda: calls.append('wfv'))
     proj.run_mode('all')
     assert calls == ['sweep', 'update', 'wfv']
+
+
+def test_run_mode_full_pipeline(monkeypatch):
+    calls = []
+    monkeypatch.setattr(proj, 'run_full_pipeline', lambda: calls.append('run'))
+    proj.run_mode('full_pipeline')
+    assert calls == ['run']
 
 
 

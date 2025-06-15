@@ -1,3 +1,8 @@
+### 2025-07-26
+- [Patch v6.9.45] Add full_pipeline CLI command to ProjectP
+- New/Updated unit tests added for tests/test_projectp_cli.py::test_run_mode_full_pipeline
+- QA: pytest -q passed (existing tests)
+
 ### 2025-07-25
 - [Patch v6.9.44] Vectorize Thai datetime extraction
 - New/Updated unit tests added for tests/unit/test_data_loader.py::test_extract_thai_date_time_vec

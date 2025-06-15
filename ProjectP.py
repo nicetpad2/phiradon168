@@ -139,6 +139,7 @@ def parse_projectp_args(args=None):
             "threshold",
             "backtest",
             "report",
+            "full_pipeline",
             "all",
             "hyper_sweep",
             "wfv",
@@ -321,6 +322,8 @@ def run_mode(mode):
         run_report()
     elif mode == "hyper_sweep":
         run_hyperparameter_sweep(DEFAULT_SWEEP_PARAMS)
+    elif mode == "full_pipeline":
+        run_full_pipeline()
     elif mode == "wfv":
         run_walkforward()  # [Patch] call simplified WFV runner
     elif mode == "all":
@@ -446,7 +449,10 @@ def main():
     parser.add_argument(
         "mode",
         nargs="?",
-        help="The mode to run. Available modes: 'wfv', 'tune', 'backtest', 'step'.",
+        help=(
+            "The mode to run. Available modes: 'full_pipeline', 'wfv', "
+            "'tune', 'backtest', 'step'."
+        ),
     )
     parser.add_argument(
         "--all",
@@ -483,6 +489,9 @@ def main():
             print("\nERROR: The 'wfv' mode requires the '--all' flag.")
             print("Usage: python ProjectP.py wfv --all")
             sys.exit(1)
+
+    elif args.mode == "full_pipeline":
+        run_full_pipeline()
 
     elif args.mode == "step":
         if args.step_name:
