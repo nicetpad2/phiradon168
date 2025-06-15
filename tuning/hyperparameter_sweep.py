@@ -27,20 +27,10 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 
 from src.config import logger, DefaultConfig, __version__
+from config import config as settings
 
 # [Patch v5.9.1] Default sweep results under configured OUTPUT_DIR
 DEFAULT_SWEEP_DIR = DefaultConfig.OUTPUT_DIR
-
-
-def _create_placeholder_trade_log(path: str) -> None:
-    """Create a minimal trade log so the sweep can run."""
-    # [Patch v5.10.8] Ensure sample size > 1 to avoid train_test_split errors
-    profits = [1.0, -1.0, 0.8, -0.8, 0.6, -0.6, 0.4, -0.4, 0.2, -0.2]
-    df = pd.DataFrame({"profit": profits})
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    compression = "gzip" if path.endswith(".gz") else None
-    df.to_csv(path, index=False, compression=compression)
-    logger.warning(f"สร้าง trade log ตัวอย่างที่ {path}")
 
 
 def _create_placeholder_m1(path: str) -> None:
@@ -88,6 +78,32 @@ if not os.path.exists(DEFAULT_TRADE_LOG):
                     "will require --trade_log_path",
                     DefaultConfig.OUTPUT_DIR,
                 )
+
+
+def load_walk_forward_trade_log(trade_log_path: str, logger_instance: logging.Logger) -> pd.DataFrame:
+    """โหลดไฟล์ walk-forward trade log และแสดงข้อความผิดพลาดที่ชัดเจน"""
+    if not trade_log_path or not os.path.exists(trade_log_path):
+        if trade_log_path:
+            expected_path = trade_log_path
+        else:
+            output_dir = getattr(settings, "OUTPUT_DIR", "output_default")
+            version_str = getattr(settings, "VERSION", "v_default").replace(".", "")
+            expected_path = os.path.join(
+                output_dir, f"trade_log_{version_str}_walkforward.csv.gz"
+            )
+        error_message = (
+            f"ไม่พบไฟล์ Trade Log ที่: {expected_path}\n"
+            "ไฟล์นี้จำเป็นสำหรับการทำ Hyperparameter Sweep.\n"
+            "กรุณารัน Backtest หรือ Walk-Forward Validation (WFV) ก่อนเพื่อสร้างไฟล์ดังกล่าว"
+        )
+        raise FileNotFoundError(error_message)
+
+    logger_instance.info(f"กำลังโหลด trade log จาก: {trade_log_path}")
+    try:
+        return pd.read_csv(trade_log_path)
+    except (FileNotFoundError, pd.errors.EmptyDataError) as e:
+        logger_instance.error(f"เกิดข้อผิดพลาดในการโหลด trade log: {e}")
+        return pd.DataFrame(columns=["entry_time", "exit_time", "pnl"])
 
 
 def _parse_csv_list(text: str, cast: Callable) -> List:
@@ -199,17 +215,17 @@ def run_sweep(
     if not trade_log_path:
         logger.error("ต้องระบุ trade_log_path เพื่อทำการ sweep")
         raise SystemExit(1)
-    if not os.path.exists(trade_log_path):
-        # [Patch v6.3.1] Try simple .csv fallback, else create placeholder log
-        alt = trade_log_path.replace(".csv.gz", ".csv")
-        if os.path.exists(alt):
-            trade_log_path = alt
-        else:
-            logger.warning(
-                "[Patch v6.3.1] No walk-forward trade log at %s; creating placeholder and continuing",
-                trade_log_path,
-            )
-            _create_placeholder_trade_log(trade_log_path)
+    try:
+        df_log = load_walk_forward_trade_log(trade_log_path, logger)
+        if len(df_log) < 1:
+            logger.error("trade log มีข้อมูลน้อยกว่า 1 แถว - ต้องใช้ walk-forward log ที่แท้จริง")
+            raise SystemExit(1)
+    except FileNotFoundError as e:
+        logger.error(str(e))
+        raise SystemExit(1)
+    except Exception as e:  # pragma: no cover - unexpected read failure
+        logger.error(f"อ่านไฟล์ trade log ไม่สำเร็จ: {e}")
+        raise SystemExit(1)
     # ตรวจสอบไฟล์ M1 ก่อนรัน sweep
     if not m1_path:
         m1_path = DefaultConfig.DATA_FILE_PATH_M1
@@ -223,17 +239,7 @@ def run_sweep(
                 m1_path,
             )
             _create_placeholder_m1(m1_path)
-    try:
-        from src.utils.data_utils import safe_read_csv
-
-        df_log = safe_read_csv(trade_log_path)
-        # [Patch v5.8.13] Allow single-row trade logs with fallback metrics
-        if len(df_log) < 1:
-            logger.error("trade log มีข้อมูลน้อยกว่า 1 แถว - ต้องใช้ walk-forward log ที่แท้จริง")
-            raise SystemExit(1)
-    except Exception as e:  # pragma: no cover - unexpected read failure
-        logger.error(f"อ่านไฟล์ trade log ไม่สำเร็จ: {e}")
-        raise SystemExit(1)
+    # df_log ถูกโหลดเรียบร้อยจาก load_walk_forward_trade_log
     summary_path = os.path.join(output_dir, "summary.csv")
     qa_log_path = os.path.join(output_dir, "qa_sweep_log.txt")
 
