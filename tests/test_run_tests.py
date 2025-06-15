@@ -36,3 +36,23 @@ def test_run_tests_last_failed(monkeypatch):
     with pytest.raises(SystemExit):
         run_tests.main()
     assert '--last-failed' in called['args']
+
+
+def test_find_changed_tests(monkeypatch):
+    monkeypatch.setattr(
+        run_tests.subprocess,
+        'check_output',
+        lambda cmd, text=True: 'tests/test_a.py\nsrc/mod.py\n',
+    )
+    result = run_tests.find_changed_tests('HEAD~1')
+    assert result == ['tests/test_a.py']
+
+
+def test_run_tests_changed(monkeypatch):
+    called = {}
+    _patch_pytest(monkeypatch, called)
+    monkeypatch.setattr(run_tests, 'find_changed_tests', lambda base: ['tests/test_a.py'])
+    monkeypatch.setattr(sys, 'argv', ['run_tests.py', '--changed'])
+    with pytest.raises(SystemExit):
+        run_tests.main()
+    assert 'tests/test_a.py' in called['args']
