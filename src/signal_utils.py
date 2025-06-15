@@ -86,16 +86,16 @@ def generate_close_signals(
     return close_mask
 
 
-def precompute_sl_array(df: pd.DataFrame) -> np.ndarray:
+def precompute_sl_array(df: pd.DataFrame, sl_mult: float = 2.0) -> np.ndarray:
     """Pre-compute Stop-Loss array."""
     from strategy.exit_rules import precompute_sl_array as _sl
-    return _sl(df)
+    return _sl(df, sl_mult=sl_mult)
 
 
-def precompute_tp_array(df: pd.DataFrame) -> np.ndarray:
+def precompute_tp_array(df: pd.DataFrame, tp_mult: float = 2.0) -> np.ndarray:
     """Pre-compute Take-Profit array."""
     from strategy.exit_rules import precompute_tp_array as _tp
-    return _tp(df)
+    return _tp(df, tp_mult=tp_mult)
 
 
 __all__ = [

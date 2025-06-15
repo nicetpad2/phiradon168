@@ -499,10 +499,6 @@ def main():
         auto_convert_csv(src_dir, output_path=os.path.join(out_base, "XAUUSD_M1_thai.csv"))
         sys.exit(0)
 
-    if args.mode == "full_pipeline":
-        run_full_pipeline()
-        return
-
     if args.mode == "wfv" and args.all:
         print("\nINFO: Mode 'wfv --all' selected.")
         print("INFO: Starting the full Walk-Forward Validation (WFV) pipeline...")
@@ -539,6 +535,7 @@ def _script_main():
         sys.exit(0)
     import main as pipeline_main
     pipeline_main.main()
+    sys.exit(0)
 
 
 if __name__ == "__main__":

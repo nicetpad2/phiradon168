@@ -22,6 +22,8 @@ except Exception as e:  # ModuleNotFoundError or OSError
     torch = _DummyTorch()
 
 import pandas as pd
+import numpy as np
+import random
 from src import features
 
 logger = logging.getLogger(__name__)
@@ -374,3 +376,60 @@ def update_signal_threshold(current_score: float, params) -> float:
         )
 
     return params.signal_score_threshold
+
+
+# [Patch v6.9.52] Q-learning RLScalperAgent skeleton
+
+
+class RLScalperAgent:
+    """Simple Q-learning agent for scalping on M1 timeframe."""
+
+    def __init__(
+        self,
+        actions: Optional[list[str]] = None,
+        alpha: float = 0.1,
+        gamma: float = 0.95,
+        epsilon: float = 1.0,
+        epsilon_min: float = 0.1,
+        epsilon_decay: float = 0.995,
+    ) -> None:
+        self.actions = actions or ["HOLD", "BUY", "SELL"]
+        self.alpha = alpha
+        self.gamma = gamma
+        self.epsilon = epsilon
+        self.epsilon_min = epsilon_min
+        self.epsilon_decay = epsilon_decay
+        self.q_table: dict[str, np.ndarray] = {}
+
+    def _key(self, state) -> str:
+        return "|".join(map(str, state))
+
+    def choose_action(self, state) -> int:
+        key = self._key(state)
+        if random.random() < self.epsilon or key not in self.q_table:
+            return random.randrange(len(self.actions))
+        return int(np.argmax(self.q_table[key]))
+
+    def update(self, state, action: int, reward: float, next_state, done: bool) -> None:
+        key = self._key(state)
+        next_key = self._key(next_state)
+        self.q_table.setdefault(key, np.zeros(len(self.actions)))
+        self.q_table.setdefault(next_key, np.zeros(len(self.actions)))
+        best_next = np.max(self.q_table[next_key])
+        target = reward + (0.0 if done else self.gamma * best_next)
+        self.q_table[key][action] += self.alpha * (
+            target - self.q_table[key][action]
+        )
+        if done:
+            self.epsilon = max(self.epsilon * self.epsilon_decay, self.epsilon_min)
+
+    def save(self, path: str) -> None:
+        data = {k: v.tolist() for k, v in self.q_table.items()}
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(data, fh, ensure_ascii=False, indent=2)
+
+    def load(self, path: str) -> None:
+        with open(path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+        self.q_table = {k: np.array(v) for k, v in data.items()}
+

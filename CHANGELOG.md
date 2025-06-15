@@ -1,7 +1,42 @@
+### 2025-08-02
+- [Patch v6.9.52] Validate DatetimeIndex for WFV
+- New/Updated unit tests added for tests/test_wfv_index_conversion.py
+- QA: pytest -q passed (451 tests)
+
 ### 2025-08-01
+
+- [Patch v6.9.51] Allow custom ATR multipliers for SL/TP
+- New/Updated unit tests added for src.money_management, strategy.exit_rules
+- QA: pytest -q passed (449 tests)
+
 - [Patch v6.9.51] Select changed tests via --changed option
 - New/Updated unit tests added for tests/test_run_tests.py
 - QA: pytest -q passed (4 tests)
+
+### 2025-08-02
+- [Patch v6.9.52] Improve run_tests with coverage and maxfail options
+- New/Updated unit tests added for tests/test_run_tests.py
+- QA: pytest -q passed (7 tests)
+=======
+
+### 2025-08-02
+- [Patch v6.9.52] เพิ่ม RLScalperAgent แบบ Q-learning และเทสต์
+- New/Updated unit tests added for tests/test_rl_scalper.py
+- QA: pytest -q passed (tests count TBD)
+- QA: pytest -q passed (3 tests)
+
+
+### 2025-07-31
+- [Patch v6.9.51] Add pattern analysis features
+- New/Updated unit tests added for tests/test_log_analysis_extra.py, tests/test_features_more.py
+- QA: pytest -q passed (454 tests)
+
+
+### 2025-07-31
+- [Patch v6.9.51] Dynamic RSI thresholds by session
+- New/Updated unit tests added for tests/test_dynamic_rsi_threshold.py
+- QA: pytest -q passed (370 tests)
+
 
 ### 2025-07-31
 - [Patch v6.9.50] Speed up run_tests with auto parallel and --last-failed
@@ -2557,3 +2592,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.50] แก้เทสต์ล้มเหลวและเพิ่มความยืดหยุ่นการล็อก
 - New/Updated unit tests added for utils.py, ProjectP.py, realtime_dashboard.py, data_loader.py, technical indicators
 - QA: pytest -q passed (364 tests)
+
+### 2025-06-15
+- [Patch v6.9.52] Ensure DatetimeIndex conversion for M1 dataset
+- New/Updated unit tests added for tests/test_strategy_meta_model.py
+- QA: pytest -q passed (368 tests)
