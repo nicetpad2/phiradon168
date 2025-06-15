@@ -3,6 +3,11 @@
 - New/Updated unit tests added for src/main_helpers.py and others
 - QA: pytest -q passed (tests count TBD)
 
+### 2025-06-15
+- [Patch v6.9.38] Re-evaluate feature thresholds on import
+- New/Updated unit tests added for src/features/__init__.py
+- QA: pytest -q passed (436 tests)
+
 ### 2025-07-21
 - [Patch v6.9.40] Ensure --mode all runs full pipeline
 - New/Updated unit tests added for tests/test_main_cli_extended.py and tests/test_main_pipeline_cli.py

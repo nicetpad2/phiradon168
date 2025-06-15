@@ -40,3 +40,14 @@ __all__ = [
     "build_feature_catalog",
     "load_or_engineer_m1_features",
 ]
+
+# [Patch v6.9.38] Re-evaluate threshold constants from environment on import
+from src.utils import get_env_float
+
+META_MIN_PROBA_THRESH = get_env_float("META_MIN_PROBA_THRESH", META_MIN_PROBA_THRESH)
+REENTRY_MIN_PROBA_THRESH = get_env_float("REENTRY_MIN_PROBA_THRESH", REENTRY_MIN_PROBA_THRESH)
+
+__all__ += [
+    "META_MIN_PROBA_THRESH",
+    "REENTRY_MIN_PROBA_THRESH",
+]

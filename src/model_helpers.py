@@ -111,6 +111,9 @@ def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path)
             open(os.path.join(output_dir, required[key][0]), "a").close()
             open(os.path.join(output_dir, required[key][1]), "a").close()
         return
+    # [Patch v6.9.38] fill missing exit_reason column for auto-train stub
+    if 'exit_reason' not in trade_log_df.columns:
+        trade_log_df['exit_reason'] = 'TP'
     for key in missing_models:
         try:
             from src.main import train_and_export_meta_model
