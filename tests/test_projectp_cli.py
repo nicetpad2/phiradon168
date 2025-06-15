@@ -1,5 +1,6 @@
 import os
 import logging
+import io
 import pandas as pd
 import ProjectP as proj
 import pytest
@@ -87,11 +88,15 @@ def test_run_full_pipeline_sequence(monkeypatch):
     monkeypatch.setattr(
         proj, 'run_threshold_optimization', lambda: calls.append('th')
     )
-    monkeypatch.setattr(proj, 'run_backtest', lambda: calls.append('back'))
-    monkeypatch.setattr(proj, 'run_report', lambda: calls.append('rep'))
-    monkeypatch.setattr(proj, 'ensure_output_files', lambda files: calls.append('ensure'))
+    monkeypatch.setattr(proj, 'run_walkforward', lambda: calls.append('wf'))
+    monkeypatch.setattr(proj, 'update_config_from_dict', lambda d: calls.append('update'))
+    monkeypatch.setattr(proj.os.path, 'exists', lambda p: True)
+    monkeypatch.setattr(proj, 'open', lambda *a, **k: io.StringIO('{}'))
+    monkeypatch.setattr(proj.json, 'load', lambda f: {})
+    monkeypatch.setattr(proj.pipeline, 'load_config', lambda: {})
+    monkeypatch.setattr(proj.pipeline, 'run_report', lambda cfg: calls.append('rep'))
     proj.run_full_pipeline()
-    assert calls == ['pre', 'sweep', 'th', 'back', 'rep', 'ensure']
+    assert calls == ['pre', 'sweep', 'update', 'th', 'wf', 'rep']
 
 
 def test_run_mode_wfv(monkeypatch):
