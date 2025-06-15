@@ -45,6 +45,7 @@ __all__ = [
     "save_features",
     "load_features",
     "build_feature_catalog",
+    "flag_corrective_waves",
     "load_or_engineer_m1_features",
 ]
 

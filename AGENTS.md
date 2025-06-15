@@ -123,7 +123,7 @@
   - Continuously ingest new market data, update state-action value tables or neural-net approximators
   - Evaluate performance on walk-forward validation, adjust exploration/exploitation rates
   - Provide optional “shadow trades” for comparisons against rule-based strategies
-- **Status:** ยังไม่พัฒนาในโค้ด
+  - **Status:** เริ่มต้นพัฒนา RLScalperAgent แบบ Q-learning
 
 ---
 
@@ -225,12 +225,13 @@
 - **Modules:** `src/features/`
 
 ### [Session_Research_Unit](src/feature_analysis.py)
-- **Main Role:** Session Behavior Analysis  
+- **Main Role:** Session Behavior Analysis
 - **Key Responsibilities:**
   - Evaluate historical performance per trading session (Asia, London, New York)
   - Provide heatmaps of winrate and average P&L by hour
   - Recommend session-tailored thresholds (e.g., loosen RSI filters during high volatility)
-- **Modules:** `src/utils/sessions.py`
+  - Provide `get_dynamic_rsi_threshold` and `suggest_rsi_thresholds_by_session` helpers
+- **Modules:** `src/utils/sessions.py`, `src/feature_analysis.py`
 
 ### [Wave_Marker_Unit](src/features/)
 - **Main Role:** Elliott Wave Tagging & Labelling  

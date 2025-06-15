@@ -201,6 +201,39 @@ def compare_in_out_distribution(
     return stats
 
 
+# [Patch v6.9.51] Dynamic RSI threshold suggestions
+def get_dynamic_rsi_threshold(session: str | None, volatility: float | None) -> float:
+    """Return RSI threshold adjusted by session and volatility."""
+
+    base = 50.0
+    try:
+        vol = float(volatility)
+    except Exception:
+        vol = 1.0
+    session_str = str(session or "")
+    if "NY" in session_str and vol >= 1.0:
+        return 45.0
+    if "Asia" in session_str and vol < 0.8:
+        return 55.0
+    return base
+
+
+def suggest_rsi_thresholds_by_session(
+    df: pd.DataFrame, vol_col: str = "Volatility_Index"
+) -> Dict[str, float]:
+    """Suggest RSI thresholds per session based on mean volatility."""
+
+    if "session" not in df.columns or vol_col not in df.columns:
+        logger.warning("Missing session or volatility column for threshold suggestion")
+        return {s: 50.0 for s in df.get("session", pd.Series()).unique()}
+
+    result: Dict[str, float] = {}
+    grouped = df.groupby("session")[vol_col].mean()
+    for sess, vol in grouped.items():
+        result[sess] = get_dynamic_rsi_threshold(sess, vol)
+    return result
+
+
 def main(sample_rows: int = 5000):  # pragma: no cover - CLI helper
     """Run feature distribution analysis on a sample of the M1 dataset.
 

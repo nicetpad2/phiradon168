@@ -321,3 +321,27 @@ def plot_trade_log_metrics(log_path: str):
     plt.tight_layout()
     return fig
 
+
+# [Patch v6.9.51] Detect streaks of StopLoss events
+
+def detect_stop_loss_streaks(df: pd.DataFrame, min_streak: int = 3) -> list[tuple[int, int]]:
+    """Return list of (start_index, length) for consecutive StopLoss trades."""
+    if df.empty or "Reason" not in df:
+        return []
+    reasons = df["Reason"].astype(str)
+    streaks: list[tuple[int, int]] = []
+    start = 0
+    count = 0
+    for i, reason in enumerate(reasons):
+        r = reason.lower()
+        if "stop" in r or r == "sl":
+            if count == 0:
+                start = i
+            count += 1
+        else:
+            if count >= min_streak:
+                streaks.append((start, count))
+            count = 0
+    if count >= min_streak:
+        streaks.append((start, count))
+    return streaks
