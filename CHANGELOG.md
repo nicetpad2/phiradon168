@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py
 - QA: pytest -q passed (354 tests)
 
+### 2025-07-24
+- [Patch v6.9.43] Add docstrings for feature engineering helpers
+- New/Updated unit tests added for N/A
+- QA: pytest -q passed (existing tests)
+
 
 ### 2025-07-22
 - [Patch v6.9.41] Fix environment overrides and auto-train helper

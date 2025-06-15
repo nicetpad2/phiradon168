@@ -2,6 +2,18 @@ from .common import *
 from .technical import *
 
 def tag_price_structure_patterns(df):
+    """Label price structure patterns such as Breakout or Reversal.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing at least Gain_Z, OHLC, MACD and candle metrics.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Input DataFrame with an added ``Pattern_Label`` categorical column.
+    """
     logging.info("   (Processing) Tagging price structure patterns...")
     if not isinstance(df, pd.DataFrame): logging.error("Pattern Tagging Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df.empty: df["Pattern_Label"] = "Normal"; df["Pattern_Label"] = df["Pattern_Label"].astype('category'); return df
@@ -156,6 +168,22 @@ def get_mtf_sma_trend(df_m15, fast=50, slow=200, rsi_period=14, rsi_upper=70, rs
 
 # [Patch v5.0.2] Exclude heavy engineering logic from coverage
 def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_features_config=None):  # pragma: no cover
+    """Generate M1 timeframe features including indicators and pattern labels.
+
+    Parameters
+    ----------
+    df_m1 : pandas.DataFrame
+        Raw M1 OHLC data.
+    timeframe_minutes : int, optional
+        Candle timeframe in minutes. Defaults to ``TIMEFRAME_MINUTES_M1``.
+    lag_features_config : dict, optional
+        Optional config specifying feature names and lags to create.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame containing engineered features aligned to ``df_m1`` index.
+    """
     logging.info("[QA] Start M1 Feature Engineering")
     logging.info("(Processing) กำลังสร้าง Features M1 (v4.9.0)...") # <<< MODIFIED v4.9.0
     logging.info(f"Rows at start: {df_m1.shape[0]}")
@@ -287,6 +315,18 @@ def engineer_m1_features(df_m1, timeframe_minutes=TIMEFRAME_MINUTES_M1, lag_feat
 
 # [Patch v5.0.2] Exclude heavy cleaning logic from coverage
 def clean_m1_data(df_m1):  # pragma: no cover
+    """Clean engineered M1 features and prepare for drift checks.
+
+    Parameters
+    ----------
+    df_m1 : pandas.DataFrame
+        DataFrame of engineered features from :func:`engineer_m1_features`.
+
+    Returns
+    -------
+    Tuple[pandas.DataFrame, list]
+        Cleaned DataFrame and list of features kept for drift detection.
+    """
     logging.info("(Processing) กำลังกำหนด Features M1 สำหรับ Drift และแปลงประเภท (v4.9.0)...") # <<< MODIFIED v4.9.0
     if not isinstance(df_m1, pd.DataFrame): logging.error("Clean M1 Data Error: Input must be a pandas DataFrame."); raise TypeError("Input must be a pandas DataFrame.")
     if df_m1.empty: logging.warning("   (Warning) ข้ามการทำความสะอาดข้อมูล M1: DataFrame ว่างเปล่า."); return pd.DataFrame(), []
@@ -331,6 +371,20 @@ def clean_m1_data(df_m1):  # pragma: no cover
 
 # [Patch v5.0.2] Exclude heavy signal calculation from coverage
 def calculate_m1_entry_signals(df_m1: pd.DataFrame, config: dict) -> pd.DataFrame:  # pragma: no cover
+    """Calculate entry signals based on engineered M1 features.
+
+    Parameters
+    ----------
+    df_m1 : pandas.DataFrame
+        Engineered M1 feature set.
+    config : dict
+        Parameters controlling thresholds used for signal scoring.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with ``Entry_Long``/``Entry_Short`` flags and score details.
+    """
     logging.debug("      (Calculating M1 Signals)...")
     df = df_m1.copy(); df['Signal_Score'] = 0.0
     gain_z_thresh = config.get('gain_z_thresh', 0.3); rsi_thresh_buy = config.get('rsi_thresh_buy', 50)
