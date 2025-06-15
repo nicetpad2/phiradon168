@@ -5,6 +5,16 @@
 ## Overview
 ระบบ NICEGOLD Enterprise ใช้เทรดและวิเคราะห์ XAUUSD บนกรอบเวลา M1 รองรับทั้งการทดสอบย้อนหลังและ Walk-Forward Validation
 
+### รายละเอียดโปรเจคและสถาปัตยกรรม
+โปรเจคนี้แบ่งการทำงานออกเป็นหลายส่วนเพื่อให้ปรับแต่งได้ง่ายและรองรับการพัฒนาในระยะยาว
+
+- **Data Pipeline**: โมดูลในโฟลเดอร์ `src/` จัดการโหลดข้อมูลดิบและสร้างฟีเจอร์สำหรับโมเดล
+- **Strategy Engine**: กฎเทรดหลักและตัวกรองเทรนด์อยู่ในโฟลเดอร์ `strategy/` โดยใช้ตัวกรอง ATR และ Median เพื่อลด Noise พร้อมโมเดล ML ประเมินความน่าจะเป็นของ TP2
+- **Orchestrator**: ไฟล์ `main.py` ทำหน้าที่ควบคุมขั้นตอนทั้งหมดตั้งแต่เตรียมข้อมูล ไปจนถึงฝึก MetaModel และสร้างรายงาน Walk-Forward Validation
+- **Risk Management**: ระบบคำนวณ Stop Loss/Take Profit ด้วย ATR พร้อมจัดการขนาดลอตตามความเสี่ยงที่กำหนด
+
+ภาพรวมนี้ช่วยให้ผู้ใช้เห็นลำดับการทำงานตั้งแต่รับข้อมูล จนถึงการวัดผลลัพธ์ของกลยุทธ์
+
 ## Prerequisites
 - Python 3.8-3.10
 - ติดตั้งไลบรารีด้วย `pip install -r requirements.txt`
@@ -18,13 +28,22 @@
 ```bash
 git clone <repo-url>
 cd Phiradon168
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
+# ไลบรารีสำหรับพัฒนาและทดสอบ
+pip install -r dev-requirements.txt
 ```
 
 ## Usage
 ```bash
 python main.py --mode backtest
 python main.py --mode all
+python main.py --stage backtest       # รันเฉพาะขั้นตอน backtest
+python main.py --stage preprocess    # เตรียมข้อมูลและสร้างฟีเจอร์
+python main.py --stage report        # สรุปผลและสร้างกราฟรายงาน
+# ฝึกโมเดลใหม่หลายค่าพารามิเตอร์
+python tuning/hyperparameter_sweep.py
 ```
 ค่าเริ่มต้นของโปรแกรมจะโหลดข้อมูลจาก CSV **ทุกแถว**
 หากโปรแกรมโหลดข้อมูลเพียงไม่กี่แถว ให้ตรวจสอบว่าไม่ได้ส่งพารามิเตอร์
@@ -34,12 +53,15 @@ python main.py --mode all
 โดยไม่ระบุพารามิเตอร์เหล่านี้
 
 ## Project Structure
-- src/: โค้ดหลักและโมดูลต่าง ๆ
-- config/: ไฟล์ตั้งค่า (`pipeline.yaml`)
-- tuning/: สคริปต์หาค่า hyperparameter
-- tests/: ชุดทดสอบอัตโนมัติ
-- docs/: เอกสารประกอบ
-- logs/<date>/<fold>/: log แยกตามวันที่และ fold
+- `src/` โค้ดหลักสำหรับโหลดข้อมูล สร้างฟีเจอร์ และรัน pipeline
+- `strategy/` กฎเทรดและเครื่องมือบริหารความเสี่ยง
+- `config/` ไฟล์ตั้งค่าระบบ (`pipeline.yaml` และตัวแปรสภาพแวดล้อม)
+- `tuning/` สคริปต์หาค่า hyperparameter และปรับ Threshold
+- `scripts/` เครื่องมือเสริม เช่นทำความสะอาดไฟล์ CSV
+- `reporting/` รวมเทมเพลตและสคริปต์สร้างรายงาน
+- `tests/` ชุดทดสอบอัตโนมัติ
+- `docs/` เอกสารประกอบ
+- `logs/<date>/<fold>/` เก็บบันทึกผลการเทรดแยกตามวันที่และ fold
 
 ## Contribution Guidelines
 - ชื่อ branch: `feature/<desc>` หรือ `hotfix/<issue>`
@@ -60,14 +82,8 @@ python main.py --mode all
 
 2. หากต้องการให้โปรแกรมติดตั้งไลบรารีอัตโนมัติในสภาพแวดล้อมพัฒนา ให้ตั้งค่า `AUTO_INSTALL_LIBS=True` ใน `src/config.py`.
     ค่าเริ่มต้นคือ `False` เพื่อควบคุมความปลอดภัย ควรติดตั้งไลบรารีผ่าน `pip install -r requirements.txt` ก่อนใช้งานจริง
-## โครงสร้างโฟลเดอร์
-- `src/` โค้ดหลักและโมดูลต่าง ๆ
-- `config/` ไฟล์ตั้งค่าระบบ (`pipeline.yaml`)
-- `tuning/` สคริปต์ค้นหา Hyperparameter
-- `tests/` ชุดทดสอบอัตโนมัติ
-- `docs/` เอกสารประกอบ
-- `logs/<date>/<fold>/` โฟลเดอร์บันทึก log แยกตามวันที่และ fold
 
+### คำสั่งเพิ่มเติม
 - `python main.py --mode all` เตรียมข้อมูลและรันขั้นตอนหลักครบถ้วน
 - `python tuning/hyperparameter_sweep.py` รันฝึกโมเดลหลายค่าพารามิเตอร์
 - ก่อนรัน sweep ควรสั่ง `python main.py --stage all` เพื่อสร้างไฟล์ `logs/trade_log_<DATE>.csv` ให้ครบถ้วน
