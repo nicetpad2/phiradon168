@@ -4,6 +4,11 @@
 - QA: pytest -q passed (tests count TBD)
 
 ### 2025-06-15
+- [Patch v6.9.39] Extract strategy components to new module
+- New/Updated unit tests added for tests/test_strategy_components_import.py
+- QA: pytest -q passed (tests count TBD)
+
+### 2025-06-15
 - [Patch v6.9.36] Extract helper functions to new modules
 - New/Updated unit tests added for N/A
 - QA: pytest -q passed (tests count TBD)

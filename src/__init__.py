@@ -29,6 +29,7 @@ _SUBMODULES = [
     "signal_utils",
     "entry_rules",
     "strategy",
+    "strategy_components",
     "csv_validator",
     "training",
     "wfv_monitor",
