@@ -38,7 +38,9 @@ def auto_train_meta_classifiers(
         logger.info("[Patch v6.4.2] Loading trade log from %s", trade_log_path)
         compression = "gzip" if trade_log_path.endswith(".gz") else None
         try:
-            training_data = pd.read_csv(trade_log_path, compression=compression)
+            from src.utils.data_utils import safe_read_csv
+
+            training_data = safe_read_csv(trade_log_path)
         except Exception as e:  # pragma: no cover - trivial log path
             logger.error("[Patch v6.4.2] Failed to load %s: %s", trade_log_path, e)
             return None
@@ -49,7 +51,11 @@ def auto_train_meta_classifiers(
 
     # ตรวจสอบคอลัมน์กำไรว่าไม่เป็นศูนย์ทั้งหมด ก่อนเริ่มฝึก
     profit_col = next(
-        (c for c in ("profit", "pnl_usd_net", "PnL", "pnl") if c in training_data.columns),
+        (
+            c
+            for c in ("profit", "pnl_usd_net", "PnL", "pnl")
+            if c in training_data.columns
+        ),
         None,
     )
     if profit_col and (training_data[profit_col] == 0).all():
@@ -72,7 +78,11 @@ def auto_train_meta_classifiers(
     # Ensure 'target' column exists before proceeding
     if "target" not in training_data.columns:
         profit_col = next(
-            (c for c in ("profit", "pnl_usd_net", "PnL", "pnl") if c in training_data.columns),
+            (
+                c
+                for c in ("profit", "pnl_usd_net", "PnL", "pnl")
+                if c in training_data.columns
+            ),
             None,
         )
         if profit_col:
@@ -90,9 +100,7 @@ def auto_train_meta_classifiers(
 
     missing = [f for f in features if f not in training_data.columns]
     if missing:
-        logger.warning(
-            "[Patch v6.6.7] Training data missing features: %s", missing
-        )
+        logger.warning("[Patch v6.6.7] Training data missing features: %s", missing)
     features = [f for f in features if f in training_data.columns]
     if len(features) == 0:
         if profit_col and profit_col in training_data.columns:
@@ -129,5 +137,7 @@ def auto_train_meta_classifiers(
     model_path = os.path.join(models_dir, "meta_classifier.joblib")
     dump(model, model_path)
     logger.info("[Patch v6.5.5] Meta-classifier trained: %s", model_path)
-    logger.info("[Patch v6.6.6] Meta-classifier metrics - accuracy: %.4f, auc: %.4f", acc, auc)
+    logger.info(
+        "[Patch v6.6.6] Meta-classifier metrics - accuracy: %.4f, auc: %.4f", acc, auc
+    )
     return {"model_path": model_path, "metrics": {"accuracy": acc, "auc": auc}}
