@@ -111,6 +111,7 @@ from src.data_loader import (
     auto_convert_gold_csv as auto_convert_csv,
     auto_convert_csv_to_parquet,
 )
+from src.utils.model_utils import get_latest_model_and_threshold
 
 
 def configure_logging():
@@ -223,25 +224,9 @@ def run_threshold():
 def run_backtest():
     """รันการทดสอบย้อนหลัง."""
     model_dir = "models"
-    model_files = [
-        f
-        for f in os.listdir(model_dir)
-        if f.startswith("model_") and f.endswith(".joblib")
-    ]
-    model_files.sort()
-    model_path = os.path.join(model_dir, model_files[-1]) if model_files else None
-    thresh_path = os.path.join(model_dir, "threshold_wfv_optuna_results.csv")
-    threshold = None
-    if os.path.exists(thresh_path):
-        from src.utils.data_utils import safe_read_csv
-
-        df = safe_read_csv(thresh_path)
-        if "best_threshold" in df.columns:
-            threshold_val = df["best_threshold"].iloc[0]
-            threshold = float(threshold_val) if not pd.isna(threshold_val) else None
-        else:  # pragma: no cover - fallback for legacy column names
-            threshold_val = df.median(numeric_only=True).mean()
-            threshold = float(threshold_val) if not pd.isna(threshold_val) else None
+    model_path, threshold = get_latest_model_and_threshold(
+        model_dir, "threshold_wfv_optuna_results.csv", take_first=True
+    )
     pipeline.run_backtest_pipeline(
         pd.DataFrame(), pd.DataFrame(), model_path, threshold
     )

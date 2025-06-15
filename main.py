@@ -45,6 +45,7 @@ from src.utils.pipeline_config import (
 )
 from src.utils.errors import PipelineError
 from src.utils.hardware import has_gpu
+from src.utils.model_utils import get_latest_model_and_threshold
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +140,10 @@ def run_preprocess(config: PipelineConfig, runner=subprocess.run) -> None:
     if os.path.exists(m1_path):
         try:
             csv_validator.validate_and_convert_csv(m1_path)
+        except FileNotFoundError as exc:
+            logger.error("[Validation] CSV file not found: %s", exc)
+        except ValueError as exc:
+            logger.error("[Validation] CSV validation error: %s", exc)
         except Exception as exc:
             logger.error("[Validation] CSV validation failed: %s", exc)
     else:
@@ -217,31 +222,24 @@ def run_backtest(config: PipelineConfig, pipeline_func=run_backtest_pipeline) ->
             trade_log_file,
             min_rows=getattr(cfg, "MIN_TRADE_ROWS", 10),
         )
-    except Exception as e:
-        logger.error(f"Failed loading trade log: {e}")
+    except FileNotFoundError as exc:
+        logger.error("Trade log file not found: %s", exc)
+        trade_df = pd.DataFrame(columns=["timestamp", "price", "signal"])
+        logger.info("Initialized empty trade_df for pipeline execution.")
+    except ValueError as exc:
+        logger.error("Invalid trade log format: %s", exc)
+        trade_df = pd.DataFrame(columns=["timestamp", "price", "signal"])
+        logger.info("Initialized empty trade_df for pipeline execution.")
+    except Exception as exc:
+        logger.error("Failed loading trade log: %s", exc)
         trade_df = pd.DataFrame(columns=["timestamp", "price", "signal"])
         logger.info("Initialized empty trade_df for pipeline execution.")
     else:
         logger.debug("Loaded trade log with %d rows", len(trade_df))
     model_dir = config.model_dir
-    model_files = [
-        f
-        for f in os.listdir(model_dir)
-        if f.startswith("model_") and f.endswith(".joblib")
-    ]
-    model_files.sort()
-    model_path = os.path.join(model_dir, model_files[-1]) if model_files else None
-    thresh_path = os.path.join(model_dir, config.threshold_file)
-    threshold = None
-    if os.path.exists(thresh_path):
-        df = pd.read_csv(thresh_path)
-        try:
-            threshold_value = df["best_threshold"].median()
-            # [Patch v6.6.7] Use Optuna best_threshold directly for backtest
-            threshold = float(threshold_value) if not pd.isna(threshold_value) else None
-        except KeyError:
-            logging.warning(f"ไม่พบคอลัมน์ 'best_threshold' ในไฟล์ {thresh_path}")
-            threshold = None
+    model_path, threshold = get_latest_model_and_threshold(
+        model_dir, config.threshold_file
+    )
     try:
         pipeline_func(pd.DataFrame(), pd.DataFrame(), model_path, threshold)
     except Exception as exc:

@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py
 - QA: pytest -q passed (354 tests)
 
+### 2025-07-24
+- [Patch v6.9.43] Improve backtest helpers and exception handling
+- New/Updated unit tests added for tests/test_model_select.py
+- QA: pytest -q passed (350 tests)
+
 
 ### 2025-07-22
 - [Patch v6.9.41] Fix environment overrides and auto-train helper
