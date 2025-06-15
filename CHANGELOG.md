@@ -1,3 +1,7 @@
+### 2025-07-30
+- [Patch v6.9.49] Use timezone-aware datetime in AuthManager
+- New/Updated unit tests added for tests/test_auth_manager.py
+- QA: pytest -q passed (368 tests)
 
 ### 2025-06-15
 - [Patch v6.9.47] Update preprocess test for data_cleaner script
