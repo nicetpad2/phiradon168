@@ -1,3 +1,8 @@
+### 2025-08-04
+- [Patch v6.9.58] ปรับปรุงฟังก์ชัน run_full_pipeline และอัปเดตเทสต์
+- New/Updated unit tests added for tests/test_projectp_cli.py
+- QA: pytest -q passed (12 tests)
+
 ### 2025-08-03
 - [Patch v6.9.57] Add keyword filter option in run_tests
 - New/Updated unit tests added for tests/test_run_tests.py

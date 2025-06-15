@@ -290,49 +290,43 @@ def _execute_step(name: str, func, *args, **kwargs):
 
 
 def run_full_pipeline() -> None:
-    """รันทุกโหมดต่อเนื่องกัน."""
+    """รันทุกโหมดต่อเนื่องกันแบบครบวงจร (เทพเวอร์ชัน)"""
+    # Step 1: Preprocess Data
     _execute_step("preprocess", run_preprocess)
+
     # Step 2: Hyperparameter Sweep
     _execute_step("sweep", run_hyperparameter_sweep, DEFAULT_SWEEP_PARAMS)
-    # Step 3: Auto-apply best hyperparameters from sweep
-    summary_file = os.path.join(config.OUTPUT_DIR, "hyperparameter_summary.csv")
-    if os.path.exists(summary_file):
-        from src.utils.data_utils import safe_read_csv
 
-        df = safe_read_csv(summary_file)
-        if "metric" in df.columns and df["metric"].notna().any():
-            best = df.sort_values(by="metric", ascending=False).iloc[0]
-            config.LEARNING_RATE = best.get("learning_rate", config.LEARNING_RATE)
-            config.DEPTH = int(best.get("depth", config.DEPTH))
-            config.L2_LEAF_REG = int(best.get("l2_leaf_reg", config.L2_LEAF_REG))
-            logger.info(
-                f"Applied best hyperparameters: lr={config.LEARNING_RATE}, "
-                f"depth={config.DEPTH}, l2={config.L2_LEAF_REG}"
-            )
-        else:
-            logger.warning("ไม่มีคอลัมน์ metric ในไฟล์ sweep หรือไม่มีค่า metric ใช้ค่า default")
+    # Step 3: Auto-apply best hyperparameters from sweep
+    logger.info("Applying best hyperparameters found from sweep...")
+    best_params_path = os.path.join(str(OUTPUT_DIR), "best_param.json")
+    if os.path.exists(best_params_path):
+        with open(best_params_path, "r", encoding="utf-8") as fh:
+            best_params = json.load(fh)
+        update_config_from_dict(best_params)
+        logger.warning(f"Successfully applied best hyperparameters from: {best_params_path}")
     else:
-        logger.warning(
-            f"Hyperparameter summary not found at {summary_file}, using default parameters."
+        logger.error(
+            f"Hyperparameter result file 'best_param.json' not found in {OUTPUT_DIR}. "
+            "Cannot apply best params. Continuing with default parameters."
         )
 
+    # Step 4: Threshold Optimization
     _execute_step("threshold", run_threshold_optimization)
-    _execute_step("backtest", run_backtest)
-    metrics_path = os.path.join(config.OUTPUT_DIR, "metrics_summary_v32.csv")
-    if os.path.exists(metrics_path):
-        from src.utils.data_utils import safe_read_csv
 
-        results_df = safe_read_csv(metrics_path)
-    else:
-        results_df = pd.DataFrame()
-    _execute_step(
-        "dashboard",
-        generate_dashboard,
-        results=results_df,
-        output_filepath=os.path.join(config.OUTPUT_DIR, "dashboard.html"),
-    )
-    _execute_step("report", run_report)
-    ensure_output_files([metrics_path])
+    # Step 5: Walk-Forward Validation (Replaced Backtest for a more robust evaluation)
+    logger.warning("Replacing standard backtest with robust Walk-Forward Validation (WFV)...")
+    _execute_step("walk-forward", run_walkforward)
+
+    # Step 6 & 7: Generate Dashboard and Final Report from WFV results
+    logger.info("Generating final reports based on Walk-Forward Validation results...")
+    try:
+        config = pipeline.load_config()
+        _execute_step("report", pipeline.run_report, config)
+    except Exception as e:
+        logger.error(f"Could not generate final report: {e}")
+
+    logger.warning("--- Full (God-Mode) Pipeline Completed ---")
 
 
 def release_gpu_resources(handle, use_gpu: bool) -> None:
