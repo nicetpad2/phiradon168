@@ -2348,3 +2348,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.36] Move OMS helpers to order_management module
 - New/Updated unit tests added for N/A
 - QA: pytest -q failed (environment limits)
+
+### 2025-07-20
+- [Patch v6.9.37] Move entry gating and lot sizing helpers to strategy package
+- New/Updated unit tests added for strategy modules
+- QA: pytest -q passed

@@ -1518,6 +1518,13 @@ from strategy.order_management import (
     adjust_sl_tp_oms as _adjust_sl_tp_oms,
     update_breakeven_half_tp as _update_be_half_tp,
 )
+from strategy.risk_management import (
+    adjust_lot_recovery_mode as _adjust_lot_recovery_mode,
+    calculate_aggressive_lot as _calculate_aggressive_lot,
+    calculate_lot_size_fixed_risk as _calculate_lot_size_fixed_risk,
+    adjust_lot_tp2_boost as _adjust_lot_tp2_boost,
+    calculate_lot_by_fund_mode as _calculate_lot_by_fund_mode,
+)
 
 
 def adjust_sl_tp_oms(*args, **kwargs):
@@ -1530,208 +1537,86 @@ def update_breakeven_half_tp(*args, **kwargs):
     return _update_be_half_tp(*args, **kwargs)
 
 
+
+
 def spike_guard_london(row, session, consecutive_losses):
-    """Spike guard filter for London session with debug reasons."""
-    if not ENABLE_SPIKE_GUARD:
-        logging.debug("      (Spike Guard) Disabled via config.")
-        return True
-    if not isinstance(session, str) or "London" not in session:
-        logging.debug("      (Spike Guard) Not London session - skipping.")
-        return True
+    """Wrapper for :func:`strategy.trend_filter.spike_guard_london`."""
+    from strategy.trend_filter import spike_guard_london as _impl
+    return _impl(row, session, consecutive_losses)
 
-    spike_score_val = pd.to_numeric(getattr(row, "spike_score", np.nan), errors='coerce')
-    if pd.notna(spike_score_val) and spike_score_val > 0.85:
-        logging.debug(f"      (Spike Guard Filtered) Reason: London Session & High Spike Score ({spike_score_val:.2f} > 0.85)")
-        return False
 
-    adx_val = pd.to_numeric(getattr(row, "ADX", np.nan), errors='coerce')
-    wick_ratio_val = pd.to_numeric(getattr(row, "Wick_Ratio", np.nan), errors='coerce')
-    vol_index_val = pd.to_numeric(getattr(row, "Volatility_Index", np.nan), errors='coerce')
-    candle_body_val = pd.to_numeric(getattr(row, "Candle_Body", np.nan), errors='coerce')
-    candle_range_val = pd.to_numeric(getattr(row, "Candle_Range", np.nan), errors='coerce')
-    gain_val = pd.to_numeric(getattr(row, "Gain", np.nan), errors='coerce')
-    atr_val = pd.to_numeric(getattr(row, "ATR_14", np.nan), errors='coerce')
-
-    if any(pd.isna(v) for v in [adx_val, wick_ratio_val, vol_index_val, candle_body_val, candle_range_val, gain_val, atr_val]):
-        logging.debug("      (Spike Guard) Missing values - skip filter.")
-        return True
-
-    safe_candle_range_val = max(candle_range_val, 1e-9)
-
-    if adx_val < 20 and wick_ratio_val > 0.7 and vol_index_val < 0.8:
-        logging.debug(f"      (Spike Guard Filtered) Reason: Low ADX({adx_val:.1f}), High Wick({wick_ratio_val:.2f}), Low Vol({vol_index_val:.2f})")
-        return False
-
-    try:
-        body_ratio = candle_body_val / safe_candle_range_val
-        if body_ratio < 0.07:
-            logging.debug(f"      (Spike Guard Filtered) Reason: Low Body Ratio ({body_ratio:.3f})")
-            return False
-    except ZeroDivisionError:
-        logging.warning("      (Spike Guard) ZeroDivisionError calculating body_ratio.")
-        return False
-
-    if gain_val > 3 and atr_val > 4 and (candle_body_val / safe_candle_range_val) > 0.3:
-        logging.debug("      (Spike Guard Allowed) Reason: Strong directional move override.")
-        logging.debug("      (Spike Guard Allowed) Reason: Strong directional move override.")
-        return True
-
-    logging.debug("      (Spike Guard) Passed all checks.")
-    return True
-
-# [Patch v5.5.6] Multi-timeframe trend confirmation
 def is_mtf_trend_confirmed(m15_trend, side):
-    """Validate entry direction using M15 trend zone."""
-    trend = str(m15_trend).upper() if isinstance(m15_trend, str) else "NEUTRAL"
-    if side == "BUY" and trend not in M15_TREND_ALLOWED:
-        return False
-    if side == "SELL" and trend not in ["DOWN", "NEUTRAL"]:
-        return False
-    return True
+    """Wrapper for :func:`strategy.trend_filter.is_mtf_trend_confirmed`."""
+    from strategy.trend_filter import is_mtf_trend_confirmed as _impl
+    return _impl(m15_trend, side)
 
-# [Patch v5.6.5] Volatility filter helper
+
 def passes_volatility_filter(vol_index, min_ratio=1.0):
-    """Return True if Volatility_Index >= min_ratio."""
-    vol_val = pd.to_numeric(vol_index, errors="coerce")
-    if pd.isna(vol_val):
-        return False
-    return vol_val >= min_ratio
+    """Wrapper for :func:`strategy.trend_filter.passes_volatility_filter`."""
+    from strategy.trend_filter import passes_volatility_filter as _impl
+    return _impl(vol_index, min_ratio)
+
 
 def is_entry_allowed(row, session, consecutive_losses, side, m15_trend=None, signal_score_threshold=None):
-    """Checks if entry is allowed based on filters with debug logging."""
-    if signal_score_threshold is None:
-        global MIN_SIGNAL_SCORE_ENTRY
-        signal_score_threshold = MIN_SIGNAL_SCORE_ENTRY
-
-    if not spike_guard_london(row, session, consecutive_losses):
-        logging.debug("      Entry blocked by Spike Guard.")
-        return False, "SPIKE_GUARD_LONDON"
-
-    if not is_mtf_trend_confirmed(m15_trend, side):
-        logging.debug("      Entry blocked by M15 Trend filter.")
-        return False, f"M15_TREND_{str(m15_trend).upper()}"
-
-    vol_index_val = pd.to_numeric(getattr(row, "Volatility_Index", np.nan), errors='coerce')
-    if not passes_volatility_filter(vol_index_val):
-        logging.debug(f"      Entry blocked by Low Volatility ({vol_index_val})")
-        return False, f"LOW_VOLATILITY({vol_index_val})"
-
-    signal_score = pd.to_numeric(getattr(row, "Signal_Score", np.nan), errors='coerce')
-    if pd.isna(signal_score):
-        logging.debug("      Entry blocked: Invalid Signal Score (NaN)")
-        return False, "INVALID_SIGNAL_SCORE (NaN)"
-    if abs(signal_score) < signal_score_threshold:
-        logging.debug(
-            f"      Entry blocked: Low Signal Score {signal_score:.2f} < {signal_score_threshold}"
-        )
-        return False, f"LOW_SIGNAL_SCORE ({signal_score:.2f}<{signal_score_threshold})"
-
-    logging.debug("      Entry allowed by filters.")
-    return True, "ALLOWED"
-
+    """Wrapper for :func:`strategy.trend_filter.is_entry_allowed`."""
+    from strategy.trend_filter import is_entry_allowed as _impl
+    return _impl(row, session, consecutive_losses, side, m15_trend, signal_score_threshold)
 def adjust_lot_recovery_mode(base_lot, consecutive_losses):
-    """Adjusts lot size if in recovery mode."""
-    global RECOVERY_MODE_CONSECUTIVE_LOSSES, RECOVERY_MODE_LOT_MULTIPLIER, MIN_LOT_SIZE
-    if consecutive_losses >= RECOVERY_MODE_CONSECUTIVE_LOSSES:
-        adjusted_lot = max(base_lot * RECOVERY_MODE_LOT_MULTIPLIER, MIN_LOT_SIZE)
-        if not math.isclose(adjusted_lot, base_lot):
-            logging.info(f"      (Recovery Mode Active) Losses: {consecutive_losses}. Lot adjusted: {base_lot:.2f} -> {adjusted_lot:.2f}")
-        return adjusted_lot, "recovery"
-    else:
-        return base_lot, "normal"
+    """Wrapper for :func:`strategy.risk_management.adjust_lot_recovery_mode`."""
+    return _adjust_lot_recovery_mode(
+        base_lot,
+        consecutive_losses,
+        RECOVERY_MODE_CONSECUTIVE_LOSSES,
+        RECOVERY_MODE_LOT_MULTIPLIER,
+        MIN_LOT_SIZE,
+    )
 
 def calculate_aggressive_lot(equity, max_lot=None):
-    """Calculates lot size based on aggressive equity tiers."""
+    """Wrapper for :func:`strategy.risk_management.calculate_aggressive_lot`."""
     if max_lot is None:
-        global MAX_LOT_SIZE
         max_lot = MAX_LOT_SIZE
-    global MIN_LOT_SIZE
+    return _calculate_aggressive_lot(equity, max_lot, MIN_LOT_SIZE)
 
-    if equity < 100: lot = 0.01
-    elif equity < 500: lot = 0.05
-    elif equity < 1000: lot = 0.10
-    elif equity < 3000: lot = 0.30
-    elif equity < 5000: lot = 0.50
-    elif equity < 8000: lot = 1.00
-    else: lot = 2.00
-    final_lot = round(min(lot, max_lot), 2)
-    final_lot = max(final_lot, MIN_LOT_SIZE)
-    return final_lot
-
-def calculate_lot_size_fixed_risk(equity, risk_per_trade, sl_delta_price, point_value=None, min_lot=None, max_lot=None):
-    """Calculates lot size based on fixed fractional risk."""
-    if point_value is None: global POINT_VALUE; point_value = POINT_VALUE
-    if min_lot is None: global MIN_LOT_SIZE; min_lot = MIN_LOT_SIZE
-    if max_lot is None: global MAX_LOT_SIZE; max_lot = MAX_LOT_SIZE
-
-    equity_num = pd.to_numeric(equity, errors='coerce')
-    risk_num = pd.to_numeric(risk_per_trade, errors='coerce')
-    sl_delta_num = pd.to_numeric(sl_delta_price, errors='coerce')
-
-    if pd.isna(equity_num) or np.isinf(equity_num) or equity_num <= 0 or \
-       pd.isna(risk_num) or np.isinf(risk_num) or risk_num <= 0 or \
-       pd.isna(sl_delta_num) or np.isinf(sl_delta_num) or sl_delta_num <= 1e-9:
-        return min_lot
-
-    try:
-        risk_amount_usd = equity_num * risk_num
-        sl_points = sl_delta_num * 10.0
-        risk_per_001_lot = sl_points * point_value
-        if risk_per_001_lot <= 1e-9:
-            return min_lot
-
-        raw_lot_units = risk_amount_usd / risk_per_001_lot
-        lot_size = raw_lot_units * 0.01
-        lot_size = round(lot_size, 2)
-        lot_size = max(min_lot, lot_size)
-        lot_size = min(max_lot, lot_size)
-        return lot_size
-    except Exception:
-        return min_lot
+def calculate_lot_size_fixed_risk(
+    equity,
+    risk_per_trade,
+    sl_delta_price,
+    point_value=None,
+    min_lot=None,
+    max_lot=None,
+):
+    """Wrapper for :func:`strategy.risk_management.calculate_lot_size_fixed_risk`."""
+    if point_value is None:
+        point_value = POINT_VALUE
+    if min_lot is None:
+        min_lot = MIN_LOT_SIZE
+    if max_lot is None:
+        max_lot = MAX_LOT_SIZE
+    return _calculate_lot_size_fixed_risk(
+        equity,
+        risk_per_trade,
+        sl_delta_price,
+        point_value,
+        min_lot,
+        max_lot,
+    )
 
 def adjust_lot_tp2_boost(trade_history, base_lot=0.01):
-    """Increases lot size slightly after a streak of full TPs."""
-    global MIN_LOT_SIZE
-    boost_factor = 1.2
-    streak_length = 2
-    if len(trade_history) < streak_length:
-        return base_lot
-    full_trade_reasons = [str(reason) for reason in trade_history if not str(reason).startswith("Partial")]
-    if len(full_trade_reasons) >= streak_length and all(t.upper() == "TP" for t in full_trade_reasons[-streak_length:]):
-        boosted_lot = round(base_lot * boost_factor, 2)
-        final_lot = max(boosted_lot, MIN_LOT_SIZE)
-        if final_lot > base_lot:
-            logging.info(f"      (TP Boost) Last {streak_length} full trades were TP. Lot boosted: {base_lot:.2f} -> {final_lot:.2f}")
-        return final_lot
-    return base_lot
+    """Wrapper for :func:`strategy.risk_management.adjust_lot_tp2_boost`."""
+    return _adjust_lot_tp2_boost(trade_history, base_lot, MIN_LOT_SIZE)
 
 def calculate_lot_by_fund_mode(mm_mode, risk_pct, equity, atr_at_entry, sl_delta_price):
-    """Calculates base lot size based on the fund's money management mode."""
-    global MAX_LOT_SIZE, MIN_LOT_SIZE
-    base_lot = MIN_LOT_SIZE
-
-    if mm_mode in ['conservative', 'mirror']:
-        base_lot = calculate_lot_size_fixed_risk(equity, risk_pct, sl_delta_price)
-    elif mm_mode == 'balanced':
-        base_lot = calculate_aggressive_lot(equity)
-    elif mm_mode == 'high_freq':
-        if equity < 100: base_lot = 0.01
-        elif equity < 500: base_lot = 0.02
-        elif equity < 1000: base_lot = 0.03
-        else: base_lot = 0.05
-    elif mm_mode == 'spike_only':
-        atr_threshold = 2.0
-        atr_at_entry_num = pd.to_numeric(atr_at_entry, errors='coerce')
-        if pd.notna(atr_at_entry_num) and atr_at_entry_num > atr_threshold:
-            base_lot = calculate_aggressive_lot(equity)
-        else:
-            base_lot = calculate_lot_size_fixed_risk(equity, risk_pct, sl_delta_price)
-    else:
-        base_lot = calculate_aggressive_lot(equity)
-
-    final_lot = round(min(base_lot, MAX_LOT_SIZE), 2)
-    final_lot = max(final_lot, MIN_LOT_SIZE)
-    return final_lot
+    """Wrapper for :func:`strategy.risk_management.calculate_lot_by_fund_mode`."""
+    return _calculate_lot_by_fund_mode(
+        mm_mode,
+        risk_pct,
+        equity,
+        atr_at_entry,
+        sl_delta_price,
+        MIN_LOT_SIZE,
+        MAX_LOT_SIZE,
+        POINT_VALUE,
+    )
 
 # <<< [Patch] MODIFIED v4.8.8 (Patch 26.5.1): Applying [PATCH B - Unified] for logging fix. >>>
 def check_main_exit_conditions(order, row, current_bar_index, now_timestamp):
