@@ -1379,12 +1379,22 @@ def auto_convert_gold_csv(data_dir="data", output_path=None):
             df.columns = [c.strip().replace("\ufeff", "") for c in df.columns]
 
             # [Patch v6.9.30] รองรับการตรวจสอบชื่อคอลัมน์แบบไม่สนตัวพิมพ์
-            col_map = {c.strip().lower(): c.strip() for c in df.columns}
+            # [Patch v6.9.39] Robust time column normalization
+            col_map = {
+                c.strip().lower().replace(" ", "").replace("_", ""): c.strip()
+                for c in df.columns
+            }
             # [Patch v6.9.31] Normalize any form of 'timestamp'
             if "timestamp" in col_map and col_map["timestamp"] != "Timestamp":
                 df.rename(columns={col_map["timestamp"]: "Timestamp"}, inplace=True)
 
-            alt_time_cols = ["datetime", "date/time", "timestamp"]
+            alt_time_cols = [
+                "datetime",
+                "date/time",
+                "datetimestamp",
+                "date_time",
+                "timestamp",
+            ]
             for alt in alt_time_cols:
                 if alt in col_map and "Timestamp" not in df.columns:
                     df.rename(columns={col_map[alt]: "Timestamp"}, inplace=True)
