@@ -290,3 +290,17 @@ def test_check_data_quality_invalid_method():
     df = pd.DataFrame({"A": [1, None], "Datetime": [1, 2]})
     with pytest.raises(ValueError):
         dl.check_data_quality(df.copy(), dropna=False, fillna_method="invalid")
+
+
+def test_read_csv_in_chunks(tmp_path):
+    csv = tmp_path / "chunk.csv"
+    pd.DataFrame({"A": [1, 2, 3]}).to_csv(csv, index=False)
+    chunks = list(dl.read_csv_in_chunks(str(csv), chunksize=2))
+    assert len(chunks) == 2
+    assert chunks[0].shape[0] == 2
+    assert chunks[1].shape[0] == 1
+
+
+def test_read_csv_in_chunks_missing():
+    with pytest.raises(FileNotFoundError):
+        list(dl.read_csv_in_chunks("no_file.csv"))

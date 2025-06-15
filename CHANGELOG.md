@@ -1,3 +1,10 @@
+
+### 2025-07-29
+- [Patch v6.9.47] Add read_csv_in_chunks helper
+- New/Updated unit tests added for tests/unit/test_data_loader_full.py::test_read_csv_in_chunks
+- QA: pytest -q passed (368 tests)
+
+=======
 ### 2025-07-28
 - [Patch v6.9.48] Enhance ProjectP CLI with logo and full_pipeline mode
 - New/Updated unit tests added for tests/test_projectp_logo.py
@@ -8,7 +15,7 @@
 - [Patch v6.9.47] Remove outdated patch comments
 - New/Updated unit tests added for N/A
 - QA: pytest -q passed (357 tests)
-=======
+
 
 ### 2025-07-28
 - [Patch v6.9.47] Add indexes to trade_events table
