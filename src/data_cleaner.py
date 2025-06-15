@@ -10,11 +10,17 @@ logger = logging.getLogger(__name__)
 
 
 def read_csv_auto(path: str) -> pd.DataFrame:
-    """[Patch] โหลด CSV โดยตรวจสอบตัวคั่นอัตโนมัติ"""
-    with open(path, "r", encoding="utf-8") as f:
+    """[Patch v6.9.42] โหลด CSV โดยรองรับไฟล์ .gz และตรวจสอบตัวคั่นอัตโนมัติ"""
+    import gzip
+
+    opener = gzip.open if path.endswith(".gz") else open
+    mode = "rt" if path.endswith(".gz") else "r"
+    with opener(path, mode, encoding="utf-8") as f:
         first_line = f.readline()
+
     delimiter = "," if "," in first_line else r"\s+"
-    return pd.read_csv(path, sep=delimiter, engine="python")
+
+    return pd.read_csv(path, sep=delimiter, engine="python", compression="infer")
 
 
 def convert_buddhist_year(

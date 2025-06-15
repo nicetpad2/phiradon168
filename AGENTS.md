@@ -268,6 +268,7 @@
   - Convert Buddhist year dates and merge to a single ``Time`` column
   - Sort by time and handle missing values automatically
   - Validate ``Open``/``High``/``Low``/``Close``/``Volume`` columns
+  - Support gzipped CSV files in ``read_csv_auto``
   - Provide CLI script `src/data_cleaner.py`
   - Validate cleaned files with `validate_and_convert_csv`
 - **Modules:** `src/data_cleaner.py`, `src/csv_validator.py`

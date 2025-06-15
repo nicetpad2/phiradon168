@@ -1,3 +1,8 @@
+### 2025-07-23
+- [Patch v6.9.42] Support gzipped CSV in read_csv_auto
+- New/Updated unit tests added for tests/test_auto_train_meta_classifiers.py
+- QA: pytest -q passed (354 tests)
+
 
 ### 2025-07-22
 - [Patch v6.9.41] Fix environment overrides and auto-train helper
