@@ -1,6 +1,6 @@
 from .common import *
 import os
-from .engineering import engineer_m1_features
+from . import engineer_m1_features
 from .technical import *
 
 def calculate_trend_zone(df):
@@ -161,7 +161,9 @@ def load_or_engineer_m1_features(
             logging.info(f"(Cache) Loaded M1 features from {cache_path}")
             return cached
 
-    features_df = engineer_m1_features(df_m1)
+    import importlib
+    features_pkg = importlib.import_module(__package__)
+    features_df = features_pkg.engineer_m1_features(df_m1)
 
     if cache_path:
         try:
