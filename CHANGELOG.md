@@ -2448,3 +2448,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.45] Improve time column detection for auto_convert_gold_csv
 - New/Updated unit tests added for tests/test_auto_convert_csv.py
 - QA: pytest -q passed
+
+### 2025-07-27
+- [Patch v6.9.46] Allow env override for adaptive signal quantile
+- New/Updated unit tests added for tests/test_env_utils.py
+- QA: pytest -q passed (358 tests)
