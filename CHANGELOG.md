@@ -1,3 +1,8 @@
+### 2025-07-31
+- [Patch v6.9.50] Speed up run_tests with auto parallel and --last-failed
+- New/Updated unit tests added for tests/test_run_tests.py
+- QA: pytest -q passed (2 tests)
+
 ### 2025-07-30
 - [Patch v6.9.49] Use timezone-aware datetime in AuthManager
 - New/Updated unit tests added for tests/test_auth_manager.py
