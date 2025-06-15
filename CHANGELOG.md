@@ -2597,3 +2597,7 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.52] Ensure DatetimeIndex conversion for M1 dataset
 - New/Updated unit tests added for tests/test_strategy_meta_model.py
 - QA: pytest -q passed (368 tests)
+
+### 2025-06-15
+- [Patch v6.9.53] Remove leftover merge marker in entry_rules
+- QA: pytest -q passed (374 tests)

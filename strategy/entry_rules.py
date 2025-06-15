@@ -22,7 +22,6 @@ def generate_open_signals(
     rsi_threshold: float = 45,
     volume_mult: float = 1.2,
     require_divergence: bool = False,
-=======
     allow_short: bool = True,
 
 ) -> np.ndarray:
