@@ -12,6 +12,7 @@
 - **Strategy Engine**: กฎเทรดหลักและตัวกรองเทรนด์อยู่ในโฟลเดอร์ `strategy/` โดยใช้ตัวกรอง ATR และ Median เพื่อลด Noise พร้อมโมเดล ML ประเมินความน่าจะเป็นของ TP2
 - **Orchestrator**: ใช้ `ProjectP.py` เป็น CLI หลักเรียกใช้งาน โดยภายในเรียก `main.py` ควบคุมขั้นตอนทั้งหมดตั้งแต่เตรียมข้อมูลไปจนถึงฝึก MetaModel และสร้างรายงาน Walk-Forward Validation
 - **Risk Management**: ระบบคำนวณ Stop Loss/Take Profit ด้วย ATR พร้อมจัดการขนาดลอตตามความเสี่ยงที่กำหนด
+- **Session Handling**: ใช้เวลาที่มี timezone (UTC) ในการจัดการ session เพื่อป้องกันปัญหา Daylight Saving
 
 ภาพรวมนี้ช่วยให้ผู้ใช้เห็นลำดับการทำงานตั้งแต่รับข้อมูล จนถึงการวัดผลลัพธ์ของกลยุทธ์
 

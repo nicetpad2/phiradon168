@@ -7,7 +7,7 @@ import json
 import hashlib
 import secrets
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 # [Patch v6.9.47] Login system module
@@ -71,7 +71,7 @@ class AuthManager:
             session = Session(
                 username=username,
                 token=token,
-                expires_at=datetime.utcnow() + SESSION_TIMEOUT,
+                expires_at=datetime.now(timezone.utc) + SESSION_TIMEOUT,  # [Patch v6.9.49] timezone-aware session expiry
             )
             self.sessions[token] = session
             return session
@@ -82,7 +82,7 @@ class AuthManager:
         session = self.sessions.get(token)
         if not session:
             return False
-        if datetime.utcnow() > session.expires_at:
+        if datetime.now(timezone.utc) > session.expires_at:  # [Patch v6.9.49] timezone-aware check
             self.sessions.pop(token, None)
             return False
         return True
