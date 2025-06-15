@@ -150,9 +150,12 @@ def get_mtf_sma_trend(df_m15, fast=50, slow=200, rsi_period=14, rsi_upper=70, rs
     if not isinstance(df_m15, pd.DataFrame) or df_m15.empty or "Close" not in df_m15.columns:
         return "NEUTRAL"
     close = pd.to_numeric(df_m15["Close"], errors="coerce")
-    fast_ma = sma(close, fast)
-    slow_ma = sma(close, slow)
-    rsi_series = rsi(close, period=rsi_period)
+    pkg = sys.modules.get("src.features")
+    sma_fn = getattr(pkg, "sma", sma)
+    rsi_fn = getattr(pkg, "rsi", rsi)
+    fast_ma = sma_fn(close, fast)
+    slow_ma = sma_fn(close, slow)
+    rsi_series = rsi_fn(close, period=rsi_period)
     if fast_ma.empty or slow_ma.empty or rsi_series.empty:
         return "NEUTRAL"
     last_fast = fast_ma.iloc[-1]

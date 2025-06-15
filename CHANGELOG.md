@@ -2505,6 +2505,13 @@ QA: pytest -q passed (219 tests)
 
 
 
+### 2025-06-15
+- [Patch v6.9.48] Fix CLI auto-convert and indicator fallbacks
+- Updated tests for technical indicators and ProjectP script
+- QA: pytest -q passed (368 tests)
+
+=======
+
 ### 2025-07-28
 - [Patch v6.9.48] Handle KeyboardInterrupt and YAML parse errors gracefully
 - New/Updated unit tests added for tests/test_main_keyboardinterrupt.py, tests/test_pipeline_config.py
