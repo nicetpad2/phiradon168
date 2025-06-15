@@ -148,3 +148,35 @@ def predict_with_time_check(
 def validate_file(path: str) -> bool:
     """Return True if file exists and is non-empty."""
     return os.path.isfile(path) and os.path.getsize(path) > 0
+
+
+# [Patch v6.9.43] Utility to locate latest model and threshold value
+def get_latest_model_and_threshold(
+    model_dir: str, threshold_file: str, take_first: bool = False
+) -> tuple[str | None, float | None]:
+    """Return latest model path and threshold from ``model_dir``."""
+    if not os.path.isdir(model_dir):
+        return None, None
+
+    model_files = [
+        f
+        for f in os.listdir(model_dir)
+        if f.startswith("model_") and f.endswith(".joblib")
+    ]
+    model_files.sort()
+    model_path = os.path.join(model_dir, model_files[-1]) if model_files else None
+
+    thresh_path = os.path.join(model_dir, threshold_file)
+    threshold = None
+    if os.path.exists(thresh_path):
+        try:
+            df = pd.read_csv(thresh_path)
+            if "best_threshold" in df.columns:
+                val = df["best_threshold"].iloc[0] if take_first else df["best_threshold"].median()
+            else:
+                val = df.median(numeric_only=True).mean()
+            if not pd.isna(val):
+                threshold = float(val)
+        except (FileNotFoundError, pd.errors.EmptyDataError, ValueError) as exc:
+            logger.error("Failed reading threshold file %s: %s", thresh_path, exc)
+    return model_path, threshold
