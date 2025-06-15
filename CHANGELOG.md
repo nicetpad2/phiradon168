@@ -1,3 +1,9 @@
+# v6.9.47
+### 2025-07-28
+- [Patch v6.9.47] Measure test coverage in CI
+- New/Updated unit tests added for N/A
+- QA: pytest --cov (357 passed)
+
 ### 2025-07-26
 - [Patch v6.9.45] Add full_pipeline CLI command to ProjectP
 - New/Updated unit tests added for tests/test_projectp_cli.py::test_run_mode_full_pipeline
@@ -2442,7 +2448,15 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.45] Improve time column detection for auto_convert_gold_csv
 - New/Updated unit tests added for tests/test_auto_convert_csv.py
 - QA: pytest -q passed
+
 ### 2025-06-15
 - [Patch v6.9.46] Centralize config and add Parquet support
 - New/Updated unit tests added for src/config_manager.py, src/evaluation.py
 - QA: pytest -q passed (added coverage)
+
+
+### 2025-07-27
+- [Patch v6.9.46] Allow env override for adaptive signal quantile
+- New/Updated unit tests added for tests/test_env_utils.py
+- QA: pytest -q passed (358 tests)
+
