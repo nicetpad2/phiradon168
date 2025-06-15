@@ -49,6 +49,7 @@ def test_check_feature_noise_shap_detect_noise(caplog):
 
 def test_analyze_feature_importance_shap_no_shap_lib(monkeypatch, tmp_path, caplog):
     monkeypatch.setattr(features, 'shap', None, raising=False)
+    monkeypatch.setattr(features.ml, 'shap', None, raising=False)
     model = object()
     df = pd.DataFrame({'f1': [1], 'f2': [2]})
     with caplog.at_level('WARNING'):
@@ -59,6 +60,7 @@ def test_analyze_feature_importance_shap_no_shap_lib(monkeypatch, tmp_path, capl
 def test_analyze_feature_importance_shap_invalid_output_dir(monkeypatch, tmp_path, caplog):
     dummy_shap = types.SimpleNamespace(TreeExplainer=lambda m: None)
     monkeypatch.setattr(features, 'shap', dummy_shap, raising=False)
+    monkeypatch.setattr(features.ml, 'shap', dummy_shap, raising=False)
     model = object()
     df = pd.DataFrame({'f': [1]})
     with caplog.at_level('WARNING'):

@@ -54,7 +54,7 @@ def test_validate_csv_data_negative_volume():
 
 def test_validate_csv_data_missing_value():
     df = pd.DataFrame({'Open': [1], 'High': [1], 'Low': [0], 'Close': [None], 'Volume': [1]})
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         validate_csv_data(df, ['Open', 'High', 'Low', 'Close', 'Volume'])
 
 

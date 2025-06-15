@@ -18,7 +18,13 @@ def generate_open_signals(
     ma_slow: int = 50,
     volume_col: str = ColumnName.VOLUME_CAP,
     vol_window: int = 10,
-    allow_short: bool = False,
+
+    rsi_threshold: float = 45,
+    volume_mult: float = 1.2,
+    require_divergence: bool = False,
+=======
+    allow_short: bool = True,
+
 ) -> np.ndarray:
     """สร้างสัญญาณเปิด order พร้อมตัวเลือกเปิด/ปิด MACD/RSI และตัวกรอง MTF
 
@@ -34,13 +40,16 @@ def generate_open_signals(
             df = df.copy()
             df["MACD_hist"] = macd_hist
         macd_cond = df["MACD_hist"] > 0
-        if detect_macd_divergence(df[ColumnName.CLOSE_CAP], df["MACD_hist"]) != "bull":
+        if require_divergence and detect_macd_divergence(df[ColumnName.CLOSE_CAP], df["MACD_hist"]) != "bull":
             macd_cond &= False
         signals.append(macd_cond)
     if use_rsi:
         if "RSI" not in df.columns:
             df = df.copy()
             df["RSI"] = rsi(df[ColumnName.CLOSE_CAP])
+
+        rsi_cond = df["RSI"] > rsi_threshold
+
         threshold_series = 50
         if "session" in df.columns and "Volatility_Index" in df.columns:
             from src.feature_analysis import get_dynamic_rsi_threshold
@@ -53,6 +62,7 @@ def generate_open_signals(
                 index=df.index,
             )
         rsi_cond = df["RSI"] > threshold_series
+
         signals.append(rsi_cond)
 
     if "MA_fast" not in df.columns:
@@ -67,7 +77,7 @@ def generate_open_signals(
     if volume_col in df.columns:
         vol = pd.to_numeric(df[volume_col], errors="coerce")
         avg_vol = vol.rolling(vol_window, min_periods=1).mean()
-        vol_cond = vol > avg_vol * 1.5
+        vol_cond = vol > avg_vol * volume_mult
         signals.append(vol_cond)
 
     signal_strength = sum(sig.astype(int) for sig in signals)
