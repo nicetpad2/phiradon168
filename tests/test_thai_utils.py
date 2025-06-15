@@ -36,7 +36,7 @@ def test_validate_csv_data_empty():
 
 def test_validate_csv_data_type_fail():
     df = pd.DataFrame({'Open': ['x'], 'High': [1], 'Low': [0], 'Close': [1], 'Volume': [1]})
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         validate_csv_data(df, ['Open', 'High', 'Low', 'Close', 'Volume'])
 
 

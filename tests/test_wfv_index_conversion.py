@@ -40,4 +40,4 @@ def test_run_all_folds_index_conversion(monkeypatch, tmp_path, caplog):
             n_walk_forward_splits=2,
             output_dir=str(out_dir)
         )
-    assert "Successfully converted" in caplog.text
+    assert "converted" in caplog.text

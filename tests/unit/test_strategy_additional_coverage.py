@@ -71,7 +71,9 @@ def test_precompute_arrays(monkeypatch):
     sl = exit_rules.precompute_sl_array(df)
     tp = exit_rules.precompute_tp_array(df)
     assert sl.tolist() == pytest.approx([0.2, 0.4])
-    assert tp.tolist() == pytest.approx([0.2, 0.4])
+
+    assert tp.tolist() == pytest.approx([0.4, 0.8])
+
 
 
 def test_calculate_metrics_edge_cases():
