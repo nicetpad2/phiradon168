@@ -14,6 +14,11 @@
 - New/Updated unit tests added for N/A
 - QA: pytest -q passed (356 tests)
 
+### 2025-07-27
+- [Patch v6.9.47] Add script to convert project CSVs to Parquet
+- New/Updated unit tests added for tests/test_convert_project_csvs.py
+- QA: pytest -q failed (environment limits)
+
 ### 2025-07-25
 - [Patch v6.9.44] Vectorize Thai datetime extraction
 - New/Updated unit tests added for tests/unit/test_data_loader.py::test_extract_thai_date_time_vec
