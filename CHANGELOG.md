@@ -2422,3 +2422,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.44] Update ProjectP CLI to new mode-based syntax
 - New/Updated unit tests added for N/A
 - QA: pytest -q passed (existing tests)
+
+### 2025-07-26
+- [Patch v6.9.45] Improve time column detection for auto_convert_gold_csv
+- New/Updated unit tests added for tests/test_auto_convert_csv.py
+- QA: pytest -q passed
