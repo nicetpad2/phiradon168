@@ -7,6 +7,7 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, ROOT_DIR)
 
 from src.strategy import get_dynamic_signal_score_entry, get_dynamic_signal_score_thresholds
+from src import trade_utils
 
 
 def test_dynamic_signal_score_entry_clamps_max():
@@ -36,3 +37,19 @@ def test_vectorized_thresholds_match_single_calc():
         df_slice = pd.DataFrame({'Signal_Score': series.iloc[:i+1]})
         single_val = get_dynamic_signal_score_entry(df_slice, window=5, quantile=0.8, min_val=0.5, max_val=3.0)
         assert arr[i] == single_val
+
+
+def test_dynamic_thresholds_atr_adjusts():
+    scores = pd.Series([0.5] * 10)
+    atr = pd.Series([1] * 5 + [2] * 5)
+    avg = pd.Series([1] * 10)
+    arr = trade_utils.get_dynamic_signal_score_thresholds_atr(scores, atr, avg, slope=0.5)
+    assert arr[-1] > arr[0]
+
+
+def test_dynamic_thresholds_atr_clamps():
+    scores = pd.Series(range(5))
+    atr = pd.Series([10] * 5)
+    avg = pd.Series([1] * 5)
+    arr = trade_utils.get_dynamic_signal_score_thresholds_atr(scores, atr, avg, slope=1.0, max_val=3.0)
+    assert max(arr) <= 3.0
