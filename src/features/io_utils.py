@@ -288,6 +288,22 @@ def merge_wave_pattern_labels(df, log_path):
     )
     return df_out
 
+# [Patch v6.9.51] Flag corrective wave phases
+
+def flag_corrective_waves(df: pd.DataFrame, labels: list[str] | None = None) -> pd.DataFrame:
+    """Add boolean column "Is_Corrective" based on Wave_Pattern labels."""
+    if labels is None:
+        labels = ["ABC", "WXY", "Corrective"]
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be DataFrame")
+    df_out = df.copy()
+    if "Wave_Pattern" not in df_out.columns:
+        df_out["Is_Corrective"] = False
+        return df_out
+    df_out["Is_Corrective"] = df_out["Wave_Pattern"].astype(str).isin(labels)
+    df_out["Is_Corrective"] = df_out["Is_Corrective"].astype(bool)
+    return df_out
+
 
 # [Patch v6.1.7] Engulfing candlestick pattern tagging
 def tag_engulfing_patterns(df: pd.DataFrame) -> pd.DataFrame:
