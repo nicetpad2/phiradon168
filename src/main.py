@@ -98,6 +98,7 @@ from src.strategy import (
     train_and_export_meta_model,
     DriftObserver,
     plot_equity_curve,  # [Patch v5.7.3] import plotting helper
+    run_backtest_simulation_v34,  # [Patch v6.9.46] needed for pipeline stage
 )
 from src.utils import (
     export_trade_log,
