@@ -9,8 +9,28 @@ from src.adaptive import (
 logger = logging.getLogger(__name__)
 
 
-def atr_sl_tp(entry_price: float, atr: float, side: str, rr_ratio: float = 2.0) -> Tuple[float, float]:
-    """Return stop-loss and take-profit prices based on ATR."""
+def atr_sl_tp(
+    entry_price: float,
+    atr: float,
+    side: str,
+    sl_mult: float = 2.0,
+    tp_mult: float = 2.0,
+) -> Tuple[float, float]:
+    """Return stop-loss and take-profit prices based on ATR.
+
+    Parameters
+    ----------
+    entry_price : float
+        Price at entry.
+    atr : float
+        Average True Range value.
+    side : str
+        Trade side ``BUY`` or ``SELL``.
+    sl_mult : float, optional
+        ATR multiplier for stop loss. Defaults to ``2.0``.
+    tp_mult : float, optional
+        ATR multiplier for take profit. Defaults to ``2.0``.
+    """
     try:
         price = float(entry_price)
         atr_val = float(atr)
@@ -22,8 +42,8 @@ def atr_sl_tp(entry_price: float, atr: float, side: str, rr_ratio: float = 2.0) 
         return float("nan"), float("nan")
 
     side_u = str(side).upper()
-    sl_delta = atr_val
-    tp_delta = atr_val * max(rr_ratio, 2.0)
+    sl_delta = atr_val * max(sl_mult, 0.0)
+    tp_delta = atr_val * max(tp_mult, 0.0)
 
     if side_u == "BUY":
         sl = price - sl_delta

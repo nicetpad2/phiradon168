@@ -4494,12 +4494,12 @@ def generate_close_signals(
     return close_mask
 
 
-def precompute_sl_array(df: pd.DataFrame) -> np.ndarray:
+def precompute_sl_array(df: pd.DataFrame, sl_mult: float = 2.0) -> np.ndarray:
     """คำนวณ Stop-Loss ล่วงหน้า"""
-    return _precompute_sl_impl(df)
+    return _precompute_sl_impl(df, sl_mult=sl_mult)
 
 
-def precompute_tp_array(df: pd.DataFrame) -> np.ndarray:
+def precompute_tp_array(df: pd.DataFrame, tp_mult: float = 2.0) -> np.ndarray:
     """คำนวณ Take-Profit ล่วงหน้า"""
-    return _precompute_tp_impl(df)
+    return _precompute_tp_impl(df, tp_mult=tp_mult)
 
