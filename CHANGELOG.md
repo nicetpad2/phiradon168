@@ -1,4 +1,9 @@
 
+### 2025-06-15
+- [Patch v6.9.47] Update preprocess test for data_cleaner script
+- New/Updated unit tests added for tests/test_main_cli_extended.py::test_run_preprocess_success
+- QA: pytest -q passed (451 tests)
+
 ### 2025-07-29
 - [Patch v6.9.47] Add read_csv_in_chunks helper
 - New/Updated unit tests added for tests/unit/test_data_loader_full.py::test_read_csv_in_chunks

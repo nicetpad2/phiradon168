@@ -60,7 +60,7 @@ def test_run_preprocess_success():
     def fake_run(cmd, check):
         called.append(cmd)
     pipeline.run_preprocess(PipelineConfig(), runner=fake_run)
-    assert any('ProjectP.py' in c[1] for c in called)
+    assert any('src/data_cleaner.py' in c[1] for c in called)
     assert called[0][-2:] == ['--fill', 'drop']
 
 
