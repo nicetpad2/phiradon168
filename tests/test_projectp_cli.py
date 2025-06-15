@@ -63,6 +63,21 @@ def test_run_hyperparameter_sweep_calls_module(monkeypatch):
     assert captured['trade_log_path'] == module.DEFAULT_TRADE_LOG
 
 
+def test_run_hyperparameter_sweep_custom_path(monkeypatch, tmp_path):
+    captured = {}
+
+    def fake_sweep(out_dir, params, seed=0, resume=True, trade_log_path=None, m1_path=None):
+        captured['trade_log_path'] = trade_log_path
+
+    import importlib
+    module = importlib.import_module('tuning.hyperparameter_sweep')
+    monkeypatch.setattr(module, 'run_sweep', fake_sweep)
+    custom = tmp_path / 'tl.csv'
+    custom.write_text('x')
+    proj.run_hyperparameter_sweep({'lr': [0.1]}, trade_log_path=str(custom))
+    assert captured['trade_log_path'] == str(custom)
+
+
 def test_run_threshold_optimization_calls_module(monkeypatch):
     called = {}
 
@@ -82,8 +97,9 @@ def test_run_full_pipeline_sequence(monkeypatch):
     calls = []
 
     monkeypatch.setattr(proj, 'run_preprocess', lambda: calls.append('pre'))
+    monkeypatch.setattr(proj, 'ensure_trade_log', lambda p: calls.append('ensure') or p)
     monkeypatch.setattr(
-        proj, 'run_hyperparameter_sweep', lambda params: calls.append('sweep')
+        proj, 'run_hyperparameter_sweep', lambda params, trade_log_path=None: calls.append('sweep')
     )
     monkeypatch.setattr(
         proj, 'run_threshold_optimization', lambda: calls.append('th')
@@ -91,12 +107,12 @@ def test_run_full_pipeline_sequence(monkeypatch):
     monkeypatch.setattr(proj, 'run_walkforward', lambda: calls.append('wf'))
     monkeypatch.setattr(proj, 'update_config_from_dict', lambda d: calls.append('update'))
     monkeypatch.setattr(proj.os.path, 'exists', lambda p: True)
-    monkeypatch.setattr(proj, 'open', lambda *a, **k: io.StringIO('{}'))
+    monkeypatch.setattr('builtins.open', lambda *a, **k: io.StringIO('{}'))
     monkeypatch.setattr(proj.json, 'load', lambda f: {})
     monkeypatch.setattr(proj.pipeline, 'load_config', lambda: {})
     monkeypatch.setattr(proj.pipeline, 'run_report', lambda cfg: calls.append('rep'))
     proj.run_full_pipeline()
-    assert calls == ['pre', 'sweep', 'update', 'th', 'wf', 'rep']
+    assert calls == ['pre', 'ensure', 'sweep', 'update', 'th', 'wf', 'rep']
 
 
 def test_run_mode_wfv(monkeypatch):
