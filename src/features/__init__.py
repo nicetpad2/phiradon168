@@ -4,6 +4,13 @@ from .engineering import *
 from .ml import *
 from .io_utils import *
 
+# [Patch v6.9.41] Ensure threshold env overrides apply on every import
+from src.utils.env_utils import get_env_float
+
+META_MIN_PROBA_THRESH = get_env_float("META_MIN_PROBA_THRESH", META_MIN_PROBA_THRESH)
+REENTRY_MIN_PROBA_THRESH = get_env_float("REENTRY_MIN_PROBA_THRESH", REENTRY_MIN_PROBA_THRESH)
+META_META_MIN_PROBA_THRESH = get_env_float("META_META_MIN_PROBA_THRESH", META_META_MIN_PROBA_THRESH)
+
 __all__ = [
     "ema",
     "sma",

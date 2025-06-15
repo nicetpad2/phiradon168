@@ -1,4 +1,9 @@
 
+### 2025-07-22
+- [Patch v6.9.41] Fix environment overrides and auto-train helper
+- New/Updated unit tests added for tests/test_env_utils.py and tests/test_ensure_model_files_exist.py
+- QA: pytest -q failed (1 failed)
+
 - [Patch v6.9.41] เพิ่มฟังก์ชันค้นหาและเปลี่ยนชื่อคอลัมน์เวลา
 - New/Updated unit tests added for tests/test_csv_validator.py
 - QA: pytest -q passed (6 tests)
@@ -7,6 +12,7 @@
 - [Patch v6.9.38] Improve CSV reading with safe_read_csv
 - New/Updated unit tests added for N/A
 - QA: pytest -q failed (3 failed)
+
 
 
 ### 2025-07-18
