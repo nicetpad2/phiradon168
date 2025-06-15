@@ -2442,3 +2442,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.45] Improve time column detection for auto_convert_gold_csv
 - New/Updated unit tests added for tests/test_auto_convert_csv.py
 - QA: pytest -q passed
+
+### 2025-07-27
+- [Patch v6.9.47] Improve Streamlit dashboard with slider and Thai alerts
+- New/Updated unit tests added for tests/test_realtime_dashboard.py
+- QA: pytest -q passed (357 tests)

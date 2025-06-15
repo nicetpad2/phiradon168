@@ -88,15 +88,28 @@ def test_run_streamlit_dashboard(monkeypatch):
             self.plotted = False
         def plotly_chart(self, fig, use_container_width=True):
             self.plotted = True
+    class DummySpinner:
+        def __enter__(self):
+            return self
+        def __exit__(self, exc_type, exc, tb):
+            pass
     class DummyStreamlit:
         def __init__(self):
             self.set_page_config_called = False
             self.errors = []
             self.placeholder = DummyPlaceholder()
+            self.sliders = []
+            self.spinners = []
         def set_page_config(self, page_title):
             self.set_page_config_called = True
         def empty(self):
             return self.placeholder
+        def slider(self, label, min_value, max_value, value, step):
+            self.sliders.append((label, min_value, max_value, value, step))
+            return value
+        def spinner(self, text):
+            self.spinners.append(text)
+            return DummySpinner()
         def error(self, msg):
             self.errors.append(msg)
     dummy_st = DummyStreamlit()
@@ -115,4 +128,6 @@ def test_run_streamlit_dashboard(monkeypatch):
 
     assert dummy_st.set_page_config_called
     assert dummy_st.placeholder.plotted
-    assert dummy_st.errors == ['Drawdown exceeds 5.0%!']
+    assert dummy_st.sliders  # slider called
+    assert dummy_st.spinners == ['กำลังอัปเดตข้อมูล...']
+    assert dummy_st.errors == ['ขาดทุนต่อเนื่องเกิน 5.0%!']

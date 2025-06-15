@@ -100,10 +100,18 @@ def run_streamlit_dashboard(
     st.set_page_config(page_title="Real-Time Dashboard")
     placeholder = st.empty()
     while True:  # pragma: no cover - loop for UI
-        fig, alert = generate_dashboard(log_path, threshold)
-        placeholder.plotly_chart(fig, use_container_width=True)
-        if alert:
-            st.error(f"Drawdown exceeds {threshold*100:.1f}%!")
+        threshold_pct = st.sidebar.slider(
+            "ระดับเตือน Drawdown (%)",
+            min_value=1.0,
+            max_value=20.0,
+            value=threshold * 100.0,
+            step=0.5,
+        )
+        with st.spinner("กำลังอัปเดตข้อมูล..."):
+            fig, alert = generate_dashboard(log_path, threshold_pct / 100.0)
+            placeholder.plotly_chart(fig, use_container_width=True)
+            if alert:
+                st.error(f"ขาดทุนต่อเนื่องเกิน {threshold_pct:.1f}%!")
         time.sleep(refresh_sec)
 
 
