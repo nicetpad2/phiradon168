@@ -24,6 +24,7 @@
 - ระบบมีตัวกรอง ATR และ Median เพื่อช่วยลด Noise ในกรอบเวลา M1
 - ฟังก์ชัน `auto_convert_gold_csv` สำหรับแปลงไฟล์ XAUUSD_M*.csv เป็นปีพุทธศักราชและบันทึกไปยังเส้นทางที่กำหนด
 - ฟังก์ชัน `get_latest_model_and_threshold` ช่วยค้นหาโมเดลและค่า threshold ล่าสุด
+- โมดูล `auth_manager` สำหรับจัดการลงทะเบียนผู้ใช้และออก session token เพื่อป้องกันการใช้งาน Dashboard โดยไม่ได้รับอนุญาต
 
 ## Installation
 ```bash
@@ -263,3 +264,12 @@ Patch 5.7.8 resolves font configuration parsing errors when plotting.
 python scripts/clean_project_csvs.py
 ```
 เพื่อทำความสะอาดและแปลงคอลัมน์เวลาให้อยู่ในรูปแบบ `Time` ที่ถูกต้อง
+
+### Converting project CSVs to Parquet
+ต้องการเพิ่มประสิทธิภาพการโหลดข้อมูลสามารถแปลงไฟล์ CSV เป็น Parquet
+ด้วยสคริปต์
+```bash
+python scripts/convert_project_csvs.py --dest parquet
+```
+ไฟล์ `.parquet` จะถูกบันทึกในโฟลเดอร์ที่ระบุ ซึ่งสามารถนำไปใช้กับ
+`data_loader.auto_convert_csv_to_parquet` เพื่อความรวดเร็วในการอ่านข้อมูล

@@ -15,9 +15,12 @@ from sqlalchemy import (
     String,
     DateTime,
     MetaData,
+    Index,
     create_engine,
 )
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import SQLAlchemyError
+import logging
 
 # --- SQLAlchemy table setup -------------------------------------------------
 metadata = MetaData()
@@ -30,6 +33,8 @@ trade_events = Table(
     Column("event_type", String(32), nullable=False),
     Column("detail", String, nullable=True),
 )
+Index("ix_trade_events_timestamp", trade_events.c.timestamp)
+Index("ix_trade_events_event_type", trade_events.c.event_type)
 
 
 def init_db(engine: Engine) -> None:
@@ -79,8 +84,12 @@ def ingest_log_to_db(log_path: str, engine: Engine) -> int:
         events = _parse_events(f)
     if not events:
         return 0
-    with engine.begin() as conn:
-        conn.execute(trade_events.insert(), events)
+    try:
+        with engine.begin() as conn:
+            conn.execute(trade_events.insert(), events)
+    except SQLAlchemyError as exc:
+        logging.getLogger(__name__).error("ingest_log_to_db failed: %s", exc)
+        return 0
     return len(events)
 
 

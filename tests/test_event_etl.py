@@ -1,5 +1,7 @@
 import os
-from sqlalchemy import create_engine, text
+
+from sqlalchemy import create_engine, text, inspect
+
 
 from src.event_etl import init_db, ingest_log_to_db
 
@@ -36,3 +38,17 @@ def test_ingest_log_to_db_empty(tmp_path):
     with engine.connect() as conn:
         result = conn.execute(text("SELECT COUNT(*) FROM trade_events")).scalar()
     assert result == 0
+
+
+
+def test_init_db_creates_indexes(tmp_path):
+    db_path = tmp_path / "db.sqlite"
+    engine = create_engine(f"sqlite:///{db_path}")
+    init_db(engine)
+    inspector = inspect(engine)
+    indexes = inspector.get_indexes("trade_events")
+    names = {idx["name"] for idx in indexes}
+    assert "ix_trade_events_timestamp" in names
+    assert "ix_trade_events_event_type" in names
+
+

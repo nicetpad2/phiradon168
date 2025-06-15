@@ -55,6 +55,16 @@ def test_min_signal_score_env(monkeypatch):
     importlib.reload(cfg)
 
 
+def test_adaptive_signal_quantile_env(monkeypatch):
+    monkeypatch.setenv("ADAPTIVE_SIGNAL_SCORE_QUANTILE", "0.25")
+    if 'src.config' in sys.modules:
+        monkeypatch.delitem(sys.modules, 'src.config', raising=False)
+    cfg = importlib.import_module('src.config')
+    assert cfg.ADAPTIVE_SIGNAL_SCORE_QUANTILE == 0.25
+    monkeypatch.delenv('ADAPTIVE_SIGNAL_SCORE_QUANTILE', raising=False)
+    importlib.reload(cfg)
+
+
 def test_meta_threshold_env(monkeypatch):
     monkeypatch.setenv("META_MIN_PROBA_THRESH", "0.4")
     monkeypatch.setenv("REENTRY_MIN_PROBA_THRESH", "0.35")
