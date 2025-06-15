@@ -1599,7 +1599,7 @@ def validate_csv_data(df, required_cols=None):
 
     subset = [c for c in price_cols + [vol_col] if c in sample.columns]
     if subset and sample[subset].isna().any().any():
-        raise ValueError("Missing values detected in price columns")
+        raise TypeError("Missing values detected in price columns")
 
     return df
 

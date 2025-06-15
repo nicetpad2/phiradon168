@@ -490,6 +490,9 @@ def main():
         selected = interactive_menu()
         if not selected or selected == "exit":
             return
+        if selected == "full_pipeline":
+            run_full_pipeline()
+            return
         args.mode = selected
 
     if args.auto_convert:
@@ -535,7 +538,7 @@ def _script_main():
         sys.exit(0)
     import main as pipeline_main
     pipeline_main.main()
-    sys.exit(0)
+    return 0
 
 
 if __name__ == "__main__":
