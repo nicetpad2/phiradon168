@@ -12,11 +12,62 @@ from sklearn.metrics import (
     recall_score,
 )
 from scipy.stats import wasserstein_distance
+try:
+    import shap
+except Exception:  # pragma: no cover - optional dependency
+    shap = None
 from src.config import logger
 from src.utils import load_json_with_comments
 from src.utils.auto_train_meta_classifiers import (
     auto_train_meta_classifiers,
 )
+
+
+def sortino_ratio(returns: Iterable[float]) -> float:
+    """Calculate Sortino ratio of series of returns."""
+    r = np.asarray(list(returns), dtype=float)
+    if r.size == 0:
+        return float('nan')
+    downside = r[r < 0]
+    downside_std = downside.std(ddof=1)
+    mean_ret = r.mean()
+    if downside_std == 0:
+        return float('inf') if mean_ret > 0 else 0.0
+    return mean_ret / downside_std
+
+
+def calmar_ratio(equity: Iterable[float]) -> float:
+    """Calculate Calmar ratio from equity curve."""
+    eq = np.asarray(list(equity), dtype=float)
+    if eq.size < 2:
+        return float('nan')
+    returns = np.diff(eq) / eq[:-1]
+    max_dd = 0.0
+    peak = eq[0]
+    for val in eq:
+        if val > peak:
+            peak = val
+        drawdown = (peak - val) / peak
+        if drawdown > max_dd:
+            max_dd = drawdown
+    ann_ret = returns.mean() * 252
+    if max_dd == 0:
+        return float('inf') if ann_ret > 0 else 0.0
+    return ann_ret / max_dd
+
+
+def compute_shap_values(model, X: pd.DataFrame) -> np.ndarray | None:
+    """Return SHAP values array if ``shap`` is available."""
+    if shap is None:
+        logger.warning("shap not installed, skipping SHAP computation")
+        return None
+    try:
+        explainer = shap.Explainer(model)
+        shap_values = explainer(X)
+        return np.array(shap_values.values)
+    except Exception as exc:  # pragma: no cover - unexpected errors
+        logger.error("SHAP computation failed: %s", exc)
+        return None
 
 
 def find_best_threshold(
@@ -229,3 +280,60 @@ def calculate_drift_summary(
         drift_feats = sorted(report.loc[report["drift"], "feature"].unique())
         logger.warning("Drift detected: %s", drift_feats)
     return report
+
+# [Patch v7.0.0] Additional performance metrics
+
+def calculate_sortino_ratio(returns: pd.Series) -> float:
+    """Return Sortino ratio from a series of returns."""
+    if returns is None or returns.empty:
+        return 0.0
+    returns = pd.to_numeric(returns, errors="coerce").dropna()
+    if returns.empty:
+        return 0.0
+    downside = returns[returns < 0]
+    downside_std = downside.std(ddof=1)
+    mean_ret = returns.mean()
+    if downside_std is None or pd.isna(downside_std) or downside_std <= 1e-9:
+        return float(np.inf if mean_ret > 0 else 0.0)
+    ratio = mean_ret / downside_std
+    if isinstance(ratio, complex):
+        ratio = 0.0
+    return float(ratio)
+
+
+def calculate_max_drawdown(equity: pd.Series) -> float:
+    """Return maximum drawdown from an equity curve."""
+    if equity is None or equity.empty:
+        return 0.0
+    equity = pd.to_numeric(equity, errors="coerce").ffill()
+    running_max = equity.cummax()
+    drawdown = equity - running_max
+    return float(drawdown.min())
+
+
+def calculate_calmar_ratio(returns: pd.Series, max_drawdown: float) -> float:
+    """Return Calmar ratio using annualized returns and max drawdown."""
+    if returns is None or returns.empty:
+        return 0.0
+    returns = pd.to_numeric(returns, errors="coerce").dropna()
+    if returns.empty:
+        return 0.0
+    annualized_return = returns.mean() * 252
+    if max_drawdown > 1e-9:
+        ratio = annualized_return / abs(max_drawdown)
+    else:
+        ratio = np.inf if annualized_return > 0 else 0.0
+    if isinstance(ratio, complex):
+        ratio = 0.0
+    return float(ratio)
+
+
+def compute_underwater_curve(equity: pd.Series) -> pd.Series:
+    """Return underwater drawdown curve from equity series."""
+    if equity is None or equity.empty:
+        return pd.Series(dtype=float)
+    equity = pd.to_numeric(equity, errors="coerce").ffill()
+    running_max = equity.cummax()
+    underwater = (equity - running_max) / running_max
+    return underwater.fillna(0.0)
+

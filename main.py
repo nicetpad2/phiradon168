@@ -151,6 +151,7 @@ def run_preprocess(config: PipelineConfig, runner=subprocess.run) -> None:
     auto_convert_gold_csv(os.path.dirname(m1_path), output_path=m1_path)
     fill_method = getattr(config, "cleaning_fill_method", "drop")
     try:
+        # [Patch v6.9.47] Removed recursive subprocess call to ProjectP
         runner(
             [
                 os.environ.get("PYTHON", "python"),
@@ -161,9 +162,6 @@ def run_preprocess(config: PipelineConfig, runner=subprocess.run) -> None:
             ],
             check=True,
         )
-        # [Patch v6.9.42] Prevent infinite recursion when ProjectP calls pipeline
-        if not os.getenv("FROM_PROJECTP"):
-            runner([os.environ.get("PYTHON", "python"), "ProjectP.py"], check=True)
     except subprocess.CalledProcessError as exc:
         logger.error("Preprocess failed", exc_info=True)
         raise PipelineError("preprocess stage failed") from exc

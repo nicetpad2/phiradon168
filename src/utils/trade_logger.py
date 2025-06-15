@@ -196,11 +196,9 @@ def print_qa_summary(output_dir: str) -> str:
             except Exception as e:
                 msg = f"[QA-WARNING] Failed reading {path}: {e}"
                 logger.error(msg, exc_info=True)
-                logging.getLogger().error(msg)
     summary_text = "\n".join(summaries)
     if summary_text:
         logger.info(summary_text)
-        logging.getLogger().info(summary_text)
     return summary_text
 
 

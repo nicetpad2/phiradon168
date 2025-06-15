@@ -36,6 +36,7 @@ _SUBMODULES = [
     "log_analysis",
     "qa_tools",
     "trade_log_pipeline",
+    "config_manager",
 ]
 
 __all__ = list(_SUBMODULES)

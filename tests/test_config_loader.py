@@ -25,3 +25,10 @@ def test_update_config_lowercase_key(monkeypatch):
     config_loader.update_config_from_dict({'foo': 2})
     assert cfg.FOO == 2
 
+
+def test_config_manager_singleton():
+    cm1 = config_loader.ConfigManager()
+    cm2 = config_loader.ConfigManager()
+    assert cm1 is cm2
+    assert cm1.get_setting('cooldown_secs') == 60
+
