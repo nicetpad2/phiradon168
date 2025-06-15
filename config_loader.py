@@ -2,9 +2,46 @@
 
 import importlib
 import logging
+from pathlib import Path
+from typing import Any, Optional
+
+import yaml
 
 
-def update_config_from_dict(params: dict) -> None:
+class ConfigManager:
+    """Singleton จัดการโหลดและเข้าถึงไฟล์คอนฟิก YAML."""
+
+    _instance: Optional["ConfigManager"] = None
+
+    def __new__(cls, *args, **kwargs) -> "ConfigManager":
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self,
+                 settings_path: str = "config/settings.yaml",
+                 pipeline_path: str = "config/pipeline.yaml") -> None:
+        if hasattr(self, "initialized"):
+            return
+        self.settings_path = Path(settings_path)
+        self.pipeline_path = Path(pipeline_path)
+        self.settings = self._load_yaml(self.settings_path)
+        self.pipeline = self._load_yaml(self.pipeline_path)
+        self.initialized = True
+
+    def _load_yaml(self, path: Path) -> dict:
+        with path.open("r", encoding="utf-8") as f:
+            return yaml.safe_load(f)
+
+    def get_setting(self, key: str, default: Any | None = None) -> Any:
+        """คืนค่าจาก settings หากไม่พบจะคืน ``default``"""
+        return self.settings.get(key, default)
+
+
+from types import ModuleType
+
+
+def update_config_from_dict(params: dict) -> ModuleType:
     """Update :mod:`src.config` attributes from ``params``.
 
     Parameters

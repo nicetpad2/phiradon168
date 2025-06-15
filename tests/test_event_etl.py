@@ -1,5 +1,7 @@
 import os
+
 from sqlalchemy import create_engine, text, inspect
+
 
 from src.event_etl import init_db, ingest_log_to_db
 
@@ -38,6 +40,7 @@ def test_ingest_log_to_db_empty(tmp_path):
     assert result == 0
 
 
+
 def test_init_db_creates_indexes(tmp_path):
     db_path = tmp_path / "db.sqlite"
     engine = create_engine(f"sqlite:///{db_path}")
@@ -47,4 +50,5 @@ def test_init_db_creates_indexes(tmp_path):
     names = {idx["name"] for idx in indexes}
     assert "ix_trade_events_timestamp" in names
     assert "ix_trade_events_event_type" in names
+
 
