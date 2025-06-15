@@ -1,3 +1,9 @@
+# v6.9.47
+### 2025-07-28
+- [Patch v6.9.47] Measure test coverage in CI
+- New/Updated unit tests added for N/A
+- QA: pytest --cov (357 passed)
+
 ### 2025-07-26
 - [Patch v6.9.45] Add full_pipeline CLI command to ProjectP
 - New/Updated unit tests added for tests/test_projectp_cli.py::test_run_mode_full_pipeline
