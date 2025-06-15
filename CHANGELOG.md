@@ -3,6 +3,12 @@
 - New/Updated unit tests added for tests/test_run_tests.py
 - QA: pytest -q passed (4 tests)
 
+### 2025-08-02
+- [Patch v6.9.52] เพิ่ม RLScalperAgent แบบ Q-learning และเทสต์
+- New/Updated unit tests added for tests/test_rl_scalper.py
+- QA: pytest -q passed (tests count TBD)
+- QA: pytest -q passed (3 tests)
+
 ### 2025-07-31
 - [Patch v6.9.50] Speed up run_tests with auto parallel and --last-failed
 - New/Updated unit tests added for tests/test_run_tests.py
