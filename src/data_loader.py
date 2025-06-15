@@ -1810,6 +1810,32 @@ CSV_SCHEMA = {
 }
 
 
+def read_csv_in_chunks(path: str, chunksize: int = 100_000, **kwargs):
+    """อ่านไฟล์ CSV แบบแบ่งส่วนเพื่อประหยัดหน่วยความจำ
+
+    Parameters
+    ----------
+    path : str
+        เส้นทางไฟล์ CSV
+    chunksize : int, optional
+        จำนวนแถวต่อหนึ่ง chunk (ดีฟอลต์ 100_000)
+    kwargs : dict
+        อาร์กิวเมนต์เพิ่มเติมที่ส่งให้ :func:`pandas.read_csv`
+
+    Yields
+    ------
+    pandas.DataFrame
+        ชุดข้อมูลย่อยตามขนาด ``chunksize``
+    """
+
+    # [Patch v6.9.47] เพิ่มตัวช่วยอ่าน CSV เป็นชิ้น ๆ
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"ไม่พบไฟล์ {path}")
+
+    for chunk in pd.read_csv(path, chunksize=chunksize, **kwargs):
+        yield chunk
+
+
 def safe_load_csv(path: str, fill_method: str = "ffill") -> pd.DataFrame:
     """Load CSV and clean using :mod:`data_cleaner`."""
     from src import data_cleaner
@@ -1840,6 +1866,7 @@ __all__ = [
     "configure_matplotlib_fonts",
     "setup_fonts",
     "safe_load_csv_auto",
+    "read_csv_in_chunks",
     "safe_load_csv",
     "load_data_from_csv",
     "load_app_config",

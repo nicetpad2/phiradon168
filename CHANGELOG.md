@@ -1,3 +1,8 @@
+### 2025-07-29
+- [Patch v6.9.47] Add read_csv_in_chunks helper
+- New/Updated unit tests added for tests/unit/test_data_loader_full.py::test_read_csv_in_chunks
+- QA: pytest -q passed (368 tests)
+
 
 ### 2025-07-28
 - [Patch v6.9.47] Add indexes to trade_events table
