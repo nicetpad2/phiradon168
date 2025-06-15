@@ -2323,3 +2323,8 @@ QA: pytest -q passed (219 tests)
 - [Patch v6.9.34] Update .gitignore for generated CSVs
 - No code changes. AutoConvert verified
 - QA: pytest tests/test_projectp_auto_convert.py -q passed
+
+### 2025-07-18
+- [Patch v6.9.35] Split features into package modules
+- New/Updated unit tests added for N/A
+- QA: pytest -q failed
