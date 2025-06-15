@@ -1,3 +1,8 @@
+### 2025-08-01
+- [Patch v6.9.51] Allow custom ATR multipliers for SL/TP
+- New/Updated unit tests added for src.money_management, strategy.exit_rules
+- QA: pytest -q passed (449 tests)
+
 ### 2025-07-31
 - [Patch v6.9.50] Speed up run_tests with auto parallel and --last-failed
 - New/Updated unit tests added for tests/test_run_tests.py
