@@ -45,6 +45,7 @@ python ProjectP.py --mode full_pipeline
 python ProjectP.py --mode wfv --all      # รัน Walk-Forward Validation ทั้งชุด
 python ProjectP.py --mode preprocess     # เตรียมข้อมูลและสร้างฟีเจอร์
 python ProjectP.py --mode report         # สรุปผลและสร้างกราฟรายงาน
+python ProjectP.py --menu                # เปิดเมนูโต้ตอบเลือกโหมด
 # ฝึกโมเดลใหม่หลายค่าพารามิเตอร์
 python tuning/hyperparameter_sweep.py
 ```
