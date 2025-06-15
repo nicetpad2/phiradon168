@@ -5,6 +5,7 @@ import sys
 import subprocess
 import pytest
 
+# [Patch v6.9.57] Add --keyword option to filter tests by expression
 # [Patch v6.9.56] Add --cov-fail-under option for coverage threshold
 
 # [Patch v6.9.52] Add coverage and maxfail options, auto maxfail with --fast
@@ -58,6 +59,9 @@ def main() -> None:
                         help='ล้มเหลวหาก coverage ต่ำกว่า PERCENT')
     parser.add_argument('--durations', type=int, default=None, metavar='N',
                         help='แสดงรายการเทสที่ช้าที่สุด N อันดับ')
+    parser.add_argument('-k', '--keyword', dest='keyword', default=None,
+                        metavar='EXPR',
+                        help='รันเฉพาะเทสที่ตรงกับ EXPR')
     parser.add_argument('-c', '--changed', nargs='?', const='HEAD~1', default=None,
                         metavar='BASE',
                         help='รันเฉพาะเทสที่เปลี่ยนจาก BASE (ค่าเริ่มต้น HEAD~1)')
@@ -112,6 +116,9 @@ def main() -> None:
 
     if args.durations is not None:
         pytest_args += ['--durations', str(args.durations)]
+
+    if args.keyword:
+        pytest_args += ['-k', args.keyword]
 
     summary = _SummaryPlugin()
     exit_code = pytest.main(pytest_args, plugins=[summary])
