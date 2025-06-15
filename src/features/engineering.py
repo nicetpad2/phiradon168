@@ -76,7 +76,11 @@ def calculate_m15_trend_zone(df_m15):
             if not result_df.index.is_monotonic_increasing:
                 result_df.sort_index(inplace=True)
             return result_df
-        df["EMA_Fast"] = ema(df["Close"], M15_TREND_EMA_FAST); df["EMA_Slow"] = ema(df["Close"], M15_TREND_EMA_SLOW); df["RSI"] = rsi(df["Close"], M15_TREND_RSI_PERIOD)
+        import importlib
+        features_pkg = importlib.import_module(__package__)
+        df["EMA_Fast"] = features_pkg.ema(df["Close"], M15_TREND_EMA_FAST)
+        df["EMA_Slow"] = features_pkg.ema(df["Close"], M15_TREND_EMA_SLOW)
+        df["RSI"] = features_pkg.rsi(df["Close"], M15_TREND_RSI_PERIOD)
         df.dropna(subset=["EMA_Fast", "EMA_Slow", "RSI"], inplace=True)
         if df.empty:
             result_df = pd.DataFrame(index=df_m15.index, data={"Trend_Zone": "NEUTRAL"})
