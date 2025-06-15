@@ -24,6 +24,7 @@
 - ระบบมีตัวกรอง ATR และ Median เพื่อช่วยลด Noise ในกรอบเวลา M1
 - ฟังก์ชัน `auto_convert_gold_csv` สำหรับแปลงไฟล์ XAUUSD_M*.csv เป็นปีพุทธศักราชและบันทึกไปยังเส้นทางที่กำหนด
 - ฟังก์ชัน `get_latest_model_and_threshold` ช่วยค้นหาโมเดลและค่า threshold ล่าสุด
+- โมดูล `auth_manager` สำหรับจัดการลงทะเบียนผู้ใช้และออก session token เพื่อป้องกันการใช้งาน Dashboard โดยไม่ได้รับอนุญาต
 
 ## Installation
 ```bash
