@@ -57,6 +57,11 @@ def run_pipeline_stage(stage: str):
                 df = main_mod.load_validated_csv(DATA_FILE_PATH_M1, "M1")
         else:
             df = main_mod.load_validated_csv(DATA_FILE_PATH_M1, "M1")
+
+        if not isinstance(df.index, pd.DatetimeIndex):
+            df = main_mod.prepare_datetime(df, "M1")
+            df = df[df.index.notna()].sort_index()
+
         run_backtest_simulation_v34(
             df, label="WFV", initial_capital_segment=INITIAL_CAPITAL
         )
