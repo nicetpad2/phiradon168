@@ -9,9 +9,12 @@ from src.money_management import (
 
 def test_atr_sl_tp_buy_sell():
     sl, tp = atr_sl_tp(10.0, 0.5, 'BUY')
-    assert sl == 9.5 and tp == 11.0
+    assert sl == 9.0 and tp == 11.0
     sl2, tp2 = atr_sl_tp(10.0, 0.5, 'SELL')
-    assert sl2 == 10.5 and tp2 == 9.0
+    assert sl2 == 11.0 and tp2 == 9.0
+
+    sl3, tp3 = atr_sl_tp(10.0, 0.5, 'BUY', sl_mult=1.0, tp_mult=3.0)
+    assert sl3 == 9.5 and tp3 == 11.5
 
 
 def test_update_be_trailing():

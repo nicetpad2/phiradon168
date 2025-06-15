@@ -29,8 +29,9 @@ def generate_close_signals(
     return close_mask.fillna(0).astype(np.int8).to_numpy()
 
 
-def precompute_sl_array(df: pd.DataFrame) -> np.ndarray:
+def precompute_sl_array(df: pd.DataFrame, sl_mult: float = 2.0) -> np.ndarray:
     """คำนวณ Stop-Loss ล่วงหน้าตาม ATR"""
+    # [Patch v6.9.51] allow custom ATR multiplier for SL
     if "ATR_14" not in df.columns:
         df = atr(df, 14)
 
@@ -40,12 +41,13 @@ def precompute_sl_array(df: pd.DataFrame) -> np.ndarray:
         hl_range = pd.to_numeric(df["High"], errors="coerce") - pd.to_numeric(df["Low"], errors="coerce")
         atr_series = hl_range.ewm(alpha=1/14, adjust=False, min_periods=1).mean()
 
-    sl = atr_series * 1.5
+    sl = atr_series * sl_mult
     return sl.fillna(0.0).to_numpy(dtype=np.float64)
 
 
-def precompute_tp_array(df: pd.DataFrame) -> np.ndarray:
+def precompute_tp_array(df: pd.DataFrame, tp_mult: float = 2.0) -> np.ndarray:
     """คำนวณ Take-Profit ล่วงหน้าตาม ATR"""
+    # [Patch v6.9.51] allow custom ATR multiplier for TP
     if "ATR_14" not in df.columns:
         df = atr(df, 14)
 
@@ -55,5 +57,5 @@ def precompute_tp_array(df: pd.DataFrame) -> np.ndarray:
         hl_range = pd.to_numeric(df["High"], errors="coerce") - pd.to_numeric(df["Low"], errors="coerce")
         atr_series = hl_range.ewm(alpha=1/14, adjust=False, min_periods=1).mean()
 
-    tp = atr_series * 3.0
+    tp = atr_series * tp_mult
     return tp.fillna(0.0).to_numpy(dtype=np.float64)

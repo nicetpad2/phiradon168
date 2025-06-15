@@ -123,7 +123,7 @@
   - Continuously ingest new market data, update state-action value tables or neural-net approximators
   - Evaluate performance on walk-forward validation, adjust exploration/exploitation rates
   - Provide optional “shadow trades” for comparisons against rule-based strategies
-- **Status:** ยังไม่พัฒนาในโค้ด
+  - **Status:** เริ่มต้นพัฒนา RLScalperAgent แบบ Q-learning
 
 ---
 

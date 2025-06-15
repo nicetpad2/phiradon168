@@ -2,9 +2,10 @@ import argparse
 import logging
 import os
 import sys
+import subprocess
 import pytest
 
-# [Patch v6.9.50] Improve test speed with auto xdist and --last-failed
+# [Patch v6.9.51] Run changed tests only via --changed option
 
 class _SummaryPlugin:
     """Plugin เก็บสถิติผลการทดสอบ"""
@@ -25,6 +26,18 @@ class _SummaryPlugin:
                 self.skipped += 1
 
 
+def find_changed_tests(base_ref: str) -> list[str]:
+    """Return test files changed since base_ref."""
+    try:
+        output = subprocess.check_output(
+            ['git', 'diff', '--name-only', f'{base_ref}..HEAD'],
+            text=True,
+        )
+    except Exception:
+        return []
+    return [f.strip() for f in output.splitlines() if f.startswith('tests/') and f.endswith('.py')]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='รัน test suite')
     parser.add_argument('--fast', '--smoke', action='store_true', dest='fast',
@@ -33,6 +46,9 @@ def main() -> None:
                         help='จำนวน process สำหรับรันแบบขนาน (pytest-xdist)')
     parser.add_argument('--lf', '--last-failed', action='store_true', dest='last_failed',
                         help='รันเฉพาะเทสที่ล้มเหลวครั้งก่อน')
+    parser.add_argument('-c', '--changed', nargs='?', const='HEAD~1', default=None,
+                        metavar='BASE',
+                        help='รันเฉพาะเทสที่เปลี่ยนจาก BASE (ค่าเริ่มต้น HEAD~1)')
     args, extra_args = parser.parse_known_args()
 
     os.environ.setdefault('COMPACT_LOG', '1')
@@ -40,7 +56,12 @@ def main() -> None:
 
     pytest_args = extra_args
     if not pytest_args:
-        pytest_args = ['tests']
+        if args.changed:
+            pytest_args = find_changed_tests(args.changed)
+            if pytest_args:
+                print(f'[INFO] Running changed tests since {args.changed}')
+        if not pytest_args:
+            pytest_args = ['tests']
     pytest_args.insert(0, '-q')
     if args.fast:
         pytest_args += ['-m', 'not integration']
