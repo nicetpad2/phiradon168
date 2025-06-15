@@ -3,10 +3,6 @@
 # ==============================================================================
 # === PART 7: Model Training Function (v4.8.8 - Patch 2 Applied) ===
 # ==============================================================================
-# <<< MODIFIED v4.7.9: Implemented logging, added docstrings/comments, enhanced error handling & GPU usage, fixed SyntaxError, added memory cleanup >>>
-# <<< MODIFIED v4.8.1: Ensured GPU settings, early stopping, RAM optimization (sample_size, float32), and categorical handling are correctly implemented >>>
-# <<< MODIFIED v4.8.2: Added robust input validation for trade_log_df and m1_df in train_and_export_meta_model, and updated log messages >>>
-# <<< MODIFIED v4.8.8 (Patch 2): Fixed UnboundLocalError for y_val_cat by moving evaluation inside try block. Ensured Pool object is used correctly for CatBoost fit/eval. Added robustness checks. >>>
 import logging
 import os
 import time
@@ -1094,21 +1090,11 @@ logging.info(f"Part 7: Model Training Function Loaded (v{__version__} Applied)."
 # ==============================================================================
 # === PART 8: Backtesting Engine (v4.8.8 - Patch 26.6.1 Applied) ===
 # ==============================================================================
-# <<< MODIFIED v4.8.8 (Patch 20): Implemented Refactoring Plan: Separated Exit Check and State Update functions. >>>
-# <<< MODIFIED v4.8.8 (Patch 21): Fixed NameError for counters in _update_open_order_state by passing them as arguments. >>>
-# <<< MODIFIED v4.8.8 (Patch 22.1): Fixed Exit Reason & Price Finalization for End-of-Period Close. >>>
-# <<< MODIFIED v4.8.8 (Patch 23): Fixed BE/TSL Priority, moved BE-SL Refine logic, removed EoP check logic, adjusted TP Fixture logic in test. >>>
-# <<< MODIFIED v4.8.8 (Patch 24): Fixed _check_order_exit_conditions return, SL Hit check, BE-SL PnL Calc; Reverted EoP logic; Adjusted test fixtures. >>>
-# <<< MODIFIED v4.8.8 (Patch 25): Added price tolerance check (math.isclose), refined BE-SL PnL calc, verified EoP logic. >>>
-# <<< MODIFIED v4.8.8 (Patch 26.2): Applied math.isclose, BE-SL PnL Fix, SL Multiplier check, refined EoP logic, and improved logging. >>>
-# <<< MODIFIED v4.8.8 (Patch 26.3.1): Applied [PATCH B] to _check_order_exit_conditions (new name & logic), verified BE-SL PnL and SL multiplier usage. >>>
-# <<< MODIFIED v4.8.8 (Patch 26.4.1): Unified [PATCH B] for logging in _update_open_order_state, and [PATCH C] for error handling in run_backtest_simulation_v34. >>>
-# <<< MODIFIED v4.8.8 (Patch 26.6.1): Applied user-provided fixes for f-string formatting in logging statements to prevent ValueError. >>>
 import random
 from collections import defaultdict
-import math # For math.isclose
-import importlib # Added for safe global access
-import sys # Added for safe global access
+import math  # For math.isclose
+import importlib  # Added for safe global access
+import sys  # Added for safe global access
 
 # Ensure tqdm is available (imported in Part 1)
 try:
@@ -2699,12 +2685,9 @@ logging.info(f"Part 8: Backtesting Engine Functions Loaded (v{__version__} Appli
 
 # ==============================================================================
 # === PART 9: Walk-Forward Orchestration & Analysis (v4.8.3 Patch 1) ===
-# ==============================================================================
-# <<< MODIFIED v4.7.9: Implemented logging, added docstrings/comments, enhanced analysis robustness, fixed SyntaxError, added memory cleanup >>>
-# <<< MODIFIED v4.8.1: Added input validation and handling for no trades in run_all_folds_with_threshold >>>
-# <<< MODIFIED v4.8.3: Applied SyntaxError fix for try-except global variable checks >>>
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm  # [Patch v5.7.7] Required for FontProperties
+# ==============================================================================
 from matplotlib.ticker import FuncFormatter
 from scipy.stats import ttest_ind, wasserstein_distance # For DriftObserver
 from sklearn.model_selection import TimeSeriesSplit # For Walk-Forward
