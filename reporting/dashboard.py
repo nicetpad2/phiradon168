@@ -1,4 +1,5 @@
 """Simple dashboard generator using pandas HTML export."""
+
 from __future__ import annotations
 
 import os
@@ -25,7 +26,9 @@ def generate_dashboard(results: Any, output_filepath: str) -> str:
     # [Patch v6.6.7] implement interactive chart generation
     if isinstance(results, str):
         if os.path.exists(results):
-            results = pd.read_csv(results)
+            from src.utils.data_utils import safe_read_csv
+
+            results = safe_read_csv(results)
         else:
             logger.error("Results path %s not found", results)
             results = pd.DataFrame()

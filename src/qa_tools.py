@@ -9,13 +9,17 @@ from src.config import OUTPUT_DIR
 logger = logging.getLogger(__name__)
 
 
-def quick_qa_output(output_dir: str = str(OUTPUT_DIR), report_file: str = "qa_report.txt"):
+def quick_qa_output(
+    output_dir: str = str(OUTPUT_DIR), report_file: str = "qa_report.txt"
+):
     """Scan output files and report folds without trades or missing columns."""
     issues = []
     p = Path(output_dir)
     for f in p.glob("*.csv.gz"):
         try:
-            df = pd.read_csv(f)
+            from src.utils.data_utils import safe_read_csv
+
+            df = safe_read_csv(f)
             missing_cols = [c for c in ["pnl", "entry_price"] if c not in df.columns]
             if df.empty:
                 issues.append(f"{f.name}: No trades")
@@ -31,22 +35,29 @@ def quick_qa_output(output_dir: str = str(OUTPUT_DIR), report_file: str = "qa_re
     return issues
 
 
-def run_noise_backtest(n: int = 1000, initial_price: float = 1800.0,
-                       vol: float = 0.1, seed: int | None = None,
-                       initial_capital: float = 10000.0,
-                       **kwargs):
+def run_noise_backtest(
+    n: int = 1000,
+    initial_price: float = 1800.0,
+    vol: float = 0.1,
+    seed: int | None = None,
+    initial_capital: float = 10000.0,
+    **kwargs,
+):
     """Generate random-walk price data and run backtest on the noise."""
     if seed is not None:
         np.random.seed(seed)
     price = initial_price + np.cumsum(np.random.randn(n) * vol)
     idx = pd.date_range(start="2020-01-01", periods=n, freq="min")
-    df_noise = pd.DataFrame({
-        "Open": price,
-        "High": price + np.abs(np.random.randn(n) * vol),
-        "Low": price - np.abs(np.random.randn(n) * vol),
-        "Close": price,
-        "ATR_14_Shifted": vol,
-    }, index=idx)
+    df_noise = pd.DataFrame(
+        {
+            "Open": price,
+            "High": price + np.abs(np.random.randn(n) * vol),
+            "Low": price - np.abs(np.random.randn(n) * vol),
+            "Close": price,
+            "ATR_14_Shifted": vol,
+        },
+        index=idx,
+    )
 
     results = strategy.run_backtest_simulation_v34(
         df_noise, "NOISE", initial_capital, **kwargs

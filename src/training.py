@@ -131,9 +131,7 @@ def real_train_func(
     # ตรวจสอบไฟล์ trade log และ M1 ก่อนเริ่มฝึก
     if not trade_log_path or not m1_path:
         logger.error("ไม่ได้ระบุ trade log หรือ M1 path – ข้ามการฝึกโมเดล")
-        logging.getLogger().error(
-            "ไม่ได้ระบุ trade log หรือ M1 path – ข้ามการฝึกโมเดล"
-        )
+        logging.getLogger().error("ไม่ได้ระบุ trade log หรือ M1 path – ข้ามการฝึกโมเดล")
         return None
     if not os.path.exists(trade_log_path):
         logger.error("ไม่พบไฟล์ trade log ที่ %s – ข้ามการฝึกโมเดล", trade_log_path)
@@ -143,14 +141,14 @@ def real_train_func(
         return None
     if not os.path.exists(m1_path):
         logger.error("ไม่พบไฟล์ข้อมูล M1 ที่ %s – ข้ามการฝึกโมเดล", m1_path)
-        logging.getLogger().error(
-            "ไม่พบไฟล์ข้อมูล M1 ที่ %s – ข้ามการฝึกโมเดล", m1_path
-        )
+        logging.getLogger().error("ไม่พบไฟล์ข้อมูล M1 ที่ %s – ข้ามการฝึกโมเดล", m1_path)
         return None
 
     # [Patch v5.9.1] Validate that trade log and M1 data are not empty
-    trade_df = pd.read_csv(trade_log_path)
-    m1_df = pd.read_csv(m1_path)
+    from src.utils.data_utils import safe_read_csv
+
+    trade_df = safe_read_csv(trade_log_path)
+    m1_df = safe_read_csv(m1_path)
     if trade_df.empty:
         raise ValueError("trade_log file is empty")
     if m1_df.empty:
@@ -262,13 +260,16 @@ def real_train_func(
     last_ts = None
     if "Timestamp" in m1_df.columns:
         try:
-            last_ts = pd.to_datetime(m1_df.loc[min_len - 1, "Timestamp"], errors="raise")
+            last_ts = pd.to_datetime(
+                m1_df.loc[min_len - 1, "Timestamp"], errors="raise"
+            )
         except Exception:
             last_ts = None
     elif isinstance(m1_df.index, pd.DatetimeIndex):
         last_ts = m1_df.index[min_len - 1]
     if last_ts is not None:
         from src.utils.model_utils import set_last_training_timestamp
+
         set_last_training_timestamp(model, last_ts)
     save_model(model, output_dir, model_filename)
 
@@ -455,8 +456,10 @@ def train_lightgbm_mtf(
         logging.getLogger().error("M1 or M15 data not found")
         return None
 
-    df_m1 = pd.read_csv(m1_path)
-    df_m15 = pd.read_csv(m15_path)
+    from src.utils.data_utils import safe_read_csv
+
+    df_m1 = safe_read_csv(m1_path)
+    df_m15 = safe_read_csv(m15_path)
     df_m1 = convert_thai_datetime(df_m1, "timestamp")
     df_m15 = convert_thai_datetime(df_m15, "timestamp")
     df_m1.sort_values("timestamp", inplace=True)
@@ -516,6 +519,7 @@ def run_hyperparameter_sweep(
         best = compute_fallback_fn(df)
     else:
         from joblib import Parallel, delayed
+
         results = Parallel(n_jobs=-1)(
             delayed(train_eval_fn)(df, params) for params in param_grid
         )
@@ -562,4 +566,3 @@ def train_lstm_sequence(
         clf = LogisticRegression(max_iter=1000)
         clf.fit(X_flat, y)
         return clf
-

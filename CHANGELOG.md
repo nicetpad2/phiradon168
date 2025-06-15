@@ -1,3 +1,8 @@
+### 2025-06-15
+- [Patch v6.9.38] Improve CSV reading with safe_read_csv
+- New/Updated unit tests added for N/A
+- QA: pytest -q failed (3 failed)
+
 ### 2025-07-18
 - [Patch v6.9.35] Split src/main.py into smaller modules
 - New/Updated unit tests added for src/main_helpers.py and others
