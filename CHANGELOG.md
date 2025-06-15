@@ -1,3 +1,8 @@
+### 2025-07-28
+- [Patch v6.9.47] Add ConfigManager singleton for YAML settings
+- New/Updated unit tests added for tests/test_config_loader.py
+- QA: pytest -q passed (4 tests)
+
 ### 2025-07-26
 - [Patch v6.9.45] Add full_pipeline CLI command to ProjectP
 - New/Updated unit tests added for tests/test_projectp_cli.py::test_run_mode_full_pipeline
