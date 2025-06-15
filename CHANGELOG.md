@@ -3,6 +3,11 @@
 - New/Updated unit tests added for tests/test_projectp_script.py
 - QA: pytest -q passed (374 tests)
 
+### 2025-06-15
+- [Patch v6.9.56] Add coverage threshold option to run_tests
+- New/Updated unit tests added for tests/test_run_tests.py
+- QA: pytest -q passed (374 tests)
+
 ### 2025-06-16
 - [Patch v6.9.54] Improve fast test mode in run_tests
 - New/Updated unit tests added for tests/test_run_tests.py

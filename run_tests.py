@@ -5,6 +5,8 @@ import sys
 import subprocess
 import pytest
 
+# [Patch v6.9.56] Add --cov-fail-under option for coverage threshold
+
 # [Patch v6.9.52] Add coverage and maxfail options, auto maxfail with --fast
 # [Patch v6.9.54] Auto-select changed tests with --fast and add --durations option
 
@@ -51,6 +53,9 @@ def main() -> None:
                         help='วัด coverage ของ TARGET (ค่าเริ่มต้น src)')
     parser.add_argument('--maxfail', type=int, default=None, metavar='N',
                         help='หยุดทันทีเมื่อมี N เทสล้มเหลว')
+    parser.add_argument('--cov-fail-under', type=int, dest='cov_fail_under',
+                        default=None, metavar='PERCENT',
+                        help='ล้มเหลวหาก coverage ต่ำกว่า PERCENT')
     parser.add_argument('--durations', type=int, default=None, metavar='N',
                         help='แสดงรายการเทสที่ช้าที่สุด N อันดับ')
     parser.add_argument('-c', '--changed', nargs='?', const='HEAD~1', default=None,
@@ -96,6 +101,11 @@ def main() -> None:
 
     if args.cov is not None:
         pytest_args += ['--cov', args.cov, '--cov-report', 'term-missing']
+        if args.cov_fail_under is not None:
+            pytest_args += ['--cov-fail-under', str(args.cov_fail_under)]
+    elif args.cov_fail_under is not None:
+        pytest_args += ['--cov', 'src', '--cov-report', 'term-missing',
+                        '--cov-fail-under', str(args.cov_fail_under)]
 
     if args.maxfail is not None:
         pytest_args += ['--maxfail', str(args.maxfail)]

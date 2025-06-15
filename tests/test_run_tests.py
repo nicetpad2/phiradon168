@@ -68,6 +68,27 @@ def test_run_tests_cov(monkeypatch):
     assert 'src' in called['args']
 
 
+def test_run_tests_cov_fail_under(monkeypatch):
+    called = {}
+    _patch_pytest(monkeypatch, called)
+    monkeypatch.setattr(sys, 'argv', ['run_tests.py', '--cov', '--cov-fail-under', '80'])
+    with pytest.raises(SystemExit):
+        run_tests.main()
+    assert '--cov-fail-under' in called['args']
+    assert '80' in called['args']
+
+
+def test_run_tests_fail_under_without_cov(monkeypatch):
+    called = {}
+    _patch_pytest(monkeypatch, called)
+    monkeypatch.setattr(sys, 'argv', ['run_tests.py', '--cov-fail-under', '75'])
+    with pytest.raises(SystemExit):
+        run_tests.main()
+    assert '--cov' in called['args']
+    assert '--cov-fail-under' in called['args']
+    assert '75' in called['args']
+
+
 def test_run_tests_maxfail(monkeypatch):
     called = {}
     _patch_pytest(monkeypatch, called)
