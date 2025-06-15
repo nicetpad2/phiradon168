@@ -225,7 +225,9 @@ def _run_script(relative_path: str) -> None:
     subprocess.run([sys.executable, abs_path], check=True)
 
 
-def run_hyperparameter_sweep(params: Dict[str, List[float]]) -> None:
+def run_hyperparameter_sweep(
+    params: Dict[str, List[float]], trade_log_path: str | None = None
+) -> None:
     """รันการค้นหาค่าพารามิเตอร์."""
     logger.debug(f"Starting sweep with params: {params}")
     from tuning.hyperparameter_sweep import run_sweep as _sweep, DEFAULT_TRADE_LOG
@@ -233,12 +235,14 @@ def run_hyperparameter_sweep(params: Dict[str, List[float]]) -> None:
     m1_path = os.path.join(str(OUTPUT_DIR), "final_data_m1_v32_walkforward.csv.gz")
     logger.info("[Patch v6.6.6] Running sweep with m1_path=%s", m1_path)
 
+    trade_log = trade_log_path or DEFAULT_TRADE_LOG
+
     _sweep(
         str(OUTPUT_DIR),
         params,
         seed=42,
         resume=True,
-        trade_log_path=DEFAULT_TRADE_LOG,
+        trade_log_path=trade_log,
         m1_path=m1_path,
     )
 
@@ -294,8 +298,22 @@ def run_full_pipeline() -> None:
     # Step 1: Preprocess Data
     _execute_step("preprocess", run_preprocess)
 
+    trade_log_default = os.path.join(
+        str(OUTPUT_DIR), "trade_log_v32_walkforward.csv.gz"
+    )
+    try:
+        trade_log_path = ensure_trade_log(trade_log_default)
+    except FileNotFoundError:
+        logger.error("Trade log missing and could not be generated. Aborting.")
+        return
+
     # Step 2: Hyperparameter Sweep
-    _execute_step("sweep", run_hyperparameter_sweep, DEFAULT_SWEEP_PARAMS)
+    _execute_step(
+        "sweep",
+        run_hyperparameter_sweep,
+        DEFAULT_SWEEP_PARAMS,
+        trade_log_path,
+    )
 
     # Step 3: Auto-apply best hyperparameters from sweep
     logger.info("Applying best hyperparameters found from sweep...")
@@ -473,6 +491,28 @@ def load_trade_log(
     return load_or_generate_trade_log(
         filepath, min_rows=min_rows, features_path=features_path
     )
+
+
+def ensure_trade_log(trade_log_path: str) -> str:
+    """Ensure the required trade log exists, generating via walk-forward if missing."""
+    if os.path.exists(trade_log_path):
+        return trade_log_path
+    alt = trade_log_path.replace(".csv.gz", ".csv")
+    if os.path.exists(alt):
+        return alt
+    logger.warning(
+        "[Patch v6.9.55] Trade log not found at %s, generating via walk-forward",
+        trade_log_path,
+    )
+    try:
+        run_walkforward()
+    except Exception as exc:
+        logger.error("Failed to generate trade log via WFV: %s", exc)
+    if os.path.exists(trade_log_path):
+        return trade_log_path
+    if os.path.exists(alt):
+        return alt
+    raise FileNotFoundError(trade_log_path)
 
 
 def main():

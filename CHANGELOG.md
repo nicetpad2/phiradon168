@@ -2631,3 +2631,8 @@ QA: pytest -q passed (219 tests)
 ### 2025-06-15
 - [Patch v6.9.53] Remove leftover merge marker in entry_rules
 - QA: pytest -q passed (374 tests)
+
+### 2025-06-15
+- [Patch v6.9.55] ปรับปรุง run_full_pipeline ให้สร้าง trade log อัตโนมัติ
+- New/Updated unit tests added for ProjectP.py
+- QA: pytest -q passed (374 tests)
