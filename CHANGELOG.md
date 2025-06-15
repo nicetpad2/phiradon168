@@ -8,7 +8,7 @@
 ### 2025-07-28
 - [Patch v6.9.47] Add indexes to trade_events table
 - New/Updated unit tests added for tests/test_event_etl.py::test_init_db_creates_indexes
-- QA: pytest -q passed (existing tests)
+ - QA: pytest -q passed (368 tests)
 =======
 
 ### 2025-07-28
@@ -2504,3 +2504,8 @@ QA: pytest -q passed (219 tests)
 - QA: pytest -q passed (358 tests)
 
 
+
+### 2025-07-28
+- [Patch v6.9.48] Handle KeyboardInterrupt and YAML parse errors gracefully
+- New/Updated unit tests added for tests/test_main_keyboardinterrupt.py, tests/test_pipeline_config.py
+- QA: pytest -q passed (368 tests)

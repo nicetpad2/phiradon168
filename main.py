@@ -337,6 +337,9 @@ def main(args=None) -> int:
     except ValueError as exc:
         logger.error("Invalid value: %s", exc, exc_info=True)
         return 1
+    except KeyboardInterrupt:
+        logger.warning("\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e22\u0e01\u0e40\u0e25\u0e34\u0e01\u0e01\u0e32\u0e23\u0e17\u0e33\u0e07\u0e32\u0e19")
+        return 1
     except Exception as exc:  # pragma: no cover - unexpected errors
         logger.error("Unexpected error: %s", exc, exc_info=True)
         return 1
