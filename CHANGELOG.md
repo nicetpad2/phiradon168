@@ -13,6 +13,11 @@
 - New/Updated unit tests added for tests/test_run_tests.py
 - QA: pytest -q passed (4 tests)
 
+### 2025-08-02
+- [Patch v6.9.52] Improve run_tests with coverage and maxfail options
+- New/Updated unit tests added for tests/test_run_tests.py
+- QA: pytest -q passed (7 tests)
+=======
 
 ### 2025-08-02
 - [Patch v6.9.52] เพิ่ม RLScalperAgent แบบ Q-learning และเทสต์
@@ -31,6 +36,7 @@
 - [Patch v6.9.51] Dynamic RSI thresholds by session
 - New/Updated unit tests added for tests/test_dynamic_rsi_threshold.py
 - QA: pytest -q passed (370 tests)
+
 
 ### 2025-07-31
 - [Patch v6.9.50] Speed up run_tests with auto parallel and --last-failed

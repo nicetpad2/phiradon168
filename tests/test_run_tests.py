@@ -56,3 +56,33 @@ def test_run_tests_changed(monkeypatch):
     with pytest.raises(SystemExit):
         run_tests.main()
     assert 'tests/test_a.py' in called['args']
+
+
+def test_run_tests_cov(monkeypatch):
+    called = {}
+    _patch_pytest(monkeypatch, called)
+    monkeypatch.setattr(sys, 'argv', ['run_tests.py', '--cov'])
+    with pytest.raises(SystemExit):
+        run_tests.main()
+    assert '--cov' in called['args']
+    assert 'src' in called['args']
+
+
+def test_run_tests_maxfail(monkeypatch):
+    called = {}
+    _patch_pytest(monkeypatch, called)
+    monkeypatch.setattr(sys, 'argv', ['run_tests.py', '--maxfail', '2'])
+    with pytest.raises(SystemExit):
+        run_tests.main()
+    assert '--maxfail' in called['args']
+    assert '2' in called['args']
+
+
+def test_run_tests_fast_sets_maxfail(monkeypatch):
+    called = {}
+    _patch_pytest(monkeypatch, called)
+    monkeypatch.setattr(sys, 'argv', ['run_tests.py', '--fast'])
+    with pytest.raises(SystemExit):
+        run_tests.main()
+    assert '-m' in called['args'] and 'not integration' in called['args']
+    assert '--maxfail' in called['args'] and '1' in called['args']

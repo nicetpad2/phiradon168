@@ -5,7 +5,7 @@ import sys
 import subprocess
 import pytest
 
-# [Patch v6.9.51] Run changed tests only via --changed option
+# [Patch v6.9.52] Add coverage and maxfail options, auto maxfail with --fast
 
 class _SummaryPlugin:
     """Plugin เก็บสถิติผลการทดสอบ"""
@@ -46,6 +46,10 @@ def main() -> None:
                         help='จำนวน process สำหรับรันแบบขนาน (pytest-xdist)')
     parser.add_argument('--lf', '--last-failed', action='store_true', dest='last_failed',
                         help='รันเฉพาะเทสที่ล้มเหลวครั้งก่อน')
+    parser.add_argument('--cov', nargs='?', const='src', metavar='TARGET', default=None,
+                        help='วัด coverage ของ TARGET (ค่าเริ่มต้น src)')
+    parser.add_argument('--maxfail', type=int, default=None, metavar='N',
+                        help='หยุดทันทีเมื่อมี N เทสล้มเหลว')
     parser.add_argument('-c', '--changed', nargs='?', const='HEAD~1', default=None,
                         metavar='BASE',
                         help='รันเฉพาะเทสที่เปลี่ยนจาก BASE (ค่าเริ่มต้น HEAD~1)')
@@ -65,6 +69,8 @@ def main() -> None:
     pytest_args.insert(0, '-q')
     if args.fast:
         pytest_args += ['-m', 'not integration']
+        if args.maxfail is None:
+            args.maxfail = 1
 
     if args.num_processes:
         try:
@@ -81,6 +87,12 @@ def main() -> None:
 
     if args.last_failed:
         pytest_args += ['--last-failed', '--last-failed-no-failures', 'all']
+
+    if args.cov is not None:
+        pytest_args += ['--cov', args.cov, '--cov-report', 'term-missing']
+
+    if args.maxfail is not None:
+        pytest_args += ['--maxfail', str(args.maxfail)]
 
     summary = _SummaryPlugin()
     exit_code = pytest.main(pytest_args, plugins=[summary])
