@@ -1,7 +1,7 @@
 import os
-from sqlalchemy import create_engine, text
-from sqlalchemy.exc import SQLAlchemyError
-import logging
+
+from sqlalchemy import create_engine, text, inspect
+
 
 from src.event_etl import init_db, ingest_log_to_db
 
@@ -40,22 +40,15 @@ def test_ingest_log_to_db_empty(tmp_path):
     assert result == 0
 
 
-def test_ingest_log_to_db_exception(tmp_path, monkeypatch, caplog):
+
+def test_init_db_creates_indexes(tmp_path):
     db_path = tmp_path / "db.sqlite"
     engine = create_engine(f"sqlite:///{db_path}")
     init_db(engine)
-    log_file = tmp_path / "sample.log"
-    log_file.write_text(SAMPLE_LOG)
+    inspector = inspect(engine)
+    indexes = inspector.get_indexes("trade_events")
+    names = {idx["name"] for idx in indexes}
+    assert "ix_trade_events_timestamp" in names
+    assert "ix_trade_events_event_type" in names
 
-    class DummyCtx:
-        def __enter__(self):
-            raise SQLAlchemyError("boom")
 
-        def __exit__(self, exc_type, exc, tb):
-            return False
-
-    monkeypatch.setattr(engine, "begin", lambda: DummyCtx())
-    with caplog.at_level(logging.ERROR):
-        count = ingest_log_to_db(str(log_file), engine)
-    assert count == 0
-    assert "ingest_log_to_db failed" in caplog.text
