@@ -3,11 +3,10 @@ import os
 from . import engineer_m1_features
 from .technical import *
 
+
 def calculate_trend_zone(df):
     """Stubbed trend zone calculator."""
     return pd.Series("NEUTRAL", index=df.index)
-
-
 
 
 def create_session_column(df):
@@ -22,21 +21,35 @@ def create_session_column(df):
 
     # [Patch v6.8.13] Proper session tagging implementation
     if df is None:
-        logging.warning("create_session_column received None, returning empty DataFrame")
-        return pd.DataFrame({"session": pd.Categorical([], categories=["Asia", "London", "NY", "Other", "N/A"])} )
+        logging.warning(
+            "create_session_column received None, returning empty DataFrame"
+        )
+        return pd.DataFrame(
+            {
+                "session": pd.Categorical(
+                    [], categories=["Asia", "London", "NY", "Other", "N/A"]
+                )
+            }
+        )
     if df.empty:
-        df["session"] = pd.Categorical([], categories=["Asia", "London", "NY", "Other", "N/A"])
+        df["session"] = pd.Categorical(
+            [], categories=["Asia", "London", "NY", "Other", "N/A"]
+        )
         return df
 
     try:
         if not isinstance(df.index, pd.DatetimeIndex):
             df.index = pd.to_datetime(df.index, errors="coerce", format="mixed")
-        df["session"] = get_session_tags_vectorized(df.index).astype(
-            "category"
-        ).cat.set_categories(["Asia", "London", "NY", "Other", "N/A"], ordered=False)
+        df["session"] = (
+            get_session_tags_vectorized(df.index)
+            .astype("category")
+            .cat.set_categories(["Asia", "London", "NY", "Other", "N/A"], ordered=False)
+        )
     except Exception as e:
         logging.error(f"   (Error) Session calculation failed: {e}", exc_info=True)
-        df["session"] = pd.Categorical(["Other"] * len(df), categories=["Asia", "London", "NY", "Other", "N/A"])
+        df["session"] = pd.Categorical(
+            ["Other"] * len(df), categories=["Asia", "London", "NY", "Other", "N/A"]
+        )
     return df
 
 
@@ -74,6 +87,7 @@ def save_features_hdf5(df, path):
     """Save a DataFrame to an HDF5 file or pickle if PyTables is unavailable."""
     try:
         import importlib.util
+
         if importlib.util.find_spec("tables") is None:
             df.to_pickle(path)
             logging.warning("(Warning) PyTables not installed, saved as pickle")
@@ -81,13 +95,16 @@ def save_features_hdf5(df, path):
         df.to_hdf(path, key="data", mode="w")
         logging.info(f"(Features) Saved features to {path}")
     except Exception as e:
-        logging.error(f"(Features) Failed to save features to {path}: {e}", exc_info=True)
+        logging.error(
+            f"(Features) Failed to save features to {path}: {e}", exc_info=True
+        )
 
 
 def load_features_hdf5(path):
     """Load a DataFrame from an HDF5 file or pickle as a fallback."""
     try:
         import importlib.util
+
         if importlib.util.find_spec("tables") is None:
             df = pd.read_pickle(path)
             logging.warning("(Warning) PyTables not installed, loaded from pickle")
@@ -96,8 +113,11 @@ def load_features_hdf5(path):
         logging.info(f"(Features) Loaded features from {path}")
         return df
     except Exception as e:
-        logging.error(f"(Features) Failed to load features from {path}: {e}", exc_info=True)
+        logging.error(
+            f"(Features) Failed to load features from {path}: {e}", exc_info=True
+        )
         return None
+
 
 # [Patch vX.Y.Z] Parquet helpers for faster feature loading
 def save_features_parquet(df: pd.DataFrame, path: str) -> None:
@@ -106,7 +126,9 @@ def save_features_parquet(df: pd.DataFrame, path: str) -> None:
         df.to_parquet(path)
         logging.info(f"(Features) Saved features to {path}")
     except Exception as e:
-        logging.error(f"(Features) Failed to save features to {path}: {e}", exc_info=True)
+        logging.error(
+            f"(Features) Failed to save features to {path}: {e}", exc_info=True
+        )
 
 
 def load_features_parquet(path: str) -> pd.DataFrame | None:
@@ -116,8 +138,11 @@ def load_features_parquet(path: str) -> pd.DataFrame | None:
         logging.info(f"(Features) Loaded features from {path}")
         return df
     except Exception as e:
-        logging.error(f"(Features) Failed to load features from {path}: {e}", exc_info=True)
+        logging.error(
+            f"(Features) Failed to load features from {path}: {e}", exc_info=True
+        )
         return None
+
 
 # [Patch v6.8.5] Generic helpers choosing format
 def save_features(df: pd.DataFrame, path: str, fmt: str = "parquet") -> None:
@@ -140,11 +165,15 @@ def load_features(path: str, fmt: str = "parquet") -> pd.DataFrame | None:
     if fmt_lower == "parquet":
         return load_features_parquet(path)
     try:
-        df = pd.read_csv(path)
+        from src.utils.data_utils import safe_read_csv
+
+        df = safe_read_csv(path)
         logging.info(f"(Features) Loaded features from {path} as CSV")
         return df
     except Exception as e:
-        logging.error(f"(Features) Failed to load features from {path}: {e}", exc_info=True)
+        logging.error(
+            f"(Features) Failed to load features from {path}: {e}", exc_info=True
+        )
         return None
 
 
@@ -162,6 +191,7 @@ def load_or_engineer_m1_features(
             return cached
 
     import importlib
+
     features_pkg = importlib.import_module(__package__)
     features_df = features_pkg.engineer_m1_features(df_m1)
 
@@ -177,25 +207,29 @@ def load_or_engineer_m1_features(
 
     return features_df
 
+
 # --- Advanced Feature Utilities -------------------------------------------------
 # [Patch v5.6.5] Add momentum, cumulative delta, and wave pattern helpers
+
 
 def add_momentum_features(df, windows=(5, 10, 15, 20)):
     """Add ROC and RSI momentum features for the given rolling windows."""
     if not isinstance(df, pd.DataFrame):
         raise TypeError("Input must be DataFrame")
-    if not {'Close', 'Open'}.issubset(df.columns):
-        logging.warning("    (Warning) Missing 'Close' or 'Open' columns for momentum features.")
+    if not {"Close", "Open"}.issubset(df.columns):
+        logging.warning(
+            "    (Warning) Missing 'Close' or 'Open' columns for momentum features."
+        )
         return df
 
     df_out = df.copy()
-    close = pd.to_numeric(df_out['Close'], errors='coerce')
+    close = pd.to_numeric(df_out["Close"], errors="coerce")
     for w in windows:
         if not isinstance(w, int) or w <= 0:
             continue
         roc = close.pct_change(periods=w) * 100
-        df_out[f'ROC_{w}'] = roc.astype('float32')
-        df_out[f'RSI_{w}'] = rsi(close, period=w)
+        df_out[f"ROC_{w}"] = roc.astype("float32")
+        df_out[f"RSI_{w}"] = rsi(close, period=w)
     return df_out
 
 
@@ -203,12 +237,16 @@ def calculate_cumulative_delta_price(df, window=10):
     """Return rolling sum of Close-Open over the given window."""
     if not isinstance(df, pd.DataFrame):
         raise TypeError("Input must be DataFrame")
-    if not {'Close', 'Open'}.issubset(df.columns):
-        logging.warning("    (Warning) Missing 'Close' or 'Open' columns for cumulative delta.")
-        return pd.Series(np.zeros(len(df)), index=df.index, dtype='float32')
-    delta = pd.to_numeric(df['Close'], errors='coerce') - pd.to_numeric(df['Open'], errors='coerce')
+    if not {"Close", "Open"}.issubset(df.columns):
+        logging.warning(
+            "    (Warning) Missing 'Close' or 'Open' columns for cumulative delta."
+        )
+        return pd.Series(np.zeros(len(df)), index=df.index, dtype="float32")
+    delta = pd.to_numeric(df["Close"], errors="coerce") - pd.to_numeric(
+        df["Open"], errors="coerce"
+    )
     cum_delta = delta.rolling(window=window, min_periods=1).sum()
-    return cum_delta.astype('float32')
+    return cum_delta.astype("float32")
 
 
 def merge_wave_pattern_labels(df, log_path):
@@ -218,30 +256,36 @@ def merge_wave_pattern_labels(df, log_path):
     df_out = df.copy()
     if not os.path.exists(log_path):
         logging.warning(f"   (Warning) Wave_Marker log not found: {log_path}")
-        df_out['Wave_Pattern'] = 'Unknown'
-        df_out['Wave_Pattern'] = df_out['Wave_Pattern'].astype('category')
+        df_out["Wave_Pattern"] = "Unknown"
+        df_out["Wave_Pattern"] = df_out["Wave_Pattern"].astype("category")
         return df_out
     try:
-        pattern_df = pd.read_csv(log_path)
-        pattern_df['datetime'] = pd.to_datetime(pattern_df['datetime'], errors='coerce')
-        pattern_df = pattern_df.dropna(subset=['datetime', 'pattern_label']).sort_values('datetime')
+        from src.utils.data_utils import safe_read_csv
+
+        pattern_df = safe_read_csv(log_path)
+        pattern_df["datetime"] = pd.to_datetime(pattern_df["datetime"], errors="coerce")
+        pattern_df = pattern_df.dropna(
+            subset=["datetime", "pattern_label"]
+        ).sort_values("datetime")
     except Exception as e:
         logging.error(f"   (Error) Failed to load pattern log: {e}", exc_info=True)
-        df_out['Wave_Pattern'] = 'Unknown'
-        df_out['Wave_Pattern'] = df_out['Wave_Pattern'].astype('category')
+        df_out["Wave_Pattern"] = "Unknown"
+        df_out["Wave_Pattern"] = df_out["Wave_Pattern"].astype("category")
         return df_out
 
     if not isinstance(df_out.index, pd.DatetimeIndex):
-        df_out.index = pd.to_datetime(df_out.index, errors='coerce')
+        df_out.index = pd.to_datetime(df_out.index, errors="coerce")
 
     merged = pd.merge_asof(
         df_out.sort_index(),
-        pattern_df.rename(columns={'datetime': 'index'}).sort_values('index'),
+        pattern_df.rename(columns={"datetime": "index"}).sort_values("index"),
         left_index=True,
-        right_on='index',
-        direction='backward'
+        right_on="index",
+        direction="backward",
     )
-    df_out['Wave_Pattern'] = merged['pattern_label'].fillna('Unknown').astype('category')
+    df_out["Wave_Pattern"] = (
+        merged["pattern_label"].fillna("Unknown").astype("category")
+    )
     return df_out
 
 
@@ -287,7 +331,9 @@ def build_feature_catalog(data_dir: str, output_dir: str) -> list:
     if not os.path.exists(m1_path):
         raise FileNotFoundError(f"M1 data not found: {m1_path}")
     # [Patch v6.9.29] ใช้ข้อมูลทุกแถวจาก CSV
-    df_sample = pd.read_csv(m1_path)
+    from src.utils.data_utils import safe_read_csv
+
+    df_sample = safe_read_csv(m1_path)
     features = [
         c
         for c in df_sample.columns
@@ -295,5 +341,3 @@ def build_feature_catalog(data_dir: str, output_dir: str) -> list:
         and pd.api.types.is_numeric_dtype(df_sample[c])
     ]  # [Patch v6.7.3] skip Date/Timestamp columns
     return features
-
-

@@ -18,22 +18,28 @@ from src.features import DEFAULT_META_CLASSIFIER_FEATURES
 try:
     from src.utils.auto_train_meta_classifiers import auto_train_meta_classifiers
 except ImportError:  # pragma: no cover - fallback when module missing
+
     def auto_train_meta_classifiers(*args, **kwargs):
         logging.getLogger().warning(
             "[Patch v6.2.3] auto_train_meta_classifiers stub invoked; skipping."
         )
 
+
 try:
     from reporting.dashboard import generate_dashboard
 except ImportError:  # pragma: no cover - fallback when module missing
+
     def generate_dashboard(*args, **kwargs):
         logging.getLogger().warning(
             "[Patch v6.2.3] generate_dashboard stub invoked; skipping."
         )
+
+
 import csv
 import yaml
 import time
 from pathlib import Path
+
 try:  # [Patch v5.10.2] allow import without heavy dependencies
     from src.config import logger, OUTPUT_DIR, DEFAULT_TRADE_LOG_MIN_ROWS
     import src.config as config
@@ -47,7 +53,9 @@ import argparse
 import subprocess
 import json
 
-from src.utils.pipeline_config import load_config  # [Patch v6.7.17] dynamic config loader
+from src.utils.pipeline_config import (
+    load_config,
+)  # [Patch v6.7.17] dynamic config loader
 
 # [Patch v6.4.8] Optional fallback directory for raw data and logs
 FALLBACK_DIR = os.getenv("PROJECTP_FALLBACK_DIR")
@@ -71,7 +79,10 @@ import main as pipeline
 from config_loader import update_config_from_dict  # [Patch] dynamic config update
 from wfv_runner import run_walkforward  # [Patch] walk-forward helper
 from src.features import build_feature_catalog
-from main import run_preprocess as pipeline_run_preprocess  # [Patch v6.9.32] use pipeline preprocess
+from main import (
+    run_preprocess as pipeline_run_preprocess,
+)  # [Patch v6.9.32] use pipeline preprocess
+
 # Default grid for hyperparameter sweep
 DEFAULT_SWEEP_PARAMS: Dict[str, List[float]] = {
     "learning_rate": [0.01, 0.05],
@@ -101,6 +112,7 @@ from src.data_loader import (
     auto_convert_csv_to_parquet,
 )
 
+
 def configure_logging():
     """Set up consistent logging configuration."""
     logging.basicConfig(
@@ -108,6 +120,7 @@ def configure_logging():
         format="%(asctime)s [%(levelname)s][%(filename)s:%(lineno)d] - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+
 
 def custom_helper_function():
     """Stubbed helper for tests."""
@@ -119,7 +132,16 @@ def parse_projectp_args(args=None):
     parser = argparse.ArgumentParser(description="สคริปต์ควบคุมโหมดการทำงาน")
     parser.add_argument(
         "--mode",
-        choices=["preprocess", "sweep", "threshold", "backtest", "report", "all", "hyper_sweep", "wfv"],
+        choices=[
+            "preprocess",
+            "sweep",
+            "threshold",
+            "backtest",
+            "report",
+            "all",
+            "hyper_sweep",
+            "wfv",
+        ],
         default="preprocess",
         help="ขั้นตอนที่จะรัน",
     )
@@ -171,9 +193,7 @@ def run_hyperparameter_sweep(params: Dict[str, List[float]]) -> None:
         seed=42,
         resume=True,
         trade_log_path=DEFAULT_TRADE_LOG,
-
         m1_path=m1_path,
-
     )
 
 
@@ -186,6 +206,7 @@ def run_threshold_optimization() -> pd.DataFrame:
     """รันการปรับค่า threshold."""
     logger.debug("Starting threshold optimization")
     from threshold_optimization import run_threshold_optimization as _opt
+
     return _opt()
 
 
@@ -197,20 +218,28 @@ def run_threshold():
 def run_backtest():
     """รันการทดสอบย้อนหลัง."""
     model_dir = "models"
-    model_files = [f for f in os.listdir(model_dir) if f.startswith("model_") and f.endswith(".joblib")]
+    model_files = [
+        f
+        for f in os.listdir(model_dir)
+        if f.startswith("model_") and f.endswith(".joblib")
+    ]
     model_files.sort()
     model_path = os.path.join(model_dir, model_files[-1]) if model_files else None
     thresh_path = os.path.join(model_dir, "threshold_wfv_optuna_results.csv")
     threshold = None
     if os.path.exists(thresh_path):
-        df = pd.read_csv(thresh_path)
+        from src.utils.data_utils import safe_read_csv
+
+        df = safe_read_csv(thresh_path)
         if "best_threshold" in df.columns:
             threshold_val = df["best_threshold"].iloc[0]
             threshold = float(threshold_val) if not pd.isna(threshold_val) else None
         else:  # pragma: no cover - fallback for legacy column names
             threshold_val = df.median(numeric_only=True).mean()
             threshold = float(threshold_val) if not pd.isna(threshold_val) else None
-    pipeline.run_backtest_pipeline(pd.DataFrame(), pd.DataFrame(), model_path, threshold)
+    pipeline.run_backtest_pipeline(
+        pd.DataFrame(), pd.DataFrame(), model_path, threshold
+    )
 
 
 def run_report() -> None:
@@ -236,22 +265,22 @@ def run_full_pipeline() -> None:
     # Step 2: Hyperparameter Sweep
     _execute_step("sweep", run_hyperparameter_sweep, DEFAULT_SWEEP_PARAMS)
     # Step 3: Auto-apply best hyperparameters from sweep
-    summary_file = os.path.join(config.OUTPUT_DIR, 'hyperparameter_summary.csv')
+    summary_file = os.path.join(config.OUTPUT_DIR, "hyperparameter_summary.csv")
     if os.path.exists(summary_file):
-        df = pd.read_csv(summary_file)
-        if 'metric' in df.columns and df['metric'].notna().any():
-            best = df.sort_values(by='metric', ascending=False).iloc[0]
-            config.LEARNING_RATE = best.get('learning_rate', config.LEARNING_RATE)
-            config.DEPTH = int(best.get('depth', config.DEPTH))
-            config.L2_LEAF_REG = int(best.get('l2_leaf_reg', config.L2_LEAF_REG))
+        from src.utils.data_utils import safe_read_csv
+
+        df = safe_read_csv(summary_file)
+        if "metric" in df.columns and df["metric"].notna().any():
+            best = df.sort_values(by="metric", ascending=False).iloc[0]
+            config.LEARNING_RATE = best.get("learning_rate", config.LEARNING_RATE)
+            config.DEPTH = int(best.get("depth", config.DEPTH))
+            config.L2_LEAF_REG = int(best.get("l2_leaf_reg", config.L2_LEAF_REG))
             logger.info(
                 f"Applied best hyperparameters: lr={config.LEARNING_RATE}, "
                 f"depth={config.DEPTH}, l2={config.L2_LEAF_REG}"
             )
         else:
-            logger.warning(
-                "ไม่มีคอลัมน์ metric ในไฟล์ sweep หรือไม่มีค่า metric ใช้ค่า default"
-            )
+            logger.warning("ไม่มีคอลัมน์ metric ในไฟล์ sweep หรือไม่มีค่า metric ใช้ค่า default")
     else:
         logger.warning(
             f"Hyperparameter summary not found at {summary_file}, using default parameters."
@@ -261,7 +290,9 @@ def run_full_pipeline() -> None:
     _execute_step("backtest", run_backtest)
     metrics_path = os.path.join(config.OUTPUT_DIR, "metrics_summary_v32.csv")
     if os.path.exists(metrics_path):
-        results_df = pd.read_csv(metrics_path)
+        from src.utils.data_utils import safe_read_csv
+
+        results_df = safe_read_csv(metrics_path)
     else:
         results_df = pd.DataFrame()
     _execute_step(
@@ -364,7 +395,9 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
             )
             path = fallback_path
     try:
-        df_sample = pd.read_csv(path, nrows=500)
+        from src.utils.data_utils import safe_read_csv
+
+        df_sample = safe_read_csv(path).head(500)
     except FileNotFoundError:
 
         logger.warning(
@@ -378,7 +411,14 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
         c
         for c in df_sample.columns
         if pd.api.types.is_numeric_dtype(df_sample[c])
-        and c not in {"datetime", "is_tp", "is_sl", "Date", "Timestamp"}  # [Patch v6.7.2] skip date columns
+        and c
+        not in {
+            "datetime",
+            "is_tp",
+            "is_sl",
+            "Date",
+            "Timestamp",
+        }  # [Patch v6.7.2] skip date columns
         and c.lower() not in {"label", "target"}
     ]
     if len(features) < 10:
@@ -390,7 +430,9 @@ def generate_all_features(raw_data_paths: list[str]) -> list[str]:
     return features
 
 
-def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) -> pd.DataFrame:
+def load_trade_log(
+    filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS
+) -> pd.DataFrame:
     """Load trade log and regenerate via backtest if rows are insufficient."""
 
     from src.trade_log_pipeline import load_or_generate_trade_log
@@ -404,37 +446,38 @@ def load_trade_log(filepath: str, min_rows: int = DEFAULT_TRADE_LOG_MIN_ROWS) ->
     )
 
 
-
 if __name__ == "__main__":
     configure_logging()
     args = parse_args(sys.argv[1:])
     if args.auto_convert:
-        source_csv_dir = os.environ.get('SOURCE_CSV_DIR', '')
-        dest_csv_dir = os.environ.get('DEST_CSV_DIR')
+        source_csv_dir = os.environ.get("SOURCE_CSV_DIR", "")
+        dest_csv_dir = os.environ.get("DEST_CSV_DIR")
         if not dest_csv_dir:
             print("INFO: [AutoConvert] DEST_CSV_DIR not set, using default path.")
-            main_output_dir = setup_output_directory(os.getcwd(), 'output_default')
-            dest_csv_dir = os.path.join(main_output_dir, 'converted_csvs')
+            main_output_dir = setup_output_directory(os.getcwd(), "output_default")
+            dest_csv_dir = os.path.join(main_output_dir, "converted_csvs")
         os.makedirs(dest_csv_dir, exist_ok=True)
         if not source_csv_dir:
-            print("\u2717 [AutoConvert] Error: SOURCE_CSV_DIR environment variable is not set.")
+            print(
+                "\u2717 [AutoConvert] Error: SOURCE_CSV_DIR environment variable is not set."
+            )
         else:
             auto_convert_csv(source_csv_dir, output_path=dest_csv_dir)
         sys.exit(0)
 
     # --- Parquet auto-conversion using settings.yaml ---
-    cfg_file = Path('config/settings.yaml')
+    cfg_file = Path("config/settings.yaml")
     if cfg_file.exists():
-        with open(cfg_file, 'r', encoding='utf-8') as fh:
+        with open(cfg_file, "r", encoding="utf-8") as fh:
             cfg_data = yaml.safe_load(fh) or {}
     else:
         cfg_data = {}
 
-    data_cfg = cfg_data.get('data', {})
-    parquet_output_dir_str = data_cfg.get('parquet_dir')
+    data_cfg = cfg_data.get("data", {})
+    parquet_output_dir_str = data_cfg.get("parquet_dir")
     if not parquet_output_dir_str:
-        base_data_dir = data_cfg.get('data_dir', './data')
-        parquet_output_dir = Path(base_data_dir) / 'parquet_cache'
+        base_data_dir = data_cfg.get("data_dir", "./data")
+        parquet_output_dir = Path(base_data_dir) / "parquet_cache"
         logger.warning(
             "[AutoConvert] 'data.parquet_dir' not set in config. Defaulting to: %s",
             parquet_output_dir,
@@ -442,7 +485,7 @@ if __name__ == "__main__":
     else:
         parquet_output_dir = Path(parquet_output_dir_str)
 
-    source_csv_path = data_cfg.get('path')
+    source_csv_path = data_cfg.get("path")
     if source_csv_path:
         auto_convert_csv_to_parquet(
             source_path=source_csv_path,
@@ -461,12 +504,17 @@ if __name__ == "__main__":
     else:
         max_rows = None
     if max_rows:
-        print(f"--- [DEBUG MODE] \u0e01\u0e33\u0e2b\u0e19\u0e14 max_rows={max_rows} ---")
+        print(
+            f"--- [DEBUG MODE] \u0e01\u0e33\u0e2b\u0e19\u0e14 max_rows={max_rows} ---"
+        )
         pipeline.sample_size = max_rows
         import src.strategy as strategy
+
         strategy.sample_size = max_rows
     else:
-        print("--- [FULL PIPELINE] \u0e43\u0e0a\u0e49\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14 ---")
+        print(
+            "--- [FULL PIPELINE] \u0e43\u0e0a\u0e49\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14 ---"
+        )
     # [Patch v6.3.5] ตรวจสอบไฟล์ผลลัพธ์ก่อนและหลังการทำงาน
     output_dir = getattr(config, "OUTPUT_DIR", Path(pipeline_config.output_dir))
     features_filename = pipeline_config.features_filename
@@ -486,6 +534,7 @@ if __name__ == "__main__":
             )
             try:
                 from src import config as cfg
+
                 os.makedirs(output_dir, exist_ok=True)
                 feature_catalog = build_feature_catalog(
                     data_dir=getattr(cfg, "DATA_DIR", output_dir),
@@ -524,13 +573,19 @@ if __name__ == "__main__":
         if not os.path.exists(raw_data_paths[0]):
             try:
                 from src import config as cfg
-                raw_data_paths[0] = getattr(cfg, "DEFAULT_CSV_PATH_M1", raw_data_paths[0])
+
+                raw_data_paths[0] = getattr(
+                    cfg, "DEFAULT_CSV_PATH_M1", raw_data_paths[0]
+                )
             except Exception:  # pragma: no cover - config import failure
                 pass
         if len(raw_data_paths) > 1 and not os.path.exists(raw_data_paths[1]):
             try:
                 from src import config as cfg
-                raw_data_paths[1] = getattr(cfg, "DEFAULT_CSV_PATH_M15", raw_data_paths[1])
+
+                raw_data_paths[1] = getattr(
+                    cfg, "DEFAULT_CSV_PATH_M15", raw_data_paths[1]
+                )
             except Exception:  # pragma: no cover - config import failure
                 pass
         features_main = generate_all_features(raw_data_paths)
@@ -538,6 +593,7 @@ if __name__ == "__main__":
         logger.info("Feature set regenerated with %d rows", len(features_main))
 
     import glob
+
     # [Patch v6.9.15] Support explicit trade_log_file in pipeline config
     trade_log_file = None
     if pipeline_config.trade_log_file:
@@ -562,14 +618,11 @@ if __name__ == "__main__":
         )
 
         trade_pattern_gz = os.path.join(
-            output_dir,
-            pipeline_config.trade_log_pattern.replace(".csv*", ".csv.gz")
+            output_dir, pipeline_config.trade_log_pattern.replace(".csv*", ".csv.gz")
         )
         log_files = glob.glob(trade_pattern_gz)
     if not log_files and FALLBACK_DIR:
-        fallback_pattern = os.path.join(
-            FALLBACK_DIR, pipeline_config.trade_log_pattern
-        )
+        fallback_pattern = os.path.join(FALLBACK_DIR, pipeline_config.trade_log_pattern)
         log_files = sorted(glob.glob(fallback_pattern))
         if log_files:
             logger.warning(
@@ -607,7 +660,9 @@ if __name__ == "__main__":
                     }
                     for _ in range(9)
                 ]
-                pd.DataFrame(dummy_rows, columns=dummy_cols).to_csv(trade_log_file, index=False)
+                pd.DataFrame(dummy_rows, columns=dummy_cols).to_csv(
+                    trade_log_file, index=False
+                )
         else:
             log_files = sorted(log_files, key=lambda f: ("walkforward" not in f, f))
             trade_log_file = log_files[0]

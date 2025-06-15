@@ -27,8 +27,12 @@ def load_trade_log(csv_path: str) -> pd.DataFrame:
             res = wfv_runner.run_walkforward(nrows=20)
             gen = pd.DataFrame(
                 {
-                    "entry_time": pd.date_range("2024-01-01", periods=len(res), freq="D"),
-                    "exit_time": pd.date_range("2024-01-02", periods=len(res), freq="D"),
+                    "entry_time": pd.date_range(
+                        "2024-01-01", periods=len(res), freq="D"
+                    ),
+                    "exit_time": pd.date_range(
+                        "2024-01-02", periods=len(res), freq="D"
+                    ),
                     "pnl": res["pnl"],
                 }
             )
@@ -38,11 +42,19 @@ def load_trade_log(csv_path: str) -> pd.DataFrame:
             )
         except Exception as exc:
             logging.error(
-                "[Patch v5.8.15] Failed to auto-generate trade_log: %s", exc, exc_info=True
+                "[Patch v5.8.15] Failed to auto-generate trade_log: %s",
+                exc,
+                exc_info=True,
             )
             raise FileNotFoundError(csv_path)
 
-    df = pd.read_csv(csv_path, parse_dates=["entry_time", "exit_time"], low_memory=False)
+    from src.utils.data_utils import safe_read_csv
+
+    df = safe_read_csv(csv_path)
+    if not df.empty:
+        df[["entry_time", "exit_time"]] = df[["entry_time", "exit_time"]].apply(
+            pd.to_datetime, errors="coerce"
+        )
     if "pnl" not in df.columns:
         raise ValueError("trade log missing 'pnl' column")
     return df
@@ -79,7 +91,9 @@ def generate_dashboard(log_path: str, threshold: float = 0.05) -> Tuple[object, 
     return fig, check_drawdown_alert(dd, threshold)
 
 
-def run_streamlit_dashboard(log_path: str, refresh_sec: int = 5, threshold: float = 0.05) -> None:
+def run_streamlit_dashboard(
+    log_path: str, refresh_sec: int = 5, threshold: float = 0.05
+) -> None:
     """Start Streamlit app for real-time dashboard."""
     if st is None:
         raise ImportError("streamlit is required for dashboard")
@@ -92,5 +106,12 @@ def run_streamlit_dashboard(log_path: str, refresh_sec: int = 5, threshold: floa
             st.error(f"Drawdown exceeds {threshold*100:.1f}%!")
         time.sleep(refresh_sec)
 
-__all__ = ["load_trade_log", "compute_equity_curve", "compute_drawdown", "check_drawdown_alert", "generate_dashboard", "run_streamlit_dashboard"]
 
+__all__ = [
+    "load_trade_log",
+    "compute_equity_curve",
+    "compute_drawdown",
+    "check_drawdown_alert",
+    "generate_dashboard",
+    "run_streamlit_dashboard",
+]
