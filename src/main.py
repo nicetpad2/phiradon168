@@ -14,6 +14,14 @@ import os
 import sys
 import json
 from src.utils import get_env_float, maybe_collect, load_settings
+from src.model_helpers import (
+    ensure_model_files_exist,
+    ensure_main_features_file,
+    save_features_main_json,
+    save_features_json,
+)
+from src.pipeline_helpers import prepare_train_data, train_models
+from src.main_utils import ensure_default_output_dir, load_validated_csv
 if 'pytest' in sys.modules:
     cfg = sys.modules.get('src.config')
     if cfg is not None and getattr(cfg, '__file__', None) is None and hasattr(cfg, 'ENTRY_CONFIG_PER_FOLD'):
@@ -167,67 +175,12 @@ DEFAULT_CATBOOST_GPU_RAM_PART = 0.95
 DEFAULT_SHAP_IMPORTANCE_THRESHOLD = 0.01
 DEFAULT_PERMUTATION_IMPORTANCE_THRESHOLD = 0.001
 
-
-# [Patch v5.2.4] Ensure default output directory exists
-def ensure_default_output_dir(path=DEFAULT_OUTPUT_DIR):
-    """สร้างโฟลเดอร์ผลลัพธ์เริ่มต้นหากยังไม่มี"""
-    if not os.path.isabs(path):
-        project_root = os.getcwd()
-        path = os.path.join(project_root, path)
-    try:
-        os.makedirs(path, exist_ok=True)
-        logging.info(f"   (Setup) ตรวจสอบโฟลเดอร์ผลลัพธ์: {path}")
-        return path
-    except Exception as e:
-        logging.error(f"   (Error) สร้างโฟลเดอร์ผลลัพธ์ไม่สำเร็จ: {e}", exc_info=True)
-        return None
-
-ensure_default_output_dir()
-
+ensure_default_output_dir(DEFAULT_OUTPUT_DIR)
 try:
     OUTPUT_DIR
 except NameError:
     OUTPUT_DIR = DEFAULT_OUTPUT_DIR
 
-
-def load_validated_csv(raw_path, timeframe, dtypes=None):
-    """Validate and load CSV or Parquet, ensuring Buddhist year conversion."""
-    if raw_path.endswith(".parquet"):
-        try:
-            return pd.read_parquet(raw_path)
-        except Exception as e_read:
-            logging.warning(f"(Warning) Failed to read parquet {raw_path}: {e_read}")
-            return load_data(raw_path.replace(".parquet", ".csv"), timeframe, dtypes=dtypes)
-
-    parquet_path = raw_path.replace(".csv", ".parquet")
-    if os.path.exists(parquet_path):
-        try:
-            return pd.read_parquet(parquet_path)
-        except Exception as e_read_cache:
-            logging.warning(f"(Warning) Failed to read parquet {parquet_path}: {e_read_cache}")
-
-    clean_path = raw_path.replace(".csv", "_clean.csv")
-    if not os.path.exists(clean_path):
-        print(
-            f"ไฟล์ข้อมูลสะอาด '{clean_path}' ยังไม่มี, กำลังสร้างจากไฟล์ต้นฉบับ..."
-        )
-        try:
-            validate_and_convert_csv(raw_path, clean_path)
-            print("สร้างไฟล์ข้อมูลสะอาดสำเร็จ")
-        except Exception as e:
-            print(
-                f"เกิดข้อผิดพลาดร้ายแรงระหว่างการตรวจสอบและแปลงไฟล์ CSV: {e}"
-            )
-            raise
-
-    df_loaded = load_data(clean_path, timeframe, dtypes=dtypes)
-    try:
-        df_loaded.to_parquet(parquet_path)
-    except Exception as e_save:
-        logging.warning(f"(Warning) Failed to save parquet to {parquet_path}: {e_save}")
-    if df_loaded.empty:
-        logging.warning("(Warning) Loaded DataFrame is empty after CSV load")
-    return df_loaded
 try:
     META_CLASSIFIER_PATH
 except NameError:
@@ -497,182 +450,6 @@ try:
 except NameError:
     tuning_mode_used = "Fixed Params"
 
-
-# --- Auto-Train Trigger Function ---
-def ensure_model_files_exist(output_dir, base_trade_log_path, base_m1_data_path):
-    """[Patch v5.4.5] Ensure all model and feature files exist or auto-train."""
-    logging.info("\n--- (Auto-Train Check) Ensuring Model Files Exist ---")
-    skip_auto_train = os.getenv("SKIP_AUTO_TRAIN", "0") in {"1", "True", "true"}
-
-    required = {
-        'main': (META_CLASSIFIER_PATH, 'features_main.json'),
-        'spike': (SPIKE_MODEL_PATH, 'features_spike.json'),
-        'cluster': (CLUSTER_MODEL_PATH, 'features_cluster.json'),
-    }
-
-    missing_models = []
-    for key, (model_file, feature_file) in required.items():
-        model_path = os.path.join(output_dir, model_file)
-        feature_path = os.path.join(output_dir, feature_file)
-        if not (os.path.exists(model_path) and os.path.exists(feature_path)):
-            download_model_if_missing(model_path, f"URL_MODEL_{key.upper()}")
-            download_feature_list_if_missing(feature_path, f"URL_FEATURES_{key.upper()}")
-            if not os.path.exists(model_path) or not os.path.exists(feature_path):
-                missing_models.append(key)
-                logging.warning(f"Missing model file for '{key}' ({model_file}).")
-
-    if not missing_models:
-        logging.info("   (Success) Model files and feature lists already exist.")
-        return
-
-    if skip_auto_train:
-        logging.warning("   SKIP_AUTO_TRAIN enabled - creating placeholder model files.")
-        os.makedirs(output_dir, exist_ok=True)
-        for key in missing_models:
-            open(os.path.join(output_dir, required[key][0]), "a").close()
-            open(os.path.join(output_dir, required[key][1]), "a").close()
-        return
-
-    logging.warning(
-        f"   Triggering Auto-Training for Missing Models: {missing_models}"
-    )
-
-    train_log_path = None
-    for ext in (".csv.gz", ".csv"):
-        candidate = base_trade_log_path + ext
-        if os.path.exists(candidate):
-            train_log_path = candidate
-            break
-
-    m1_path = None
-    for ext in (".csv.gz", ".csv"):
-        candidate = base_m1_data_path + ext
-        if os.path.exists(candidate):
-            m1_path = candidate
-            break
-
-    if train_log_path is None or m1_path is None:
-        logging.error("   (Error) Training data missing. Creating placeholder model files.")
-        os.makedirs(output_dir, exist_ok=True)
-        for key in missing_models:
-            open(os.path.join(output_dir, required[key][0]), "a").close()
-            open(os.path.join(output_dir, required[key][1]), "a").close()
-        return
-
-    trade_log_df = safe_load_csv_auto(train_log_path)
-    if trade_log_df is None or trade_log_df.empty:
-        logging.error("   (Error) Loaded trade log is empty. Creating placeholder model files.")
-        os.makedirs(output_dir, exist_ok=True)
-        for key in missing_models:
-            open(os.path.join(output_dir, required[key][0]), "a").close()
-            open(os.path.join(output_dir, required[key][1]), "a").close()
-        return
-
-    for key in missing_models:
-        try:
-            saved_paths, features = train_and_export_meta_model(
-                trade_log_path=None,
-                m1_data_path=m1_path,
-                output_dir=output_dir,
-                model_purpose=key,
-                trade_log_df_override=trade_log_df,
-                model_type_to_train="catboost",
-                link_model_as_default=DEFAULT_MODEL_TO_LINK,
-                enable_dynamic_feature_selection=True,
-                feature_selection_method="shap",
-                shap_importance_threshold=shap_importance_threshold,
-                permutation_importance_threshold=permutation_importance_threshold,
-                enable_optuna_tuning=False,
-                sample_size=sample_size,
-                features_to_drop_before_train=features_to_drop,
-                early_stopping_rounds=early_stopping_rounds_config,
-            )
-            if saved_paths is None or key not in saved_paths:
-                raise RuntimeError("Training did not produce a model file")
-        except Exception as e:
-            logging.error(f"   (Error) Auto-training failed for '{key}': {e}", exc_info=True)
-            os.makedirs(output_dir, exist_ok=True)
-            open(os.path.join(output_dir, required[key][0]), "a").close()
-            open(os.path.join(output_dir, required[key][1]), "a").close()
-            continue
-
-        model_path = os.path.join(output_dir, required[key][0])
-        features_path = os.path.join(output_dir, required[key][1])
-        if not os.path.exists(model_path):
-            os.makedirs(output_dir, exist_ok=True)
-            open(model_path, "a").close()
-        if features is None:
-            open(features_path, "a").close()
-        else:
-            if key == 'main':
-                save_features_main_json(features, output_dir)
-            else:
-                save_features_json(features, key, output_dir)
-
-        if not validate_file(model_path):
-            logging.warning(f"[QA] Placeholder created for '{key}' model")
-            open(model_path, "a").close()
-        if not validate_file(features_path):
-            logging.warning(f"[QA] Placeholder created for '{key}' features")
-            open(features_path, "a").close()
-    logging.info("--- (Auto-Train Check) Finished ---")
-
-
-# [Patch v5.0.1] Helper wrappers for pipeline steps
-def prepare_train_data():
-    """[Patch] Run PREPARE_TRAIN_DATA step programmatically."""
-    logging.info("[Patch] Run Mode Selected: PREPARE_TRAIN_DATA (helper)")
-    return main(run_mode='PREPARE_TRAIN_DATA')
-
-
-def train_models():
-    """[Patch] Run TRAIN_MODEL_ONLY step programmatically."""
-    logging.info("[Patch] Run Mode Selected: TRAIN_MODEL (helper)")
-    return main(run_mode='TRAIN_MODEL_ONLY')
-
-
-# [Patch v5.0.14] Ensure features_main.json exists
-def ensure_main_features_file(output_dir):
-    """[Patch] Create default features_main.json if it does not exist."""
-    path = os.path.join(output_dir, "features_main.json")
-    if os.path.exists(path):
-        return path
-    try:
-        os.makedirs(output_dir, exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(DEFAULT_META_CLASSIFIER_FEATURES, f, ensure_ascii=False, indent=2)
-        logging.info("[Patch] Created default features_main.json")
-    except Exception as e:
-        logging.error(f"[Patch] Failed to create features_main.json: {e}")
-    return path
-
-
-# [Patch v5.3.2] QA function to persist features_main.json
-def save_features_main_json(features, output_dir):
-    """[Patch] Save main features list, creating QA log if empty."""
-    os.makedirs(output_dir, exist_ok=True)
-    path = os.path.join(output_dir, 'features_main.json')
-    if features is None or len(features) == 0:
-        logger.warning("[QA] features_main.json is empty. Creating empty features file.")
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump([], f, ensure_ascii=False, indent=2)
-        qa_log = os.path.join(output_dir, 'features_main_qa.log')
-        with open(qa_log, 'w', encoding='utf-8') as f:
-            f.write("[QA] features_main.json EMPTY. Please check feature engineering logic.\n")
-    else:
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(features, f, ensure_ascii=False, indent=2)
-        logger.info(f"[QA] features_main.json saved successfully ({len(features)} features).")
-    return path
-
-# [Patch v5.4.5] Generic function to save features for sub-models
-def save_features_json(features, model_name, output_dir):
-    """Save feature list for a specific model name."""
-    os.makedirs(output_dir, exist_ok=True)
-    path = os.path.join(output_dir, f"features_{model_name}.json")
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(features if features is not None else [], f, ensure_ascii=False, indent=2)
-    return path
 
 
 # --- Main Execution Function ---

@@ -347,4 +347,8 @@
 - Added `wfv_aggregator` module for fold result aggregation.
 - Added `state_manager` module for persistent system state management.
 - Added `main_helpers`, `model_helpers`, and `pipeline_helpers` modules to organize main functions.
+
 - Moved entry filter helpers to `strategy.trend_filter` and lot sizing utilities to `strategy.risk_management`.
+=======
+- Added `main_utils` module for CSV loading and output directory helpers.
+
